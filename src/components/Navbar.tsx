@@ -14,28 +14,28 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => { setIsOpen(false); }, [location]);
+  useEffect(() => {setIsOpen(false);}, [location]);
 
   const links = [
-    { to: "/#how-it-works", label: "How It Works" },
-    { to: "/#treatments", label: "Treatments" },
-    { to: "/about", label: "About" },
-    { to: "/faq", label: "FAQ" },
-  ];
+  { to: "/#how-it-works", label: "How It Works" },
+  { to: "/#treatments", label: "Treatments" },
+  { to: "/about", label: "About" },
+  { to: "/faq", label: "FAQ" }];
+
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-navy/90 backdrop-blur-md" : "bg-navy"}`}>
       <div className="section-container flex items-center justify-between h-16 px-4 md:px-8">
-        <Link to="/" className="font-display text-primary-foreground text-[22px] font-semibold">
-          [PRACTICE NAME]
+        <Link to="/" className="font-display text-primary-foreground font-semibold text-2xl">​SPRYMD.AI
+
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          {links.map((link) => (
-            <Link key={link.to} to={link.to} className="font-body text-primary-foreground/80 text-sm hover:text-primary-foreground transition-colors">
+          {links.map((link) =>
+          <Link key={link.to} to={link.to} className="font-body text-primary-foreground/80 text-sm hover:text-primary-foreground transition-colors">
               {link.label}
             </Link>
-          ))}
+          )}
         </div>
 
         <div className="hidden md:block">
@@ -50,29 +50,29 @@ const Navbar = () => {
       </div>
 
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-navy overflow-hidden"
-          >
+        {isOpen &&
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="md:hidden bg-navy overflow-hidden">
+          
             <div className="px-4 pb-6 pt-2 flex flex-col gap-4">
-              {links.map((link) => (
-                <Link key={link.to} to={link.to} className="font-body text-primary-foreground/80 text-base py-2 hover:text-primary-foreground transition-colors">
+              {links.map((link) =>
+            <Link key={link.to} to={link.to} className="font-body text-primary-foreground/80 text-base py-2 hover:text-primary-foreground transition-colors">
                   {link.label}
                 </Link>
-              ))}
+            )}
               <Link to="/quiz" className="btn-primary text-center mt-2">
                 Start Your Visit
               </Link>
             </div>
           </motion.div>
-        )}
+        }
       </AnimatePresence>
-    </nav>
-  );
+    </nav>);
+
 };
 
 export default Navbar;
