@@ -122,7 +122,7 @@ const Treatments = () => {
 
 const WhyChooseUs = () => {
   const features = [
-  "Real physician review — not an algorithm",
+  "Real physician review",
   "Results within 24 hours",
   "$75/month — no surprise fees",
   "Discreet billing and shipping",
