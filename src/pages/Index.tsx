@@ -40,7 +40,7 @@ const HeroSection = () =>
 const TrustBar = () =>
 <section className="bg-card border-y border-gray-light py-6 px-4">
     <div className="section-container flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-      {["Board-Certified DO Physician", "FDA-Approved Medications", "Ships to Your Door"].map((item, i) =>
+      {["Board-Certified Physician", "FDA-Approved Medications", "Shipped Discreetly to Your Door"].map((item, i) =>
     <div key={i} className="flex items-center gap-2">
           <Check className="text-green w-5 h-5 flex-shrink-0" />
           <span className="font-body text-foreground font-medium text-sm">{item}</span>
