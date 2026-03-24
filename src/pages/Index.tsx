@@ -54,7 +54,7 @@ const TrustBar = () =>
 const HowItWorks = () => {
   const steps = [
   { num: "01", icon: ClipboardList, title: "Answer a Short Questionnaire", body: "Tell us about your health history in about 5 minutes. No embarrassing office visits. No waiting room. Complete it from anywhere." },
-  { num: "02", icon: Stethoscope, title: "A Real Physician Reviews Your Case", body: "[PHYSICIAN NAME], DO personally reviews every consultation within 24 hours and determines the safest, most effective treatment for you." },
+  { num: "02", icon: Stethoscope, title: "A Real Physician Reviews Your Case", body: "A physician personally reviews every consultation within 24 hours and determines the safest, most effective treatment for you." },
   { num: "03", icon: Package, title: "Your Medication Ships to You", body: "If appropriate, your prescription is sent to a licensed pharmacy and shipped in discreet, unmarked packaging — straight to your door." }];
 
 
