@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between gap-8">
           <div>
             <p className="font-display text-primary-foreground text-lg font-semibold mb-2">​SPRYMD.AI</p>
-            <p className="font-body text-primary-foreground/50 text-sm max-w-md">© 2026 SPRYMD.AI. Telehealth services provided by WILLIAM MERRICK, DO, licensed in Tennessee.
+            <p className="font-body text-primary-foreground/50 text-sm max-w-md">© 2026 SpryMD.ai. Telehealth services provided by WILLIAM MERRICK, DO, licensed in Tennessee.
 
             </p>
           </div>
