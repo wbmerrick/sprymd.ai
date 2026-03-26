@@ -13,7 +13,7 @@ const HeroSection = () =>
     </div>
     <div className="relative z-10 text-center px-4 py-20 max-w-3xl mx-auto">
       <AnimatedSection>
-        <p className="section-label text-primary mb-6 tracking-[0.25em]">DISCREET · FAST · PHYSICIAN-REVIEWED</p>
+        <p className="section-label mb-6 tracking-[0.25em] text-white">DISCREET · FAST · PHYSICIAN-REVIEWED</p>
       </AnimatedSection>
       <AnimatedSection delay={0.1}>
         <h1 className="font-display text-primary-foreground text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8">
@@ -29,7 +29,7 @@ const HeroSection = () =>
         <Link to="/quiz" className="btn-primary-lg shadow-2xl">
           Start My Free Consultation →
         </Link>
-        <p className="font-body text-primary-foreground/40 text-sm mt-6">
+        <p className="font-body text-sm mt-6 text-white">
           🔒 HIPAA-Secure  ·  Licensed Physician  ·  Discreet Shipping  ·  Cancel Anytime
         </p>
       </AnimatedSection>
