@@ -116,7 +116,7 @@ const FAQ = () => (
       <div className="section-container max-w-3xl space-y-10">
         {faqGroups.map((group, i) => (
           <AnimatedSection key={i} delay={i * 0.05}>
-            <span className="inline-block font-body text-xs font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4">{group.label}</span>
+            <span className="inline-block font-body font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4 text-2xl">{group.label}</span>
             <FAQAccordion items={group.items} />
           </AnimatedSection>
         ))}
