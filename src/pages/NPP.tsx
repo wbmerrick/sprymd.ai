@@ -9,7 +9,7 @@ const NPP = () => (
       <div className="section-container max-w-3xl">
         <AnimatedSection>
           <div className="prose prose-sm font-body text-muted-foreground max-w-none">
-            <p className="text-lg font-medium text-foreground mb-4">Effective Date: [DATE]</p>
+            <p className="text-lg font-medium text-foreground mb-4">Effective Date: March 2026</p>
             <p>Please replace this placeholder with your Notice of Privacy Practices (NPP) content as required under HIPAA. This document should explain:</p>
             <ul className="list-disc pl-6 space-y-2 mt-4">
               <li>How protected health information (PHI) may be used and disclosed</li>
