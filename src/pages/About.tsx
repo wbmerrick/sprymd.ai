@@ -29,7 +29,7 @@ const DoctorBio = () => (
           </div>
         </AnimatedSection>
         <AnimatedSection delay={0.2}>
-          <h2 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">[PHYSICIAN NAME], DO</h2>
+          <h2 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">William Merrick, DO</h2>
           <p className="font-body text-primary font-medium mb-6">Board-Certified Physician · Hospitalist · Telehealth Provider</p>
           <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
             <p>Dr. Merrick is an internal medicine board-certified osteopathic physician with over 10 years of clinical experience in hospital medicine, outpatient care, and chronic disease management. He practices brings the same rigor of hospital-level medicine to every telehealth consultation.</p>
