@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { GraduationCap, ClipboardCheck, Building, Stethoscope, Lock, Pill } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
+import doctorPhoto from "@/assets/doctor-photo.png";
 
 const AboutHero = () => (
   <section className="bg-navy py-24 px-4 text-center">
