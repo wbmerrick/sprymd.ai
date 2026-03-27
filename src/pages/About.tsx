@@ -19,8 +19,8 @@ const DoctorBio = () => (
     <div className="section-container">
       <div className="grid md:grid-cols-2 gap-12 items-start">
         <AnimatedSection>
-          <div className="bg-muted rounded-2xl aspect-square shadow-xl flex items-center justify-center">
-            <span className="font-body text-muted-foreground text-lg">Doctor Photo</span>
+          <div className="rounded-2xl aspect-square shadow-xl overflow-hidden">
+            <img src={doctorPhoto} alt="Dr. Merrick — Board-Certified Physician" className="w-full h-full object-cover" />
           </div>
           <div className="flex flex-wrap gap-2 mt-6">
             {["Board-Certified DO", "Licensed in Tennessee", "[X]+ Years Experience"].map((b, i) => (
