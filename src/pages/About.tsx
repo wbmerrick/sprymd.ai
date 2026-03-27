@@ -33,7 +33,7 @@ const DoctorBio = () => (
           <p className="font-body text-primary font-medium mb-6">Board-Certified Physician · Hospitalist · Telehealth Provider</p>
           <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
             <p>Dr. Merrick is an internal medicine board-certified osteopathic physician with over 10 years of clinical experience in hospital medicine, outpatient care, and chronic disease management. He practices brings the same rigor of hospital-level medicine to every telehealth consultation.</p>
-            <p>He built this practice for a simple reason: millions of men deal with ED in silence because they're embarrassed, too busy, or priced out of traditional care. That's not a medical problem — that's a system problem. This platform exists to remove every barrier between you and effective treatment.</p>
+            <p>He built this practice for a simple reason: millions of men suffer from and deal with ED in silence because they're embarrassed, too busy, or priced out of traditional care. That's not a medical problem — that's a system problem. This platform exists to remove every barrier between you and effective treatment.</p>
             <p>Dr. Merrick lives and practices in rural Tennessee. He understands that not every patient has easy access to specialists or same-day appointments — and that discretion matters. Every case he reviews gets the same attention he'd give a patient in his clinic.</p>
           </div>
         </AnimatedSection>
