@@ -23,7 +23,7 @@ const DoctorBio = () => (
             <img src={doctorPhoto} alt="Dr. Merrick — Board-Certified Physician" className="w-full h-auto object-contain" />
           </div>
           <div className="flex flex-wrap gap-2 mt-6">
-            {["Board-Certified DO", "Licensed in Tennessee", "[X]+ Years Experience"].map((b, i) => (
+            {["Board-Certified DO", "Licensed in Tennessee", "10+ Years Experience"].map((b, i) => (
               <span key={i} className="font-body text-xs font-medium bg-primary/10 text-primary px-3 py-1.5 rounded-full">{b}</span>
             ))}
           </div>
@@ -47,7 +47,7 @@ const CredentialsGrid = () => {
     { icon: GraduationCap, text: "Doctor of Osteopathic Medicine (DO)" },
     { icon: ClipboardCheck, text: "Board Certified — American Osteopathic Board of Internal Medicine" },
     { icon: Building, text: "Licensed in Tennessee" },
-    { icon: Stethoscope, text: "[X]+ Years Clinical Experience" },
+    { icon: Stethoscope, text: "10+ Years Clinical Experience" },
     { icon: Lock, text: "HIPAA-Compliant Practice" },
     { icon: Pill, text: "Hospital Medicine · Telehealth" },
   ];
