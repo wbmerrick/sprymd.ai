@@ -45,7 +45,7 @@ const DoctorBio = () => (
 const CredentialsGrid = () => {
   const creds = [
     { icon: GraduationCap, text: "Doctor of Osteopathic Medicine (DO)" },
-    { icon: ClipboardCheck, text: "Board Certified — [Board Name]" },
+    { icon: ClipboardCheck, text: "Board Certified — American Osteopathic Board of Internal Medicine" },
     { icon: Building, text: "Licensed in Tennessee" },
     { icon: Stethoscope, text: "[X]+ Years Clinical Experience" },
     { icon: Lock, text: "HIPAA-Compliant Practice" },
