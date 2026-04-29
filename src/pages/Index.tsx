@@ -101,7 +101,7 @@ const Treatments = () => {
           <AnimatedSection key={i} delay={i * 0.15}>
               <div className="card-base card-hover relative h-full flex flex-col">
                 {card.popular &&
-              <span className="absolute -top-3 right-6 bg-primary text-primary-foreground text-xs font-semibold font-body px-4 py-1.5 rounded-full">
+              <span className="absolute -top-3 right-6 badge-popular">
                     Most Popular
                   </span>
               }
