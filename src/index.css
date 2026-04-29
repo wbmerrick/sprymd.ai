@@ -4,37 +4,40 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98.8%;
-    --foreground: 222 47% 11%;
+    --background: 200 40% 98%;
+    --foreground: 218 40% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 218 40% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 224 76% 48%;
+    --popover-foreground: 218 40% 12%;
+    --primary: 208 75% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 213 56% 24%;
+    --secondary: 211 77% 25%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 213 56% 24%;
+    --muted: 200 30% 95%;
+    --muted-foreground: 215 16% 42%;
+    --accent: 18 90% 58%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 224 76% 48%;
+    --border: 210 30% 88%;
+    --input: 210 30% 88%;
+    --ring: 208 75% 45%;
     --radius: 0.5rem;
 
-    /* Custom tokens */
-    --navy: 218 62% 15%;
-    --navy-deep: 220 68% 10%;
-    --slate: 213 53% 25%;
-    --blue: 224 76% 48%;
-    --blue-light: 217 91% 60%;
-    --off-white: 210 40% 98%;
-    --gray-light: 214 32% 91%;
+    /* Custom tokens — sourced from uploaded artwork (deep navy, electric blues, sunset coral) */
+    --navy: 218 50% 12%;
+    --navy-deep: 210 60% 5%;
+    --slate: 211 77% 25%;
+    --blue: 208 75% 45%;
+    --blue-light: 201 75% 62%;
+    --coral: 18 90% 58%;
+    --coral-light: 28 95% 65%;
+    --magenta: 330 70% 55%;
+    --off-white: 200 40% 98%;
+    --gray-light: 210 30% 88%;
     --gray-mid: 215 16% 47%;
-    --text-primary: 222 47% 11%;
+    --text-primary: 218 40% 12%;
     --green: 142 72% 29%;
     --green-light: 142 72% 40%;
 
