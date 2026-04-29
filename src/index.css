@@ -102,4 +102,15 @@
   .btn-primary-lg {
     @apply btn-primary text-lg px-10 py-5 shadow-xl;
   }
+  .btn-accent {
+    @apply bg-accent text-accent-foreground rounded-full px-8 py-4 font-semibold font-body
+           hover:bg-coral-light transition-all duration-200 hover:scale-[1.02] hover:shadow-lg
+           inline-flex items-center justify-center gap-2;
+  }
+  .badge-popular {
+    @apply bg-accent text-accent-foreground text-xs font-semibold font-body px-4 py-1.5 rounded-full;
+  }
+  .link-accent {
+    @apply text-accent font-semibold hover:text-coral-light transition-colors;
+  }
 }
