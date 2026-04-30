@@ -16,8 +16,8 @@ const HeroSection = () =>
         <p className="section-label mb-6 tracking-[0.25em] text-white">DISCREET · FAST · PHYSICIAN-REVIEWED</p>
       </AnimatedSection>
       <AnimatedSection delay={0.1}>
-        <h1 className="font-display text-primary-foreground text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8">
-          ED Treatment.<br />Online.<br />In 24 Hours.
+        <h1 className="text-primary-foreground text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8 font-serif whitespace-pre-line">
+          Become SPRY -{"\n\n\n"}Our Board Certified Physician's{"\n\n\n"}Help You Achieve{"\n\n\n"}Optimum You.{"\n\n\n"}Think Fast.{"\n\n\n"}Achieve Weight Loss Goal.{"\n\n\n"}Perform in bed.{"\n\n\n"} ED Treatment.{"\n"}Online.{"\n"}In 24 Hours.
         </h1>
       </AnimatedSection>
       <AnimatedSection delay={0.2}>
