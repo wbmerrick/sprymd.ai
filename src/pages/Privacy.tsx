@@ -31,7 +31,7 @@ const Privacy = () => (
 
             {/* 1. Introduction */}
             <h2 className="text-xl font-bold text-foreground mt-8 mb-3">1. Introduction</h2>
-            <p>[INSERT LEGAL ENTITY NAME] and its affiliates (<strong>"SpryMD," "we," "our," or "us"</strong>) owns and operates the website located at SpryMD.ai and any related websites, software, applications, messaging tools, communications channels, content, products, and services (collectively, the <strong>"Service"</strong>). Your access to and use of the Service is subject to this Privacy Policy unless specifically stated otherwise. Capitalized terms not otherwise defined in this Privacy Policy have the same meaning as set forth in the SpryMD Terms and Conditions (<strong>"Terms and Conditions"</strong>).</p>
+            <p>SpryMD Technologies, LLC and its affiliates (<strong>"SpryMD," "we," "our," or "us"</strong>) owns and operates the website located at SpryMD.ai and any related websites, software, applications, messaging tools, communications channels, content, products, and services (collectively, the <strong>"Service"</strong>). Your access to and use of the Service is subject to this Privacy Policy unless specifically stated otherwise. Capitalized terms not otherwise defined in this Privacy Policy have the same meaning as set forth in the SpryMD Terms and Conditions (<strong>"Terms and Conditions"</strong>).</p>
             <p>We are committed to respecting the privacy of users of the Service. We created this Privacy Policy (<strong>"Privacy Policy"</strong>) to tell you how SpryMD collects, uses, and discloses information in order to provide you with the Service.</p>
             <p>By creating, registering, or logging into an account through the Service, or otherwise accessing or using the Service, you are acknowledging the most recent version of this Privacy Policy. We will update this Privacy Policy when necessary to reflect material changes in the Service or how we use personal information, and as required by applicable law. If we make any changes to our Privacy Policy, we will post the revised Privacy Policy and update the "Last updated" date at the top of the Privacy Policy. If we make material changes to this Privacy Policy, we will provide notice or obtain consent regarding such changes as may be required by law.</p>
             <p>If you are using the Service on behalf of an individual other than yourself, you represent that you are authorized by such an individual to act on such an individual's behalf and that such individual acknowledges the practices and policies outlined in this Privacy Policy.</p>
@@ -46,6 +46,16 @@ const Privacy = () => (
             <p>However, in using certain components of the Service, you may provide certain health or medical information that may be protected under applicable laws. SpryMD is not itself a "covered entity" under the Health Insurance Portability and Accountability Act of 1996 (collectively, <strong>"HIPAA"</strong>). One or more of the Pharmacies, Medical Groups, or Providers (as defined in our Terms and Conditions) may or may not be a "covered entity" or "business associate" under HIPAA, and SpryMD may in some cases be a "business associate" of a Pharmacy or Medical Group.</p>
             <p>To the extent SpryMD is deemed a "business associate," and solely in its role as a business associate, SpryMD may be subject to certain provisions of HIPAA with respect to "protected health information," as defined under HIPAA, that you provide to SpryMD, the Medical Group, or the Providers (<strong>"PHI"</strong>). In addition, any medical or health information that you provide that is subject to specific protections under applicable state laws (collectively, with PHI, <strong>"Protected Information"</strong>), will be used and disclosed only in accordance with such applicable laws. However, any information that does not constitute Protected Information under applicable laws may be used or disclosed in any manner permitted under this Privacy Policy. Protected Information does not include information that has been de-identified in accordance with applicable laws.</p>
             <p>By accessing or using any part of the Service, you understand that any information that you submit to SpryMD that is not intended and used solely for the provision of diagnosis and treatment by the Medical Group and Providers or prescription fulfillment by the Pharmacies, is not considered Protected Information, and will be subject only to our Privacy Policy and any applicable state laws. For purposes of clarity, information you provide to SpryMD in order to register and set up an account, including name, date of birth, email address, shipping address, and phone number, are not considered Protected Information.</p>
+
+            <p className="font-semibold text-foreground mt-4">Telehealth data handling.</p>
+            <p>When you complete a clinical intake questionnaire, secure messaging, or video-enabled visit through the Service, health-related responses may constitute PHI. Such data is:</p>
+            <ul className="list-disc pl-6 space-y-2 mt-2">
+              <li>Transmitted over TLS-encrypted connections and stored in access-controlled systems (including Supabase-hosted infrastructure in the United States).</li>
+              <li>Made available to your treating Provider and authorized clinical staff for diagnosis, treatment, and care coordination only.</li>
+              <li>Not used for third-party advertising, sold to data brokers, or combined with payment card data in analytics tools.</li>
+              <li>Retained according to medical record retention requirements and our data retention schedule (see Section 9).</li>
+            </ul>
+            <p className="mt-2">If you withdraw from care, you may request access to or deletion of non-clinical account data as described in Section 7. Clinical records may be subject to legal retention obligations and cannot always be deleted on request.</p>
 
             {/* 4. Collection of Personal Information */}
             <h2 className="text-xl font-bold text-foreground mt-8 mb-3">4. Collection of Personal Information</h2>
@@ -131,6 +141,14 @@ const Privacy = () => (
             <h2 className="text-xl font-bold text-foreground mt-8 mb-3">10. Transactions</h2>
             <p>In connection with any transaction that you conduct through the Service (e.g., the purchase of any products or services on or through the Service), you may be asked to supply certain information relevant to the transaction, including, without limitation, your credit card number and expiration date, your billing address, your shipping address, your phone number, and/or your email address. By submitting such information, you grant SpryMD the irrevocable, unencumbered, universe-wide, and perpetual right to provide such information to third parties (e.g., payment processing companies) for the purpose of facilitating the transaction.</p>
             <p>All credit card, debit card, and other monetary transactions on or through the Service occur through an online payment processing application provided by Stripe (<strong>"Stripe"</strong>). Additional information about Stripe, its privacy policy, and information security measures should be available on the Stripe website located at <a href="https://stripe.com/us/privacy" className="text-primary underline">https://stripe.com/us/privacy</a> or by contacting Stripe directly. SpryMD's relationship with Stripe is merely contractual in nature, as Stripe is a third-party vendor to SpryMD.</p>
+            <p className="font-semibold text-foreground mt-4">Cryptocurrency and alternative payment methods.</p>
+            <p>From time to time, SpryMD or its payment partners may offer cryptocurrency or other non-traditional payment rails for subscription or consultation fees. If you choose such a method:</p>
+            <ul className="list-disc pl-6 space-y-2 mt-2">
+              <li>Blockchain wallet addresses and transaction hashes are public by design; we do not treat on-chain identifiers as PHI.</li>
+              <li>We may receive limited metadata (amount, timestamp, payer reference ID) from our payment processor to reconcile your account. We do not request clinical information through payment networks.</li>
+              <li>Third-party crypto processors maintain their own privacy policies and compliance programs; review their terms before paying.</li>
+              <li>Refunds for crypto payments, where offered, may be issued in USD or stablecoin equivalents per our refund policy and applicable law.</li>
+            </ul>
 
             {/* 11. Jurisdictional Issues */}
             <h2 className="text-xl font-bold text-foreground mt-8 mb-3">11. Jurisdictional Issues</h2>
@@ -159,9 +177,9 @@ const Privacy = () => (
             <h2 className="text-xl font-bold text-foreground mt-8 mb-3">14. Contacting Us</h2>
             <p>If you have any questions about this Privacy Policy, please contact us by email at <a href="mailto:privacy@sprymd.ai" className="text-primary underline">privacy@sprymd.ai</a> or by regular mail at:</p>
             <p className="mt-2">
-              [INSERT LEGAL ENTITY NAME]<br />
-              [ADDRESS LINE 1]<br />
-              [CITY, STATE, ZIP]<br />
+              SpryMD Technologies, LLC<br />
+              [Street Address — placeholder]<br />
+              Nashville, TN [ZIP — placeholder]<br />
               Attn: Privacy Officer
             </p>
           </div>
