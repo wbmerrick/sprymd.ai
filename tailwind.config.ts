@@ -13,7 +13,7 @@ export default {
     extend: {
       fontFamily: {
         display: ["Fraunces", "serif"],
-        body: ["DM Sans", "sans-serif"],
+        body: ["Inter", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -58,10 +58,16 @@ export default {
           DEFAULT: "hsl(var(--blue))",
           light: "hsl(var(--blue-light))",
         },
+        teal: {
+          DEFAULT: "hsl(var(--teal))",
+          light: "hsl(var(--teal-light))",
+        },
         coral: {
           DEFAULT: "hsl(var(--coral))",
           light: "hsl(var(--coral-light))",
         },
+        canvas: "hsl(var(--canvas))",
+        ink: "hsl(var(--ink))",
         magenta: "hsl(var(--magenta))",
         "off-white": "hsl(var(--off-white))",
         "gray-light": "hsl(var(--gray-light))",
@@ -70,6 +76,21 @@ export default {
         green: {
           DEFAULT: "hsl(var(--green))",
           light: "hsl(var(--green-light))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+          muted: "hsl(var(--success-muted))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+          muted: "hsl(var(--warning-muted))",
+        },
+        critical: {
+          DEFAULT: "hsl(var(--critical))",
+          foreground: "hsl(var(--critical-foreground))",
+          muted: "hsl(var(--critical-muted))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -109,6 +130,10 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.4" },
         },
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -116,6 +141,7 @@ export default {
         "fade-in-up": "fade-in-up 0.6s ease-out forwards",
         "scale-check": "scale-check 0.5s ease-out forwards",
         "pulse-dot": "pulse-dot 1.5s ease-in-out infinite",
+        "shimmer": "shimmer 3s ease-in-out infinite",
       },
     },
   },

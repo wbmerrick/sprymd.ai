@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Check, Lock, Shield } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
+import MedicalDisclaimer from "@/components/MedicalDisclaimer";
 
 const Checkout = () => {
   return (
@@ -82,9 +83,7 @@ const Checkout = () => {
                 256-bit SSL encryption. Powered by Stripe.
               </div>
 
-              <p className="font-body text-muted-foreground text-[11px] mt-4 italic text-center">
-                [PRACTICE NAME] provides telehealth consultations. Prescription issuance is at physician discretion. This is not a substitute for emergency care.
-              </p>
+              <MedicalDisclaimer variant="portal" className="mt-4" />
             </div>
           </div>
         </AnimatedSection>
