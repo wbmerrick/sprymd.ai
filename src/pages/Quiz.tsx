@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Check, Pill, HelpCircle } from "lucide-react";
+import MedicalDisclaimer from "@/components/MedicalDisclaimer";
 
 interface QuizState {
   age: string;
@@ -302,6 +303,7 @@ const Quiz = () => {
             </motion.div>
           </AnimatePresence>
         </div>
+        <MedicalDisclaimer variant="portal" className="mt-6 max-w-[560px]" />
       </div>
     </main>
   );

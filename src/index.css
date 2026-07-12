@@ -4,54 +4,70 @@
 
 @layer base {
   :root {
-    --background: 200 40% 98%;
-    --foreground: 218 40% 12%;
+    /* Core palette — light-first primary care */
+    --background: 204 33% 97%;
+    --foreground: 217 32% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 218 40% 12%;
+    --card-foreground: 217 32% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 218 40% 12%;
-    --primary: 208 75% 45%;
+    --popover-foreground: 217 32% 15%;
+    --primary: 207 72% 41%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 211 77% 25%;
+    --secondary: 212 55% 13%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 200 30% 95%;
+    --muted: 204 25% 94%;
     --muted-foreground: 215 16% 42%;
-    --accent: 18 90% 58%;
+    --accent: 15 77% 59%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 30% 88%;
-    --input: 210 30% 88%;
-    --ring: 208 75% 45%;
-    --radius: 0.5rem;
+    --border: 210 25% 88%;
+    --input: 210 25% 88%;
+    --ring: 207 72% 41%;
+    --radius: 0.625rem;
 
-    /* Custom tokens — sourced from uploaded artwork (deep navy, electric blues, sunset coral) */
-    --navy: 218 50% 12%;
-    --navy-deep: 210 60% 5%;
-    --slate: 211 77% 25%;
-    --blue: 208 75% 45%;
-    --blue-light: 201 75% 62%;
-    --coral: 18 90% 58%;
-    --coral-light: 28 95% 65%;
+    /* Brand tokens */
+    --navy: 212 55% 13%;
+    --navy-deep: 212 60% 9%;
+    --slate: 212 45% 20%;
+    --blue: 207 72% 41%;
+    --blue-light: 207 65% 55%;
+    --teal: 180 55% 36%;
+    --teal-light: 180 45% 48%;
+    --coral: 15 77% 59%;
+    --coral-light: 18 82% 68%;
     --magenta: 330 70% 55%;
-    --off-white: 200 40% 98%;
-    --gray-light: 210 30% 88%;
+    --canvas: 204 33% 97%;
+    --off-white: 204 33% 97%;
+    --ink: 217 32% 15%;
+    --gray-light: 210 25% 88%;
     --gray-mid: 215 16% 47%;
-    --text-primary: 218 40% 12%;
-    --green: 142 72% 29%;
-    --green-light: 142 72% 40%;
+    --text-primary: 217 32% 15%;
+    --green: 160 60% 38%;
+    --green-light: 160 50% 48%;
+
+    /* Semantic status */
+    --success: 160 60% 38%;
+    --success-foreground: 0 0% 100%;
+    --success-muted: 160 40% 94%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 217 32% 15%;
+    --warning-muted: 38 80% 95%;
+    --critical: 0 72% 51%;
+    --critical-foreground: 0 0% 100%;
+    --critical-muted: 0 60% 96%;
 
     --font-display: 'Fraunces', serif;
-    --font-body: 'DM Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 204 33% 97%;
+    --sidebar-foreground: 217 32% 15%;
+    --sidebar-primary: 212 55% 13%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 204 25% 94%;
+    --sidebar-accent-foreground: 217 32% 15%;
+    --sidebar-border: 210 25% 88%;
+    --sidebar-ring: 207 72% 41%;
   }
 }
 
@@ -74,43 +90,128 @@
   .section-padding {
     @apply py-20 px-4 md:px-8 lg:px-16;
   }
+  .section-padding-sm {
+    @apply py-14 px-4 md:px-8 lg:px-16;
+  }
   .section-container {
     @apply max-w-6xl mx-auto;
   }
   .section-label {
     @apply text-sm uppercase tracking-[0.2em] font-semibold text-primary font-body mb-4;
   }
+  .section-label-teal {
+    @apply text-sm uppercase tracking-[0.2em] font-semibold text-teal font-body mb-4;
+  }
+  .section-label-coral {
+    @apply text-sm uppercase tracking-[0.2em] font-semibold text-coral font-body mb-4;
+  }
+  .section-label-light {
+    @apply text-sm uppercase tracking-[0.2em] font-semibold text-blue-light font-body mb-4;
+  }
   .section-headline {
     @apply text-3xl md:text-[42px] leading-tight font-display font-bold text-navy mb-6;
   }
+  .section-headline-light {
+    @apply text-3xl md:text-[42px] leading-tight font-display font-bold text-primary-foreground mb-6;
+  }
+
+  /* Subpage hero — canvas body with navy band */
+  .page-hero {
+    @apply relative bg-canvas pt-28 pb-16 px-4 md:px-8 overflow-hidden;
+  }
+  .page-hero-band {
+    @apply absolute bottom-0 left-0 right-0 h-24 md:h-32 bg-navy;
+  }
+  .page-hero-content {
+    @apply relative z-10 section-container text-center max-w-3xl mx-auto;
+  }
+
   .card-base {
-    @apply bg-card rounded-2xl shadow-md border border-gray-light p-8;
+    @apply bg-card rounded-2xl shadow-sm border border-gray-light/70 p-8;
   }
   .card-hover {
-    @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg;
+    @apply transition-all duration-300 ease-out
+           hover:-translate-y-1 hover:shadow-lg hover:border-primary/15
+           active:translate-y-0 active:shadow-md;
   }
+  .card-teal {
+    @apply card-base border-teal/20 bg-gradient-to-br from-card to-teal/[0.04];
+  }
+  .card-teal-accent {
+    @apply border-l-4 border-l-teal;
+  }
+
   .btn-primary {
     @apply bg-primary text-primary-foreground rounded-full px-8 py-4 font-semibold font-body
            hover:bg-blue-light transition-all duration-200 hover:scale-[1.02] hover:shadow-lg
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
            inline-flex items-center justify-center gap-2;
   }
   .btn-secondary {
     @apply border-2 border-navy text-navy rounded-full px-8 py-4 font-semibold font-body
            hover:bg-navy hover:text-primary-foreground transition-all duration-200
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2
+           inline-flex items-center justify-center gap-2;
+  }
+  .btn-teal {
+    @apply bg-teal text-primary-foreground rounded-full px-8 py-4 font-semibold font-body
+           hover:bg-teal-light transition-all duration-200 hover:scale-[1.02] hover:shadow-lg
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2
            inline-flex items-center justify-center gap-2;
   }
   .btn-primary-lg {
     @apply btn-primary text-lg px-10 py-5 shadow-xl;
   }
   .btn-accent {
-    @apply bg-accent text-accent-foreground rounded-full px-8 py-4 font-semibold font-body
+    @apply bg-coral text-accent-foreground rounded-full px-8 py-4 font-semibold font-body
            hover:bg-coral-light transition-all duration-200 hover:scale-[1.02] hover:shadow-lg
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2
            inline-flex items-center justify-center gap-2;
   }
   .badge-popular {
-    @apply bg-accent text-accent-foreground text-xs font-semibold font-body px-4 py-1.5 rounded-full;
+    @apply bg-coral text-accent-foreground text-xs font-semibold font-body px-4 py-1.5 rounded-full;
+  }
+  .badge-teal {
+    @apply bg-teal/10 text-teal text-xs font-semibold font-body px-4 py-1.5 rounded-full;
   }
   .link-accent {
-    @apply text-accent font-semibold hover:text-coral-light transition-colors;
+    @apply text-coral font-semibold hover:text-coral-light transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2 rounded-sm;
+  }
+  .link-primary {
+    @apply text-primary font-semibold hover:text-blue-light transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm;
+  }
+
+  /* Semantic status utilities */
+  .status-success {
+    @apply bg-success-muted text-[hsl(var(--success))] border border-[hsl(var(--success)/0.25)];
+  }
+  .status-warning {
+    @apply bg-warning-muted text-[hsl(var(--warning-foreground))] border border-[hsl(var(--warning)/0.35)];
+  }
+  .status-critical {
+    @apply bg-critical-muted text-[hsl(var(--critical))] border border-[hsl(var(--critical)/0.25)];
+  }
+  .status-pill {
+    @apply inline-flex items-center gap-1.5 text-xs font-semibold font-body px-3 py-1 rounded-full;
+  }
+  .status-dot-success {
+    @apply w-2 h-2 rounded-full bg-[hsl(var(--success))];
+  }
+  .status-dot-warning {
+    @apply w-2 h-2 rounded-full bg-[hsl(var(--warning))];
+  }
+  .status-dot-critical {
+    @apply w-2 h-2 rounded-full bg-[hsl(var(--critical))];
+  }
+
+  /* Navy band sections — structure without full-page bleed */
+  .section-navy-band {
+    @apply relative bg-navy text-primary-foreground overflow-hidden;
+  }
+  .section-navy-band::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-navy via-slate/80 to-navy pointer-events-none;
   }
 }
