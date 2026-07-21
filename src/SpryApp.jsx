@@ -10,36 +10,38 @@ import {
 // Brand tokens
 // ─────────────────────────────────────────────────────────────────────────────
 const C = {
-  bg: "hsl(0, 0%, 100%)",            // white canvas
-  bgAlt: "hsl(210, 30%, 97%)",       // surface — subtle blue-gray section
-  paper: "hsl(0, 0%, 100%)",         // cards (rely on borders for separation)
-  ink: "hsl(220, 60%, 12%)",         // near-black navy text
-  inkSoft: "hsl(215, 25%, 27%)",     // body text
-  muted: "hsl(215, 16%, 45%)",       // captions, slate
-  primary: "hsl(220, 60%, 20%)",     // navy — headers, buttons, links
-  primaryDark: "hsl(220, 65%, 14%)", // navy hover
-  accent: "hsl(150, 55%, 40%)",      // medical green — trust, success
-  accentSoft: "hsl(150, 55%, 78%)",  // light green for dark backgrounds
-  accentDeep: "hsl(150, 60%, 30%)",  // green hover
-  line: "hsl(215, 20%, 89%)",        // borders
-  lineSoft: "hsl(215, 25%, 95%)",    // dividers
-  ok: "hsl(150, 55%, 40%)",          // success
-  warn: "hsl(38, 92%, 50%)",         // amber
-  destructive: "hsl(0, 75%, 50%)",   // red — urgent referrals
+  bg: "hsl(0, 0%, 0%)",              // pure black canvas (Starlink)
+  bgAlt: "hsl(0, 0%, 4%)",           // near-black alt sections
+  paper: "hsl(0, 0%, 7%)",           // cards — barely-lifted surface
+  ink: "hsl(0, 0%, 100%)",           // white text
+  inkSoft: "hsl(0, 0%, 85%)",        // body text
+  muted: "hsl(0, 0%, 60%)",          // captions
+  primary: "hsl(0, 0%, 100%)",       // white CTAs on black
+  primaryDark: "hsl(0, 0%, 85%)",    // hover
+  accent: "hsl(0, 0%, 100%)",        // trust marks in white
+  accentSoft: "hsl(0, 0%, 75%)",
+  accentDeep: "hsl(0, 0%, 90%)",
+  line: "hsl(0, 0%, 18%)",           // hairline borders
+  lineSoft: "hsl(0, 0%, 12%)",       // dividers
+  ok: "hsl(150, 55%, 55%)",
+  warn: "hsl(38, 92%, 55%)",
+  destructive: "hsl(0, 75%, 60%)",
 };
 
 const fonts = {
-  display: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  display: "'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   body: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   mono: "'JetBrains Mono', ui-monospace, monospace",
 };
 
 const FontInjector = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    html, body { background: ${C.bg}; color: ${C.ink}; }
     body { font-family: ${fonts.body}; letter-spacing: -0.005em; }
-    .display { font-family: ${fonts.display}; font-feature-settings: "cv11", "ss03"; letter-spacing: -0.035em; }
+    .display { font-family: ${fonts.display}; font-weight: 500; letter-spacing: -0.04em; }
+
     .mono { font-family: ${fonts.mono}; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
