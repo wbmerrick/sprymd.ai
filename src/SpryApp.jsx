@@ -6,6 +6,20 @@ import {
   Send, Snowflake,
 } from "lucide-react";
 
+// Marketplace product photography
+import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
+import imgOmega3 from "./assets/products/p2_omega3.webp";
+import imgMagnesium from "./assets/products/p3_magnesium.webp";
+import imgCreatine from "./assets/products/p4_creatine.webp";
+import imgNasalPillow from "./assets/products/p5_nasal_pillow.webp";
+import imgFullFaceMask from "./assets/products/p6_full_face_mask.webp";
+import imgCpapWipes from "./assets/products/p7_cpap_wipes.webp";
+import imgBpMonitor from "./assets/products/p8_bp_monitor.webp";
+import imgPulseOximeter from "./assets/products/p9_pulse_oximeter.webp";
+import imgSmartScale from "./assets/products/p10_smart_scale.webp";
+import imgMelatonin from "./assets/products/p11_melatonin.webp";
+import imgLTheanine from "./assets/products/p12_ltheanine.webp";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens
 // ─────────────────────────────────────────────────────────────────────────────
@@ -205,18 +219,18 @@ const mockRxHistory = [
 // Marketplace
 // ─────────────────────────────────────────────────────────────────────────────
 const products = [
-  { id: "p1", name: "Daily Multivitamin Complex", brand: "Spry Essentials", cat: "Supplements", price: 32, hsa: true, icon: Pill, color: "hsl(150, 55%, 40%)", desc: "Methylated B-vitamins, vitamin D3/K2, and chelated minerals. 30-day supply." },
-  { id: "p2", name: "Omega-3 EPA/DHA · 2000mg", brand: "Spry Essentials", cat: "Supplements", price: 28, hsa: true, icon: Pill, color: "hsl(220, 60%, 20%)", desc: "Triglyceride-form, IFOS-certified for purity. 60 softgels." },
-  { id: "p3", name: "Magnesium Glycinate · 400mg", brand: "Spry Essentials", cat: "Supplements", price: 22, hsa: true, icon: Moon, color: "hsl(220, 60%, 20%)", desc: "Highly bioavailable form for sleep, recovery, and stress." },
-  { id: "p4", name: "Creatine Monohydrate · Micronized", brand: "Spry Performance", cat: "Supplements", price: 26, hsa: false, icon: Activity, color: "hsl(220, 60%, 20%)", desc: "Creapure-grade. 90 servings, unflavored." },
-  { id: "p5", name: "ResMed AirFit P10 — Nasal Pillow", brand: "ResMed", cat: "Sleep Apnea", price: 119, hsa: true, icon: Wind, color: "hsl(220, 60%, 20%)", desc: "Quietest mask on the market. Includes 3 pillow sizes + headgear." },
-  { id: "p6", name: "Philips DreamWear Full Face", brand: "Philips Respironics", cat: "Sleep Apnea", price: 149, hsa: true, icon: Wind, color: "hsl(220, 60%, 20%)", desc: "Under-the-nose design with full-face seal for mouth breathers." },
-  { id: "p7", name: "CPAP Cleaning Wipes · 110 ct", brand: "Spry Care", cat: "Sleep Apnea", price: 18, hsa: true, icon: Wind, color: "hsl(220, 60%, 20%)", desc: "Unscented, alcohol-free. Safe for daily mask cleaning." },
-  { id: "p8", name: "Smart Blood Pressure Monitor", brand: "Omron", cat: "Devices", price: 89, hsa: true, icon: Heart, color: "hsl(150, 55%, 40%)", desc: "Bluetooth-enabled, FDA-cleared. Validated against clinical standards." },
-  { id: "p9", name: "Pulse Oximeter · Fingertip", brand: "Masimo", cat: "Devices", price: 42, hsa: true, icon: Activity, color: "hsl(150, 55%, 40%)", desc: "Hospital-grade SpO2 and pulse rate accuracy." },
-  { id: "p10", name: "Smart Body Composition Scale", brand: "Withings", cat: "Devices", price: 99, hsa: false, icon: Scale, color: "hsl(220, 60%, 20%)", desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit." },
-  { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Spry Essentials", cat: "Sleep", price: 16, hsa: true, icon: Moon, color: "hsl(220, 60%, 20%)", desc: "Time-release formula for sustained overnight support." },
-  { id: "p12", name: "L-Theanine · 200mg", brand: "Spry Essentials", cat: "Sleep", price: 19, hsa: false, icon: Leaf, color: "hsl(150, 55%, 40%)", desc: "Calm focus without sedation. Pairs well with caffeine." },
+  { id: "p1", name: "Daily Multivitamin Complex", brand: "Spry Essentials", cat: "Supplements", price: 32, hsa: true, icon: Pill, image: imgMultivitamin, color: "hsl(150, 55%, 40%)", desc: "Methylated B-vitamins, vitamin D3/K2, and chelated minerals. 30-day supply." },
+  { id: "p2", name: "Omega-3 EPA/DHA · 2000mg", brand: "Spry Essentials", cat: "Supplements", price: 28, hsa: true, icon: Pill, image: imgOmega3, color: "hsl(220, 60%, 20%)", desc: "Triglyceride-form, IFOS-certified for purity. 60 softgels." },
+  { id: "p3", name: "Magnesium Glycinate · 400mg", brand: "Spry Essentials", cat: "Supplements", price: 22, hsa: true, icon: Moon, image: imgMagnesium, color: "hsl(220, 60%, 20%)", desc: "Highly bioavailable form for sleep, recovery, and stress." },
+  { id: "p4", name: "Creatine Monohydrate · Micronized", brand: "Spry Performance", cat: "Supplements", price: 26, hsa: false, icon: Activity, image: imgCreatine, color: "hsl(220, 60%, 20%)", desc: "Creapure-grade. 90 servings, unflavored." },
+  { id: "p5", name: "ResMed AirFit P10 — Nasal Pillow", brand: "ResMed", cat: "Sleep Apnea", price: 119, hsa: true, icon: Wind, image: imgNasalPillow, color: "hsl(220, 60%, 20%)", desc: "Quietest mask on the market. Includes 3 pillow sizes + headgear." },
+  { id: "p6", name: "Philips DreamWear Full Face", brand: "Philips Respironics", cat: "Sleep Apnea", price: 149, hsa: true, icon: Wind, image: imgFullFaceMask, color: "hsl(220, 60%, 20%)", desc: "Under-the-nose design with full-face seal for mouth breathers." },
+  { id: "p7", name: "CPAP Cleaning Wipes · 110 ct", brand: "Spry Care", cat: "Sleep Apnea", price: 18, hsa: true, icon: Wind, image: imgCpapWipes, color: "hsl(220, 60%, 20%)", desc: "Unscented, alcohol-free. Safe for daily mask cleaning." },
+  { id: "p8", name: "Smart Blood Pressure Monitor", brand: "Omron", cat: "Devices", price: 89, hsa: true, icon: Heart, image: imgBpMonitor, color: "hsl(150, 55%, 40%)", desc: "Bluetooth-enabled, FDA-cleared. Validated against clinical standards." },
+  { id: "p9", name: "Pulse Oximeter · Fingertip", brand: "Masimo", cat: "Devices", price: 42, hsa: true, icon: Activity, image: imgPulseOximeter, color: "hsl(150, 55%, 40%)", desc: "Hospital-grade SpO2 and pulse rate accuracy." },
+  { id: "p10", name: "Smart Body Composition Scale", brand: "Withings", cat: "Devices", price: 99, hsa: false, icon: Scale, image: imgSmartScale, color: "hsl(220, 60%, 20%)", desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit." },
+  { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Spry Essentials", cat: "Sleep", price: 16, hsa: true, icon: Moon, image: imgMelatonin, color: "hsl(220, 60%, 20%)", desc: "Time-release formula for sustained overnight support." },
+  { id: "p12", name: "L-Theanine · 200mg", brand: "Spry Essentials", cat: "Sleep", price: 19, hsa: false, icon: Leaf, image: imgLTheanine, color: "hsl(150, 55%, 40%)", desc: "Calm focus without sedation. Pairs well with caffeine." },
 ];
 
 const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Sleep"];
@@ -584,8 +598,10 @@ const MiniProduct = ({ p, onClick }) => {
   return (
     <button onClick={onClick} className="focus-ring text-left p-5 transition-all hover:-translate-y-0.5"
       style={{ background: C.bg, border: `1px solid ${C.line}`, borderRadius: 16 }}>
-      <div className="aspect-square rounded-xl mb-4 flex items-center justify-center" style={{ background: p.color }}>
-        <Icon size={36} color={C.paper} strokeWidth={1.25} />
+      <div className="aspect-square rounded-xl mb-4 flex items-center justify-center overflow-hidden" style={{ background: p.image ? C.bgAlt : p.color }}>
+        {p.image
+          ? <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+          : <Icon size={36} color={C.paper} strokeWidth={1.25} />}
       </div>
       <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }} className="mono">{p.brand.toUpperCase()}</div>
       <div style={{ fontSize: 14, color: C.ink, marginBottom: 8, fontWeight: 500, lineHeight: 1.3 }}>{p.name}</div>
@@ -1588,8 +1604,10 @@ const ProductCard = ({ p, onAdd }) => {
     <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       className="rounded-2xl overflow-hidden transition-all"
       style={{ background: C.paper, border: `1px solid ${C.line}`, transform: hover ? "translateY(-2px)" : "none" }}>
-      <div className="aspect-square relative flex items-center justify-center" style={{ background: p.color }}>
-        <Icon size={56} color={C.paper} strokeWidth={1} style={{ opacity: 0.9 }} />
+      <div className="aspect-square relative flex items-center justify-center overflow-hidden" style={{ background: p.image ? C.bgAlt : p.color }}>
+        {p.image
+          ? <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+          : <Icon size={56} color={C.paper} strokeWidth={1} style={{ opacity: 0.9 }} />}
       </div>
       <div className="p-5">
         <div className="flex items-center justify-between mb-2">
@@ -1623,8 +1641,10 @@ const CartDrawer = ({ cart, onClose, removeFromCart, addToCart, onCheckout }) =>
             const Icon = item.icon;
             return (
               <div key={item.id} className="flex gap-4">
-                <div className="rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: item.color, width: 80, height: 80 }}>
-                  <Icon size={28} color={C.paper} strokeWidth={1.25} />
+                <div className="rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: item.image ? C.bgAlt : item.color, width: 80, height: 80 }}>
+                  {item.image
+                    ? <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
+                    : <Icon size={28} color={C.paper} strokeWidth={1.25} />}
                 </div>
                 <div className="flex-1">
                   <div style={{ fontSize: 14, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{item.name}</div>
@@ -1752,8 +1772,10 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
                     const Icon = item.icon;
                     return (
                       <div key={item.id} className="flex gap-3 items-center">
-                        <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: item.color, width: 56, height: 56 }}>
-                          <Icon size={20} color={C.paper} strokeWidth={1.25} />
+                        <div className="rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: item.image ? C.bgAlt : item.color, width: 56, height: 56 }}>
+                          {item.image
+                            ? <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
+                            : <Icon size={20} color={C.paper} strokeWidth={1.25} />}
                         </div>
                         <div className="flex-1">
                           <div style={{ fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{item.name}</div>
