@@ -3,7 +3,7 @@ import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
   Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
-  Send, Snowflake,
+  Send, Snowflake, Droplets, Brain, UserCheck,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -167,6 +167,58 @@ const conditions = {
         note: "Retinoid + Vitamin C in one stable compound — usually impossible OTC." },
     ],
   },
+  lowt: {
+    id: "lowt", name: "Low Testosterone",
+    tagline: "Labs. Protocols. Energy restored.",
+    description: "Clinician-supervised testosterone replacement and fertility-preserving alternatives. Baseline labs required. Ongoing monitoring included.",
+    icon: Droplets, accent: "hsl(220, 60%, 20%)", fromPrice: "99",
+    treatments: [
+      { id: "t-cyp", name: "Testosterone Cypionate", sub: "100–200 mg / weekly · injectable", price: 149, chilled: false,
+        note: "Gold-standard TRT. Clinician-titrated weekly injections with scheduled follow-up labs.", badge: "Most prescribed", compareAt: 199, comparePeer: "Hims" },
+      { id: "enclo", name: "Enclomiphene", sub: "12.5–25 mg / daily · oral", price: 129, chilled: false,
+        note: "Raises endogenous testosterone while preserving fertility. Ideal if you're not ready for exogenous T.", badge: "Fertility-preserving" },
+      { id: "t-cream", name: "Testosterone Cream", sub: "50–100 mg / daily · topical", price: 119, chilled: false,
+        note: "Transdermal application. Steady levels without needles. Compounded for absorption." },
+      { id: "t-hcg", name: "TRT + HCG Stack", sub: "Testosterone cypionate + HCG · weekly", price: 199, chilled: false,
+        note: "Exogenous T with HCG support to maintain testicular function and fertility markers.", badge: "Complete protocol" },
+      { id: "t-boost", name: "Low-T Optimization Pack", sub: "Enclomiphene + Anastrozole PRN · monthly", price: 99, chilled: false,
+        note: "Entry protocol for borderline levels. Oral only. Includes aromatase control as needed." },
+    ],
+  },
+  mentalhealth: {
+    id: "mentalhealth", name: "Anxiety & Depression",
+    tagline: "Discreet. Evidence-based. Ongoing support.",
+    description: "SSRI, SNRI, and atypical antidepressant protocols with clinician check-ins. Private intake, no waiting room, continuous follow-up.",
+    icon: Brain, accent: "hsl(220, 60%, 20%)", fromPrice: "35",
+    treatments: [
+      { id: "sertraline", name: "Sertraline", sub: "25–100 mg / daily · SSRI", price: 39, chilled: false,
+        note: "First-line for depression and anxiety. Broad evidence base, flexible titration.", badge: "Most prescribed", compareAt: 55, comparePeer: "Hims" },
+      { id: "escitalopram", name: "Escitalopram", sub: "5–20 mg / daily · SSRI", price: 39, chilled: false,
+        note: "Cleaner SSRI profile. Often preferred for generalized anxiety with fewer interactions." },
+      { id: "bupropion", name: "Bupropion XL", sub: "150–300 mg / daily · NDRI", price: 49, chilled: false,
+        note: "Activating antidepressant. Strong fit when energy, focus, or sexual side effects are a concern.", badge: "Energy-forward" },
+      { id: "buspirone", name: "Buspirone", sub: "7.5–15 mg / 2–3× daily · anxiolytic", price: 35, chilled: false,
+        note: "Non-sedating anxiety treatment. No dependence risk. Pairs well with SSRIs." },
+      { id: "fluoxetine", name: "Fluoxetine", sub: "10–40 mg / daily · SSRI", price: 35, chilled: false,
+        note: "Long half-life SSRI. Helpful for depression with obsessive features or missed-dose forgiveness." },
+    ],
+  },
+  pcp: {
+    id: "pcp", name: "Primary Care",
+    tagline: "Want Spry to be your PCP?",
+    description: "A dedicated SpryMD clinician as your primary care physician — annual wellness, labs, chronic care, referrals, and same-day messaging.",
+    icon: UserCheck, accent: "hsl(220, 60%, 20%)", fromPrice: "49",
+    treatments: [
+      { id: "pcp-core", name: "Spry Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
+        note: "Your dedicated SpryMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
+      { id: "pcp-labs", name: "PCP + Annual Labs", sub: "Membership + comprehensive metabolic panel", price: 99, chilled: false,
+        note: "Everything in Primary Care plus annual labs drawn and reviewed — lipids, A1C, CBC, hormone panel as indicated.", badge: "Best value" },
+      { id: "pcp-essentials", name: "PCP Essentials", sub: "Messaging + as-needed visits · lighter plan", price: 49, chilled: false,
+        note: "Stay connected to a clinician without a full membership load. Ideal if you already have specialists." },
+      { id: "pcp-family", name: "Household Primary Care", sub: "Up to 2 adults on one membership", price: 129, chilled: false,
+        note: "Shared household membership. Same clinician continuity for you and a partner." },
+    ],
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -263,6 +315,37 @@ const intakes = {
     { key: "routine", type: "single", title: "How would you describe your current routine?", options: ["Just soap and water", "Cleanser + moisturizer", "Already use actives (retinol, AHAs)", "Inconsistent"] },
     { key: "sensitivity", type: "single", title: "Have you used tretinoin or retinol before?", options: ["Yes — tolerated well", "Yes — irritated my skin", "No, never", "Not sure"] },
     { key: "sun", type: "single", title: "Daily sunscreen use?", options: ["Every day", "Most days", "Sometimes", "Rarely"] },
+  ],
+  lowt: [
+    { key: "symptoms", type: "multi", title: "Which symptoms are you experiencing?", sub: "Select all that apply.",
+      options: ["Low energy / fatigue", "Reduced libido", "Difficulty building muscle", "Brain fog / poor focus", "Mood changes / irritability", "Weight gain around the midsection", "None of the above"] },
+    { key: "labs", type: "single", title: "Have you had testosterone labs in the last 12 months?", options: ["Yes — confirmed low T", "Yes — borderline / low-normal", "Yes — but I don't remember the number", "No — I need labs ordered"] },
+    { key: "age", type: "single", title: "What's your age range?", options: ["18–29", "30–39", "40–49", "50–59", "60–69", "70+"] },
+    { key: "fertility", type: "single", title: "Is preserving fertility important right now?", options: ["Yes — planning children", "Maybe in the next few years", "No — not a concern"] },
+    { key: "prostate", type: "multi", title: "Do any of these apply?", sub: "Required safety screening for testosterone therapy.",
+      options: ["History of prostate cancer", "Active untreated sleep apnea", "Hematocrit above 54%", "Breast cancer history", "None of the above"],
+      disqualify: ["History of prostate cancer", "Breast cancer history", "Hematocrit above 54%"] },
+    { key: "preference", type: "single", title: "How would you prefer to treat?", options: ["Weekly injection — most effective", "Daily oral — no needles", "Topical cream", "Not sure — recommend for me"] },
+  ],
+  mentalhealth: [
+    { key: "primary", type: "single", title: "What's your primary concern?", options: ["Anxiety / worry", "Depression / low mood", "Both anxiety and depression", "Stress and burnout", "Not sure — I just don't feel like myself"] },
+    { key: "duration", type: "single", title: "How long have you been feeling this way?", options: ["Less than 2 weeks", "2 weeks – 3 months", "3–12 months", "More than a year"] },
+    { key: "severity", type: "single", title: "How much is this affecting daily life?", options: ["Mild — manageable but annoying", "Moderate — interfering with work or relationships", "Significant — hard to function most days"] },
+    { key: "tried", type: "multi", title: "What have you tried before?",
+      options: ["Talk therapy / counseling", "SSRI or SNRI medication", "Bupropion or Wellbutrin", "Benzodiazepines (Xanax, Ativan)", "Nothing yet", "Other / herbal supplements"] },
+    { key: "crisis", type: "multi", title: "Safety check — do any of these apply right now?", sub: "We take this seriously. Honest answers help us care for you safely.",
+      options: ["Thoughts of harming yourself", "Plan or intent to act on those thoughts", "Recent psychiatric hospitalization", "None of the above"],
+      disqualify: ["Thoughts of harming yourself", "Plan or intent to act on those thoughts", "Recent psychiatric hospitalization"] },
+    { key: "preference", type: "single", title: "What matters most in a medication?", options: ["Proven for anxiety", "Proven for depression", "Less sexual side effects / more energy", "Something gentle to start", "Not sure — recommend for me"] },
+  ],
+  pcp: [
+    { key: "reason", type: "single", title: "Why are you looking for a new primary care doctor?", options: ["I don't currently have a PCP", "My current doctor is hard to reach", "I want everything in one digital place", "I need help coordinating specialists", "Moving / changing insurance"] },
+    { key: "needs", type: "multi", title: "What do you need from your PCP?",
+      options: ["Annual wellness visits", "Lab ordering and review", "Chronic condition management", "Referrals to specialists", "Same-day messaging for acute issues", "Prescription renewals"] },
+    { key: "conditions", type: "multi", title: "Any ongoing conditions we should know about?",
+      options: ["High blood pressure", "High cholesterol", "Diabetes / prediabetes", "Thyroid disorder", "Asthma / allergies", "None of the above"] },
+    { key: "household", type: "single", title: "Who needs coverage?", options: ["Just me", "Me and a partner", "Not sure yet"] },
+    { key: "preference", type: "single", title: "Which membership fits best?", options: ["Full primary care — visits + messaging", "Primary care with annual labs included", "Lighter plan — messaging when I need it", "Household plan for two adults", "Not sure — recommend for me"] },
   ],
 };
 
@@ -415,7 +498,7 @@ const Landing = ({ go }) => (
             Modern medicine,<br /><Mark>made for men.</Mark>
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 480, marginBottom: 40 }}>
-            Physician-supervised treatments for weight loss, ED, hair, and skin. Compounded by Empower Pharmacy, delivered discreetly, monitored continuously.
+            Physician-supervised treatments for weight loss, ED, low testosterone, anxiety & depression, hair, and skin — plus full primary care. Compounded by Empower Pharmacy, delivered discreetly, monitored continuously.
           </p>
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your assessment</Btn>
@@ -494,10 +577,77 @@ const Landing = ({ go }) => (
       </div>
     </section>
 
-    {/* How */}
-    <section id="how" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
+    {/* Want Spry to be your PCP? */}
+    <section id="pcp" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
       <div className="max-w-7xl mx-auto">
-        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>03 — Three steps</span>
+        <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
+          <div className="md:col-span-6 anim-fadeUp">
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>03 — Primary care</span>
+            <h2 className="display" style={{ fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1, marginTop: 16, color: C.ink, fontWeight: 400 }}>
+              Want Spry to be your <Mark>PCP</Mark>?
+            </h2>
+            <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 20, lineHeight: 1.55, maxWidth: 480 }}>
+              Stop waiting weeks for a 7-minute visit. Get a dedicated SpryMD clinician who knows your chart — annual wellness, labs, chronic care, referrals, and same-day messaging.
+            </p>
+            <div className="mt-8 space-y-4">
+              {["Dedicated clinician who stays with you",
+                "Annual wellness + lab review",
+                "Unlimited secure messaging",
+                "Referrals and prescription renewals",
+                "Same account as your Spry treatments"].map((item) => (
+                <div key={item} className="flex items-start gap-3">
+                  <Check size={16} strokeWidth={2} color={C.ok} className="flex-shrink-0 mt-0.5" />
+                  <span style={{ fontSize: 15, color: C.inkSoft }}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-3 mt-10">
+              <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Make Spry my PCP</Btn>
+              <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">See all treatments</Btn>
+            </div>
+          </div>
+          <div className="md:col-span-6 anim-fadeUp" style={{ animationDelay: "0.12s" }}>
+            <div className="rounded-3xl p-8 md:p-10" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-3 rounded-full" style={{ background: C.bgAlt }}>
+                  <UserCheck size={22} strokeWidth={1.5} color={C.ink} />
+                </div>
+                <div>
+                  <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Membership from</div>
+                  <div className="display" style={{ fontSize: 36, fontWeight: 500, color: C.ink, lineHeight: 1 }}>
+                    $49<span style={{ fontSize: 14, color: C.muted, fontWeight: 400, marginLeft: 4 }}>/mo</span>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-5">
+                {[{ t: "Spry Primary Care", d: "Visits, messaging, chronic care — $79/mo", tag: "Most popular" },
+                  { t: "PCP + Annual Labs", d: "Membership plus full lab panel — $99/mo", tag: "Best value" },
+                  { t: "Household Plan", d: "You + a partner on one membership — $129/mo", tag: null }].map((tier) => (
+                  <div key={tier.t} className="flex items-start justify-between gap-4 pb-5" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>{tier.t}</span>
+                        {tier.tag && <Tag color={C.bgAlt}>{tier.tag}</Tag>}
+                      </div>
+                      <span style={{ fontSize: 13, color: C.inkSoft }}>{tier.d}</span>
+                    </div>
+                    <Stethoscope size={18} color={C.muted} strokeWidth={1.5} className="flex-shrink-0 mt-1" />
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 12, color: C.muted, marginTop: 20, lineHeight: 1.5 }}>
+                Cash-pay membership. Not a substitute for emergency care. Available where SpryMD clinicians are licensed.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* How */}
+    <section id="how" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+      <div className="max-w-7xl mx-auto">
+        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>04 — Three steps</span>
         <h2 className="display" style={{ fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1, marginTop: 16, marginBottom: 56, color: C.ink, fontWeight: 400 }}>
           From visit to <Mark>doorstep</Mark>.
         </h2>
@@ -516,11 +666,11 @@ const Landing = ({ go }) => (
     </section>
 
     {/* Marketplace teaser */}
-    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
           <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>04 — Marketplace</span>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>05 — Marketplace</span>
             <h2 className="display" style={{ fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1, marginTop: 16, color: C.ink, fontWeight: 400 }}>
               Stocked for <Mark>everything else</Mark>.
             </h2>
@@ -538,7 +688,7 @@ const Landing = ({ go }) => (
 
     <section className="px-6 md:px-12 py-24 md:py-32" style={{ background: C.ink, color: C.paper }}>
       <div className="max-w-5xl mx-auto text-center">
-        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>05 — Our promise</span>
+        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>06 — Our promise</span>
         <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 48px)", lineHeight: 1.15, fontWeight: 400, marginTop: 32, color: C.paper }}>
           A licensed clinician signs every prescription, monitors every dose adjustment, and is reachable any day of the week.
         </h2>
@@ -605,7 +755,7 @@ const Footer = () => (
           Telehealth services provided by independent licensed clinicians. Not a substitute for emergency care. Compounded medications fulfilled by Empower Pharmacy.
         </p>
       </div>
-      {[{ h: "Treatments", l: ["Weight Loss", "ED", "Hair Loss", "Skin"] },
+      {[{ h: "Treatments", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
         { h: "Shop", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
         { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] }].map((col) => (
         <div key={col.h}>
@@ -1403,6 +1553,26 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
     else if (pref.includes("Fast-melt")) recommended = condition.treatments.find((t) => t.id === "sild-odt") || recommended;
     else if (pref.includes("As needed")) recommended = condition.treatments.find((t) => t.id === "sild-prn") || recommended;
   }
+  if (conditionId === "lowt" && pref) {
+    if (pref.includes("injection") || pref.includes("Injection")) recommended = condition.treatments.find((t) => t.id === "t-cyp") || recommended;
+    else if (pref.includes("oral") || pref.includes("Oral")) recommended = condition.treatments.find((t) => t.id === "enclo") || recommended;
+    else if (pref.includes("cream") || pref.includes("Cream") || pref.includes("Topical")) recommended = condition.treatments.find((t) => t.id === "t-cream") || recommended;
+    else if (answers?.fertility?.includes("Yes") || answers?.fertility?.includes("Maybe")) {
+      recommended = condition.treatments.find((t) => t.id === "enclo") || recommended;
+    }
+  }
+  if (conditionId === "mentalhealth" && pref) {
+    if (pref.includes("anxiety") && !pref.includes("depression")) recommended = condition.treatments.find((t) => t.id === "escitalopram") || recommended;
+    else if (pref.includes("depression") && !pref.includes("anxiety")) recommended = condition.treatments.find((t) => t.id === "sertraline") || recommended;
+    else if (pref.includes("energy") || pref.includes("sexual")) recommended = condition.treatments.find((t) => t.id === "bupropion") || recommended;
+    else if (pref.includes("gentle")) recommended = condition.treatments.find((t) => t.id === "buspirone") || recommended;
+  }
+  if (conditionId === "pcp" && pref) {
+    if (pref.includes("labs")) recommended = condition.treatments.find((t) => t.id === "pcp-labs") || recommended;
+    else if (pref.includes("Lighter") || pref.includes("messaging when")) recommended = condition.treatments.find((t) => t.id === "pcp-essentials") || recommended;
+    else if (pref.includes("Household") || answers?.household?.includes("partner")) recommended = condition.treatments.find((t) => t.id === "pcp-family") || recommended;
+    else if (pref.includes("Full primary")) recommended = condition.treatments.find((t) => t.id === "pcp-core") || recommended;
+  }
 
   const alternatives = condition.treatments.filter((t) => t.id !== recommended.id);
 
@@ -1434,10 +1604,16 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
               <h2 className="display" style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 400, marginTop: 16, lineHeight: 1.05 }}>{recommended.name}</h2>
               <p style={{ fontSize: 14, opacity: 0.7, marginTop: 6 }}>{recommended.sub}</p>
               <p style={{ fontSize: 15, marginTop: 24, opacity: 0.85, lineHeight: 1.55 }}>
-                {recommended.note} Compounded at Empower Pharmacy. Free shipping. Includes ongoing clinician support and dose adjustments.
+                {recommended.note}{" "}
+                {conditionId === "pcp"
+                  ? "Includes ongoing clinician support, secure messaging, and care coordination."
+                  : "Compounded at Empower Pharmacy. Free shipping. Includes ongoing clinician support and dose adjustments."}
               </p>
               <div className="mt-8 space-y-2">
-                {["Free shipping, every refill", "Message your clinician anytime", "Cancel or pause whenever", "Synced with your gethealthy.com record"].map((b) => (
+                {(conditionId === "pcp"
+                  ? ["Unlimited secure messaging", "Annual wellness visit", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
+                  : ["Free shipping, every refill", "Message your clinician anytime", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
+                ).map((b) => (
                   <div key={b} className="flex items-center gap-2">
                     <Check size={14} strokeWidth={2} color={C.accentSoft} />
                     <span style={{ fontSize: 14, opacity: 0.9 }}>{b}</span>
