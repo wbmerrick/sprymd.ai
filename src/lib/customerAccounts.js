@@ -127,9 +127,14 @@ export async function registerLocalAccount({ email, password, name, dob }) {
 export async function signInLocalAccount({ email, password }) {
   const key = emailKey(email);
   const existing = getStoredAccount(key);
-  if (!existing?.passwordHash) {
+  if (!existing) {
     const err = new Error("No account found for that email. Create one to continue.");
     err.code = "missing";
+    throw err;
+  }
+  if (!existing.passwordHash) {
+    const err = new Error("This account needs to be re-created on this device. Use Create account with the same email.");
+    err.code = "missing_verifier";
     throw err;
   }
   const passwordHash = await hashPassword(password, key);
@@ -146,9 +151,22 @@ export async function signInLocalAccount({ email, password }) {
 /**
  * Prefer Supabase Auth; fall back to local per-email accounts so every
  * customer still gets an isolated account if Auth is unavailable.
+ * Always store a local password hash so customers can re-enter their
+ * account even when Supabase email confirmation blocks password login.
  */
 export async function signUpCustomer({ email, password, name, dob }) {
   const key = emailKey(email);
+  const passwordHash = await hashPassword(password, key);
+  const existing = getStoredAccount(key);
+  if (existing?.passwordHash) {
+    const err = new Error("An account already exists for this email. Sign in instead.");
+    err.code = "exists";
+    throw err;
+  }
+
+  let supabaseUser = null;
+  let supabaseSession = null;
+  let supabaseError = null;
   try {
     const { data, error } = await supabase.auth.signUp({
       email: key,
@@ -156,27 +174,54 @@ export async function signUpCustomer({ email, password, name, dob }) {
       options: { data: { full_name: name.trim(), dob } },
     });
     if (error) throw error;
-    if (data?.user) {
-      const profile = buildCustomerProfile(key, {
-        id: data.user.id,
-        name: name.trim(),
-        dob,
-        authProvider: "supabase",
-        user_metadata: data.user.user_metadata,
-      });
-      setSessionEmail(key);
-      return { profile, provider: "supabase", needsEmailConfirm: !data.session };
-    }
+    supabaseUser = data?.user || null;
+    supabaseSession = data?.session || null;
   } catch (e) {
-    // Continue to local fallback below
-    if (e?.message?.toLowerCase?.().includes("password")) throw e;
+    supabaseError = e;
+    const msg = String(e?.message || "").toLowerCase();
+    // Hard-fail only on clear password policy rejections; otherwise local account still works.
+    if (msg.includes("password") && (msg.includes("weak") || msg.includes("least") || msg.includes("characters"))) {
+      throw e;
+    }
   }
-  const profile = await registerLocalAccount({ email: key, password, name, dob });
+
+  const profile = buildCustomerProfile(key, {
+    id: supabaseUser?.id,
+    name: name.trim(),
+    dob,
+    authProvider: supabaseUser ? "supabase" : "local",
+    user_metadata: supabaseUser?.user_metadata,
+    rxHistory: [],
+    protocols: [],
+    orders: [],
+  });
+  upsertStoredAccount({ ...profile, passwordHash });
+  setSessionEmail(key);
+
+  if (supabaseUser) {
+    return {
+      profile,
+      provider: "supabase",
+      needsEmailConfirm: !supabaseSession,
+    };
+  }
+
+  // If Supabase rejected because the email is already registered, keep local
+  // account so this browser can still open a private customer hub.
+  if (supabaseError) {
+    const msg = String(supabaseError.message || "").toLowerCase();
+    if (msg.includes("already") || msg.includes("registered")) {
+      // local account created above — treat as success for this device
+    }
+  }
+
   return { profile, provider: "local", needsEmailConfirm: false };
 }
 
 export async function signInCustomer({ email, password }) {
   const key = emailKey(email);
+  const passwordHash = await hashPassword(password, key);
+
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: key,
@@ -184,17 +229,21 @@ export async function signInCustomer({ email, password }) {
     });
     if (error) throw error;
     if (data?.user) {
+      const stored = getStoredAccount(key) || {};
       const profile = buildCustomerProfile(key, {
         id: data.user.id,
         authProvider: "supabase",
         user_metadata: data.user.user_metadata,
       });
+      // Keep / refresh local verifier so future sessions work offline of Auth.
+      upsertStoredAccount({ ...profile, passwordHash: stored.passwordHash || passwordHash });
       setSessionEmail(key);
       return { profile, provider: "supabase" };
     }
   } catch {
-    // Local fallback
+    // Fall through to local per-email account
   }
+
   const profile = await signInLocalAccount({ email: key, password });
   return { profile, provider: "local" };
 }
