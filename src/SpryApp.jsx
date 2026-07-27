@@ -3,8 +3,23 @@ import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
   Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
-  Send, Snowflake, Droplets, Brain, UserCheck,
+  Send, Snowflake, Droplets, Brain, UserCheck, Star,
 } from "lucide-react";
+
+// Marketplace product photography
+import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
+import imgOmega3 from "./assets/products/p2_omega3.webp";
+import imgMagnesium from "./assets/products/p3_magnesium.webp";
+import imgCreatine from "./assets/products/p4_creatine.webp";
+import imgNasalPillow from "./assets/products/p5_nasal_pillow.webp";
+import imgFullFaceMask from "./assets/products/p6_full_face_mask.webp";
+import imgCpapWipes from "./assets/products/p7_cpap_wipes.webp";
+import imgBpMonitor from "./assets/products/p8_bp_monitor.webp";
+import imgPulseOximeter from "./assets/products/p9_pulse_oximeter.webp";
+import imgSmartScale from "./assets/products/p10_smart_scale.webp";
+import imgMelatonin from "./assets/products/p11_melatonin.webp";
+import imgLTheanine from "./assets/products/p12_ltheanine.webp";
+import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens
@@ -256,19 +271,58 @@ const mockRxHistory = [
 // ─────────────────────────────────────────────────────────────────────────────
 // Marketplace
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Marketplace — benefit-led catalog with photography
+// ─────────────────────────────────────────────────────────────────────────────
 const products = [
-  { id: "p1", name: "Daily Multivitamin Complex", brand: "Spry Essentials", cat: "Supplements", price: 32, hsa: true, icon: Pill, color: "hsl(150, 55%, 40%)", desc: "Methylated B-vitamins, vitamin D3/K2, and chelated minerals. 30-day supply." },
-  { id: "p2", name: "Omega-3 EPA/DHA · 2000mg", brand: "Spry Essentials", cat: "Supplements", price: 28, hsa: true, icon: Pill, color: "hsl(220, 60%, 20%)", desc: "Triglyceride-form, IFOS-certified for purity. 60 softgels." },
-  { id: "p3", name: "Magnesium Glycinate · 400mg", brand: "Spry Essentials", cat: "Supplements", price: 22, hsa: true, icon: Moon, color: "hsl(220, 60%, 20%)", desc: "Highly bioavailable form for sleep, recovery, and stress." },
-  { id: "p4", name: "Creatine Monohydrate · Micronized", brand: "Spry Performance", cat: "Supplements", price: 26, hsa: false, icon: Activity, color: "hsl(220, 60%, 20%)", desc: "Creapure-grade. 90 servings, unflavored." },
-  { id: "p5", name: "ResMed AirFit P10 — Nasal Pillow", brand: "ResMed", cat: "Sleep Apnea", price: 119, hsa: true, icon: Wind, color: "hsl(220, 60%, 20%)", desc: "Quietest mask on the market. Includes 3 pillow sizes + headgear." },
-  { id: "p6", name: "Philips DreamWear Full Face", brand: "Philips Respironics", cat: "Sleep Apnea", price: 149, hsa: true, icon: Wind, color: "hsl(220, 60%, 20%)", desc: "Under-the-nose design with full-face seal for mouth breathers." },
-  { id: "p7", name: "CPAP Cleaning Wipes · 110 ct", brand: "Spry Care", cat: "Sleep Apnea", price: 18, hsa: true, icon: Wind, color: "hsl(220, 60%, 20%)", desc: "Unscented, alcohol-free. Safe for daily mask cleaning." },
-  { id: "p8", name: "Smart Blood Pressure Monitor", brand: "Omron", cat: "Devices", price: 89, hsa: true, icon: Heart, color: "hsl(150, 55%, 40%)", desc: "Bluetooth-enabled, FDA-cleared. Validated against clinical standards." },
-  { id: "p9", name: "Pulse Oximeter · Fingertip", brand: "Masimo", cat: "Devices", price: 42, hsa: true, icon: Activity, color: "hsl(150, 55%, 40%)", desc: "Hospital-grade SpO2 and pulse rate accuracy." },
-  { id: "p10", name: "Smart Body Composition Scale", brand: "Withings", cat: "Devices", price: 99, hsa: false, icon: Scale, color: "hsl(220, 60%, 20%)", desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit." },
-  { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Spry Essentials", cat: "Sleep", price: 16, hsa: true, icon: Moon, color: "hsl(220, 60%, 20%)", desc: "Time-release formula for sustained overnight support." },
-  { id: "p12", name: "L-Theanine · 200mg", brand: "Spry Essentials", cat: "Sleep", price: 19, hsa: false, icon: Leaf, color: "hsl(150, 55%, 40%)", desc: "Calm focus without sedation. Pairs well with caffeine." },
+  { id: "p1", name: "Daily Multivitamin Complex", brand: "Spry Essentials", cat: "Supplements", price: 32, compareAt: 44, hsa: true, badge: "Bestseller", rating: 4.9, reviews: 1284,
+    icon: Pill, image: imgMultivitamin, color: "hsl(150, 55%, 40%)",
+    benefit: "Fill the gaps your diet misses",
+    desc: "Methylated B-vitamins, vitamin D3/K2, and chelated minerals — one capsule that covers the fundamentals. 30-day supply." },
+  { id: "p2", name: "Omega-3 EPA/DHA · 2000mg", brand: "Spry Essentials", cat: "Supplements", price: 28, compareAt: 39, hsa: true, badge: "Clinician pick", rating: 4.8, reviews: 942,
+    icon: Pill, image: imgOmega3, color: "hsl(220, 60%, 20%)",
+    benefit: "Heart, brain, and joint support",
+    desc: "Triglyceride-form fish oil, IFOS-certified for purity. High-potency 2000mg. 60 softgels." },
+  { id: "p3", name: "Magnesium Glycinate · 400mg", brand: "Spry Essentials", cat: "Supplements", price: 22, compareAt: 29, hsa: true, badge: null, rating: 4.9, reviews: 2103,
+    icon: Moon, image: imgMagnesium, color: "hsl(220, 60%, 20%)",
+    benefit: "Sleep deeper. Recover faster.",
+    desc: "Highly bioavailable glycinate form — the one clinicians prefer for sleep, recovery, and stress. No GI upset." },
+  { id: "p4", name: "Creatine Monohydrate · Micronized", brand: "Spry Performance", cat: "Supplements", price: 26, compareAt: 36, hsa: false, badge: "Top rated", rating: 4.9, reviews: 876,
+    icon: Activity, image: imgCreatine, color: "hsl(220, 60%, 20%)",
+    benefit: "Strength, power, cognitive edge",
+    desc: "Creapure-grade micronized creatine. Unflavored, mixes clean. 90 servings." },
+  { id: "p5", name: "ResMed AirFit P10 — Nasal Pillow", brand: "ResMed", cat: "Sleep Apnea", price: 119, compareAt: 149, hsa: true, badge: "Quietest", rating: 4.7, reviews: 534,
+    icon: Wind, image: imgNasalPillow, color: "hsl(220, 60%, 20%)",
+    benefit: "Barely-there CPAP comfort",
+    desc: "The quietest mask on the market. Includes 3 pillow sizes + headgear. Ideal for side sleepers." },
+  { id: "p6", name: "Philips DreamWear Full Face", brand: "Philips Respironics", cat: "Sleep Apnea", price: 149, compareAt: 179, hsa: true, badge: null, rating: 4.6, reviews: 311,
+    icon: Wind, image: imgFullFaceMask, color: "hsl(220, 60%, 20%)",
+    benefit: "Full seal without the bulk",
+    desc: "Under-the-nose design with full-face seal for mouth breathers. Freedom to move all night." },
+  { id: "p7", name: "CPAP Cleaning Wipes · 110 ct", brand: "Spry Care", cat: "Sleep Apnea", price: 18, compareAt: 24, hsa: true, badge: null, rating: 4.8, reviews: 667,
+    icon: Wind, image: imgCpapWipes, color: "hsl(220, 60%, 20%)",
+    benefit: "Clean mask. Cleaner sleep.",
+    desc: "Unscented, alcohol-free wipes safe for daily mask and tubing cleaning. 110 count." },
+  { id: "p8", name: "Smart Blood Pressure Monitor", brand: "Omron", cat: "Devices", price: 89, compareAt: 119, hsa: true, badge: "FDA-cleared", rating: 4.8, reviews: 1450,
+    icon: Heart, image: imgBpMonitor, color: "hsl(150, 55%, 40%)",
+    benefit: "Clinical accuracy at home",
+    desc: "Bluetooth-enabled, FDA-cleared Omron monitor. Syncs readings for clinician review." },
+  { id: "p9", name: "Pulse Oximeter · Fingertip", brand: "Masimo", cat: "Devices", price: 42, compareAt: 59, hsa: true, badge: null, rating: 4.7, reviews: 803,
+    icon: Activity, image: imgPulseOximeter, color: "hsl(150, 55%, 40%)",
+    benefit: "Hospital-grade SpO₂ on demand",
+    desc: "Masimo fingertip accuracy for SpO2 and pulse rate. Compact, travel-ready." },
+  { id: "p10", name: "Smart Body Composition Scale", brand: "Withings", cat: "Devices", price: 99, compareAt: 129, hsa: false, badge: "GLP-1 companion", rating: 4.8, reviews: 992,
+    icon: Scale, image: imgSmartScale, color: "hsl(220, 60%, 20%)",
+    benefit: "Track fat, muscle, and progress",
+    desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit — perfect alongside GLP-1 therapy." },
+  { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Spry Essentials", cat: "Sleep", price: 16, compareAt: 22, hsa: true, badge: null, rating: 4.6, reviews: 1544,
+    icon: Moon, image: imgMelatonin, color: "hsl(220, 60%, 20%)",
+    benefit: "Fall asleep. Stay asleep.",
+    desc: "Time-release formula for sustained overnight support without morning grogginess." },
+  { id: "p12", name: "L-Theanine · 200mg", brand: "Spry Essentials", cat: "Sleep", price: 19, compareAt: 26, hsa: false, badge: "Calm focus", rating: 4.8, reviews: 718,
+    icon: Leaf, image: imgLTheanine, color: "hsl(150, 55%, 40%)",
+    benefit: "Calm without sedation",
+    desc: "Smooth focus for high-stress days. Pairs cleanly with coffee — no crash, no fog." },
 ];
 
 const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Sleep"];
@@ -668,20 +722,24 @@ const Landing = ({ go }) => (
     {/* Marketplace teaser */}
     <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
-          <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>05 — Marketplace</span>
-            <h2 className="display" style={{ fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1, marginTop: 16, color: C.ink, fontWeight: 400 }}>
-              Stocked for <Mark>everything else</Mark>.
+        <div className="relative rounded-[28px] overflow-hidden mb-14" style={{ border: `1px solid ${C.line}` }}>
+          <img src={imgMarketplaceHero} alt="Spry marketplace products" className="w-full h-[220px] md:h-[320px] object-cover" style={{ opacity: 0.85 }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.15) 100%)" }} />
+          <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>05 — Marketplace</span>
+            <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 1, marginTop: 12, color: C.ink, fontWeight: 400, maxWidth: 520 }}>
+              Clinician-curated. <Mark>Ready to ship</Mark>.
             </h2>
-            <p style={{ maxWidth: 480, color: C.inkSoft, fontSize: 15, lineHeight: 1.55, marginTop: 16 }}>
-              Curated supplements, sleep apnea masks, and clinician-vetted health devices — many shippable on the same prescription account.
+            <p style={{ maxWidth: 420, color: "rgba(255,255,255,0.75)", fontSize: 15, lineHeight: 1.55, marginTop: 14 }}>
+              Supplements, sleep gear, and devices that pair with your Spry treatments — many HSA/FSA eligible.
             </p>
+            <div className="mt-6">
+              <Btn onClick={() => go("marketplace")} icon={ArrowRight}>Shop bestsellers</Btn>
+            </div>
           </div>
-          <Btn onClick={() => go("marketplace")} icon={ArrowRight} variant="secondary">Shop all</Btn>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.slice(0, 4).map((p) => <MiniProduct key={p.id} p={p} onClick={() => go("marketplace")} />)}
+          {products.filter((p) => p.badge).slice(0, 4).map((p) => <MiniProduct key={p.id} p={p} onClick={() => go("marketplace")} />)}
         </div>
       </div>
     </section>
@@ -707,9 +765,11 @@ const ConditionCard = ({ condition, onClick, delay }) => {
   const Icon = condition.icon;
   return (
     <button onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      className="anim-fadeUp focus-ring text-left p-8 md:p-10 transition-all duration-300 group"
-      style={{ background: hover ? C.bg : C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 24, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
-      <div className="flex items-start justify-between mb-12">
+      className="anim-fadeUp focus-ring text-left p-8 md:p-10 transition-all duration-300 group relative overflow-hidden"
+      style={{ background: hover ? C.bg : C.bgAlt, border: `1px solid ${hover ? C.inkSoft : C.line}`, borderRadius: 24, animationDelay: `${delay}s`, transform: hover ? "translateY(-3px)" : "none" }}>
+      <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-30 pointer-events-none transition-opacity"
+        style={{ background: `radial-gradient(circle, ${condition.accent} 0%, transparent 70%)`, opacity: hover ? 0.55 : 0.25 }} />
+      <div className="flex items-start justify-between mb-12 relative">
         <div className="p-3 rounded-full" style={{ background: hover ? condition.accent : C.paper, color: hover ? C.paper : condition.accent, transition: "all 0.3s" }}>
           <Icon size={22} strokeWidth={1.5} />
         </div>
@@ -717,9 +777,9 @@ const ConditionCard = ({ condition, onClick, delay }) => {
           <ArrowRight size={20} color={C.ink} strokeWidth={1.5} />
         </div>
       </div>
-      <h3 className="display" style={{ fontSize: 36, fontWeight: 400, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
-      <p style={{ fontSize: 15, color: C.inkSoft, marginBottom: 24, lineHeight: 1.5 }}>{condition.tagline}</p>
-      <div className="flex items-center justify-between" style={{ borderTop: `1px solid ${C.line}`, paddingTop: 16 }}>
+      <h3 className="display relative" style={{ fontSize: 36, fontWeight: 400, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
+      <p className="relative" style={{ fontSize: 15, color: C.inkSoft, marginBottom: 24, lineHeight: 1.5 }}>{condition.tagline}</p>
+      <div className="flex items-center justify-between relative" style={{ borderTop: `1px solid ${C.line}`, paddingTop: 16 }}>
         <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em", textTransform: "uppercase" }}>From</span>
         <span className="display" style={{ fontSize: 24, fontWeight: 500, color: C.ink }}>
           ${condition.fromPrice}<span style={{ fontSize: 13, color: C.muted, fontWeight: 400, marginLeft: 4 }}>/mo</span>
@@ -732,15 +792,27 @@ const ConditionCard = ({ condition, onClick, delay }) => {
 const MiniProduct = ({ p, onClick }) => {
   const Icon = p.icon;
   return (
-    <button onClick={onClick} className="focus-ring text-left p-5 transition-all hover:-translate-y-0.5"
-      style={{ background: C.bg, border: `1px solid ${C.line}`, borderRadius: 16 }}>
-      <div className="aspect-square rounded-xl mb-4 flex items-center justify-center" style={{ background: p.color }}>
-        <Icon size={36} color={C.paper} strokeWidth={1.25} />
+    <button onClick={onClick} className="focus-ring text-left p-4 md:p-5 transition-all hover:-translate-y-0.5 group"
+      style={{ background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 16 }}>
+      <div className="aspect-square rounded-xl mb-4 flex items-center justify-center overflow-hidden relative" style={{ background: p.image ? C.bg : p.color }}>
+        {p.image
+          ? <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          : <Icon size={36} color={C.paper} strokeWidth={1.25} />}
+        {p.badge && (
+          <span className="absolute top-2 left-2 mono" style={{ fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", background: C.ink, color: C.paper, padding: "4px 8px", borderRadius: 999, fontWeight: 600 }}>
+            {p.badge}
+          </span>
+        )}
       </div>
       <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }} className="mono">{p.brand.toUpperCase()}</div>
-      <div style={{ fontSize: 14, color: C.ink, marginBottom: 8, fontWeight: 500, lineHeight: 1.3 }}>{p.name}</div>
+      <div style={{ fontSize: 14, color: C.ink, marginBottom: 4, fontWeight: 500, lineHeight: 1.3 }}>{p.name}</div>
+      {p.benefit && <div style={{ fontSize: 12, color: C.inkSoft, marginBottom: 10, lineHeight: 1.35 }}>{p.benefit}</div>}
       <div className="flex items-center justify-between">
-        <span className="display" style={{ fontSize: 18, color: C.ink, fontWeight: 500 }}>${p.price}</span>
+        <div className="flex items-baseline gap-2">
+          <span className="display" style={{ fontSize: 18, color: C.ink, fontWeight: 500 }}>${p.price}</span>
+          {p.compareAt && <span style={{ fontSize: 12, color: C.muted, textDecoration: "line-through" }}>${p.compareAt}</span>}
+        </div>
+        {p.hsa && <span className="mono" style={{ fontSize: 9, color: C.ok, letterSpacing: "0.08em" }}>HSA</span>}
       </div>
     </button>
   );
@@ -1705,13 +1777,27 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user }) =
 
       <section className="px-6 md:px-12 pt-12 md:pt-16 pb-8" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <div className="max-w-7xl mx-auto">
-          <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Marketplace</span>
-          <h1 className="display" style={{ fontSize: "clamp(40px, 6vw, 80px)", lineHeight: 1, fontWeight: 400, color: C.ink, marginTop: 16, marginBottom: 16 }}>
-            The <Mark>shop</Mark>.
-          </h1>
-          <p style={{ fontSize: 16, color: C.inkSoft, maxWidth: 580, lineHeight: 1.55 }}>
-            Supplements, sleep apnea masks, and clinician-curated health devices. Shipped fast.
-          </p>
+          <div className="relative rounded-[28px] overflow-hidden mb-10" style={{ border: `1px solid ${C.line}` }}>
+            <img src={imgMarketplaceHero} alt="Spry shop" className="w-full h-[180px] md:h-[260px] object-cover" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%)" }} />
+            <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
+              <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Marketplace</span>
+              <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1, fontWeight: 400, color: C.ink, marginTop: 10 }}>
+                The <Mark>shop</Mark>.
+              </h1>
+              <p style={{ fontSize: 15, color: "rgba(255,255,255,0.72)", maxWidth: 480, lineHeight: 1.55, marginTop: 12 }}>
+                Branded Spry essentials, sleep apnea gear, and clinician-curated devices. Free shipping over $50.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-6 text-sm" style={{ color: C.inkSoft }}>
+            {[{ i: Truck, t: "Free shipping $50+" }, { i: ShieldCheck, t: "HSA / FSA eligible" }, { i: Star, t: "4.8 avg rating" }].map((b) => (
+              <div key={b.t} className="flex items-center gap-2">
+                <b.i size={15} strokeWidth={1.75} color={C.ok} />
+                <span>{b.t}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -1760,22 +1846,55 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user }) =
 const ProductCard = ({ p, onAdd }) => {
   const Icon = p.icon;
   const [hover, setHover] = useState(false);
+  const savings = p.compareAt ? p.compareAt - p.price : 0;
   return (
     <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      className="rounded-2xl overflow-hidden transition-all"
-      style={{ background: C.paper, border: `1px solid ${C.line}`, transform: hover ? "translateY(-2px)" : "none" }}>
-      <div className="aspect-square relative flex items-center justify-center" style={{ background: p.color }}>
-        <Icon size={56} color={C.paper} strokeWidth={1} style={{ opacity: 0.9 }} />
-      </div>
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-2">
-          <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>{p.brand.toUpperCase()}</span>
+      className="rounded-2xl overflow-hidden transition-all flex flex-col"
+      style={{ background: C.paper, border: `1px solid ${hover ? C.inkSoft : C.line}`, transform: hover ? "translateY(-3px)" : "none", boxShadow: hover ? "0 18px 40px -24px rgba(255,255,255,0.25)" : "none" }}>
+      <div className="aspect-square relative flex items-center justify-center overflow-hidden" style={{ background: p.image ? C.bg : p.color }}>
+        {p.image
+          ? <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-500" style={{ transform: hover ? "scale(1.06)" : "scale(1)" }} />
+          : <Icon size={56} color={C.paper} strokeWidth={1} style={{ opacity: 0.9 }} />}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+          {p.badge && (
+            <span className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", background: C.ink, color: C.paper, padding: "5px 10px", borderRadius: 999, fontWeight: 600 }}>
+              {p.badge}
+            </span>
+          )}
+          {savings > 0 && (
+            <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", background: C.ok, color: "#04120a", padding: "5px 10px", borderRadius: 999, fontWeight: 700 }}>
+              Save ${savings}
+            </span>
+          )}
         </div>
-        <h3 style={{ fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 6, lineHeight: 1.3 }}>{p.name}</h3>
-        <p style={{ fontSize: 12, color: C.inkSoft, marginBottom: 16, lineHeight: 1.5, minHeight: 36 }}>{p.desc}</p>
-        <div className="flex items-center justify-between">
-          <span className="display" style={{ fontSize: 22, color: C.ink, fontWeight: 500 }}>${p.price}</span>
-          <button onClick={onAdd} className="focus-ring px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5" style={{ background: C.ink, color: C.paper }}>
+        {p.hsa && (
+          <span className="absolute top-3 right-3 mono" style={{ fontSize: 10, letterSpacing: "0.08em", background: "rgba(0,0,0,0.65)", color: C.ink, border: `1px solid ${C.line}`, padding: "5px 9px", borderRadius: 999 }}>
+            HSA/FSA
+          </span>
+        )}
+      </div>
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-2 gap-2">
+          <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>{p.brand.toUpperCase()}</span>
+          {p.rating && (
+            <span className="flex items-center gap-1" style={{ fontSize: 12, color: C.inkSoft }}>
+              <Star size={12} fill={C.inkSoft} color={C.inkSoft} /> {p.rating}
+              <span style={{ color: C.muted }}>({p.reviews})</span>
+            </span>
+          )}
+        </div>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: C.ink, marginBottom: 4, lineHeight: 1.3 }}>{p.name}</h3>
+        {p.benefit && <p style={{ fontSize: 13, color: C.ok, marginBottom: 8, fontWeight: 500 }}>{p.benefit}</p>}
+        <p style={{ fontSize: 12, color: C.inkSoft, marginBottom: 16, lineHeight: 1.5, flex: 1 }}>{p.desc}</p>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="display" style={{ fontSize: 24, color: C.ink, fontWeight: 500 }}>${p.price}</span>
+              {p.compareAt && <span style={{ fontSize: 13, color: C.muted, textDecoration: "line-through" }}>${p.compareAt}</span>}
+            </div>
+          </div>
+          <button onClick={onAdd} className="focus-ring px-4 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5"
+            style={{ background: hover ? C.ok : C.ink, color: hover ? "#04120a" : C.paper }}>
             <Plus size={14} strokeWidth={2} />Add
           </button>
         </div>
@@ -1799,12 +1918,14 @@ const CartDrawer = ({ cart, onClose, removeFromCart, addToCart, onCheckout }) =>
             const Icon = item.icon;
             return (
               <div key={item.id} className="flex gap-4">
-                <div className="rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: item.color, width: 80, height: 80 }}>
-                  <Icon size={28} color={C.paper} strokeWidth={1.25} />
+                <div className="rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: item.image ? C.bg : item.color, width: 80, height: 80 }}>
+                  {item.image
+                    ? <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
+                    : <Icon size={28} color={C.paper} strokeWidth={1.25} />}
                 </div>
                 <div className="flex-1">
                   <div style={{ fontSize: 14, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{item.name}</div>
-                  <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{item.brand}</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{item.brand}{item.benefit ? ` · ${item.benefit}` : ""}</div>
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-3 px-3 py-1.5 rounded-full" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
                       <button onClick={() => removeFromCart(item)} className="focus-ring"><Minus size={12} strokeWidth={2} /></button>
@@ -1928,8 +2049,10 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
                     const Icon = item.icon;
                     return (
                       <div key={item.id} className="flex gap-3 items-center">
-                        <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: item.color, width: 56, height: 56 }}>
-                          <Icon size={20} color={C.paper} strokeWidth={1.25} />
+                        <div className="rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: item.image ? C.bg : item.color, width: 56, height: 56 }}>
+                          {item.image
+                            ? <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
+                            : <Icon size={20} color={C.paper} strokeWidth={1.25} />}
                         </div>
                         <div className="flex-1">
                           <div style={{ fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{item.name}</div>
