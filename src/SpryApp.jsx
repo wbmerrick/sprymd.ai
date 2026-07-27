@@ -558,11 +558,13 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const Landing = ({ go }) => (
   <div className="anim-fadeIn">
-    {/* Hero — full-bleed, brand-first */}
-    <section className="grain relative overflow-hidden" style={{ minHeight: "100svh", background: C.bg }}>
-      <img src={imgMarketplaceHero} alt="" className="ken-burns absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.28 }} />
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 35%, rgba(30,200,165,0.12) 0%, transparent 45%), linear-gradient(180deg, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.72) 45%, rgba(5,5,5,0.96) 100%)" }} />
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 flex flex-col justify-end" style={{ minHeight: "100svh", paddingBottom: "clamp(48px, 8vh, 96px)", paddingTop: 120 }}>
+    {/* Hero — full-bleed, brand-first, height follows content (no dead scroll) */}
+    <section className="grain relative overflow-hidden" style={{ background: C.bg }}>
+      <div className="absolute inset-0 pointer-events-none">
+        <img src={imgMarketplaceHero} alt="" className="ken-burns w-full h-full object-cover" style={{ opacity: 0.28 }} />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 35%, rgba(30,200,165,0.12) 0%, transparent 45%), linear-gradient(180deg, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.72) 45%, rgba(5,5,5,0.96) 100%)" }} />
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12" style={{ paddingTop: "clamp(96px, 14vh, 140px)", paddingBottom: "clamp(56px, 8vh, 88px)" }}>
         <div className="spry-rise display" style={{ fontSize: "clamp(18px, 2.2vw, 22px)", fontWeight: 600, color: C.ink, letterSpacing: "-0.02em", marginBottom: 20 }}>
           Spry<span style={{ opacity: 0.5, fontWeight: 500 }}>MD</span>
         </div>
@@ -583,7 +585,7 @@ const Landing = ({ go }) => (
     </section>
 
     {/* System */}
-    <section id="how" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+    <section id="how" className="px-6 md:px-12 py-16 md:py-20" style={{ background: C.bgAlt }}>
       <div className="max-w-7xl mx-auto">
         <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>The system</span>
         <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600, maxWidth: 720 }}>
