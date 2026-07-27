@@ -20,6 +20,7 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
+import doctorPhoto from "./assets/doctor-photo.png";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens
@@ -327,6 +328,16 @@ const products = [
 
 const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Sleep"];
 
+const conditionGraphics = {
+  weightloss: imgMarketplaceHero,
+  ed: imgMarketplaceHero,
+  hairloss: doctorPhoto,
+  skincare: doctorPhoto,
+  lowt: imgMarketplaceHero,
+  mentalhealth: imgMarketplaceHero,
+  pcp: doctorPhoto,
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Intake schemas
 // ─────────────────────────────────────────────────────────────────────────────
@@ -572,18 +583,8 @@ const Landing = ({ go }) => (
 
         <div className="md:col-span-5 anim-fadeUp" style={{ animationDelay: "0.15s" }}>
           <div className="relative rounded-3xl p-8 md:p-10" style={{ background: C.primary, color: C.paper, aspectRatio: "4/5", overflow: "hidden" }}>
-            <svg viewBox="0 0 400 500" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.18 }}>
-              <defs>
-                <radialGradient id="g1" cx="50%" cy="0%" r="80%">
-                  <stop offset="0%" stopColor="hsl(150, 60%, 75%)" />
-                  <stop offset="100%" stopColor="hsl(220, 60%, 20%)" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-              <rect width="400" height="500" fill="url(#g1)" />
-              {Array.from({ length: 14 }).map((_, i) => (
-                <line key={i} x1="0" y1={50 + i * 32} x2="400" y2={50 + i * 32} stroke={C.paper} strokeWidth="0.5" opacity="0.2" />
-              ))}
-            </svg>
+            <img src={imgMarketplaceHero} alt="SpryMD care experience" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.38 }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.75) 80%)" }} />
             <div className="relative z-10 h-full flex flex-col justify-between">
               <div>
                 <span className="mono" style={{ fontSize: 10, letterSpacing: "0.2em", color: C.accentSoft, textTransform: "uppercase" }}>Every membership includes</span>
@@ -662,6 +663,9 @@ const Landing = ({ go }) => (
           </div>
           <div className="md:col-span-6 anim-fadeUp" style={{ animationDelay: "0.12s" }}>
             <div className="rounded-3xl p-8 md:p-10" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
+                <img src={imgMarketplaceHero} alt="Primary care experience" className="w-full h-44 object-cover" />
+              </div>
               <div className="flex items-center gap-3 mb-8">
                 <div className="p-3 rounded-full" style={{ background: C.bgAlt }}>
                   <UserCheck size={22} strokeWidth={1.5} color={C.ink} />
@@ -882,7 +886,16 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-stretch">
+          <div className="hidden md:block rounded-3xl overflow-hidden relative" style={{ border: `1px solid ${C.line}` }}>
+            <img src={imgMarketplaceHero} alt="SpryMD care team" className="w-full h-full object-cover" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.72) 100%)" }} />
+            <div className="absolute left-7 right-7 bottom-7">
+              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.8)", textTransform: "uppercase" }}>Secure member access</p>
+              <p style={{ fontSize: 20, lineHeight: 1.3, color: "#fff", marginTop: 10 }}>Your clinician, prescriptions, and refill history — all in one place.</p>
+            </div>
+          </div>
+          <div className="w-full max-w-md md:max-w-none md:px-2">
           <div className="anim-fadeUp">
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
               {mode === "signin" ? "Welcome back" : "Create account"}
@@ -934,6 +947,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
               </button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -1587,6 +1601,7 @@ const Intake = ({ conditionId, go }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
   const condition = conditions[conditionId];
+  const planGraphic = conditionGraphics[conditionId] || imgMarketplaceHero;
 
   if (disqualified) {
     return (
@@ -1664,6 +1679,14 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
             <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 16, maxWidth: 600, lineHeight: 1.5 }}>
               Based on your answers, you're a strong candidate for the protocol below. A licensed clinician will review your case before any prescription is issued.
             </p>
+          </div>
+          <div className="anim-fadeUp rounded-3xl overflow-hidden mb-8 relative" style={{ border: `1px solid ${C.line}` }}>
+            <img src={planGraphic} alt={`${condition.name} treatment`} className="w-full h-44 md:h-56 object-cover" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 100%)" }} />
+            <div className="absolute left-6 right-6 bottom-6">
+              <span className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.78)", textTransform: "uppercase" }}>Care pathway</span>
+              <p style={{ color: "#fff", fontSize: 20, marginTop: 8, lineHeight: 1.2 }}>{condition.name} plan personalized to your intake.</p>
+            </div>
           </div>
 
           <div className="anim-fadeUp grid md:grid-cols-12 gap-6 p-6 md:p-10 rounded-3xl mb-8" style={{ background: C.primary, color: C.paper, animationDelay: "0.1s" }}>
@@ -2088,6 +2111,9 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
 const Success = ({ mode, plan, consult, go }) => (
   <div className="anim-fadeIn min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: C.bg }}>
     <div className="anim-fadeUp max-w-xl">
+      <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
+        <img src={consult ? doctorPhoto : imgMarketplaceHero} alt="SpryMD care complete" className="w-full h-40 object-cover" />
+      </div>
       <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
         <Check size={32} color={C.paper} strokeWidth={2} />
       </div>
