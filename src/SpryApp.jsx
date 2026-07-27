@@ -23,67 +23,74 @@ import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
 import doctorPhoto from "./assets/doctor-photo.png";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Brand tokens
+// Brand tokens — elite performance health OS (Starlink precision × peak vitality)
 // ─────────────────────────────────────────────────────────────────────────────
 const C = {
-  bg: "hsl(0, 0%, 0%)",              // pure black canvas (Starlink)
-  bgAlt: "hsl(0, 0%, 4%)",           // near-black alt sections
-  paper: "hsl(0, 0%, 7%)",           // cards — barely-lifted surface
-  ink: "hsl(0, 0%, 100%)",           // white text
-  inkSoft: "hsl(0, 0%, 85%)",        // body text
-  muted: "hsl(0, 0%, 60%)",          // captions
-  primary: "hsl(0, 0%, 100%)",       // white CTAs on black
-  primaryDark: "hsl(0, 0%, 85%)",    // hover
-  accent: "hsl(0, 0%, 100%)",        // trust marks in white
-  accentSoft: "hsl(0, 0%, 75%)",
-  accentDeep: "hsl(0, 0%, 90%)",
-  line: "hsl(0, 0%, 18%)",           // hairline borders
-  lineSoft: "hsl(0, 0%, 12%)",       // dividers
-  ok: "hsl(150, 55%, 55%)",
-  warn: "hsl(38, 92%, 55%)",
-  destructive: "hsl(0, 75%, 60%)",
+  bg: "#050505",
+  bgAlt: "#0B0B0C",
+  paper: "#121214",
+  ink: "#FAFAFA",
+  inkSoft: "#C8C8C8",
+  muted: "#8A8A8E",
+  primary: "#FAFAFA",
+  primaryDark: "#D4D4D4",
+  accent: "#1EC8A5",           // signal — instrumentation only
+  accentSoft: "rgba(30, 200, 165, 0.72)",
+  accentDeep: "#0E8F74",
+  signalDim: "rgba(30, 200, 165, 0.14)",
+  line: "#1F1F22",
+  lineSoft: "#161618",
+  ok: "#2FBF7A",
+  warn: "#E6A23C",
+  destructive: "#E25555",
 };
 
 const fonts = {
-  display: "'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  body: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  display: "'Syne', 'Arial Narrow', sans-serif",
+  body: "'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
   mono: "'JetBrains Mono', ui-monospace, monospace",
 };
 
 const FontInjector = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap');
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { background: ${C.bg}; color: ${C.ink}; }
     body { font-family: ${fonts.body}; letter-spacing: -0.005em; }
-    .display { font-family: ${fonts.display}; font-weight: 500; letter-spacing: -0.04em; }
-
+    .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.03em; }
     .mono { font-family: ${fonts.mono}; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes slideLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-    @keyframes pulseRing {
-      0% { box-shadow: 0 0 0 0 rgba(46, 158, 102, 0.5); }
-      70% { box-shadow: 0 0 0 14px rgba(46, 158, 102, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(46, 158, 102, 0); }
+    @keyframes spryRise {
+      from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
     }
+    @keyframes signalDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes kenBurns { from { transform: scale(1.04); } to { transform: scale(1); } }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .anim-fadeUp { animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    .anim-fadeUp { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-fadeIn { animation: fadeIn 0.4s ease both; }
-    .anim-slideRight { animation: slideRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-    .anim-slideLeft { animation: slideLeft 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    .anim-slideRight { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .anim-slideLeft { animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-pulse { animation: pulse 2s ease-in-out infinite; }
-    .pulse-ring { animation: pulseRing 2s infinite; }
+    .spry-rise { animation: spryRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .ken-burns { animation: kenBurns 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .signal-underline { display: inline-block; position: relative; }
+    .signal-underline::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px;
+      background: ${C.accent}; transform-origin: left; animation: signalDraw 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
     .anim-spin { animation: spin 0.8s linear infinite; }
     .grain { position: relative; }
     .grain::after {
-      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04;
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.035;
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
     }
     input:focus, button:focus, select:focus, textarea:focus { outline: none; }
-    .focus-ring:focus-visible { box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.primary}; }
+    .focus-ring:focus-visible { box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
   `}</style>
@@ -105,10 +112,10 @@ const FontInjector = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 const conditions = {
   weightloss: {
-    id: "weightloss", name: "Weight Loss",
-    tagline: "GLP-1 therapy. Compounded. Refrigerated.",
+    id: "weightloss", name: "Metabolic",
+    tagline: "GLP-1 protocols. Titrated. Cold-chain.",
     description: "Tirzepatide and semaglutide protocols, compounded by Empower Pharmacy. Clinician-titrated. Ships overnight in temperature-controlled packaging.",
-    icon: Scale, accent: "hsl(220, 60%, 20%)", fromPrice: "149",
+    icon: Scale, accent: "#1EC8A5", fromPrice: "149",
     treatments: [
       { id: "tirz-mid", name: "Tirzepatide Injection", sub: "5–10 mg / weekly · titrated", price: 279, chilled: true,
         note: "Dual GIP/GLP-1 agonism. The strongest agent we offer — direct alternative to compounded Mounjaro/Zepbound.",
@@ -127,10 +134,10 @@ const conditions = {
     ],
   },
   ed: {
-    id: "ed", name: "Erectile Dysfunction",
-    tagline: "Pills. Daily. Or melt-in-mouth.",
+    id: "ed", name: "Vitality",
+    tagline: "PDE5 protocols. Daily or on-demand.",
     description: "Sildenafil and tadalafil in tablet, daily-dose, and oral-dissolve formulations. Compounded combinations available for patients who don't respond to standard PDE5 monotherapy.",
-    icon: Flame, accent: "hsl(220, 60%, 20%)", fromPrice: "49",
+    icon: Flame, accent: "#1EC8A5", fromPrice: "49",
     treatments: [
       { id: "sild-prn", name: "Sildenafil 50mg PRN", sub: "10 doses / month · as needed", price: 69, chilled: false,
         note: "The standard. Onset 30–60 min. Most cost-effective entry.", compareAt: 89, comparePeer: "Hims" },
@@ -151,7 +158,7 @@ const conditions = {
     id: "hairloss", name: "Hair Loss",
     tagline: "Stop the shed. Restore the line.",
     description: "Finasteride, dutasteride, and minoxidil in oral and compounded topical formulations — solo or stacked.",
-    icon: Sparkles, accent: "hsl(220, 60%, 20%)", fromPrice: "25",
+    icon: Sparkles, accent: "#1EC8A5", fromPrice: "25",
     treatments: [
       { id: "fin", name: "Finasteride 1mg Oral", sub: "30 tablets / month", price: 25, chilled: false,
         note: "DHT blockade. The gold-standard first-line treatment.", compareAt: 32, comparePeer: "Hims" },
@@ -169,7 +176,7 @@ const conditions = {
     id: "skincare", name: "Skin",
     tagline: "Compounded retinoids. Targeted complexes.",
     description: "Tretinoin formulations and prescription acne, melasma, and rosacea protocols — compounded with adjuvants for tolerability.",
-    icon: Leaf, accent: "hsl(220, 60%, 20%)", fromPrice: "59",
+    icon: Leaf, accent: "#1EC8A5", fromPrice: "59",
     treatments: [
       { id: "tret-mild", name: "Tretinoin TAAN Mild", sub: "Tret 0.03% / Azelaic 4% / Niacinamide 4% · 30 g", price: 59, chilled: false,
         note: "Compounded for tolerability. Three-active complex for texture, tone, and brightening.", badge: "Best for first-timers" },
@@ -184,10 +191,10 @@ const conditions = {
     ],
   },
   lowt: {
-    id: "lowt", name: "Low Testosterone",
-    tagline: "Labs. Protocols. Energy restored.",
+    id: "lowt", name: "Hormonal",
+    tagline: "Labs. TRT protocols. Energy restored.",
     description: "Clinician-supervised testosterone replacement and fertility-preserving alternatives. Baseline labs required. Ongoing monitoring included.",
-    icon: Droplets, accent: "hsl(220, 60%, 20%)", fromPrice: "99",
+    icon: Droplets, accent: "#1EC8A5", fromPrice: "99",
     treatments: [
       { id: "t-cyp", name: "Testosterone Cypionate", sub: "100–200 mg / weekly · injectable", price: 149, chilled: false,
         note: "Gold-standard TRT. Clinician-titrated weekly injections with scheduled follow-up labs.", badge: "Most prescribed", compareAt: 199, comparePeer: "Hims" },
@@ -202,10 +209,10 @@ const conditions = {
     ],
   },
   mentalhealth: {
-    id: "mentalhealth", name: "Anxiety & Depression",
-    tagline: "Discreet. Evidence-based. Ongoing support.",
+    id: "mentalhealth", name: "Cognitive",
+    tagline: "Anxiety & depression. Discreet. Monitored.",
     description: "SSRI, SNRI, and atypical antidepressant protocols with clinician check-ins. Private intake, no waiting room, continuous follow-up.",
-    icon: Brain, accent: "hsl(220, 60%, 20%)", fromPrice: "35",
+    icon: Brain, accent: "#1EC8A5", fromPrice: "35",
     treatments: [
       { id: "sertraline", name: "Sertraline", sub: "25–100 mg / daily · SSRI", price: 39, chilled: false,
         note: "First-line for depression and anxiety. Broad evidence base, flexible titration.", badge: "Most prescribed", compareAt: 55, comparePeer: "Hims" },
@@ -221,9 +228,9 @@ const conditions = {
   },
   pcp: {
     id: "pcp", name: "Primary Care",
-    tagline: "Want Spry to be your PCP?",
+    tagline: "Your dedicated Spry clinician.",
     description: "A dedicated SpryMD clinician as your primary care physician — annual wellness, labs, chronic care, referrals, and same-day messaging.",
-    icon: UserCheck, accent: "hsl(220, 60%, 20%)", fromPrice: "49",
+    icon: UserCheck, accent: "#1EC8A5", fromPrice: "49",
     treatments: [
       { id: "pcp-core", name: "Spry Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
         note: "Your dedicated SpryMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
@@ -422,7 +429,7 @@ const Btn = ({ children, onClick, variant = "primary", size = "md", className = 
   const variants = {
     primary: { background: C.primary, color: C.paper, border: `1px solid ${C.primary}` },
     secondary: { background: "transparent", color: C.ink, border: `1px solid ${C.line}` },
-    accent: { background: C.accent, color: "#fff", border: `1px solid ${C.accent}` },
+    accent: { background: C.accent, color: "#04120e", border: `1px solid ${C.accent}` },
     ghost: { background: "transparent", color: C.ink, border: `1px solid transparent` },
     dark: { background: C.ink, color: C.paper, border: `1px solid ${C.ink}` },
   };
@@ -446,7 +453,7 @@ const Btn = ({ children, onClick, variant = "primary", size = "md", className = 
 };
 
 const Mark = ({ children }) => (
-  <span className="display" style={{ color: C.accent, fontWeight: 500 }}>{children}</span>
+  <span className="display signal-underline" style={{ color: C.ink, fontWeight: 600 }}>{children}</span>
 );
 
 const Tag = ({ children, color, fg }) => (
@@ -458,14 +465,14 @@ const Tag = ({ children, color, fg }) => (
 );
 
 const Logo = ({ color = C.ink, size = 22 }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex items-center gap-2.5">
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <circle cx="16" cy="16" r="15" stroke={color} strokeWidth="1.5" />
-      <path d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2" fill={color} />
+      <path d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="16" cy="16" r="2" fill={C.accent} />
     </svg>
-    <span className="display" style={{ fontSize: size * 0.95, fontWeight: 500, color, letterSpacing: "-0.03em" }}>
-      Spry<span style={{ fontWeight: 400, opacity: 0.6 }}>MD</span>
+    <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
+      Spry<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
     </span>
   </div>
 );
@@ -496,8 +503,8 @@ const Header = ({ go, cartCount, dark, user }) => {
       style={{ borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.1)" : C.lineSoft}` }}>
       <button onClick={() => go("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
       <nav className="hidden md:flex items-center gap-8">
-        {[{ label: "Treatments", view: "landing" }, { label: "Quick Refills", view: "refills" },
-          { label: "Shop", view: "marketplace" }, { label: "How it works", view: "how" }].map((item) => (
+        {[{ label: "Protocols", view: "landing-conditions" }, { label: "Refills", view: "refills" },
+          { label: "Stack", view: "marketplace" }, { label: "System", view: "how" }].map((item) => (
           <button key={item.label} onClick={() => go(item.view)}
             className="focus-ring rounded text-sm transition-opacity hover:opacity-60"
             style={{ color: fg, fontWeight: 500 }}>{item.label}</button>
@@ -530,233 +537,221 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
     return (
       <button onClick={onClick}
         className="focus-ring inline-flex items-center gap-3 px-5 py-3 rounded-full transition-all hover:translate-y-[-1px]"
-        style={{ background: C.accent, color: "#fff", fontSize: 14, fontWeight: 600, letterSpacing: "0.02em" }}>
-        <RefreshCw size={16} strokeWidth={2} />Quick Refills
+        style={{ background: "transparent", color: C.ink, border: `1px solid ${C.line}`, fontSize: 14, fontWeight: 600, letterSpacing: "0.02em" }}>
+        <RefreshCw size={16} strokeWidth={2} color={C.accent} />Refills
       </button>
     );
   }
   return (
     <button onClick={onClick}
-      className="focus-ring group inline-flex items-center gap-3 px-7 py-4 rounded-full transition-all hover:translate-y-[-2px] pulse-ring"
-      style={{ background: C.accent, color: "#fff", fontSize: 15, fontWeight: 600, letterSpacing: "0.02em",
-               boxShadow: "0 8px 24px -8px rgba(46, 158, 102, 0.5)" }}>
-      <RefreshCw size={18} strokeWidth={2.25} />
-      Quick REFILLS!
+      className="focus-ring group inline-flex items-center gap-3 px-7 py-4 rounded-full transition-all hover:translate-y-[-1px]"
+      style={{ background: C.paper, color: C.ink, fontSize: 15, fontWeight: 600, letterSpacing: "0.02em", border: `1px solid ${C.line}` }}>
+      <RefreshCw size={18} strokeWidth={2} color={C.accent} />
+      Quick refills
       <ArrowRight size={16} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
     </button>
   );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Landing
+// Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
 const Landing = ({ go }) => (
   <div className="anim-fadeIn">
-    {/* Hero */}
-    <section className="grain px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 items-center relative z-10">
-        <div className="md:col-span-7 anim-fadeUp">
-          <div className="flex items-center gap-2 mb-8">
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>01 — Telehealth, refined</span>
-          </div>
-          <h1 className="display" style={{ fontSize: "clamp(48px, 8vw, 104px)", lineHeight: 0.95, fontWeight: 400, color: C.ink, marginBottom: 24 }}>
-            Modern medicine,<br /><Mark>made for men.</Mark>
-          </h1>
-          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 480, marginBottom: 40 }}>
-            Physician-supervised treatments for weight loss, ED, low testosterone, anxiety & depression, hair, and skin — plus full primary care. Compounded by Empower Pharmacy, delivered discreetly, monitored continuously.
-          </p>
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your assessment</Btn>
-            <Btn onClick={() => go("how")} size="lg" variant="ghost">How it works</Btn>
-          </div>
-          <div className="flex items-center gap-6 mt-12">
-            {[{ icon: ShieldCheck, label: "HIPAA-compliant" },
-              { icon: Stethoscope, label: "Licensed clinicians" },
-              { icon: Truck, label: "Free shipping" }].map((it) => (
-              <div key={it.label} className="flex items-center gap-2">
-                <it.icon size={16} color={C.inkSoft} strokeWidth={1.5} />
-                <span style={{ fontSize: 13, color: C.inkSoft }}>{it.label}</span>
-              </div>
-            ))}
-          </div>
+    {/* Hero — full-bleed, brand-first */}
+    <section className="grain relative overflow-hidden" style={{ minHeight: "100svh", background: C.bg }}>
+      <img src={imgMarketplaceHero} alt="" className="ken-burns absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.28 }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 35%, rgba(30,200,165,0.12) 0%, transparent 45%), linear-gradient(180deg, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.72) 45%, rgba(5,5,5,0.96) 100%)" }} />
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 flex flex-col justify-end" style={{ minHeight: "100svh", paddingBottom: "clamp(48px, 8vh, 96px)", paddingTop: 120 }}>
+        <div className="spry-rise display" style={{ fontSize: "clamp(18px, 2.2vw, 22px)", fontWeight: 600, color: C.ink, letterSpacing: "-0.02em", marginBottom: 20 }}>
+          Spry<span style={{ opacity: 0.5, fontWeight: 500 }}>MD</span>
         </div>
+        <h1 className="spry-rise display" style={{ animationDelay: "0.08s", fontSize: "clamp(44px, 8vw, 92px)", lineHeight: 0.98, fontWeight: 700, color: C.ink, maxWidth: 900, marginBottom: 20 }}>
+          Operate at your <span className="signal-underline">ceiling</span>.
+        </h1>
+        <p className="spry-rise" style={{ animationDelay: "0.16s", fontSize: "clamp(16px, 2vw, 19px)", lineHeight: 1.5, color: C.inkSoft, maxWidth: 480, marginBottom: 32 }}>
+          Precision protocols for people who treat health like infrastructure — clinician-supervised, continuously monitored, discreetly delivered.
+        </p>
+        <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
+          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
+          <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
+        </div>
+        <p className="spry-rise mono" style={{ animationDelay: "0.32s", fontSize: 11, letterSpacing: "0.14em", color: C.muted, marginTop: 28, textTransform: "uppercase" }}>
+          Physician-reviewed · Empower Pharmacy · Cancel anytime
+        </p>
+      </div>
+    </section>
 
-        <div className="md:col-span-5 anim-fadeUp" style={{ animationDelay: "0.15s" }}>
-          <div className="relative rounded-3xl p-8 md:p-10 overflow-hidden" style={{ background: C.primary, color: C.paper }}>
-            <img src={imgMarketplaceHero} alt="SpryMD care experience" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.38 }} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.78) 78%)" }} />
-            <div className="relative z-10 flex flex-col gap-8">
-              <div>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.2em", color: C.accentSoft, textTransform: "uppercase" }}>Every membership includes</span>
-                <h3 className="display" style={{ fontSize: 34, lineHeight: 1.05, marginTop: 16, fontWeight: 400 }}>
-                  End-to-end care, not just a script.
-                </h3>
-              </div>
-              <div className="space-y-3">
-                {["Compounded at Empower Pharmacy (503A)",
-                  "Cold-chain overnight on injectables",
-                  "Free shipping on every refill",
-                  "Message your clinician anytime",
-                  "Pause or cancel from your dashboard"].map((s) => (
-                  <div key={s} className="flex items-start gap-3 pb-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
-                    <Check size={14} strokeWidth={2.5} color={C.accentSoft} className="flex-shrink-0 mt-1" />
-                    <span style={{ fontSize: 14 }}>{s}</span>
-                  </div>
-                ))}
-              </div>
+    {/* System */}
+    <section id="how" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+      <div className="max-w-7xl mx-auto">
+        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>The system</span>
+        <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600, maxWidth: 720 }}>
+          A closed loop for peak output.
+        </h2>
+        <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 14, maxWidth: 520, lineHeight: 1.55 }}>
+          Assess. Interpret. Optimize. Every protocol is signed by a licensed clinician and tracked over time.
+        </p>
+        <div className="grid md:grid-cols-3 gap-0 mt-14" style={{ borderTop: `1px solid ${C.line}` }}>
+          {[{ n: "01", t: "Baseline assessment", d: "A clinically validated intake. Five minutes. No waiting room. No small talk." },
+            { n: "02", t: "Clinician interpretation", d: "A licensed provider reviews your case within 24 hours and writes the protocol." },
+            { n: "03", t: "Continuous optimization", d: "Compounded fulfillment, discreet shipping, and ongoing dose adjustments from your dashboard." }].map((s, i) => (
+            <div key={s.n} className="anim-fadeUp py-10 md:pr-10" style={{ borderBottom: `1px solid ${C.line}`, borderRight: i < 2 ? `1px solid ${C.line}` : "none", animationDelay: `${i * 0.08}s` }}>
+              <div className="mono" style={{ fontSize: 12, letterSpacing: "0.16em", color: C.accent, marginBottom: 16 }}>{s.n}</div>
+              <h3 className="display" style={{ fontSize: 26, fontWeight: 600, marginBottom: 12, color: C.ink }}>{s.t}</h3>
+              <p style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft, maxWidth: 320 }}>{s.d}</p>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
 
-    {/* Conditions */}
+    {/* Signal domains */}
+    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
+          <div>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Signal</span>
+            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600 }}>
+              Signal over symptoms.
+            </h2>
+          </div>
+          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 15, lineHeight: 1.55 }}>
+            Domains we instrument continuously — so decisions replace guesswork.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-px" style={{ background: C.line, border: `1px solid ${C.line}` }}>
+          {[{ t: "Metabolic", d: "GLP-1, composition, glucose trajectory" },
+            { t: "Hormonal", d: "Testosterone, titration, fertility path" },
+            { t: "Cognitive", d: "Focus, mood, anxiety protocols" },
+            { t: "Recovery", d: "Sleep architecture, apnea gear" },
+            { t: "Performance", d: "ED, vitality, training support" },
+            { t: "Primary care", d: "Your Spry clinician as PCP" }].map((d) => (
+            <div key={d.t} className="p-6 md:p-8" style={{ background: C.bg }}>
+              <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: "uppercase", marginBottom: 10 }}>{d.t}</div>
+              <div style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.45 }}>{d.d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* Protocols */}
     <section id="landing-conditions" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
           <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>02 — What we treat</span>
-            <h2 className="display" style={{ fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1, marginTop: 16, color: C.ink, fontWeight: 400 }}>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Protocols</span>
+            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600 }}>
               Choose your <Mark>focus</Mark>.
             </h2>
           </div>
           <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 15, lineHeight: 1.55 }}>
-            Each protocol is built around evidence-based dosing and reviewed by a board-certified clinician within 24 hours.
+            Each protocol is evidence-based, preference-aware, and reviewed by a board-certified clinician within 24 hours.
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid md:grid-cols-2 gap-3 md:gap-4">
           {Object.values(conditions).map((cond, i) => (
-            <ConditionCard key={cond.id} condition={cond} onClick={() => go("intake", { condition: cond.id })} delay={i * 0.08} />
+            <ConditionCard key={cond.id} condition={cond} onClick={() => go("intake", { condition: cond.id })} delay={i * 0.06} />
           ))}
         </div>
       </div>
     </section>
 
-    {/* Want Spry to be your PCP? */}
-    <section id="pcp" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
-          <div className="md:col-span-6 anim-fadeUp">
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>03 — Primary care</span>
-            <h2 className="display" style={{ fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1, marginTop: 16, color: C.ink, fontWeight: 400 }}>
-              Want Spry to be your <Mark>PCP</Mark>?
-            </h2>
-            <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 20, lineHeight: 1.55, maxWidth: 480 }}>
-              Stop waiting weeks for a 7-minute visit. Get a dedicated SpryMD clinician who knows your chart — annual wellness, labs, chronic care, referrals, and same-day messaging.
-            </p>
-            <div className="mt-8 space-y-4">
-              {["Dedicated clinician who stays with you",
-                "Annual wellness + lab review",
-                "Unlimited secure messaging",
-                "Referrals and prescription renewals",
-                "Same account as your Spry treatments"].map((item) => (
-                <div key={item} className="flex items-start gap-3">
-                  <Check size={16} strokeWidth={2} color={C.ok} className="flex-shrink-0 mt-0.5" />
-                  <span style={{ fontSize: 15, color: C.inkSoft }}>{item}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3 mt-10">
-              <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Make Spry my PCP</Btn>
-              <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">See all treatments</Btn>
-            </div>
+    {/* PCP */}
+    <section id="pcp" className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
+      <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center relative z-10">
+        <div className="md:col-span-6">
+          <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Primary care</span>
+          <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600 }}>
+            Want Spry to be your <Mark>PCP</Mark>?
+          </h2>
+          <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 18, lineHeight: 1.55, maxWidth: 480 }}>
+            One clinician who knows your chart. Annual wellness, labs, chronic care, referrals, and same-day messaging — on the same account as your protocols.
+          </p>
+          <div className="mt-8 space-y-3">
+            {["Dedicated clinician continuity", "Annual wellness + lab review", "Unlimited secure messaging", "Referrals and renewals"].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <Check size={16} strokeWidth={2} color={C.accent} />
+                <span style={{ fontSize: 15, color: C.inkSoft }}>{item}</span>
+              </div>
+            ))}
           </div>
-          <div className="md:col-span-6 anim-fadeUp" style={{ animationDelay: "0.12s" }}>
-            <div className="rounded-3xl p-8 md:p-10" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
-                <img src={imgMarketplaceHero} alt="Primary care experience" className="w-full h-44 object-cover" />
+          <div className="flex flex-wrap gap-3 mt-10">
+            <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Make Spry my PCP</Btn>
+            <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">View protocols</Btn>
+          </div>
+        </div>
+        <div className="md:col-span-6">
+          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
+            <div className="relative h-48 overflow-hidden">
+              <img src={doctorPhoto} alt="SpryMD clinician" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 20%, rgba(18,18,20,0.95) 100%)" }} />
+            </div>
+            <div className="p-7 md:p-8 -mt-10 relative">
+              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Membership from</div>
+              <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
+                $49<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
               </div>
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 rounded-full" style={{ background: C.bgAlt }}>
-                  <UserCheck size={22} strokeWidth={1.5} color={C.ink} />
-                </div>
-                <div>
-                  <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Membership from</div>
-                  <div className="display" style={{ fontSize: 36, fontWeight: 500, color: C.ink, lineHeight: 1 }}>
-                    $49<span style={{ fontSize: 14, color: C.muted, fontWeight: 400, marginLeft: 4 }}>/mo</span>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-5">
-                {[{ t: "Spry Primary Care", d: "Visits, messaging, chronic care — $79/mo", tag: "Most popular" },
-                  { t: "PCP + Annual Labs", d: "Membership plus full lab panel — $99/mo", tag: "Best value" },
-                  { t: "Household Plan", d: "You + a partner on one membership — $129/mo", tag: null }].map((tier) => (
-                  <div key={tier.t} className="flex items-start justify-between gap-4 pb-5" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
+              <div className="mt-6 space-y-4">
+                {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
+                  { t: "PCP + Annual Labs", d: "$99/mo · full panel included", tag: "Best value" },
+                  { t: "Household", d: "$129/mo · two adults", tag: null }].map((tier) => (
+                  <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>{tier.t}</span>
-                        {tier.tag && <Tag color={C.bgAlt}>{tier.tag}</Tag>}
+                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{tier.t}</span>
+                        {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
                       </div>
                       <span style={{ fontSize: 13, color: C.inkSoft }}>{tier.d}</span>
                     </div>
-                    <Stethoscope size={18} color={C.muted} strokeWidth={1.5} className="flex-shrink-0 mt-1" />
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: 12, color: C.muted, marginTop: 20, lineHeight: 1.5 }}>
-                Cash-pay membership. Not a substitute for emergency care. Available where SpryMD clinicians are licensed.
-              </p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    {/* How */}
-    <section id="how" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+    {/* Marketplace */}
+    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
       <div className="max-w-7xl mx-auto">
-        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>04 — Three steps</span>
-        <h2 className="display" style={{ fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1, marginTop: 16, marginBottom: 56, color: C.ink, fontWeight: 400 }}>
-          From visit to <Mark>doorstep</Mark>.
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-          {[{ n: "01", t: "Online assessment", d: "A clinically validated intake quiz, built by physicians. Five minutes, no awkward small talk." },
-            { n: "02", t: "Clinician review", d: "A licensed provider in your state reviews your case within 24 hours and writes the prescription." },
-            { n: "03", t: "Discreet delivery", d: "Compounded at a 503A pharmacy and shipped in plain packaging. Free, with ongoing monitoring." }].map((s) => (
-            <div key={s.n}>
-              <div className="display" style={{ fontSize: 80, fontWeight: 300, color: C.accent, lineHeight: 0.9, marginBottom: 16 }}>{s.n}</div>
-              <h3 className="display" style={{ fontSize: 26, fontWeight: 500, marginBottom: 12, color: C.ink }}>{s.t}</h3>
-              <p style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>{s.d}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    {/* Marketplace teaser */}
-    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="relative rounded-[28px] overflow-hidden mb-14" style={{ border: `1px solid ${C.line}` }}>
-          <img src={imgMarketplaceHero} alt="Spry marketplace products" className="w-full h-[220px] md:h-[320px] object-cover" style={{ opacity: 0.85 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.15) 100%)" }} />
-          <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>05 — Marketplace</span>
-            <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 1, marginTop: 12, color: C.ink, fontWeight: 400, maxWidth: 520 }}>
+        <div className="relative rounded-2xl overflow-hidden mb-12" style={{ border: `1px solid ${C.line}` }}>
+          <img src={imgMarketplaceHero} alt="Spry marketplace" className="w-full h-[200px] md:h-[280px] object-cover ken-burns" style={{ opacity: 0.9 }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(5,5,5,0.92) 0%, rgba(5,5,5,0.45) 60%, rgba(5,5,5,0.2) 100%)" }} />
+          <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-10">
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Stack</span>
+            <h2 className="display" style={{ fontSize: "clamp(30px, 4.5vw, 48px)", lineHeight: 1, marginTop: 12, color: C.ink, fontWeight: 600, maxWidth: 520 }}>
               Clinician-curated. <Mark>Ready to ship</Mark>.
             </h2>
-            <p style={{ maxWidth: 420, color: "rgba(255,255,255,0.75)", fontSize: 15, lineHeight: 1.55, marginTop: 14 }}>
-              Supplements, sleep gear, and devices that pair with your Spry treatments — many HSA/FSA eligible.
-            </p>
             <div className="mt-6">
-              <Btn onClick={() => go("marketplace")} icon={ArrowRight}>Shop bestsellers</Btn>
+              <Btn onClick={() => go("marketplace")} icon={ArrowRight}>Shop the stack</Btn>
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {products.filter((p) => p.badge).slice(0, 4).map((p) => <MiniProduct key={p.id} p={p} onClick={() => go("marketplace")} />)}
         </div>
       </div>
     </section>
 
-    <section className="px-6 md:px-12 py-24 md:py-32" style={{ background: C.ink, color: C.paper }}>
-      <div className="max-w-5xl mx-auto text-center">
-        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>06 — Our promise</span>
-        <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 48px)", lineHeight: 1.15, fontWeight: 400, marginTop: 32, color: C.paper }}>
-          A licensed clinician signs every prescription, monitors every dose adjustment, and is reachable any day of the week.
+    {/* Close */}
+    <section className="px-6 md:px-12 py-24 md:py-32" style={{ background: C.bg }}>
+      <div className="max-w-4xl mx-auto text-center">
+        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 600, marginBottom: 24 }}>
+          Spry<span style={{ opacity: 0.5 }}>MD</span>
+        </div>
+        <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 1.08, fontWeight: 600, color: C.ink }}>
+          A licensed clinician signs every protocol — and stays reachable.
         </h2>
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", marginTop: 24, maxWidth: 540, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
-          No vending-machine medicine. Real care, delivered through a modern interface.
+        <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 20, maxWidth: 480, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
+          No vending-machine medicine. Infrastructure for people who refuse average.
         </p>
+        <div className="flex flex-wrap justify-center gap-3 mt-10">
+          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
+          <Btn onClick={() => go("marketplace")} size="lg" variant="secondary">Browse the stack</Btn>
+        </div>
       </div>
     </section>
 
@@ -769,24 +764,23 @@ const ConditionCard = ({ condition, onClick, delay }) => {
   const Icon = condition.icon;
   return (
     <button onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      className="anim-fadeUp focus-ring text-left p-8 md:p-10 transition-all duration-300 group relative overflow-hidden"
-      style={{ background: hover ? C.bg : C.bgAlt, border: `1px solid ${hover ? C.inkSoft : C.line}`, borderRadius: 24, animationDelay: `${delay}s`, transform: hover ? "translateY(-3px)" : "none" }}>
-      <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-30 pointer-events-none transition-opacity"
-        style={{ background: `radial-gradient(circle, ${condition.accent} 0%, transparent 70%)`, opacity: hover ? 0.55 : 0.25 }} />
-      <div className="flex items-start justify-between mb-12 relative">
-        <div className="p-3 rounded-full" style={{ background: hover ? condition.accent : C.paper, color: hover ? C.paper : condition.accent, transition: "all 0.3s" }}>
-          <Icon size={22} strokeWidth={1.5} />
+      className="anim-fadeUp focus-ring text-left p-7 md:p-8 transition-all duration-300 group relative overflow-hidden"
+      style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
+      <div className="absolute inset-y-0 left-0 w-px transition-all" style={{ background: C.accent, opacity: hover ? 1 : 0, boxShadow: hover ? `0 0 24px ${C.accent}` : "none" }} />
+      <div className="flex items-start justify-between mb-8 relative">
+        <div className="p-2.5 rounded-full" style={{ background: hover ? C.signalDim : C.paper, color: C.accent, transition: "all 0.3s" }}>
+          <Icon size={20} strokeWidth={1.5} />
         </div>
         <div style={{ transform: hover ? "translateX(4px)" : "none", transition: "transform 0.3s" }}>
-          <ArrowRight size={20} color={C.ink} strokeWidth={1.5} />
+          <ArrowRight size={18} color={hover ? C.accent : C.muted} strokeWidth={1.5} />
         </div>
       </div>
-      <h3 className="display relative" style={{ fontSize: 36, fontWeight: 400, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
-      <p className="relative" style={{ fontSize: 15, color: C.inkSoft, marginBottom: 24, lineHeight: 1.5 }}>{condition.tagline}</p>
-      <div className="flex items-center justify-between relative" style={{ borderTop: `1px solid ${C.line}`, paddingTop: 16 }}>
-        <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em", textTransform: "uppercase" }}>From</span>
-        <span className="display" style={{ fontSize: 24, fontWeight: 500, color: C.ink }}>
-          ${condition.fromPrice}<span style={{ fontSize: 13, color: C.muted, fontWeight: 400, marginLeft: 4 }}>/mo</span>
+      <h3 className="display relative" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
+      <p className="relative" style={{ fontSize: 14, color: C.inkSoft, marginBottom: 20, lineHeight: 1.5 }}>{condition.tagline}</p>
+      <div className="flex items-center justify-between relative" style={{ borderTop: `1px solid ${C.lineSoft}`, paddingTop: 14 }}>
+        <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>From</span>
+        <span className="display" style={{ fontSize: 22, fontWeight: 600, color: C.ink }}>
+          ${condition.fromPrice}<span style={{ fontSize: 12, color: C.muted, fontWeight: 500, marginLeft: 4 }}>/mo</span>
         </span>
       </div>
     </button>
@@ -827,12 +821,12 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
       <div>
         <Logo />
-        <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 220 }}>
-          Telehealth services provided by independent licensed clinicians. Not a substitute for emergency care. Compounded medications fulfilled by Empower Pharmacy.
+        <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
+          Performance medicine infrastructure. Licensed clinicians. Compounded by Empower Pharmacy. Not a substitute for emergency care.
         </p>
       </div>
-      {[{ h: "Treatments", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
-        { h: "Shop", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
+      {[{ h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+        { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
         { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] }].map((col) => (
         <div key={col.h}>
           <div className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase", marginBottom: 16 }}>{col.h}</div>
