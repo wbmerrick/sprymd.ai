@@ -553,8 +553,8 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 const Landing = ({ go }) => (
   <div className="anim-fadeIn">
     {/* Hero */}
-    <section className="grain px-6 md:px-12 pt-12 md:pt-20 pb-20 md:pb-32 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 items-end relative z-10">
+    <section className="grain px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24 relative overflow-hidden" style={{ background: C.bg }}>
+      <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 items-center relative z-10">
         <div className="md:col-span-7 anim-fadeUp">
           <div className="flex items-center gap-2 mb-8">
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>01 — Telehealth, refined</span>
@@ -582,13 +582,13 @@ const Landing = ({ go }) => (
         </div>
 
         <div className="md:col-span-5 anim-fadeUp" style={{ animationDelay: "0.15s" }}>
-          <div className="relative rounded-3xl p-8 md:p-10" style={{ background: C.primary, color: C.paper, aspectRatio: "4/5", overflow: "hidden" }}>
+          <div className="relative rounded-3xl p-8 md:p-10 overflow-hidden" style={{ background: C.primary, color: C.paper }}>
             <img src={imgMarketplaceHero} alt="SpryMD care experience" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.38 }} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.75) 80%)" }} />
-            <div className="relative z-10 h-full flex flex-col justify-between">
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.78) 78%)" }} />
+            <div className="relative z-10 flex flex-col gap-8">
               <div>
                 <span className="mono" style={{ fontSize: 10, letterSpacing: "0.2em", color: C.accentSoft, textTransform: "uppercase" }}>Every membership includes</span>
-                <h3 className="display" style={{ fontSize: 38, lineHeight: 1.05, marginTop: 20, fontWeight: 400 }}>
+                <h3 className="display" style={{ fontSize: 34, lineHeight: 1.05, marginTop: 16, fontWeight: 400 }}>
                   End-to-end care, not just a script.
                 </h3>
               </div>
