@@ -6,6 +6,7 @@ import {
   Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
 } from "lucide-react";
+import { footerPages, footerNavToSlug } from "./footerPages";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -801,7 +802,7 @@ const Landing = ({ go }) => (
       </div>
     </section>
 
-    <Footer />
+    <Footer go={go} />
   </div>
 );
 
@@ -862,7 +863,13 @@ const MiniProduct = ({ p, onClick }) => {
   );
 };
 
-const Footer = () => (
+const footerColumns = [
+  { h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+  { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
+  { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] },
+];
+
+const Footer = ({ go }) => (
   <footer className="px-6 md:px-12 py-12" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
       <div>
@@ -871,36 +878,204 @@ const Footer = () => (
           Performance medicine infrastructure. Licensed clinicians. Compounded by Empower Pharmacy. Not a substitute for emergency care.
         </p>
       </div>
-      {[{ h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
-        { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
-        { h: "Company", l: [
-          { label: "About", href: "/about" },
-          { label: "Contact", href: "/contact" },
-          { label: "FAQ", href: "/faq" },
-          { label: "Terms", href: "/terms" },
-          { label: "Privacy", href: "/privacy" },
-          { label: "NPP", href: "/npp" },
-        ] }].map((col) => (
+      {footerColumns.map((col) => (
         <div key={col.h}>
           <div className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase", marginBottom: 16 }}>{col.h}</div>
           <div className="space-y-2">
-            {col.l.map((it) =>
-              typeof it === "string"
-                ? <div key={it} style={{ fontSize: 13, color: C.ink }}>{it}</div>
-                : <a key={it.href} href={it.href} style={{ fontSize: 13, color: C.ink, textDecoration: "none", display: "block" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = C.accent; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = C.ink; }}>{it.label}</a>
-            )}
+            {col.l.map((it) => {
+              const slug = footerNavToSlug[it];
+              return (
+                <button
+                  key={it}
+                  type="button"
+                  onClick={() => slug && go("page", { slug })}
+                  className="focus-ring block text-left transition-opacity hover:opacity-60"
+                  style={{ fontSize: 13, color: C.ink, background: "transparent", border: "none", padding: 0, cursor: slug ? "pointer" : "default" }}
+                >
+                  {it}
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}
     </div>
-    <div className="max-w-7xl mx-auto mt-12 pt-8 flex justify-between items-center flex-wrap gap-2" style={{ borderTop: `1px solid ${C.line}` }}>
+    <div className="max-w-7xl mx-auto mt-12 pt-8 flex justify-between items-center flex-wrap gap-3" style={{ borderTop: `1px solid ${C.line}` }}>
       <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 SPRYMD INC.</span>
-      <span className="mono" style={{ fontSize: 11, color: C.muted }}>SPRYMD.AI</span>
+      <div className="flex flex-wrap gap-4">
+        {[{ label: "Terms", href: "/terms" }, { label: "Privacy", href: "/privacy" }, { label: "NPP", href: "/npp" }, { label: "FAQ", href: "/faq" }].map((l) => (
+          <a key={l.href} href={l.href} className="mono" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</a>
+        ))}
+        <span className="mono" style={{ fontSize: 11, color: C.muted }}>SPRYMD.AI</span>
+      </div>
     </div>
   </footer>
 );
+
+const RichText = ({ text }) => {
+  const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return <strong key={i} style={{ color: C.ink, fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
+    </>
+  );
+};
+
+const FooterPage = ({ slug, go, cartCount, user }) => {
+  const page = footerPages[slug];
+  if (!page) {
+    return (
+      <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+        <Header go={go} cartCount={cartCount} user={user} />
+        <div className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
+          <h1 className="display" style={{ fontSize: 40, color: C.ink, marginBottom: 12 }}>Page not found</h1>
+          <Btn onClick={() => go("landing")} icon={ArrowRight}>Back home</Btn>
+        </div>
+        <Footer go={go} />
+      </div>
+    );
+  }
+
+  const runCta = () => {
+    if (page.ctaTarget === "intake" && page.conditionId) {
+      go("intake", { condition: page.conditionId });
+      return;
+    }
+    if (page.ctaTarget === "marketplace") {
+      go("marketplace", { filter: page.marketplaceFilter && page.marketplaceFilter !== "null" ? page.marketplaceFilter : "All" });
+      return;
+    }
+    if (page.ctaTarget === "refills") {
+      go("refills");
+      return;
+    }
+    if (page.ctaTarget === "landing-conditions") {
+      go("landing-conditions");
+      return;
+    }
+    if (page.ctaTarget === "contact") {
+      go("page", { slug: "contact" });
+      return;
+    }
+    if (page.ctaTarget === "press") {
+      go("page", { slug: "press" });
+      return;
+    }
+    go("landing");
+  };
+
+  return (
+    <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <Header go={go} cartCount={cartCount} user={user} />
+      <section className="px-6 md:px-12 pt-14 md:pt-20 pb-10" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
+        <div className="max-w-3xl mx-auto">
+          <button type="button" onClick={() => go("landing")} className="focus-ring mono mb-8 transition-opacity hover:opacity-60"
+            style={{ fontSize: 11, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", background: "transparent", border: "none", padding: 0 }}>
+            ← SpryMD
+          </button>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase", marginBottom: 14 }}>
+            {page.eyebrow}
+          </div>
+          <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.02, fontWeight: 600, color: C.ink, marginBottom: 16 }}>
+            {page.title}
+          </h1>
+          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: 28 }}>
+            {page.tagline}
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
+            {page.fromPrice && (
+              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.12em", color: C.muted, textTransform: "uppercase" }}>
+                From ${page.fromPrice}/mo
+              </span>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 md:px-12 py-14 md:py-20">
+        <div className="max-w-3xl mx-auto space-y-12">
+          {page.sections.map((section) => (
+            <div key={section.title}>
+              <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>{section.title}</h2>
+              <div className="space-y-4">
+                {section.blocks.map((block, bi) => {
+                  if (block.type === "p") {
+                    return (
+                      <p key={bi} style={{ fontSize: 16, lineHeight: 1.65, color: C.inkSoft }}>
+                        <RichText text={block.text} />
+                      </p>
+                    );
+                  }
+                  if (block.type === "ul") {
+                    return (
+                      <ul key={bi} className="space-y-3" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                        {block.items.map((item, ii) => (
+                          <li key={ii} className="flex gap-3" style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>
+                            <span style={{ color: C.accent, marginTop: 2 }}>▸</span>
+                            <span><RichText text={item} /></span>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  if (block.type === "ol") {
+                    return (
+                      <ol key={bi} className="space-y-4" style={{ listStyle: "none", padding: 0, margin: 0, counterReset: "step" }}>
+                        {block.items.map((item, ii) => (
+                          <li key={ii} className="flex gap-4" style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>
+                            <span className="mono" style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, minWidth: 28 }}>
+                              {String(ii + 1).padStart(2, "0")}
+                            </span>
+                            <span><RichText text={item} /></span>
+                          </li>
+                        ))}
+                      </ol>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+          ))}
+
+          {slug === "contact" && (
+            <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+              <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  alert("Thanks — this demo form does not send yet. Email support@sprymd.ai.");
+                }}
+              >
+                {[
+                  { id: "name", label: "Name", type: "text" },
+                  { id: "email", label: "Email", type: "email" },
+                  { id: "topic", label: "Topic", type: "text" },
+                ].map((f) => (
+                  <Field key={f.id} label={f.label}>
+                    <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
+                  </Field>
+                ))}
+                <Field label="Message">
+                  <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
+                </Field>
+                <Btn type="submit" icon={Send}>Send message</Btn>
+              </form>
+            </div>
+          )}
+        </div>
+      </section>
+      <Footer go={go} />
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sign in / Sign up — per-customer account gate
@@ -1703,7 +1878,7 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
           )}
         </div>
       </section>
-      <Footer />
+      <Footer go={go} />
     </div>
   );
 };
@@ -2044,9 +2219,13 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Marketplace
 // ─────────────────────────────────────────────────────────────────────────────
-const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user }) => {
-  const [filter, setFilter] = useState("All");
+const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user, initialFilter = "All" }) => {
+  const [filter, setFilter] = useState(initialFilter || "All");
   const [showCart, setShowCart] = useState(false);
+
+  useEffect(() => {
+    setFilter(initialFilter || "All");
+  }, [initialFilter]);
 
   const filtered = products.filter((p) => {
     if (filter !== "All" && p.cat !== filter) return false;
@@ -2122,7 +2301,7 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user }) =
           onCheckout={() => { setShowCart(false); go("checkout-cart"); }} />
       )}
 
-      <Footer />
+      <Footer go={go} />
     </div>
   );
 };
@@ -2484,6 +2663,8 @@ export default function App() {
     }
     if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
+    if (target === "page") { setParams({ slug: p.slug }); setView("page"); window.scrollTo(0, 0); return; }
+    if (target === "marketplace") { setParams({ filter: p.filter || "All" }); setView("marketplace"); window.scrollTo(0, 0); return; }
     if (target === "checkout-cart") {
       if (!user) {
         requireAuth("checkout", { mode: "cart" });
@@ -2622,9 +2803,10 @@ export default function App() {
       <FontInjector />
 
       {view === "landing" && (<><Header go={go} cartCount={cartCount} user={user} /><Landing go={go} /></>)}
+      {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
       {view === "intake" && <Intake conditionId={params.condition} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
-      {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} />}
+      {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
       {view === "checkout" && (
         <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go} user={user}
           onComplete={completeCheckout} />
