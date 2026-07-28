@@ -5,6 +5,7 @@ import {
   Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
 } from "lucide-react";
+import { footerPages, footerNavToSlug } from "./footerPages";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -20,7 +21,6 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
-import doctorPhoto from "./assets/doctor-photo.png";
 import {
   signInCustomer,
   signUpCustomer,
@@ -369,11 +369,11 @@ const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Slee
 const conditionGraphics = {
   weightloss: imgMarketplaceHero,
   ed: imgMarketplaceHero,
-  hairloss: doctorPhoto,
-  skincare: doctorPhoto,
+  hairloss: imgMarketplaceHero,
+  skincare: imgMarketplaceHero,
   lowt: imgMarketplaceHero,
   mentalhealth: imgMarketplaceHero,
-  pcp: doctorPhoto,
+  pcp: imgMarketplaceHero,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -721,8 +721,13 @@ const Landing = ({ go }) => (
         </div>
         <div className="md:col-span-6">
           <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
-            <div className="relative h-48 overflow-hidden">
-              <img src={doctorPhoto} alt="SpryMD clinician" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
+            <div className="relative h-48 overflow-hidden flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${C.paper} 0%, ${C.bgAlt} 55%, ${C.signalDim} 140%)` }}>
+              <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
+                <div className="rounded-full flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                  <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
+                </div>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Licensed clinician care</span>
+              </div>
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 20%, rgba(18,18,20,0.95) 100%)" }} />
             </div>
             <div className="p-7 md:p-8 -mt-10 relative">
@@ -792,7 +797,7 @@ const Landing = ({ go }) => (
       </div>
     </section>
 
-    <Footer />
+    <Footer go={go} />
   </div>
 );
 
@@ -853,7 +858,13 @@ const MiniProduct = ({ p, onClick }) => {
   );
 };
 
-const Footer = () => (
+const footerColumns = [
+  { h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+  { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
+  { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] },
+];
+
+const Footer = ({ go }) => (
   <footer className="px-6 md:px-12 py-12" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
       <div>
@@ -862,13 +873,24 @@ const Footer = () => (
           Performance medicine infrastructure. Licensed clinicians. Compounded by Empower Pharmacy. Not a substitute for emergency care.
         </p>
       </div>
-      {[{ h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
-        { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
-        { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] }].map((col) => (
+      {footerColumns.map((col) => (
         <div key={col.h}>
           <div className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase", marginBottom: 16 }}>{col.h}</div>
           <div className="space-y-2">
-            {col.l.map((it) => <div key={it} style={{ fontSize: 13, color: C.ink }}>{it}</div>)}
+            {col.l.map((it) => {
+              const slug = footerNavToSlug[it];
+              return (
+                <button
+                  key={it}
+                  type="button"
+                  onClick={() => slug && go("page", { slug })}
+                  className="focus-ring block text-left transition-opacity hover:opacity-60"
+                  style={{ fontSize: 13, color: C.ink, background: "transparent", border: "none", padding: 0, cursor: slug ? "pointer" : "default" }}
+                >
+                  {it}
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}
@@ -879,6 +901,171 @@ const Footer = () => (
     </div>
   </footer>
 );
+
+const RichText = ({ text }) => {
+  const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return <strong key={i} style={{ color: C.ink, fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
+    </>
+  );
+};
+
+const FooterPage = ({ slug, go, cartCount, user }) => {
+  const page = footerPages[slug];
+  if (!page) {
+    return (
+      <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+        <Header go={go} cartCount={cartCount} user={user} />
+        <div className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
+          <h1 className="display" style={{ fontSize: 40, color: C.ink, marginBottom: 12 }}>Page not found</h1>
+          <Btn onClick={() => go("landing")} icon={ArrowRight}>Back home</Btn>
+        </div>
+        <Footer go={go} />
+      </div>
+    );
+  }
+
+  const runCta = () => {
+    if (page.ctaTarget === "intake" && page.conditionId) {
+      go("intake", { condition: page.conditionId });
+      return;
+    }
+    if (page.ctaTarget === "marketplace") {
+      go("marketplace", { filter: page.marketplaceFilter && page.marketplaceFilter !== "null" ? page.marketplaceFilter : "All" });
+      return;
+    }
+    if (page.ctaTarget === "refills") {
+      go("refills");
+      return;
+    }
+    if (page.ctaTarget === "landing-conditions") {
+      go("landing-conditions");
+      return;
+    }
+    if (page.ctaTarget === "contact") {
+      go("page", { slug: "contact" });
+      return;
+    }
+    if (page.ctaTarget === "press") {
+      go("page", { slug: "press" });
+      return;
+    }
+    go("landing");
+  };
+
+  return (
+    <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <Header go={go} cartCount={cartCount} user={user} />
+      <section className="px-6 md:px-12 pt-14 md:pt-20 pb-10" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
+        <div className="max-w-3xl mx-auto">
+          <button type="button" onClick={() => go("landing")} className="focus-ring mono mb-8 transition-opacity hover:opacity-60"
+            style={{ fontSize: 11, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", background: "transparent", border: "none", padding: 0 }}>
+            ← SpryMD
+          </button>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase", marginBottom: 14 }}>
+            {page.eyebrow}
+          </div>
+          <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.02, fontWeight: 600, color: C.ink, marginBottom: 16 }}>
+            {page.title}
+          </h1>
+          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: 28 }}>
+            {page.tagline}
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
+            {page.fromPrice && (
+              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.12em", color: C.muted, textTransform: "uppercase" }}>
+                From ${page.fromPrice}/mo
+              </span>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 md:px-12 py-14 md:py-20">
+        <div className="max-w-3xl mx-auto space-y-12">
+          {page.sections.map((section) => (
+            <div key={section.title}>
+              <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>{section.title}</h2>
+              <div className="space-y-4">
+                {section.blocks.map((block, bi) => {
+                  if (block.type === "p") {
+                    return (
+                      <p key={bi} style={{ fontSize: 16, lineHeight: 1.65, color: C.inkSoft }}>
+                        <RichText text={block.text} />
+                      </p>
+                    );
+                  }
+                  if (block.type === "ul") {
+                    return (
+                      <ul key={bi} className="space-y-3" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                        {block.items.map((item, ii) => (
+                          <li key={ii} className="flex gap-3" style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>
+                            <span style={{ color: C.accent, marginTop: 2 }}>▸</span>
+                            <span><RichText text={item} /></span>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  if (block.type === "ol") {
+                    return (
+                      <ol key={bi} className="space-y-4" style={{ listStyle: "none", padding: 0, margin: 0, counterReset: "step" }}>
+                        {block.items.map((item, ii) => (
+                          <li key={ii} className="flex gap-4" style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>
+                            <span className="mono" style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, minWidth: 28 }}>
+                              {String(ii + 1).padStart(2, "0")}
+                            </span>
+                            <span><RichText text={item} /></span>
+                          </li>
+                        ))}
+                      </ol>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+          ))}
+
+          {slug === "contact" && (
+            <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+              <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  alert("Thanks — this demo form does not send yet. Email support@sprymd.ai.");
+                }}
+              >
+                {[
+                  { id: "name", label: "Name", type: "text" },
+                  { id: "email", label: "Email", type: "email" },
+                  { id: "topic", label: "Topic", type: "text" },
+                ].map((f) => (
+                  <Field key={f.id} label={f.label}>
+                    <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
+                  </Field>
+                ))}
+                <Field label="Message">
+                  <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
+                </Field>
+                <Btn type="submit" icon={Send}>Send message</Btn>
+              </form>
+            </div>
+          )}
+        </div>
+      </section>
+      <Footer go={go} />
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sign in / Sign up — per-customer account gate
@@ -1681,7 +1868,7 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
           )}
         </div>
       </section>
-      <Footer />
+      <Footer go={go} />
     </div>
   );
 };
@@ -2022,9 +2209,13 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Marketplace
 // ─────────────────────────────────────────────────────────────────────────────
-const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user }) => {
-  const [filter, setFilter] = useState("All");
+const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user, initialFilter = "All" }) => {
+  const [filter, setFilter] = useState(initialFilter || "All");
   const [showCart, setShowCart] = useState(false);
+
+  useEffect(() => {
+    setFilter(initialFilter || "All");
+  }, [initialFilter]);
 
   const filtered = products.filter((p) => {
     if (filter !== "All" && p.cat !== filter) return false;
@@ -2100,7 +2291,7 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user }) =
           onCheckout={() => { setShowCart(false); go("checkout-cart"); }} />
       )}
 
-      <Footer />
+      <Footer go={go} />
     </div>
   );
 };
@@ -2351,7 +2542,7 @@ const Success = ({ mode, plan, consult, go }) => (
   <div className="anim-fadeIn min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: C.bg }}>
     <div className="anim-fadeUp max-w-xl">
       <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
-        <img src={consult ? doctorPhoto : imgMarketplaceHero} alt="SpryMD care complete" className="w-full h-40 object-cover" />
+        <img src={imgMarketplaceHero} alt="SpryMD care complete" className="w-full h-40 object-cover" />
       </div>
       <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
         <Check size={32} color={C.paper} strokeWidth={2} />
@@ -2430,6 +2621,8 @@ export default function App() {
     }
     if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
+    if (target === "page") { setParams({ slug: p.slug }); setView("page"); window.scrollTo(0, 0); return; }
+    if (target === "marketplace") { setParams({ filter: p.filter || "All" }); setView("marketplace"); window.scrollTo(0, 0); return; }
     if (target === "checkout-cart") { setParams({ mode: "cart" }); setView("checkout"); window.scrollTo(0, 0); return; }
     if (target === "refill-checkout") { setView("refill-checkout"); window.scrollTo(0, 0); return; }
     if (target === "refill-success") { setView("refill-success"); window.scrollTo(0, 0); return; }
@@ -2543,9 +2736,10 @@ export default function App() {
       <FontInjector />
 
       {view === "landing" && (<><Header go={go} cartCount={cartCount} user={user} /><Landing go={go} /></>)}
+      {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
       {view === "intake" && <Intake conditionId={params.condition} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
-      {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} />}
+      {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
       {view === "checkout" && (
         <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go}
           onComplete={completeCheckout} />
