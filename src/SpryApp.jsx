@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
@@ -2381,6 +2382,7 @@ const Success = ({ mode, plan, consult, go }) => (
 // App root
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
+  const navigate = useNavigate();
   const [view, setView] = useState("landing");
   const [params, setParams] = useState({});
   const [cart, setCart] = useState([]);
@@ -2406,6 +2408,11 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  const openPatientDashboard = () => {
+    navigate("/dashboard");
+    window.scrollTo(0, 0);
+  };
+
   const go = (target, p = {}) => {
     if (target === "landing-conditions") {
       setView("landing");
@@ -2418,14 +2425,14 @@ export default function App() {
       return;
     }
     // Auth gates — account + refills require a signed-in customer
-    if ((target === "refills" || target === "account" || target === "dashboard") && !user) {
-      requireAuth(target === "dashboard" ? "account" : target, p);
+    // justLoggedIn covers the render before setUser flushes
+    if ((target === "refills" || target === "account" || target === "dashboard") && !user && !p.justLoggedIn) {
+      requireAuth(target === "dashboard" || target === "account" ? "account" : target, p);
       return;
     }
-    if (target === "dashboard") {
-      setParams({ ...params, ...p });
-      setView("account");
-      window.scrollTo(0, 0);
+    // Patient account dashboard (React Router)
+    if (target === "account" || target === "dashboard") {
+      openPatientDashboard();
       return;
     }
     if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
