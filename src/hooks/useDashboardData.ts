@@ -1,0 +1,154 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type {
+  DashboardData,
+  NotificationItem,
+  Subscription,
+  Treatment,
+  TreatmentStatus,
+} from "@/types/dashboard";
+import {
+  buildDashboardForEmail,
+  clearCareNotifications,
+  dismissCareNotification,
+  getSignedInEmail,
+  toggleCareAutoship,
+  updateCareProfile,
+} from "@/lib/patientCareStore";
+import { restoreCustomerSession } from "@/lib/customerAccounts";
+
+const STATUS_PRIORITY: Record<TreatmentStatus, number> = {
+  expiring_soon: 0,
+  pending: 1,
+  active: 2,
+  inactive: 3,
+};
+
+export function sortTreatmentsByStatus(treatments: Treatment[]): Treatment[] {
+  return [...treatments].sort(
+    (a, b) =>
+      STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status] ||
+      a.medicationName.localeCompare(b.medicationName),
+  );
+}
+
+const emptyDashboard = (): DashboardData => ({
+  user: { id: "", name: "", email: "", avatarInitials: "" },
+  treatments: [],
+  notifications: [],
+  shipments: [],
+  subscriptions: [],
+  messages: [],
+  transactions: [],
+  supportTopics: [],
+});
+
+export function useDashboardData() {
+  const [email, setEmail] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const session = await restoreCustomerSession();
+      if (cancelled) return;
+      setEmail(session?.email || getSignedInEmail());
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const refresh = useCallback(() => setTick((t) => t + 1), []);
+
+  const data: DashboardData = useMemo(() => {
+    void tick;
+    if (!email) return emptyDashboard();
+    return buildDashboardForEmail(email) || emptyDashboard();
+  }, [email, tick]);
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>(data.notifications);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(data.subscriptions);
+
+  useEffect(() => {
+    setNotifications(data.notifications);
+    setSubscriptions(data.subscriptions);
+  }, [data.notifications, data.subscriptions]);
+
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.dismissed).length,
+    [notifications],
+  );
+
+  const activeTreatments = useMemo(
+    () =>
+      sortTreatmentsByStatus(
+        data.treatments.filter(
+          (t) => t.status === "active" || t.status === "expiring_soon" || t.status === "pending",
+        ),
+      ),
+    [data.treatments],
+  );
+
+  const dismissNotification = useCallback(
+    (id: string) => {
+      if (!email) return;
+      const care = dismissCareNotification(email, id);
+      setNotifications(care.notifications);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const clearAllNotifications = useCallback(() => {
+    if (!email) return;
+    const care = clearCareNotifications(email);
+    setNotifications(care.notifications);
+    refresh();
+  }, [email, refresh]);
+
+  const toggleAutoship = useCallback(
+    (subscriptionId: string, enabled: boolean) => {
+      if (!email) return;
+      const care = toggleCareAutoship(email, subscriptionId, enabled);
+      setSubscriptions(care.subscriptions);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const getTreatment = useCallback(
+    (treatmentId: string) => data.treatments.find((t) => t.id === treatmentId),
+    [data.treatments],
+  );
+
+  const updateProfile = useCallback(
+    (patch: { name?: string; phone?: string; dob?: string; address?: Record<string, string> }) => {
+      if (!email) return null;
+      const next = updateCareProfile(email, patch);
+      refresh();
+      return next;
+    },
+    [email, refresh],
+  );
+
+  return {
+    ...data,
+    notifications,
+    subscriptions,
+    activeTreatments,
+    unreadCount,
+    dismissNotification,
+    clearAllNotifications,
+    toggleAutoship,
+    getTreatment,
+    updateProfile,
+    ready,
+    isAuthenticated: !!email,
+    email,
+    refresh,
+  };
+}
+
+export type UseDashboardDataReturn = ReturnType<typeof useDashboardData>;

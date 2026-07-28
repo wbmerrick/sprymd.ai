@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
   Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
-  Send, Snowflake, Droplets, Brain, UserCheck, Star,
+  Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
 
@@ -21,6 +22,19 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
+import {
+  signInCustomer,
+  signUpCustomer,
+  signOutCustomer,
+  restoreCustomerSession,
+  updateCustomerProfile,
+} from "./lib/customerAccounts";
+import {
+  recordSubscriptionCheckout,
+  recordCartCheckout,
+  recordRefillCheckout,
+  ensureAccountShell,
+} from "./lib/patientCareStore";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -276,6 +290,28 @@ const mockRxHistory = [
     prescriber: "Merrick, William DO", daysSupply: 30 },
 ];
 
+const rxIconFor = (rx) => {
+  const cat = (rx?.category || "").toLowerCase();
+  if (cat.includes("weight") || cat.includes("metabolic")) return Scale;
+  if (cat.includes("sexual")) return Flame;
+  if (cat.includes("hair")) return Sparkles;
+  if (cat.includes("derm")) return Leaf;
+  if (cat.includes("long")) return Zap;
+  if (cat.includes("mental") || cat.includes("anx")) return Brain;
+  if (cat.includes("testosterone") || cat.includes("hormone")) return Activity;
+  return Pill;
+};
+
+const hydrateUser = (profile) => {
+  if (!profile) return null;
+  return {
+    ...profile,
+    rxHistory: (profile.rxHistory || []).map((rx) => ({ ...rx, icon: rx.icon || rxIconFor(rx) })),
+    protocols: profile.protocols || [],
+    orders: profile.orders || [],
+  };
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Marketplace
 // ─────────────────────────────────────────────────────────────────────────────
@@ -511,10 +547,14 @@ const Header = ({ go, cartCount, dark, user }) => {
         ))}
       </nav>
       <div className="flex items-center gap-3">
-        <button onClick={() => go(user ? "dashboard" : "signin")}
-          className="focus-ring rounded-full p-2 transition-colors"
-          style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}>
+        <button onClick={() => go(user ? "account" : "signin", user ? {} : { returnTo: "account" })}
+          className="focus-ring inline-flex items-center gap-2 rounded-full px-3 py-2 transition-colors"
+          style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}
+          aria-label={user ? "Open your account" : "Sign in"}>
           <User size={18} strokeWidth={1.75} color={fg} />
+          <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 500, color: fg }}>
+            {user ? (user.name?.split(" ")[0] || "Account") : "Sign in"}
+          </span>
         </button>
         <button onClick={() => go("marketplace")} className="focus-ring relative rounded-full p-2 transition-colors"
           style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}>
@@ -860,9 +900,14 @@ const Footer = ({ go }) => (
         </div>
       ))}
     </div>
-    <div className="max-w-7xl mx-auto mt-12 pt-8 flex justify-between items-center flex-wrap gap-2" style={{ borderTop: `1px solid ${C.line}` }}>
+    <div className="max-w-7xl mx-auto mt-12 pt-8 flex justify-between items-center flex-wrap gap-3" style={{ borderTop: `1px solid ${C.line}` }}>
       <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 SPRYMD INC.</span>
-      <span className="mono" style={{ fontSize: 11, color: C.muted }}>SPRYMD.AI</span>
+      <div className="flex flex-wrap gap-4">
+        {[{ label: "Terms", href: "/terms" }, { label: "Privacy", href: "/privacy" }, { label: "NPP", href: "/npp" }, { label: "FAQ", href: "/faq" }].map((l) => (
+          <a key={l.href} href={l.href} className="mono" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</a>
+        ))}
+        <span className="mono" style={{ fontSize: 11, color: C.muted }}>SPRYMD.AI</span>
+      </div>
     </div>
   </footer>
 );
@@ -1033,7 +1078,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sign in / Sign up — auth gate for Quick Refills
+// Sign in / Sign up — per-customer account gate
 // ─────────────────────────────────────────────────────────────────────────────
 const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [mode, setMode] = useState("signin");
@@ -1042,21 +1087,35 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   const canSubmit = email.includes("@") && password.length >= 8 &&
     (mode === "signin" || (name.trim().length > 0 && dob.length >= 8));
 
-  const submit = () => {
-    if (!canSubmit) return;
+  const submit = async () => {
+    if (!canSubmit || loading) return;
     setLoading(true);
-    setTimeout(() => {
-      onAuthSuccess({
-        email, name: name || email.split("@")[0],
-        dob: dob || "1985-06-15",
-        rxHistory: mockRxHistory,
-      });
-      go(returnTo || "refills", { justLoggedIn: true });
-    }, 1100);
+    setError("");
+    setNotice("");
+    try {
+      if (mode === "signup") {
+        const { profile, needsEmailConfirm } = await signUpCustomer({ email, password, name, dob });
+        onAuthSuccess(hydrateUser(profile));
+        if (needsEmailConfirm) {
+          setNotice("Account created. Check your email to confirm — you can keep using your account now.");
+        }
+        go(returnTo || "account", { justLoggedIn: true });
+      } else {
+        const { profile } = await signInCustomer({ email, password });
+        onAuthSuccess(hydrateUser(profile));
+        go(returnTo || "account", { justLoggedIn: true });
+      }
+    } catch (e) {
+      setError(e?.message || "Unable to authenticate. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -1074,8 +1133,8 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             <img src={imgMarketplaceHero} alt="SpryMD care team" className="w-full h-full object-cover" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.72) 100%)" }} />
             <div className="absolute left-7 right-7 bottom-7">
-              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.8)", textTransform: "uppercase" }}>Secure member access</p>
-              <p style={{ fontSize: 20, lineHeight: 1.3, color: "#fff", marginTop: 10 }}>Your clinician, prescriptions, and refill history — all in one place.</p>
+              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.8)", textTransform: "uppercase" }}>Your account</p>
+              <p style={{ fontSize: 20, lineHeight: 1.3, color: "#fff", marginTop: 10 }}>Sign in to open your private SpryMD account — protocols, refills, and orders tied to you alone.</p>
             </div>
           </div>
           <div className="w-full max-w-md md:max-w-none md:px-2">
@@ -1084,12 +1143,12 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
               {mode === "signin" ? "Welcome back" : "Create account"}
             </span>
             <h1 className="display" style={{ fontSize: "clamp(36px, 5vw, 52px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 12 }}>
-              {mode === "signin" ? <>Sign in to <Mark>refill</Mark>.</> : <>One screen. <Mark>Then we're in</Mark>.</>}
+              {mode === "signin" ? <>Sign in to your <Mark>account</Mark>.</> : <>Create your <Mark>SpryMD</Mark> account.</>}
             </h1>
             <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55 }}>
               {mode === "signin"
-                ? "Your prescriptions, dose history, and shipping address are right where you left them."
-                : "We'll create your medical record at gethealthy.com and connect it to your Empower pharmacy account in a single step."}
+                ? "Each login opens only your medical record, prescriptions, and order history."
+                : "One email, one account. Your care plan and pharmacy history stay private to you."}
             </p>
 
             <div className="space-y-4">
@@ -1104,25 +1163,38 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
                 </>
               )}
               <Field label="Email">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" />
               </Field>
               <Field label="Password">
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
               </Field>
+
+              {error && (
+                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(226,85,85,0.12)", border: `1px solid rgba(226,85,85,0.35)` }}>
+                  <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{error}</span>
+                </div>
+              )}
+              {notice && (
+                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: C.signalDim, border: `1px solid ${C.accentDeep}` }}>
+                  <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{notice}</span>
+                </div>
+              )}
 
               <Btn onClick={submit} disabled={!canSubmit || loading} size="lg" className="w-full">
                 {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                         : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
+                         : <>{mode === "signin" ? "Sign in to my account" : "Create account & continue"}</>}
               </Btn>
 
               <div className="flex items-center gap-2 justify-center pt-2">
                 <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED</span>
+                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
               </div>
             </div>
 
             <div className="text-center mt-8 pt-8" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
                 className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }}>
                 {mode === "signin"
                   ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
@@ -1490,9 +1562,9 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const total = refillCart.reduce((s, i) => s + i.price, 0);
 
   const steps = [
-    { title: "Payment captured", sub: "Stripe charge ID: ch_3PqXk2HwMMRoLBKt0aQ8YN1", icon: Lock },
-    { title: "Health record updated", sub: "POST gethealthy.com/api/v1/patients/p_2849/health-record", icon: FileText },
-    { title: "E-prescribed to Empower", sub: `${refillCart.length} prescription${refillCart.length > 1 ? "s" : ""} transmitted via NCPDP`, icon: Send },
+    { title: "Refill request recorded", sub: "Saved to your SpryMD account · pending clinician confirmation", icon: Lock },
+    { title: "Chart flagged for review", sub: "A clinician will confirm appropriateness before pharmacy release", icon: FileText },
+    { title: "Queued for fulfillment", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} will release after approval`, icon: Send },
   ];
 
   return (
@@ -1561,7 +1633,7 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 flex-wrap">
-                <Btn onClick={() => { onClearCart(); go("dashboard"); }} size="lg" variant="dark">Go to dashboard</Btn>
+                <Btn onClick={() => { onClearCart(); go("account"); }} size="lg" variant="dark">Go to my account</Btn>
                 <Btn onClick={() => { onClearCart(); go("landing"); }} size="lg" variant="ghost">Back to home</Btn>
               </div>
             </div>
@@ -1573,65 +1645,246 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Member Dashboard
+// Customer Account — private hub after login
 // ─────────────────────────────────────────────────────────────────────────────
-const Dashboard = ({ user, go, onSignOut }) => {
+const Account = ({ user, go, onSignOut, onUpdateUser }) => {
+  const [tab, setTab] = useState("overview");
+  const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [dob, setDob] = useState(user?.dob || "");
+  const [line1, setLine1] = useState(user?.address?.line1 || "");
+  const [city, setCity] = useState(user?.address?.city || "");
+  const [state, setState] = useState(user?.address?.state || "");
+  const [zip, setZip] = useState(user?.address?.zip || "");
+  const [saved, setSaved] = useState(false);
+
   if (!user) return null;
+
+  const rxs = user.rxHistory || [];
+  const protocols = user.protocols || [];
+  const orders = user.orders || [];
+  const memberLabel = user.memberSince
+    ? new Date(user.memberSince).toLocaleDateString(undefined, { month: "short", year: "numeric" })
+    : "—";
+
+  const saveProfile = () => {
+    const next = onUpdateUser({
+      name: name.trim() || user.name,
+      phone,
+      dob,
+      address: { line1, city, state, zip },
+    });
+    if (next) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
+
+  const tabs = [
+    { id: "overview", label: "Overview" },
+    { id: "protocols", label: "Protocols" },
+    { id: "orders", label: "Orders" },
+    { id: "profile", label: "Profile" },
+  ];
+
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <Header go={go} cartCount={0} user={user} />
       <section className="px-6 md:px-12 py-12 md:py-16">
         <div className="max-w-5xl mx-auto">
-          <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Member dashboard</span>
-          <h1 className="display" style={{ fontSize: "clamp(40px, 5vw, 64px)", lineHeight: 1, marginTop: 16, marginBottom: 32, fontWeight: 400, color: C.ink }}>
-            Welcome back, <Mark>{user.name.split(" ")[0]}</Mark>.
-          </h1>
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
+            <div>
+              <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Your account</span>
+              <h1 className="display" style={{ fontSize: "clamp(40px, 5vw, 64px)", lineHeight: 1, marginTop: 16, marginBottom: 12, fontWeight: 400, color: C.ink }}>
+                Welcome back, <Mark>{user.name.split(" ")[0]}</Mark>.
+              </h1>
+              <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.5 }}>
+                Signed in as <span style={{ color: C.ink }}>{user.email}</span>
+                <span className="mono" style={{ color: C.muted }}> · Member since {memberLabel}</span>
+              </p>
+            </div>
+            <button onClick={onSignOut}
+              className="focus-ring inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm hover:opacity-70"
+              style={{ border: `1px solid ${C.line}`, color: C.inkSoft }}>
+              <LogOut size={14} /> Sign out
+            </button>
+          </div>
 
-          <div className="grid md:grid-cols-3 gap-4 mb-8">
-            {[{ i: RefreshCw, t: "Quick Refills", d: `${user.rxHistory.length} active prescriptions`, action: () => go("refills"), accent: true },
-              { i: Stethoscope, t: "Message clinician", d: "Available 7 days a week", action: () => {} },
-              { i: ShoppingBag, t: "Shop", d: "Supplements & devices", action: () => go("marketplace") }].map((card) => (
-              <button key={card.t} onClick={card.action}
-                className="focus-ring text-left p-6 rounded-2xl transition-all hover:-translate-y-0.5"
-                style={{ background: card.accent ? C.accent : C.paper, color: card.accent ? C.paper : C.ink,
-                  border: `1px solid ${card.accent ? C.accent : C.line}` }}>
-                <card.i size={20} strokeWidth={1.5} />
-                <div className="display" style={{ fontSize: 22, fontWeight: 500, marginTop: 24, marginBottom: 4 }}>{card.t}</div>
-                <div style={{ fontSize: 13, opacity: 0.75 }}>{card.d}</div>
+          <div className="flex gap-2 flex-wrap mt-8 mb-8" style={{ borderBottom: `1px solid ${C.lineSoft}`, paddingBottom: 12 }}>
+            {tabs.map((t) => (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                className="focus-ring px-4 py-2 rounded-full text-sm transition-all"
+                style={{
+                  background: tab === t.id ? C.ink : "transparent",
+                  color: tab === t.id ? C.paper : C.inkSoft,
+                  border: `1px solid ${tab === t.id ? C.ink : C.line}`,
+                  fontWeight: 500,
+                }}>
+                {t.label}
               </button>
             ))}
           </div>
 
-          <div className="rounded-2xl p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-            <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Active prescriptions</h3>
-            <div className="space-y-3">
-              {user.rxHistory.slice(0, 3).map((rx) => {
-                const Icon = rx.icon;
-                return (
-                  <div key={rx.rxId} className="flex items-center gap-4 py-2">
-                    <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: rx.color, width: 36, height: 36 }}>
-                      <Icon size={16} color={C.paper} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1">
-                      <div style={{ fontSize: 14, fontWeight: 500, color: C.ink }}>{rx.name}</div>
-                      <div className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.05em" }}>{rx.refills - rx.refillsUsed} refills left</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <button onClick={() => go("refills")}
-              className="focus-ring mt-4 inline-flex items-center gap-2 text-sm font-medium hover:opacity-60"
-              style={{ color: C.accent }}>View all & refill<ArrowRight size={14} /></button>
-          </div>
+          {tab === "overview" && (
+            <div className="space-y-6 anim-fadeUp">
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  { i: RefreshCw, t: "Quick Refills", d: rxs.length ? `${rxs.length} active prescription${rxs.length === 1 ? "" : "s"}` : "No Rx yet — start a protocol", action: () => go(rxs.length ? "refills" : "landing-conditions"), accent: true },
+                  { i: Stethoscope, t: "Start a protocol", d: "Metabolic, hormones, mental health, PCP", action: () => go("landing-conditions") },
+                  { i: ShoppingBag, t: "Shop the stack", d: "Supplements & devices", action: () => go("marketplace") },
+                ].map((card) => (
+                  <button key={card.t} onClick={card.action}
+                    className="focus-ring text-left p-6 rounded-2xl transition-all hover:-translate-y-0.5"
+                    style={{ background: card.accent ? C.accent : C.paper, color: card.accent ? C.paper : C.ink,
+                      border: `1px solid ${card.accent ? C.accent : C.line}` }}>
+                    <card.i size={20} strokeWidth={1.5} />
+                    <div className="display" style={{ fontSize: 22, fontWeight: 500, marginTop: 24, marginBottom: 4 }}>{card.t}</div>
+                    <div style={{ fontSize: 13, opacity: 0.75 }}>{card.d}</div>
+                  </button>
+                ))}
+              </div>
 
-          <button onClick={onSignOut} className="focus-ring mt-6 text-sm hover:opacity-60" style={{ color: C.muted }}>Sign out</button>
+              <div className="rounded-2xl p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Active prescriptions</h3>
+                {rxs.length === 0 ? (
+                  <div className="py-6">
+                    <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 16 }}>
+                      This account is empty until you start care. Begin a protocol and your prescriptions will appear here — only for you.
+                    </p>
+                    <Btn onClick={() => go("landing-conditions")} size="md" icon={ArrowRight}>Browse protocols</Btn>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-3">
+                      {rxs.slice(0, 4).map((rx) => {
+                        const Icon = rx.icon || rxIconFor(rx);
+                        return (
+                          <div key={rx.rxId} className="flex items-center gap-4 py-2">
+                            <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: rx.color || C.accent, width: 36, height: 36 }}>
+                              <Icon size={16} color={C.paper} strokeWidth={1.5} />
+                            </div>
+                            <div className="flex-1">
+                              <div style={{ fontSize: 14, fontWeight: 500, color: C.ink }}>{rx.name}</div>
+                              <div className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.05em" }}>
+                                {typeof rx.refills === "number" ? `${rx.refills - (rx.refillsUsed || 0)} refills left` : rx.lastFilled}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button onClick={() => go("refills")}
+                      className="focus-ring mt-4 inline-flex items-center gap-2 text-sm font-medium hover:opacity-60"
+                      style={{ color: C.accent }}>View all & refill<ArrowRight size={14} /></button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {tab === "protocols" && (
+            <div className="anim-fadeUp rounded-2xl p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Your protocols</h3>
+              {protocols.length === 0 ? (
+                <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55 }}>
+                  No protocols on this account yet.{" "}
+                  <button onClick={() => go("landing-conditions")} className="focus-ring" style={{ color: C.accent, textDecoration: "underline" }}>Start one</button>.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {protocols.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between gap-4 py-3" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 500, color: C.ink }}>{p.name}</div>
+                        <div className="mono" style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                          {(p.status || "active").replace(/_/g, " ")} · started {p.startedAt ? new Date(p.startedAt).toLocaleDateString() : "—"}
+                        </div>
+                      </div>
+                      {p.price != null && <span className="mono" style={{ fontSize: 13, color: C.ink }}>${p.price}/mo</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === "orders" && (
+            <div className="anim-fadeUp rounded-2xl p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Order history</h3>
+              {orders.length === 0 ? (
+                <div className="flex items-start gap-3">
+                  <Package size={18} color={C.muted} style={{ marginTop: 2 }} />
+                  <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55 }}>
+                    Orders placed while signed in land here, private to {user.email}.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {orders.map((o) => (
+                    <div key={o.id} className="flex items-center justify-between gap-4 py-3" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 500, color: C.ink }}>{o.label || o.mode || "Order"}</div>
+                        <div className="mono" style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                          {o.createdAt ? new Date(o.createdAt).toLocaleString() : "—"}
+                        </div>
+                      </div>
+                      {o.total != null && <span className="mono" style={{ fontSize: 13, color: C.ink }}>${o.total}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === "profile" && (
+            <div className="anim-fadeUp rounded-2xl p-6 space-y-4" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 8 }}>Profile</h3>
+              <p style={{ fontSize: 13, color: C.inkSoft, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                <MapPin size={14} color={C.muted} /> Saved only on your account ({user.email})
+              </p>
+              <Field label="Full legal name">
+                <input value={name} onChange={(e) => setName(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
+              </Field>
+              <Field label="Email">
+                <input value={user.email} readOnly className="focus-ring w-full p-4" style={{ ...inputStyle, opacity: 0.65 }} />
+              </Field>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Date of birth">
+                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
+                </Field>
+                <Field label="Phone">
+                  <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 000-0000" className="focus-ring w-full p-4" style={inputStyle} />
+                </Field>
+              </div>
+              <Field label="Shipping address">
+                <input value={line1} onChange={(e) => setLine1(e.target.value)} placeholder="Street address" className="focus-ring w-full p-4" style={inputStyle} />
+              </Field>
+              <div className="grid grid-cols-3 gap-3">
+                <Field label="City">
+                  <input value={city} onChange={(e) => setCity(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
+                </Field>
+                <Field label="State">
+                  <input value={state} onChange={(e) => setState(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
+                </Field>
+                <Field label="ZIP">
+                  <input value={zip} onChange={(e) => setZip(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
+                </Field>
+              </div>
+              <div className="flex items-center gap-3 pt-2">
+                <Btn onClick={saveProfile} size="md">Save profile</Btn>
+                {saved && <span style={{ fontSize: 13, color: C.accent }}>Saved</span>}
+              </div>
+            </div>
+          )}
         </div>
       </section>
       <Footer go={go} />
     </div>
   );
 };
+
+// Keep legacy name for any lingering references
+const Dashboard = Account;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Intake
@@ -2162,16 +2415,17 @@ const CartDrawer = ({ cart, onClose, removeFromCart, addToCart, onCheckout }) =>
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Subscription / Cart Checkout (Stripe)
+// Subscription / Cart Checkout — auth hold; fulfillment after clinician review
 // ─────────────────────────────────────────────────────────────────────────────
-const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
-  const [email, setEmail] = useState("");
+const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
+  const [email, setEmail] = useState(user?.email || "");
   const [card, setCard] = useState("");
   const [exp, setExp] = useState("");
   const [cvc, setCvc] = useState("");
   const [zip, setZip] = useState("");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(user?.name || "");
   const [processing, setProcessing] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   const isSubscription = mode === "subscription";
   const cartTotal = cart ? cart.reduce((s, i) => s + i.price * i.qty, 0) : 0;
@@ -2187,12 +2441,12 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
     return digits.slice(0, 2) + " / " + digits.slice(2);
   };
 
-  const canSubmit = email.includes("@") && card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5 && name.trim().length > 0;
+  const canSubmit = email.includes("@") && card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5 && name.trim().length > 0 && consent;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     setProcessing(true);
-    setTimeout(onComplete, 1800);
+    setTimeout(() => onComplete({ email, name }), 1200);
   };
 
   return (
@@ -2208,9 +2462,14 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
           <div>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Checkout</span>
-            <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 32, color: C.ink }}>
+            <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 16, color: C.ink }}>
               Almost <Mark>there</Mark>.
             </h1>
+            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 28, lineHeight: 1.55, maxWidth: 480 }}>
+              {isSubscription
+                ? "Your case goes to clinician review before any prescription ships. Card authorization is held until approval."
+                : "Your order is saved to your SpryMD account. Authorization is held until fulfillment is confirmed."}
+            </p>
 
             <div className="space-y-6">
               <Field label="Email"><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} /></Field>
@@ -2227,12 +2486,19 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
               </div>
               <Field label="ZIP / Postal code"><input value={zip} onChange={(e) => setZip(e.target.value.slice(0, 10))} placeholder="38201" className="focus-ring w-full p-4" style={inputStyle} /></Field>
 
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1" />
+                <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.5 }}>
+                  I agree to the <a href="/terms" style={{ color: C.accent }}>Terms</a>, <a href="/privacy" style={{ color: C.accent }}>Privacy Policy</a>, and <a href="/npp" style={{ color: C.accent }}>NPP</a>, and I understand a clinician must approve treatment before medication ships.
+                </span>
+              </label>
+
               <Btn onClick={handleSubmit} disabled={!canSubmit || processing} size="lg" className="w-full" icon={!processing ? Lock : null}>
-                {processing ? <span className="anim-pulse">Processing...</span> : `Pay $${total.toFixed(2)}${isSubscription ? " · Start subscription" : ""}`}
+                {processing ? <span className="anim-pulse">Submitting…</span> : isSubscription ? `Submit case · $${total.toFixed(2)} auth hold` : `Place order · $${total.toFixed(2)}`}
               </Btn>
               <div className="flex items-center justify-center gap-2">
                 <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>256-BIT ENCRYPTION · POWERED BY STRIPE</span>
+                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>ENCRYPTED · CLINICIAN REVIEW BEFORE FULFILLMENT</span>
               </div>
             </div>
           </div>
@@ -2245,7 +2511,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
                 <div className="pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <Tag color={C.bgAlt}>Subscription</Tag>
+                      <Tag color={C.bgAlt}>Pending clinician review</Tag>
                       <div style={{ fontSize: 17, fontWeight: 500, color: C.ink, marginTop: 8 }}>{plan.name}</div>
                       <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{plan.sub}</div>
                       <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 8 }}>For: <strong>{conditions[condition].name}</strong></div>
@@ -2285,7 +2551,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
                 <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{isSubscription ? "Today" : "Total"}</span>
                 <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
               </div>
-              {isSubscription && <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4, marginTop: 8 }}>Then ${plan.price}/mo. Cancel anytime in your dashboard. First shipment after clinician review.</p>}
+              {isSubscription && <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4, marginTop: 8 }}>Then ${plan.price}/mo after clinician approval. Cancel anytime in your account.</p>}
             </div>
           </div>
         </div>
@@ -2305,21 +2571,21 @@ const Success = ({ mode, plan, consult, go }) => (
         <Check size={32} color={C.paper} strokeWidth={2} />
       </div>
       <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>
-        {consult ? "Consult requested" : mode === "subscription" ? "Subscription started" : "Order confirmed"}
+        {consult ? "Consult requested" : mode === "subscription" ? "Case submitted" : "Order recorded"}
       </span>
       <h1 className="display" style={{ fontSize: "clamp(40px, 6vw, 64px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 16, marginBottom: 24 }}>
-        {consult ? <>We'll be in <Mark>touch</Mark>.</> : <>Welcome to <Mark>Spry</Mark>.</>}
+        {consult ? <>We'll be in <Mark>touch</Mark>.</> : <>Saved to your <Mark>account</Mark>.</>}
       </h1>
       <p style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.55, marginBottom: 40 }}>
         {consult
           ? "A clinician will reach out within 24 hours to schedule a brief synchronous consult."
           : mode === "subscription"
-          ? `Your case has been routed to a clinician for review. You'll hear from your provider within 24 hours, and your first shipment of ${plan?.name} will go out the same day the prescription is signed.`
-          : "Your order has been placed. Tracking will arrive in your email within 24 hours."}
+          ? `Your intake for ${plan?.name || "treatment"} is queued for clinician review. Nothing ships until a prescription is signed. Track status anytime in your account.`
+          : "Your order is on your account. You’ll get updates by email as fulfillment progresses."}
       </p>
       <div className="flex items-center justify-center gap-3 flex-wrap">
-        <Btn onClick={() => go("landing")} size="lg" variant="dark">Back to home</Btn>
-        {!consult && <Btn onClick={() => go("marketplace")} size="lg" variant="ghost">Browse the shop</Btn>}
+        <Btn onClick={() => go("account")} size="lg" variant="dark">Open my account</Btn>
+        <Btn onClick={() => go("landing")} size="lg" variant="ghost">Back to home</Btn>
       </div>
     </div>
   </div>
@@ -2329,13 +2595,49 @@ const Success = ({ mode, plan, consult, go }) => (
 // App root
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
+  const navigate = useNavigate();
   const [view, setView] = useState("landing");
   const [params, setParams] = useState({});
   const [cart, setCart] = useState([]);
   const [refillCart, setRefillCart] = useState([]);
   const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const profile = await restoreCustomerSession();
+      if (!cancelled && profile) setUser(hydrateUser(profile));
+      if (!cancelled) setAuthReady(true);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Deep-link from /dashboard auth redirect: /?auth=1&returnTo=...
+  useEffect(() => {
+    if (!authReady) return;
+    const qs = new URLSearchParams(window.location.search);
+    if (qs.get("auth") === "1") {
+      const returnTo = qs.get("returnTo") || "account";
+      const target = returnTo.startsWith("/dashboard") ? "account" : returnTo;
+      setParams({ returnTo: target === "account" ? "account" : target });
+      setView("signin");
+      window.history.replaceState({}, "", "/");
+    }
+  }, [authReady]);
+
+  const requireAuth = (target, extra = {}) => {
+    setParams({ returnTo: target, ...extra });
+    setView("signin");
+    window.scrollTo(0, 0);
+  };
+
+  const openPatientDashboard = () => {
+    navigate("/dashboard");
+    window.scrollTo(0, 0);
+  };
 
   const go = (target, p = {}) => {
     if (target === "landing-conditions") {
@@ -2348,27 +2650,50 @@ export default function App() {
       setTimeout(() => { const el = document.getElementById("how"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
       return;
     }
-    // Auth gate
-    if (target === "refills" && !user) {
-      setParams({ returnTo: "refills" });
-      setView("signin");
-      window.scrollTo(0, 0);
+    // Auth gates — account + refills require a signed-in customer
+    // justLoggedIn covers the render before setUser flushes
+    if ((target === "refills" || target === "account" || target === "dashboard") && !user && !p.justLoggedIn) {
+      requireAuth(target === "dashboard" || target === "account" ? "account" : target, p);
       return;
     }
-    if (target === "dashboard" && !user) {
-      setParams({ returnTo: "dashboard" });
-      setView("signin");
-      window.scrollTo(0, 0);
+    // Patient account dashboard (React Router)
+    if (target === "account" || target === "dashboard") {
+      openPatientDashboard();
       return;
     }
     if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
     if (target === "page") { setParams({ slug: p.slug }); setView("page"); window.scrollTo(0, 0); return; }
     if (target === "marketplace") { setParams({ filter: p.filter || "All" }); setView("marketplace"); window.scrollTo(0, 0); return; }
-    if (target === "checkout-cart") { setParams({ mode: "cart" }); setView("checkout"); window.scrollTo(0, 0); return; }
+    if (target === "checkout-cart") {
+      if (!user) {
+        requireAuth("checkout", { mode: "cart" });
+        return;
+      }
+      setParams({ mode: "cart" });
+      setView("checkout");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "checkout") {
+      if (!user && !p.justLoggedIn) {
+        requireAuth("checkout", { ...params, ...p });
+        return;
+      }
+      setParams({ ...params, ...p, mode: p.mode || params.mode || "subscription" });
+      setView("checkout");
+      window.scrollTo(0, 0);
+      return;
+    }
     if (target === "refill-checkout") { setView("refill-checkout"); window.scrollTo(0, 0); return; }
     if (target === "refill-success") { setView("refill-success"); window.scrollTo(0, 0); return; }
     if (target === "success") { setParams({ ...params, ...p }); setView("success"); window.scrollTo(0, 0); return; }
+    if (target === "signin") {
+      setParams({ returnTo: p.returnTo || params.returnTo || "account", ...p });
+      setView("signin");
+      window.scrollTo(0, 0);
+      return;
+    }
     setParams({ ...params, ...p });
     setView(target);
     window.scrollTo(0, 0);
@@ -2394,13 +2719,84 @@ export default function App() {
   const removeRefill = (rxId) => setRefillCart((c) => c.filter((i) => i.rxId !== rxId));
 
   const onSelectPlan = (plan) => {
+    if (!user) {
+      requireAuth("checkout", { plan, mode: "subscription", condition: params.condition, answers: params.answers });
+      return;
+    }
     setParams({ ...params, plan, mode: "subscription" });
     setView("checkout");
     window.scrollTo(0, 0);
   };
 
-  const onAuthSuccess = (u) => setUser(u);
-  const onSignOut = () => { setUser(null); setRefillCart([]); go("landing"); };
+  const onAuthSuccess = (u) => {
+    setUser(hydrateUser(u));
+  };
+
+  const onUpdateUser = (patch) => {
+    if (!user?.email) return null;
+    const next = hydrateUser(updateCustomerProfile(user.email, patch));
+    setUser(next);
+    return next;
+  };
+
+  const onSignOut = async () => {
+    await signOutCustomer();
+    setUser(null);
+    setRefillCart([]);
+    setView("landing");
+    setParams({});
+    window.scrollTo(0, 0);
+  };
+
+  const completeCheckout = (checkoutMeta = {}) => {
+    const email = (user?.email || checkoutMeta.email || "").toLowerCase();
+    if (!email) {
+      requireAuth("checkout", { ...params });
+      return;
+    }
+    ensureAccountShell(email, checkoutMeta.name || user?.name);
+    if (params.mode === "subscription" && params.plan) {
+      recordSubscriptionCheckout({
+        email,
+        plan: params.plan,
+        conditionId: params.condition,
+        conditionName: conditions[params.condition]?.name,
+        answers: params.answers,
+      });
+    } else if (params.mode === "cart") {
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      recordCartCheckout({
+        email,
+        items: cart.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+        total,
+      });
+    }
+    setUser(hydrateUser(updateCustomerProfile(email, { name: checkoutMeta.name || user?.name })));
+    if (params.mode === "cart") setCart([]);
+    go("success", { mode: params.mode });
+  };
+
+  const completeRefillCheckout = () => {
+    if (user?.email && refillCart.length) {
+      const total = refillCart.reduce((s, i) => s + i.price, 0);
+      recordRefillCheckout({
+        email: user.email,
+        items: refillCart.map((r) => ({ rxId: r.rxId, name: r.name, price: r.price })),
+        total,
+      });
+      setUser(hydrateUser(updateCustomerProfile(user.email, {})));
+    }
+    go("refill-success");
+  };
+
+  if (!authReady) {
+    return (
+      <div style={{ background: C.bg, minHeight: "100vh", color: C.ink }} className="flex items-center justify-center">
+        <FontInjector />
+        <span className="mono anim-pulse" style={{ fontSize: 12, letterSpacing: "0.16em", color: C.muted }}>LOADING ACCOUNT…</span>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
@@ -2412,15 +2808,17 @@ export default function App() {
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
       {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
       {view === "checkout" && (
-        <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go}
-          onComplete={() => { if (params.mode === "cart") setCart([]); go("success", { mode: params.mode }); }} />
+        <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go} user={user}
+          onComplete={completeCheckout} />
       )}
       {view === "success" && <Success mode={params.mode} plan={params.plan} consult={params.consult} go={go} />}
       {view === "signin" && <SignIn go={go} returnTo={params.returnTo} onAuthSuccess={onAuthSuccess} />}
       {view === "refills" && user && <Refills user={user} go={go} refillCart={refillCart} addRefill={addRefill} removeRefill={removeRefill} />}
-      {view === "refill-checkout" && user && <RefillCheckout user={user} refillCart={refillCart} go={go} onComplete={() => go("refill-success")} />}
+      {view === "refill-checkout" && user && <RefillCheckout user={user} refillCart={refillCart} go={go} onComplete={completeRefillCheckout} />}
       {view === "refill-success" && <RefillSuccess refillCart={refillCart} go={go} onClearCart={() => setRefillCart([])} />}
-      {view === "dashboard" && user && <Dashboard user={user} go={go} onSignOut={onSignOut} />}
+      {(view === "account" || view === "dashboard") && user && (
+        <Account user={user} go={go} onSignOut={onSignOut} onUpdateUser={onUpdateUser} />
+      )}
     </div>
   );
 }
