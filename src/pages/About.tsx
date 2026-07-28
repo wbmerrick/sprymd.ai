@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { GraduationCap, ClipboardCheck, Building, Stethoscope, Lock, Pill } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
-import doctorPhoto from "@/assets/doctor-photo.png";
 
 const AboutHero = () => (
   <section className="bg-navy py-24 px-4 text-center">
@@ -19,8 +18,19 @@ const DoctorBio = () => (
     <div className="section-container">
       <div className="grid md:grid-cols-2 gap-12 items-start">
         <AnimatedSection>
-          <div className="rounded-2xl shadow-xl overflow-hidden">
-            <img src={doctorPhoto} alt="Dr. Merrick — Board-Certified Physician" className="w-full h-auto object-contain" />
+          <div className="relative rounded-2xl shadow-xl overflow-hidden bg-navy aspect-[3/4] flex flex-col items-center justify-center px-8 text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-navy via-slate to-navy" />
+            <div className="absolute top-1/4 left-1/4 w-48 h-48 rounded-full bg-blue/10 blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-40 h-40 rounded-full bg-blue-light/10 blur-3xl" />
+            <div className="relative z-10 flex flex-col items-center gap-5">
+              <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
+                <Stethoscope className="w-10 h-10 text-primary-foreground" strokeWidth={1.5} />
+              </div>
+              <div>
+                <p className="font-display text-primary-foreground text-2xl font-bold">Board-Certified Physician</p>
+                <p className="font-body text-primary-foreground/70 mt-2 text-sm">Internal Medicine · Telehealth</p>
+              </div>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-6">
             {["Board-Certified DO", "Licensed in Tennessee", "10+ Years Experience"].map((b, i) => (
