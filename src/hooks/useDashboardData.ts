@@ -1,5 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
-import { mockDashboardData } from "@/data/dashboardMock";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   DashboardData,
   NotificationItem,
@@ -7,6 +6,15 @@ import type {
   Treatment,
   TreatmentStatus,
 } from "@/types/dashboard";
+import {
+  buildDashboardForEmail,
+  clearCareNotifications,
+  dismissCareNotification,
+  getSignedInEmail,
+  toggleCareAutoship,
+  updateCareProfile,
+} from "@/lib/patientCareStore";
+import { restoreCustomerSession } from "@/lib/customerAccounts";
 
 const STATUS_PRIORITY: Record<TreatmentStatus, number> = {
   expiring_soon: 0,
@@ -17,13 +25,56 @@ const STATUS_PRIORITY: Record<TreatmentStatus, number> = {
 
 export function sortTreatmentsByStatus(treatments: Treatment[]): Treatment[] {
   return [...treatments].sort(
-    (a, b) => STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status] || a.medicationName.localeCompare(b.medicationName),
+    (a, b) =>
+      STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status] ||
+      a.medicationName.localeCompare(b.medicationName),
   );
 }
 
+const emptyDashboard = (): DashboardData => ({
+  user: { id: "", name: "", email: "", avatarInitials: "" },
+  treatments: [],
+  notifications: [],
+  shipments: [],
+  subscriptions: [],
+  messages: [],
+  transactions: [],
+  supportTopics: [],
+});
+
 export function useDashboardData() {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(mockDashboardData.notifications);
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(mockDashboardData.subscriptions);
+  const [email, setEmail] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const session = await restoreCustomerSession();
+      if (cancelled) return;
+      setEmail(session?.email || getSignedInEmail());
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const refresh = useCallback(() => setTick((t) => t + 1), []);
+
+  const data: DashboardData = useMemo(() => {
+    void tick;
+    if (!email) return emptyDashboard();
+    return buildDashboardForEmail(email) || emptyDashboard();
+  }, [email, tick]);
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>(data.notifications);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(data.subscriptions);
+
+  useEffect(() => {
+    setNotifications(data.notifications);
+    setSubscriptions(data.subscriptions);
+  }, [data.notifications, data.subscriptions]);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.dismissed).length,
@@ -33,47 +84,70 @@ export function useDashboardData() {
   const activeTreatments = useMemo(
     () =>
       sortTreatmentsByStatus(
-        mockDashboardData.treatments.filter((t) => t.status === "active" || t.status === "expiring_soon" || t.status === "pending"),
+        data.treatments.filter(
+          (t) => t.status === "active" || t.status === "expiring_soon" || t.status === "pending",
+        ),
       ),
-    [],
+    [data.treatments],
   );
 
-  const dismissNotification = useCallback((id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, dismissed: true } : n)));
-  }, []);
+  const dismissNotification = useCallback(
+    (id: string) => {
+      if (!email) return;
+      const care = dismissCareNotification(email, id);
+      setNotifications(care.notifications);
+      refresh();
+    },
+    [email, refresh],
+  );
 
   const clearAllNotifications = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, dismissed: true })));
-  }, []);
+    if (!email) return;
+    const care = clearCareNotifications(email);
+    setNotifications(care.notifications);
+    refresh();
+  }, [email, refresh]);
 
-  const toggleAutoship = useCallback((subscriptionId: string, enabled: boolean) => {
-    setSubscriptions((prev) =>
-      prev.map((s) => (s.id === subscriptionId ? { ...s, autoshipEnabled: enabled } : s)),
-    );
-  }, []);
-
-  const getTreatment = useCallback(
-    (treatmentId: string) => mockDashboardData.treatments.find((t) => t.id === treatmentId),
-    [],
+  const toggleAutoship = useCallback(
+    (subscriptionId: string, enabled: boolean) => {
+      if (!email) return;
+      const care = toggleCareAutoship(email, subscriptionId, enabled);
+      setSubscriptions(care.subscriptions);
+      refresh();
+    },
+    [email, refresh],
   );
 
-  const data: DashboardData = useMemo(
-    () => ({
-      ...mockDashboardData,
-      notifications,
-      subscriptions,
-    }),
-    [notifications, subscriptions],
+  const getTreatment = useCallback(
+    (treatmentId: string) => data.treatments.find((t) => t.id === treatmentId),
+    [data.treatments],
+  );
+
+  const updateProfile = useCallback(
+    (patch: { name?: string; phone?: string; dob?: string; address?: Record<string, string> }) => {
+      if (!email) return null;
+      const next = updateCareProfile(email, patch);
+      refresh();
+      return next;
+    },
+    [email, refresh],
   );
 
   return {
     ...data,
+    notifications,
+    subscriptions,
     activeTreatments,
     unreadCount,
     dismissNotification,
     clearAllNotifications,
     toggleAutoship,
     getTreatment,
+    updateProfile,
+    ready,
+    isAuthenticated: !!email,
+    email,
+    refresh,
   };
 }
 

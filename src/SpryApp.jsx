@@ -27,9 +27,13 @@ import {
   signOutCustomer,
   restoreCustomerSession,
   updateCustomerProfile,
-  addCustomerOrder,
-  addCustomerProtocol,
 } from "./lib/customerAccounts";
+import {
+  recordSubscriptionCheckout,
+  recordCartCheckout,
+  recordRefillCheckout,
+  ensureAccountShell,
+} from "./lib/patientCareStore";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -869,11 +873,24 @@ const Footer = () => (
       </div>
       {[{ h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
         { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
-        { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] }].map((col) => (
+        { h: "Company", l: [
+          { label: "About", href: "/about" },
+          { label: "Contact", href: "/contact" },
+          { label: "FAQ", href: "/faq" },
+          { label: "Terms", href: "/terms" },
+          { label: "Privacy", href: "/privacy" },
+          { label: "NPP", href: "/npp" },
+        ] }].map((col) => (
         <div key={col.h}>
           <div className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase", marginBottom: 16 }}>{col.h}</div>
           <div className="space-y-2">
-            {col.l.map((it) => <div key={it} style={{ fontSize: 13, color: C.ink }}>{it}</div>)}
+            {col.l.map((it) =>
+              typeof it === "string"
+                ? <div key={it} style={{ fontSize: 13, color: C.ink }}>{it}</div>
+                : <a key={it.href} href={it.href} style={{ fontSize: 13, color: C.ink, textDecoration: "none", display: "block" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = C.accent; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = C.ink; }}>{it.label}</a>
+            )}
           </div>
         </div>
       ))}
@@ -1370,9 +1387,9 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const total = refillCart.reduce((s, i) => s + i.price, 0);
 
   const steps = [
-    { title: "Payment captured", sub: "Stripe charge ID: ch_3PqXk2HwMMRoLBKt0aQ8YN1", icon: Lock },
-    { title: "Health record updated", sub: "POST gethealthy.com/api/v1/patients/p_2849/health-record", icon: FileText },
-    { title: "E-prescribed to Empower", sub: `${refillCart.length} prescription${refillCart.length > 1 ? "s" : ""} transmitted via NCPDP`, icon: Send },
+    { title: "Refill request recorded", sub: "Saved to your SpryMD account · pending clinician confirmation", icon: Lock },
+    { title: "Chart flagged for review", sub: "A clinician will confirm appropriateness before pharmacy release", icon: FileText },
+    { title: "Queued for fulfillment", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} will release after approval`, icon: Send },
   ];
 
   return (
@@ -2219,16 +2236,17 @@ const CartDrawer = ({ cart, onClose, removeFromCart, addToCart, onCheckout }) =>
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Subscription / Cart Checkout (Stripe)
+// Subscription / Cart Checkout — auth hold; fulfillment after clinician review
 // ─────────────────────────────────────────────────────────────────────────────
-const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
-  const [email, setEmail] = useState("");
+const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
+  const [email, setEmail] = useState(user?.email || "");
   const [card, setCard] = useState("");
   const [exp, setExp] = useState("");
   const [cvc, setCvc] = useState("");
   const [zip, setZip] = useState("");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(user?.name || "");
   const [processing, setProcessing] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   const isSubscription = mode === "subscription";
   const cartTotal = cart ? cart.reduce((s, i) => s + i.price * i.qty, 0) : 0;
@@ -2244,12 +2262,12 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
     return digits.slice(0, 2) + " / " + digits.slice(2);
   };
 
-  const canSubmit = email.includes("@") && card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5 && name.trim().length > 0;
+  const canSubmit = email.includes("@") && card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5 && name.trim().length > 0 && consent;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     setProcessing(true);
-    setTimeout(onComplete, 1800);
+    setTimeout(() => onComplete({ email, name }), 1200);
   };
 
   return (
@@ -2265,9 +2283,14 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
           <div>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Checkout</span>
-            <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 32, color: C.ink }}>
+            <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 16, color: C.ink }}>
               Almost <Mark>there</Mark>.
             </h1>
+            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 28, lineHeight: 1.55, maxWidth: 480 }}>
+              {isSubscription
+                ? "Your case goes to clinician review before any prescription ships. Card authorization is held until approval."
+                : "Your order is saved to your SpryMD account. Authorization is held until fulfillment is confirmed."}
+            </p>
 
             <div className="space-y-6">
               <Field label="Email"><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} /></Field>
@@ -2284,12 +2307,19 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
               </div>
               <Field label="ZIP / Postal code"><input value={zip} onChange={(e) => setZip(e.target.value.slice(0, 10))} placeholder="38201" className="focus-ring w-full p-4" style={inputStyle} /></Field>
 
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1" />
+                <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.5 }}>
+                  I agree to the <a href="/terms" style={{ color: C.accent }}>Terms</a>, <a href="/privacy" style={{ color: C.accent }}>Privacy Policy</a>, and <a href="/npp" style={{ color: C.accent }}>NPP</a>, and I understand a clinician must approve treatment before medication ships.
+                </span>
+              </label>
+
               <Btn onClick={handleSubmit} disabled={!canSubmit || processing} size="lg" className="w-full" icon={!processing ? Lock : null}>
-                {processing ? <span className="anim-pulse">Processing...</span> : `Pay $${total.toFixed(2)}${isSubscription ? " · Start subscription" : ""}`}
+                {processing ? <span className="anim-pulse">Submitting…</span> : isSubscription ? `Submit case · $${total.toFixed(2)} auth hold` : `Place order · $${total.toFixed(2)}`}
               </Btn>
               <div className="flex items-center justify-center gap-2">
                 <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>256-BIT ENCRYPTION · POWERED BY STRIPE</span>
+                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>ENCRYPTED · CLINICIAN REVIEW BEFORE FULFILLMENT</span>
               </div>
             </div>
           </div>
@@ -2302,7 +2332,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
                 <div className="pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <Tag color={C.bgAlt}>Subscription</Tag>
+                      <Tag color={C.bgAlt}>Pending clinician review</Tag>
                       <div style={{ fontSize: 17, fontWeight: 500, color: C.ink, marginTop: 8 }}>{plan.name}</div>
                       <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{plan.sub}</div>
                       <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 8 }}>For: <strong>{conditions[condition].name}</strong></div>
@@ -2342,7 +2372,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete }) => {
                 <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{isSubscription ? "Today" : "Total"}</span>
                 <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
               </div>
-              {isSubscription && <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4, marginTop: 8 }}>Then ${plan.price}/mo. Cancel anytime in your dashboard. First shipment after clinician review.</p>}
+              {isSubscription && <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4, marginTop: 8 }}>Then ${plan.price}/mo after clinician approval. Cancel anytime in your account.</p>}
             </div>
           </div>
         </div>
@@ -2362,21 +2392,21 @@ const Success = ({ mode, plan, consult, go }) => (
         <Check size={32} color={C.paper} strokeWidth={2} />
       </div>
       <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>
-        {consult ? "Consult requested" : mode === "subscription" ? "Subscription started" : "Order confirmed"}
+        {consult ? "Consult requested" : mode === "subscription" ? "Case submitted" : "Order recorded"}
       </span>
       <h1 className="display" style={{ fontSize: "clamp(40px, 6vw, 64px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 16, marginBottom: 24 }}>
-        {consult ? <>We'll be in <Mark>touch</Mark>.</> : <>Welcome to <Mark>Spry</Mark>.</>}
+        {consult ? <>We'll be in <Mark>touch</Mark>.</> : <>Saved to your <Mark>account</Mark>.</>}
       </h1>
       <p style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.55, marginBottom: 40 }}>
         {consult
           ? "A clinician will reach out within 24 hours to schedule a brief synchronous consult."
           : mode === "subscription"
-          ? `Your case has been routed to a clinician for review. You'll hear from your provider within 24 hours, and your first shipment of ${plan?.name} will go out the same day the prescription is signed.`
-          : "Your order has been placed. Tracking will arrive in your email within 24 hours."}
+          ? `Your intake for ${plan?.name || "treatment"} is queued for clinician review. Nothing ships until a prescription is signed. Track status anytime in your account.`
+          : "Your order is on your account. You’ll get updates by email as fulfillment progresses."}
       </p>
       <div className="flex items-center justify-center gap-3 flex-wrap">
-        <Btn onClick={() => go("landing")} size="lg" variant="dark">Back to home</Btn>
-        {!consult && <Btn onClick={() => go("marketplace")} size="lg" variant="ghost">Browse the shop</Btn>}
+        <Btn onClick={() => go("account")} size="lg" variant="dark">Open my account</Btn>
+        <Btn onClick={() => go("landing")} size="lg" variant="ghost">Back to home</Btn>
       </div>
     </div>
   </div>
@@ -2405,6 +2435,19 @@ export default function App() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // Deep-link from /dashboard auth redirect: /?auth=1&returnTo=...
+  useEffect(() => {
+    if (!authReady) return;
+    const qs = new URLSearchParams(window.location.search);
+    if (qs.get("auth") === "1") {
+      const returnTo = qs.get("returnTo") || "account";
+      const target = returnTo.startsWith("/dashboard") ? "account" : returnTo;
+      setParams({ returnTo: target === "account" ? "account" : target });
+      setView("signin");
+      window.history.replaceState({}, "", "/");
+    }
+  }, [authReady]);
 
   const requireAuth = (target, extra = {}) => {
     setParams({ returnTo: target, ...extra });
@@ -2441,7 +2484,26 @@ export default function App() {
     }
     if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
-    if (target === "checkout-cart") { setParams({ mode: "cart" }); setView("checkout"); window.scrollTo(0, 0); return; }
+    if (target === "checkout-cart") {
+      if (!user) {
+        requireAuth("checkout", { mode: "cart" });
+        return;
+      }
+      setParams({ mode: "cart" });
+      setView("checkout");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "checkout") {
+      if (!user && !p.justLoggedIn) {
+        requireAuth("checkout", { ...params, ...p });
+        return;
+      }
+      setParams({ ...params, ...p, mode: p.mode || params.mode || "subscription" });
+      setView("checkout");
+      window.scrollTo(0, 0);
+      return;
+    }
     if (target === "refill-checkout") { setView("refill-checkout"); window.scrollTo(0, 0); return; }
     if (target === "refill-success") { setView("refill-success"); window.scrollTo(0, 0); return; }
     if (target === "success") { setParams({ ...params, ...p }); setView("success"); window.scrollTo(0, 0); return; }
@@ -2476,12 +2538,18 @@ export default function App() {
   const removeRefill = (rxId) => setRefillCart((c) => c.filter((i) => i.rxId !== rxId));
 
   const onSelectPlan = (plan) => {
+    if (!user) {
+      requireAuth("checkout", { plan, mode: "subscription", condition: params.condition, answers: params.answers });
+      return;
+    }
     setParams({ ...params, plan, mode: "subscription" });
     setView("checkout");
     window.scrollTo(0, 0);
   };
 
-  const onAuthSuccess = (u) => setUser(hydrateUser(u));
+  const onAuthSuccess = (u) => {
+    setUser(hydrateUser(u));
+  };
 
   const onUpdateUser = (patch) => {
     if (!user?.email) return null;
@@ -2499,31 +2567,30 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const completeCheckout = () => {
-    if (user?.email) {
-      if (params.mode === "subscription" && params.plan) {
-        const next = hydrateUser(addCustomerProtocol(user.email, {
-          name: params.plan.name,
-          sub: params.plan.sub,
-          price: params.plan.price,
-          chilled: params.plan.chilled,
-          category: conditions[params.condition]?.name || "Protocol",
-        }));
-        const withOrder = hydrateUser(addCustomerOrder(user.email, {
-          label: params.plan.name,
-          mode: "subscription",
-          total: params.plan.price,
-        }));
-        setUser(hydrateUser({ ...next, orders: withOrder.orders, protocols: next.protocols, rxHistory: next.rxHistory }));
-      } else if (params.mode === "cart") {
-        const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-        setUser(hydrateUser(addCustomerOrder(user.email, {
-          label: `${cart.length} marketplace item${cart.length === 1 ? "" : "s"}`,
-          mode: "cart",
-          total,
-        })));
-      }
+  const completeCheckout = (checkoutMeta = {}) => {
+    const email = (user?.email || checkoutMeta.email || "").toLowerCase();
+    if (!email) {
+      requireAuth("checkout", { ...params });
+      return;
     }
+    ensureAccountShell(email, checkoutMeta.name || user?.name);
+    if (params.mode === "subscription" && params.plan) {
+      recordSubscriptionCheckout({
+        email,
+        plan: params.plan,
+        conditionId: params.condition,
+        conditionName: conditions[params.condition]?.name,
+        answers: params.answers,
+      });
+    } else if (params.mode === "cart") {
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      recordCartCheckout({
+        email,
+        items: cart.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+        total,
+      });
+    }
+    setUser(hydrateUser(updateCustomerProfile(email, { name: checkoutMeta.name || user?.name })));
     if (params.mode === "cart") setCart([]);
     go("success", { mode: params.mode });
   };
@@ -2531,11 +2598,12 @@ export default function App() {
   const completeRefillCheckout = () => {
     if (user?.email && refillCart.length) {
       const total = refillCart.reduce((s, i) => s + i.price, 0);
-      setUser(hydrateUser(addCustomerOrder(user.email, {
-        label: `Refill · ${refillCart.map((r) => r.name).join(", ")}`,
-        mode: "refill",
+      recordRefillCheckout({
+        email: user.email,
+        items: refillCart.map((r) => ({ rxId: r.rxId, name: r.name, price: r.price })),
         total,
-      })));
+      });
+      setUser(hydrateUser(updateCustomerProfile(user.email, {})));
     }
     go("refill-success");
   };
@@ -2558,7 +2626,7 @@ export default function App() {
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
       {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} />}
       {view === "checkout" && (
-        <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go}
+        <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go} user={user}
           onComplete={completeCheckout} />
       )}
       {view === "success" && <Success mode={params.mode} plan={params.plan} consult={params.consult} go={go} />}

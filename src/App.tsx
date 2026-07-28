@@ -13,6 +13,12 @@ import SupportPage from "@/pages/dashboard/SupportPage";
 import OrdersPage from "@/pages/dashboard/OrdersPage";
 import SubscriptionsPage from "@/pages/dashboard/SubscriptionsPage";
 import ProfilePage from "@/pages/dashboard/ProfilePage";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
+import NPP from "@/pages/NPP";
+import About from "@/pages/About";
+import FAQ from "@/pages/FAQ";
+import Contact from "@/pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +39,12 @@ const App = () => (
             <Route path="subscriptions" element={<SubscriptionsPage />} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/npp" element={<NPP />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<SpryApp />} />
         </Routes>
       </BrowserRouter>

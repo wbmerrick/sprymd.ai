@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createContext, useContext } from "react";
@@ -14,6 +14,20 @@ export function useDashboard() {
 
 export default function DashboardLayout() {
   const data = useDashboardData();
+  const location = useLocation();
+
+  if (!data.ready) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#050505] text-zinc-500">
+        <span className="font-mono text-xs tracking-[0.16em] uppercase animate-pulse">Loading account…</span>
+      </div>
+    );
+  }
+
+  if (!data.isAuthenticated) {
+    const returnTo = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/?auth=1&returnTo=${returnTo}`} replace />;
+  }
 
   return (
     <DashboardContext.Provider value={data}>
