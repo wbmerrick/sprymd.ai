@@ -829,6 +829,8 @@ const footerColumns = [
   { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] },
 ];
 
+const pageHref = (slug) => `#/page/${slug}`;
+
 const Footer = ({ go }) => (
   <footer className="px-6 md:px-12 py-12" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
@@ -844,16 +846,22 @@ const Footer = ({ go }) => (
           <div className="space-y-2">
             {col.l.map((it) => {
               const slug = footerNavToSlug[it];
+              if (!slug) {
+                return <div key={it} style={{ fontSize: 13, color: C.ink }}>{it}</div>;
+              }
               return (
-                <button
+                <a
                   key={it}
-                  type="button"
-                  onClick={() => slug && go("page", { slug })}
+                  href={pageHref(slug)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    go("page", { slug });
+                  }}
                   className="focus-ring block text-left transition-opacity hover:opacity-60"
-                  style={{ fontSize: 13, color: C.ink, background: "transparent", border: "none", padding: 0, cursor: slug ? "pointer" : "default" }}
+                  style={{ fontSize: 13, color: C.ink, textDecoration: "none", cursor: "pointer" }}
                 >
                   {it}
-                </button>
+                </a>
               );
             })}
           </div>
@@ -918,7 +926,8 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
       return;
     }
     if (page.ctaTarget === "press") {
-      go("page", { slug: "press" });
+      const el = document.getElementById("press-brand-assets");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
     go("landing");
@@ -956,7 +965,10 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
       <section className="px-6 md:px-12 py-14 md:py-20">
         <div className="max-w-3xl mx-auto space-y-12">
           {page.sections.map((section) => (
-            <div key={section.title}>
+            <div
+              key={section.title}
+              id={slug === "press" && /brand assets/i.test(section.title) ? "press-brand-assets" : undefined}
+            >
               <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>{section.title}</h2>
               <div className="space-y-4">
                 {section.blocks.map((block, bi) => {
@@ -2326,25 +2338,74 @@ const Success = ({ mode, plan, consult, go }) => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Hash router helpers — footer links are real hrefs (#/page/slug)
+// ─────────────────────────────────────────────────────────────────────────────
+const routeToHash = (target, p = {}) => {
+  if (target === "page" && p.slug) return `#/page/${p.slug}`;
+  if (target === "intake" && p.condition) return `#/intake/${p.condition}`;
+  if (target === "marketplace") {
+    const filter = p.filter && p.filter !== "All" ? `?filter=${encodeURIComponent(p.filter)}` : "";
+    return `#/marketplace${filter}`;
+  }
+  if (target === "landing" || target === "landing-conditions" || target === "how") return "#/";
+  if (["refills", "dashboard", "signin", "how"].includes(target)) return `#/${target}`;
+  return `#/${target}`;
+};
+
+const parseHash = () => {
+  const raw = (typeof window !== "undefined" ? window.location.hash : "") || "#/";
+  const trimmed = raw.replace(/^#\/?/, "");
+  if (!trimmed) return { view: "landing", params: {} };
+  const [pathPart, queryPart = ""] = trimmed.split("?");
+  const segments = pathPart.split("/").filter(Boolean);
+  const query = Object.fromEntries(new URLSearchParams(queryPart));
+  if (segments[0] === "page" && segments[1]) return { view: "page", params: { slug: segments[1] } };
+  if (segments[0] === "intake" && segments[1]) return { view: "intake", params: { condition: segments[1] } };
+  if (segments[0] === "marketplace") return { view: "marketplace", params: { filter: query.filter || "All" } };
+  if (["refills", "dashboard", "signin"].includes(segments[0])) return { view: segments[0], params: {} };
+  return { view: "landing", params: {} };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // App root
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [view, setView] = useState("landing");
-  const [params, setParams] = useState({});
+  const initial = parseHash();
+  const [view, setView] = useState(initial.view);
+  const [params, setParams] = useState(initial.params);
   const [cart, setCart] = useState([]);
   const [refillCart, setRefillCart] = useState([]);
   const [user, setUser] = useState(null);
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
+  useEffect(() => {
+    const onHash = () => {
+      const next = parseHash();
+      setView(next.view);
+      setParams(next.params);
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
   const go = (target, p = {}) => {
     if (target === "landing-conditions") {
+      if (window.location.hash && window.location.hash !== "#/" && window.location.hash !== "") {
+        window.location.hash = "#/";
+      }
       setView("landing");
+      setParams({});
       setTimeout(() => { const el = document.getElementById("landing-conditions"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
       return;
     }
     if (target === "how") {
+      if (window.location.hash && window.location.hash !== "#/" && window.location.hash !== "") {
+        window.location.hash = "#/";
+      }
       setView("landing");
+      setParams({});
       setTimeout(() => { const el = document.getElementById("how"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
       return;
     }
@@ -2352,25 +2413,75 @@ export default function App() {
     if (target === "refills" && !user) {
       setParams({ returnTo: "refills" });
       setView("signin");
+      window.location.hash = "#/signin";
       window.scrollTo(0, 0);
       return;
     }
     if (target === "dashboard" && !user) {
       setParams({ returnTo: "dashboard" });
       setView("signin");
+      window.location.hash = "#/signin";
       window.scrollTo(0, 0);
       return;
     }
-    if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
-    if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
-    if (target === "page") { setParams({ slug: p.slug }); setView("page"); window.scrollTo(0, 0); return; }
-    if (target === "marketplace") { setParams({ filter: p.filter || "All" }); setView("marketplace"); window.scrollTo(0, 0); return; }
-    if (target === "checkout-cart") { setParams({ mode: "cart" }); setView("checkout"); window.scrollTo(0, 0); return; }
-    if (target === "refill-checkout") { setView("refill-checkout"); window.scrollTo(0, 0); return; }
-    if (target === "refill-success") { setView("refill-success"); window.scrollTo(0, 0); return; }
-    if (target === "success") { setParams({ ...params, ...p }); setView("success"); window.scrollTo(0, 0); return; }
+    if (target === "intake") {
+      setParams({ condition: p.condition });
+      setView("intake");
+      window.location.hash = routeToHash("intake", p);
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "plan") {
+      const next = { ...params, ...p };
+      setParams(next);
+      setView("plan");
+      window.location.hash = "#/plan";
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "page") {
+      setParams({ slug: p.slug });
+      setView("page");
+      window.location.hash = routeToHash("page", p);
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "marketplace") {
+      setParams({ filter: p.filter || "All" });
+      setView("marketplace");
+      window.location.hash = routeToHash("marketplace", p);
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "checkout-cart") {
+      setParams({ mode: "cart" });
+      setView("checkout");
+      window.location.hash = "#/checkout";
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "refill-checkout") {
+      setView("refill-checkout");
+      window.location.hash = "#/refill-checkout";
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "refill-success") {
+      setView("refill-success");
+      window.location.hash = "#/refill-success";
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "success") {
+      setParams({ ...params, ...p });
+      setView("success");
+      window.location.hash = "#/success";
+      window.scrollTo(0, 0);
+      return;
+    }
     setParams({ ...params, ...p });
     setView(target);
+    window.location.hash = routeToHash(target, p);
     window.scrollTo(0, 0);
   };
 
@@ -2396,6 +2507,7 @@ export default function App() {
   const onSelectPlan = (plan) => {
     setParams({ ...params, plan, mode: "subscription" });
     setView("checkout");
+    window.location.hash = "#/checkout";
     window.scrollTo(0, 0);
   };
 

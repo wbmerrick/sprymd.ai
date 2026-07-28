@@ -4,7 +4,7 @@ title: Press
 navLabel: Press
 eyebrow: COMPANY
 tagline: Facts, assets, and a direct line to our team.
-ctaLabel: Download brand facts
+ctaLabel: View brand assets
 ctaTarget: press
 ---
 
