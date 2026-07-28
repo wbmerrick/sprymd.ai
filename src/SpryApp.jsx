@@ -20,7 +20,6 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
-import doctorPhoto from "./assets/doctor-photo.png";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -338,11 +337,11 @@ const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Slee
 const conditionGraphics = {
   weightloss: imgMarketplaceHero,
   ed: imgMarketplaceHero,
-  hairloss: doctorPhoto,
-  skincare: doctorPhoto,
+  hairloss: imgMarketplaceHero,
+  skincare: imgMarketplaceHero,
   lowt: imgMarketplaceHero,
   mentalhealth: imgMarketplaceHero,
-  pcp: doctorPhoto,
+  pcp: imgMarketplaceHero,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -686,8 +685,13 @@ const Landing = ({ go }) => (
         </div>
         <div className="md:col-span-6">
           <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
-            <div className="relative h-48 overflow-hidden">
-              <img src={doctorPhoto} alt="SpryMD clinician" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
+            <div className="relative h-48 overflow-hidden flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${C.paper} 0%, ${C.bgAlt} 55%, ${C.signalDim} 140%)` }}>
+              <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
+                <div className="rounded-full flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                  <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
+                </div>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Licensed clinician care</span>
+              </div>
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 20%, rgba(18,18,20,0.95) 100%)" }} />
             </div>
             <div className="p-7 md:p-8 -mt-10 relative">
@@ -2108,7 +2112,7 @@ const Success = ({ mode, plan, consult, go }) => (
   <div className="anim-fadeIn min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: C.bg }}>
     <div className="anim-fadeUp max-w-xl">
       <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
-        <img src={consult ? doctorPhoto : imgMarketplaceHero} alt="SpryMD care complete" className="w-full h-40 object-cover" />
+        <img src={imgMarketplaceHero} alt="SpryMD care complete" className="w-full h-40 object-cover" />
       </div>
       <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
         <Check size={32} color={C.paper} strokeWidth={2} />
