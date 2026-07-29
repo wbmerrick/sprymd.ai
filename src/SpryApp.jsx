@@ -22,6 +22,7 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
+import imgEarthSpace from "./assets/earth-from-space.webp";
 import {
   signInCustomer,
   signUpCustomer,
@@ -136,8 +137,15 @@ const FontInjector = () => (
     .orbit-spin-rev { transform-box: fill-box; transform-origin: center; animation: orbitSpinRev 64s linear infinite; }
     .telemetry-track { animation: telemetryScroll 28s linear infinite; }
     .scan-line { animation: scanSweep 4.5s ease-in-out infinite; }
-    .breath-glow { animation: breathGlow 5s ease-in-out infinite; }
-    .hairline-in { transform-origin: left; animation: hairlineIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes earthDrift {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(0, -1.2%, 0) scale(1.025); }
+    }
+    .earth-distant {
+      animation: earthDrift 42s ease-in-out infinite;
+      will-change: transform;
+      object-fit: cover;
+    }
     .grain { position: relative; }
     .grain::after {
       content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04; z-index: 2;
@@ -160,7 +168,7 @@ const FontInjector = () => (
       background: radial-gradient(ellipse at 80% 20%, rgba(30,200,165,0.08), transparent 50%);
     }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant {
         animation: none !important;
       }
     }
@@ -657,29 +665,75 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
-const Landing = ({ go }) => (
-  <div className="anim-fadeIn">
+const Landing = ({ go }) => {
+  const [chatDocked, setChatDocked] = useState(false);
+
+  return (
+  <div className="anim-fadeIn relative">
+    {/* ISS orbital Earth — fixed center of viewport, far background */}
+    <div
+      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
+      aria-hidden="true"
+    >
+      <img
+        src={imgEarthSpace}
+        alt=""
+        className="earth-distant select-none"
+        style={{
+          width: "min(110vw, 1400px)",
+          height: "min(72vh, 780px)",
+          opacity: 0.55,
+          filter: "saturate(1.05) brightness(0.88) contrast(1.12)",
+          maskImage:
+            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
+        }}
+      />
+      {/* Soft space vignette so the curved limb reads like a station window view */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 55% 48% at 50% 50%, transparent 0%, rgba(5,5,5,0.25) 55%, rgba(5,5,5,0.72) 100%)",
+        }}
+      />
+    </div>
+
     {/* Hero — full-bleed signal field, brand-first, content-height */}
-    <section className="grain relative overflow-hidden" style={{ background: C.bg, minHeight: "min(100svh, 820px)" }}>
+    <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent", minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
       <div className="absolute inset-0 pointer-events-none">
-        <SignalField density={56} />
+        <SignalField density={40} />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(105deg, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.55) 42%, rgba(5,5,5,0.25) 68%, rgba(5,5,5,0.55) 100%), linear-gradient(180deg, rgba(5,5,5,0.2) 0%, transparent 35%, rgba(5,5,5,0.92) 100%)",
+              "linear-gradient(105deg, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.18) 36%, rgba(5,5,5,0.04) 50%, rgba(5,5,5,0.22) 64%, rgba(5,5,5,0.7) 100%), linear-gradient(180deg, rgba(5,5,5,0.28) 0%, transparent 45%, rgba(5,5,5,0.9) 100%)",
           }}
         />
       </div>
       <div
         className="relative z-10 max-w-7xl mx-auto px-6 md:px-12"
-        style={{ minHeight: "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
+        style={{ minHeight: chatDocked ? undefined : "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
       >
-        <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-14 items-center">
+        <div className={`grid gap-8 md:gap-10 lg:gap-14 items-center ${chatDocked ? "" : "md:grid-cols-2"}`}>
           <div className="flex flex-col justify-center">
-            <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.03em", marginBottom: 22 }}>
+            <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.03em", marginBottom: 10 }}>
               Spry<span style={{ color: C.accent, fontWeight: 600 }}>MD</span>
             </div>
+            <p
+              className="spry-rise mono"
+              style={{
+                animationDelay: "0.04s",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                color: C.accent,
+                textTransform: "uppercase",
+                marginBottom: 18,
+              }}
+            >
+              Keeping you spry — youthful, active, alive
+            </p>
             <h1
               className="spry-rise display"
               style={{
@@ -688,7 +742,7 @@ const Landing = ({ go }) => (
                 lineHeight: 0.96,
                 fontWeight: 700,
                 color: C.ink,
-                maxWidth: 560,
+                maxWidth: chatDocked ? 900 : 560,
                 marginBottom: 22,
               }}
             >
@@ -713,8 +767,11 @@ const Landing = ({ go }) => (
             </div>
           </div>
 
-          <div className="relative flex items-stretch justify-center md:justify-end">
-            <ISpryChat onAction={() => go("landing-conditions")} />
+          <div
+            className="relative flex items-stretch justify-center md:justify-end"
+            style={chatDocked ? { position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" } : undefined}
+          >
+            <ISpryChat onAction={() => go("landing-conditions")} onDockChange={setChatDocked} />
           </div>
         </div>
       </div>
@@ -724,6 +781,28 @@ const Landing = ({ go }) => (
             ● LIVE
           </span>
           <TelemetryStrip className="flex-1 min-w-0" />
+        </div>
+      </div>
+    </section>
+
+    {/* Brand definition */}
+    <section className="relative z-10 px-6 md:px-12 py-16 md:py-20" style={{ background: "rgba(5,5,5,0.88)", borderBottom: `1px solid ${C.line}` }}>
+      <div className="max-w-3xl mx-auto text-center">
+        <p className="display" style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 600, color: C.ink, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+          We specialize in keeping you <span style={{ color: C.accent }}>Spry</span>.
+        </p>
+        <div className="mx-auto mt-8 max-w-xl text-left" style={{ borderTop: `1px solid ${C.line}`, paddingTop: 22 }}>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+            <span className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink }}>spry</span>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: "uppercase" }}>/ sprī /</span>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.muted, textTransform: "uppercase" }}>adjective</span>
+          </div>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: C.inkSoft }}>
+            Active, lively, and youthful in body and mind — the kind of health that keeps you sharp, strong, and ready for what’s next.
+          </p>
+          <p style={{ fontSize: 14, lineHeight: 1.55, color: C.muted, marginTop: 12 }}>
+            At SpryMD, that isn’t a mood. It’s the outcome we engineer with clinician-supervised protocols.
+          </p>
         </div>
       </div>
     </section>
@@ -931,7 +1010,8 @@ const Landing = ({ go }) => (
 
     <Footer go={go} />
   </div>
-);
+  );
+};
 
 const ConditionCard = ({ condition, onClick, delay }) => {
   const [hover, setHover] = useState(false);
