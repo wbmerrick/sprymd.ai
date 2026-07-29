@@ -35,7 +35,7 @@ import {
   recordRefillCheckout,
   ensureAccountShell,
 } from "./lib/patientCareStore";
-import { SignalField, OrbitRings, ScanFrame, TelemetryStrip, HexMesh, GridHorizon } from "./components/graphics";
+import { SignalField, OrbitRings, ScanFrame, TelemetryStrip, HexMesh, GridHorizon, Ospry } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -118,6 +118,57 @@ const FontInjector = () => (
       from { opacity: 0; transform: scaleX(0.6); }
       to { opacity: 1; transform: scaleX(1); }
     }
+    @keyframes ospryBreathe {
+      0%, 100% { transform: scale(1, 1); }
+      50% { transform: scale(1.015, 1.03); }
+    }
+    @keyframes ospryFlopA {
+      0%, 100% { transform: translateY(0) rotate(-1deg); }
+      50% { transform: translateY(4px) rotate(2deg); }
+    }
+    @keyframes ospryFlopB {
+      0%, 100% { transform: translateY(0) rotate(1.5deg); }
+      50% { transform: translateY(5px) rotate(-2deg); }
+    }
+    @keyframes ospryFlopC {
+      0%, 100% { transform: translateX(0) scaleY(1); }
+      50% { transform: translateX(2px) scaleY(1.06); }
+    }
+    @keyframes ospryDewlap {
+      0%, 100% { transform: translateY(0) scaleY(1) rotate(0deg); }
+      35% { transform: translateY(5px) scaleY(1.08) rotate(-1.5deg); }
+      70% { transform: translateY(3px) scaleY(1.04) rotate(1.2deg); }
+    }
+    @keyframes ospryDewlapSack {
+      0%, 100% { transform: translateY(0) scale(1, 1); }
+      50% { transform: translateY(6px) scale(1.03, 1.1); }
+    }
+    @keyframes ospryHead {
+      0%, 100% { transform: rotate(-1deg) translateY(0); }
+      50% { transform: rotate(1.5deg) translateY(2px); }
+    }
+    @keyframes ospryEarL {
+      0%, 70%, 100% { transform: rotate(0deg); }
+      78% { transform: rotate(-12deg); }
+      86% { transform: rotate(4deg); }
+    }
+    @keyframes ospryEarR {
+      0%, 65%, 100% { transform: rotate(0deg); }
+      72% { transform: rotate(14deg); }
+      80% { transform: rotate(-3deg); }
+    }
+    @keyframes ospryTail {
+      0%, 100% { transform: rotate(-6deg); }
+      50% { transform: rotate(10deg); }
+    }
+    @keyframes ospryBlink {
+      0%, 42%, 48%, 100% { opacity: 0; }
+      44%, 46% { opacity: 1; }
+    }
+    @keyframes ospryEnter {
+      from { opacity: 0; transform: translateY(24px) scale(0.94); filter: blur(6px); }
+      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
     .anim-fadeUp { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-fadeIn { animation: fadeIn 0.4s ease both; }
     .anim-slideRight { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -138,6 +189,18 @@ const FontInjector = () => (
     .scan-line { animation: scanSweep 4.5s ease-in-out infinite; }
     .breath-glow { animation: breathGlow 5s ease-in-out infinite; }
     .hairline-in { transform-origin: left; animation: hairlineIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .ospry-stage { animation: ospryEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+    .ospry-breathe { animation: ospryBreathe 3.6s ease-in-out infinite; }
+    .ospry-flop-a { animation: ospryFlopA 2.4s ease-in-out infinite; }
+    .ospry-flop-b { animation: ospryFlopB 2.8s ease-in-out infinite 0.2s; }
+    .ospry-flop-c { animation: ospryFlopC 2.2s ease-in-out infinite 0.1s; }
+    .ospry-dewlap { animation: ospryDewlap 2.6s ease-in-out infinite; }
+    .ospry-dewlap-sack { transform-origin: 205px 160px; animation: ospryDewlapSack 2.1s ease-in-out infinite; }
+    .ospry-head { animation: ospryHead 4.5s ease-in-out infinite; }
+    .ospry-ear-l { animation: ospryEarL 5.5s ease-in-out infinite; }
+    .ospry-ear-r { animation: ospryEarR 6.2s ease-in-out infinite; }
+    .ospry-tail { animation: ospryTail 1.8s ease-in-out infinite; }
+    .ospry-blink { opacity: 0; animation: ospryBlink 5s linear infinite; }
     .grain { position: relative; }
     .grain::after {
       content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04; z-index: 2;
@@ -160,9 +223,12 @@ const FontInjector = () => (
       background: radial-gradient(ellipse at 80% 20%, rgba(30,200,165,0.08), transparent 50%);
     }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise,
+      .ospry-breathe, .ospry-flop-a, .ospry-flop-b, .ospry-flop-c, .ospry-dewlap, .ospry-dewlap-sack,
+      .ospry-head, .ospry-ear-l, .ospry-ear-r, .ospry-tail, .ospry-blink, .ospry-stage {
         animation: none !important;
       }
+      .ospry-blink { opacity: 0 !important; }
     }
     input:focus, button:focus, select:focus, textarea:focus { outline: none; }
     .focus-ring:focus-visible { box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
@@ -672,42 +738,57 @@ const Landing = ({ go }) => (
         />
       </div>
       <div
-        className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 flex flex-col justify-end"
+        className="relative z-10 max-w-7xl mx-auto px-6 md:px-12"
         style={{ minHeight: "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
       >
-        <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.03em", marginBottom: 22 }}>
-          Spry<span style={{ color: C.accent, fontWeight: 600 }}>MD</span>
-        </div>
-        <h1
-          className="spry-rise display"
-          style={{
-            animationDelay: "0.08s",
-            fontSize: "clamp(46px, 8.5vw, 96px)",
-            lineHeight: 0.96,
-            fontWeight: 700,
-            color: C.ink,
-            maxWidth: 920,
-            marginBottom: 22,
-          }}
-        >
-          Operate at your <span className="signal-underline">ceiling</span>.
-        </h1>
-        <p
-          className="spry-rise"
-          style={{
-            animationDelay: "0.16s",
-            fontSize: "clamp(16px, 2vw, 19px)",
-            lineHeight: 1.5,
-            color: C.inkSoft,
-            maxWidth: 460,
-            marginBottom: 34,
-          }}
-        >
-          Precision protocols for people who treat health like infrastructure — clinician-supervised, continuously monitored, discreetly delivered.
-        </p>
-        <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
-          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
-          <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
+        <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-14 items-center">
+          <div className="flex flex-col justify-center">
+            <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.03em", marginBottom: 22 }}>
+              Spry<span style={{ color: C.accent, fontWeight: 600 }}>MD</span>
+            </div>
+            <h1
+              className="spry-rise display"
+              style={{
+                animationDelay: "0.08s",
+                fontSize: "clamp(42px, 7.2vw, 88px)",
+                lineHeight: 0.96,
+                fontWeight: 700,
+                color: C.ink,
+                maxWidth: 560,
+                marginBottom: 22,
+              }}
+            >
+              Operate at your <span className="signal-underline">ceiling</span>.
+            </h1>
+            <p
+              className="spry-rise"
+              style={{
+                animationDelay: "0.16s",
+                fontSize: "clamp(16px, 2vw, 19px)",
+                lineHeight: 1.5,
+                color: C.inkSoft,
+                maxWidth: 440,
+                marginBottom: 34,
+              }}
+            >
+              Precision protocols for people who treat health like infrastructure — clinician-supervised, continuously monitored, discreetly delivered.
+            </p>
+            <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
+              <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
+            </div>
+          </div>
+
+          <div className="relative flex items-center justify-center md:justify-end min-h-[280px] md:min-h-[420px]">
+            <div
+              className="absolute inset-0 pointer-events-none"
+              aria-hidden="true"
+              style={{
+                background: "radial-gradient(ellipse at 55% 45%, rgba(30,200,165,0.1) 0%, transparent 55%)",
+              }}
+            />
+            <Ospry size={460} />
+          </div>
         </div>
       </div>
       <div className="hero-rail relative z-10 px-6 md:px-12 py-3.5">
