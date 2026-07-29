@@ -676,12 +676,12 @@ const Landing = ({ go }) => {
         alt=""
         className="earth-distant select-none"
         style={{
-          width: "min(48vw, 520px)",
+          width: "min(56vw, 620px)",
           height: "auto",
-          opacity: 0.28,
-          filter: "saturate(0.85) brightness(0.72) contrast(1.05)",
-          maskImage: "radial-gradient(circle, rgba(0,0,0,1) 35%, rgba(0,0,0,0.55) 62%, transparent 78%)",
-          WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 35%, rgba(0,0,0,0.55) 62%, transparent 78%)",
+          opacity: 0.38,
+          filter: "saturate(0.9) brightness(0.78) contrast(1.08)",
+          maskImage: "radial-gradient(circle, rgba(0,0,0,1) 32%, rgba(0,0,0,0.65) 58%, transparent 76%)",
+          WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 32%, rgba(0,0,0,0.65) 58%, transparent 76%)",
         }}
       />
     </div>
@@ -694,7 +694,7 @@ const Landing = ({ go }) => {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(105deg, rgba(5,5,5,0.82) 0%, rgba(5,5,5,0.35) 42%, rgba(5,5,5,0.18) 55%, rgba(5,5,5,0.4) 72%, rgba(5,5,5,0.75) 100%), linear-gradient(180deg, rgba(5,5,5,0.25) 0%, transparent 40%, rgba(5,5,5,0.88) 100%)",
+              "linear-gradient(105deg, rgba(5,5,5,0.78) 0%, rgba(5,5,5,0.22) 38%, rgba(5,5,5,0.08) 50%, rgba(5,5,5,0.28) 62%, rgba(5,5,5,0.72) 100%), linear-gradient(180deg, rgba(5,5,5,0.2) 0%, transparent 42%, rgba(5,5,5,0.88) 100%)",
           }}
         />
       </div>
