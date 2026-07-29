@@ -35,6 +35,7 @@ import {
   recordRefillCheckout,
   ensureAccountShell,
 } from "./lib/patientCareStore";
+import { SignalField, OrbitRings, ScanFrame, TelemetryStrip, HexMesh, GridHorizon, ISpryChat } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -68,9 +69,21 @@ const fonts = {
 const FontInjector = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+    :root {
+      --font-mono: ${fonts.mono};
+      --spry-accent: ${C.accent};
+      --spry-bg: ${C.bg};
+      --spry-ink: ${C.ink};
+    }
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { background: ${C.bg}; color: ${C.ink}; }
-    body { font-family: ${fonts.body}; letter-spacing: -0.005em; }
+    body {
+      font-family: ${fonts.body}; letter-spacing: -0.005em;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30,200,165,0.06), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(18,28,36,0.5), transparent 50%);
+      background-attachment: fixed;
+    }
     .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.03em; }
     .mono { font-family: ${fonts.mono}; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -85,6 +98,26 @@ const FontInjector = () => (
     @keyframes signalDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
     @keyframes kenBurns { from { transform: scale(1.04); } to { transform: scale(1); } }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes orbitSpin { to { transform: rotate(360deg); } }
+    @keyframes orbitSpinRev { to { transform: rotate(-360deg); } }
+    @keyframes telemetryScroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    @keyframes scanSweep {
+      0% { transform: translateY(-40%); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateY(140%); opacity: 0; }
+    }
+    @keyframes breathGlow {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.7; }
+    }
+    @keyframes hairlineIn {
+      from { opacity: 0; transform: scaleX(0.6); }
+      to { opacity: 1; transform: scaleX(1); }
+    }
     .anim-fadeUp { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-fadeIn { animation: fadeIn 0.4s ease both; }
     .anim-slideRight { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -98,10 +131,38 @@ const FontInjector = () => (
       background: ${C.accent}; transform-origin: left; animation: signalDraw 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
     .anim-spin { animation: spin 0.8s linear infinite; }
+    .orbit-spin { transform-box: fill-box; transform-origin: center; animation: orbitSpin 48s linear infinite; }
+    .orbit-spin-slow { transform-box: fill-box; transform-origin: center; animation: orbitSpin 90s linear infinite; }
+    .orbit-spin-rev { transform-box: fill-box; transform-origin: center; animation: orbitSpinRev 64s linear infinite; }
+    .telemetry-track { animation: telemetryScroll 28s linear infinite; }
+    .scan-line { animation: scanSweep 4.5s ease-in-out infinite; }
+    .breath-glow { animation: breathGlow 5s ease-in-out infinite; }
+    .hairline-in { transform-origin: left; animation: hairlineIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .grain { position: relative; }
     .grain::after {
-      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.035;
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04; z-index: 2;
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+    .hero-rail {
+      border-top: 1px solid ${C.line};
+      background: linear-gradient(90deg, rgba(5,5,5,0.92), rgba(11,11,12,0.75));
+      backdrop-filter: blur(8px);
+    }
+    .instrument-panel {
+      position: relative;
+      isolation: isolate;
+      background:
+        linear-gradient(160deg, rgba(18,18,20,0.95) 0%, rgba(5,5,5,0.98) 100%);
+      border: 1px solid ${C.line};
+    }
+    .instrument-panel::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse at 80% 20%, rgba(30,200,165,0.08), transparent 50%);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise {
+        animation: none !important;
+      }
     }
     input:focus, button:focus, select:focus, textarea:focus { outline: none; }
     .focus-ring:focus-visible { box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
@@ -598,47 +659,94 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const Landing = ({ go }) => (
   <div className="anim-fadeIn">
-    {/* Hero — full-bleed, brand-first, height follows content (no dead scroll) */}
-    <section className="grain relative overflow-hidden" style={{ background: C.bg }}>
+    {/* Hero — full-bleed signal field, brand-first, content-height */}
+    <section className="grain relative overflow-hidden" style={{ background: C.bg, minHeight: "min(100svh, 820px)" }}>
       <div className="absolute inset-0 pointer-events-none">
-        <img src={imgMarketplaceHero} alt="" className="ken-burns w-full h-full object-cover" style={{ opacity: 0.28 }} />
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 35%, rgba(30,200,165,0.12) 0%, transparent 45%), linear-gradient(180deg, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.72) 45%, rgba(5,5,5,0.96) 100%)" }} />
+        <SignalField density={56} />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(105deg, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.55) 42%, rgba(5,5,5,0.25) 68%, rgba(5,5,5,0.55) 100%), linear-gradient(180deg, rgba(5,5,5,0.2) 0%, transparent 35%, rgba(5,5,5,0.92) 100%)",
+          }}
+        />
       </div>
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12" style={{ paddingTop: "clamp(96px, 14vh, 140px)", paddingBottom: "clamp(56px, 8vh, 88px)" }}>
-        <div className="spry-rise display" style={{ fontSize: "clamp(18px, 2.2vw, 22px)", fontWeight: 600, color: C.ink, letterSpacing: "-0.02em", marginBottom: 20 }}>
-          Spry<span style={{ opacity: 0.5, fontWeight: 500 }}>MD</span>
+      <div
+        className="relative z-10 max-w-7xl mx-auto px-6 md:px-12"
+        style={{ minHeight: "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
+      >
+        <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-14 items-center">
+          <div className="flex flex-col justify-center">
+            <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.03em", marginBottom: 22 }}>
+              Spry<span style={{ color: C.accent, fontWeight: 600 }}>MD</span>
+            </div>
+            <h1
+              className="spry-rise display"
+              style={{
+                animationDelay: "0.08s",
+                fontSize: "clamp(42px, 7.2vw, 88px)",
+                lineHeight: 0.96,
+                fontWeight: 700,
+                color: C.ink,
+                maxWidth: 560,
+                marginBottom: 22,
+              }}
+            >
+              Operate at your <span className="signal-underline">ceiling</span>.
+            </h1>
+            <p
+              className="spry-rise"
+              style={{
+                animationDelay: "0.16s",
+                fontSize: "clamp(16px, 2vw, 19px)",
+                lineHeight: 1.5,
+                color: C.inkSoft,
+                maxWidth: 440,
+                marginBottom: 34,
+              }}
+            >
+              Precision protocols for people who treat health like infrastructure — clinician-supervised, continuously monitored, discreetly delivered.
+            </p>
+            <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
+              <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
+            </div>
+          </div>
+
+          <div className="relative flex items-stretch justify-center md:justify-end">
+            <ISpryChat onAction={() => go("landing-conditions")} />
+          </div>
         </div>
-        <h1 className="spry-rise display" style={{ animationDelay: "0.08s", fontSize: "clamp(44px, 8vw, 92px)", lineHeight: 0.98, fontWeight: 700, color: C.ink, maxWidth: 900, marginBottom: 20 }}>
-          Operate at your <span className="signal-underline">ceiling</span>.
-        </h1>
-        <p className="spry-rise" style={{ animationDelay: "0.16s", fontSize: "clamp(16px, 2vw, 19px)", lineHeight: 1.5, color: C.inkSoft, maxWidth: 480, marginBottom: 32 }}>
-          Precision protocols for people who treat health like infrastructure — clinician-supervised, continuously monitored, discreetly delivered.
-        </p>
-        <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
-          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
-          <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
+      </div>
+      <div className="hero-rail relative z-10 px-6 md:px-12 py-3.5">
+        <div className="max-w-7xl mx-auto flex items-center gap-6 overflow-hidden">
+          <span className="mono shrink-0 breath-glow" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
+            ● LIVE
+          </span>
+          <TelemetryStrip className="flex-1 min-w-0" />
         </div>
-        <p className="spry-rise mono" style={{ animationDelay: "0.32s", fontSize: 11, letterSpacing: "0.14em", color: C.muted, marginTop: 28, textTransform: "uppercase" }}>
-          Physician-reviewed · Empower Pharmacy · Cancel anytime
-        </p>
       </div>
     </section>
 
     {/* System */}
-    <section id="how" className="px-6 md:px-12 py-16 md:py-20" style={{ background: C.bgAlt }}>
-      <div className="max-w-7xl mx-auto">
+    <section id="how" className="px-6 md:px-12 py-16 md:py-24 relative overflow-hidden" style={{ background: C.bgAlt }}>
+      <div className="absolute inset-0 opacity-40 pointer-events-none" aria-hidden="true">
+        <HexMesh />
+      </div>
+      <div className="max-w-7xl mx-auto relative z-10">
         <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>The system</span>
         <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600, maxWidth: 720 }}>
           A closed loop for peak output.
         </h2>
-        <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 14, maxWidth: 520, lineHeight: 1.55 }}>
+        <div className="hairline-in mt-5" style={{ height: 1, maxWidth: 120, background: C.accent, opacity: 0.7 }} />
+        <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 18, maxWidth: 520, lineHeight: 1.55 }}>
           Assess. Interpret. Optimize. Every protocol is signed by a licensed clinician and tracked over time.
         </p>
         <div className="grid md:grid-cols-3 gap-0 mt-14" style={{ borderTop: `1px solid ${C.line}` }}>
           {[{ n: "01", t: "Baseline assessment", d: "A clinically validated intake. Five minutes. No waiting room. No small talk." },
             { n: "02", t: "Clinician interpretation", d: "A licensed provider reviews your case within 24 hours and writes the protocol." },
             { n: "03", t: "Continuous optimization", d: "Compounded fulfillment, discreet shipping, and ongoing dose adjustments from your dashboard." }].map((s, i) => (
-            <div key={s.n} className="anim-fadeUp py-10 md:pr-10" style={{ borderBottom: `1px solid ${C.line}`, borderRight: i < 2 ? `1px solid ${C.line}` : "none", animationDelay: `${i * 0.08}s` }}>
+            <div key={s.n} className="anim-fadeUp py-10 md:pr-10 relative" style={{ borderBottom: `1px solid ${C.line}`, borderRight: i < 2 ? `1px solid ${C.line}` : "none", animationDelay: `${i * 0.08}s` }}>
               <div className="mono" style={{ fontSize: 12, letterSpacing: "0.16em", color: C.accent, marginBottom: 16 }}>{s.n}</div>
               <h3 className="display" style={{ fontSize: 26, fontWeight: 600, marginBottom: 12, color: C.ink }}>{s.t}</h3>
               <p style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft, maxWidth: 320 }}>{s.d}</p>
@@ -649,8 +757,11 @@ const Landing = ({ go }) => (
     </section>
 
     {/* Signal domains */}
-    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bg }}>
-      <div className="max-w-7xl mx-auto">
+    <section className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
+      <div className="absolute right-[-8%] top-[10%] pointer-events-none opacity-50 hidden md:block" aria-hidden="true">
+        <OrbitRings size={520} />
+      </div>
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
           <div>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Signal</span>
@@ -663,15 +774,19 @@ const Landing = ({ go }) => (
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-px" style={{ background: C.line, border: `1px solid ${C.line}` }}>
-          {[{ t: "Metabolic", d: "GLP-1, composition, glucose trajectory" },
-            { t: "Hormonal", d: "Testosterone, titration, fertility path" },
-            { t: "Cognitive", d: "Focus, mood, anxiety protocols" },
-            { t: "Recovery", d: "Sleep architecture, apnea gear" },
-            { t: "Performance", d: "ED, vitality, training support" },
-            { t: "Primary care", d: "Your Spry clinician as PCP" }].map((d) => (
-            <div key={d.t} className="p-6 md:p-8" style={{ background: C.bg }}>
-              <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: "uppercase", marginBottom: 10 }}>{d.t}</div>
-              <div style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.45 }}>{d.d}</div>
+          {[{ t: "Metabolic", d: "GLP-1, composition, glucose trajectory", c: "01" },
+            { t: "Hormonal", d: "Testosterone, titration, fertility path", c: "02" },
+            { t: "Cognitive", d: "Focus, mood, anxiety protocols", c: "03" },
+            { t: "Recovery", d: "Sleep architecture, apnea gear", c: "04" },
+            { t: "Performance", d: "ED, vitality, training support", c: "05" },
+            { t: "Primary care", d: "Your Spry clinician as PCP", c: "06" }].map((d) => (
+            <div key={d.t} className="p-6 md:p-8 group relative transition-colors" style={{ background: C.bg }}>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ background: "radial-gradient(ellipse at top left, rgba(30,200,165,0.07), transparent 60%)" }} />
+              <div className="flex items-center justify-between mb-10 relative">
+                <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: "uppercase" }}>{d.t}</div>
+                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>{d.c}</span>
+              </div>
+              <div className="relative" style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.45 }}>{d.d}</div>
             </div>
           ))}
         </div>
@@ -702,6 +817,9 @@ const Landing = ({ go }) => (
 
     {/* PCP */}
     <section id="pcp" className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
+      <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none opacity-60" aria-hidden="true">
+        <GridHorizon className="w-full h-full" />
+      </div>
       <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center relative z-10">
         <div className="md:col-span-6">
           <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Primary care</span>
@@ -725,17 +843,20 @@ const Landing = ({ go }) => (
           </div>
         </div>
         <div className="md:col-span-6">
-          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
-            <div className="relative h-48 overflow-hidden flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${C.paper} 0%, ${C.bgAlt} 55%, ${C.signalDim} 140%)` }}>
+          <div className="instrument-panel rounded-2xl overflow-hidden">
+            <div className="relative h-52 overflow-hidden flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center opacity-80">
+                <OrbitRings size={280} />
+              </div>
+              <ScanFrame className="absolute inset-4" label="PCP // LINKED" />
               <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
                 <div className="rounded-full flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
                   <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
                 </div>
                 <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Licensed clinician care</span>
               </div>
-              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 20%, rgba(18,18,20,0.95) 100%)" }} />
             </div>
-            <div className="p-7 md:p-8 -mt-10 relative">
+            <div className="p-7 md:p-8 relative z-10">
               <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Membership from</div>
               <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
                 $49<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
@@ -764,10 +885,12 @@ const Landing = ({ go }) => (
     {/* Marketplace */}
     <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
       <div className="max-w-7xl mx-auto">
-        <div className="relative rounded-2xl overflow-hidden mb-12" style={{ border: `1px solid ${C.line}` }}>
-          <img src={imgMarketplaceHero} alt="Spry marketplace" className="w-full h-[200px] md:h-[280px] object-cover ken-burns" style={{ opacity: 0.9 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(5,5,5,0.92) 0%, rgba(5,5,5,0.45) 60%, rgba(5,5,5,0.2) 100%)" }} />
-          <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-10">
+        <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
+          <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(5,5,5,0.94) 0%, rgba(5,5,5,0.55) 55%, rgba(5,5,5,0.25) 100%)" }} />
+          <div className="absolute inset-0 opacity-30 pointer-events-none"><HexMesh /></div>
+          <ScanFrame className="absolute inset-3 md:inset-5" label="STACK // READY" />
+          <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Stack</span>
             <h2 className="display" style={{ fontSize: "clamp(30px, 4.5vw, 48px)", lineHeight: 1, marginTop: 12, color: C.ink, fontWeight: 600, maxWidth: 520 }}>
               Clinician-curated. <Mark>Ready to ship</Mark>.
@@ -784,10 +907,14 @@ const Landing = ({ go }) => (
     </section>
 
     {/* Close */}
-    <section className="px-6 md:px-12 py-24 md:py-32" style={{ background: C.bg }}>
-      <div className="max-w-4xl mx-auto text-center">
+    <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: C.bg }}>
+      <div className="absolute inset-0 pointer-events-none opacity-70">
+        <SignalField density={28} interactive={false} />
+      </div>
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.92) 70%)" }} />
+      <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 600, marginBottom: 24 }}>
-          Spry<span style={{ opacity: 0.5 }}>MD</span>
+          Spry<span style={{ color: C.accent }}>MD</span>
         </div>
         <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 1.08, fontWeight: 600, color: C.ink }}>
           A licensed clinician signs every protocol — and stays reachable.
@@ -1129,12 +1256,16 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-stretch">
-          <div className="hidden md:block rounded-3xl overflow-hidden relative" style={{ border: `1px solid ${C.line}` }}>
-            <img src={imgMarketplaceHero} alt="SpryMD care team" className="w-full h-full object-cover" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.72) 100%)" }} />
-            <div className="absolute left-7 right-7 bottom-7">
-              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.8)", textTransform: "uppercase" }}>Your account</p>
-              <p style={{ fontSize: 20, lineHeight: 1.3, color: "#fff", marginTop: 10 }}>Sign in to open your private SpryMD account — protocols, refills, and orders tied to you alone.</p>
+          <div className="hidden md:block rounded-3xl overflow-hidden relative instrument-panel min-h-[480px]">
+            <SignalField density={40} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,5,5,0.15) 0%, rgba(5,5,5,0.85) 100%)" }} />
+            <ScanFrame className="absolute inset-5" label="AUTH // SECURE" />
+            <div className="absolute left-7 right-7 bottom-7 z-10">
+              <div className="mb-6 opacity-80"><OrbitRings size={160} /></div>
+              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.accent, textTransform: "uppercase" }}>Your account</p>
+              <p style={{ fontSize: 20, lineHeight: 1.3, color: C.ink, marginTop: 10 }}>
+                Sign in to open your private SpryMD account — protocols, refills, and orders tied to you alone.
+              </p>
             </div>
           </div>
           <div className="w-full max-w-md md:max-w-none md:px-2">
