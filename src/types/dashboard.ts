@@ -82,6 +82,44 @@ export interface SupportTopic {
   description: string;
 }
 
+export type WearableKind =
+  | "bp_monitor"
+  | "pulse_oximeter"
+  | "smart_scale"
+  | "cpap"
+  | "sleep_tracker";
+
+export type WearableSyncMode = "manual" | "sync" | "continuous";
+
+export type WearableConnectionStatus = "disconnected" | "paired" | "syncing" | "monitoring";
+
+export interface WearableDevice {
+  id: WearableKind;
+  name: string;
+  brand: string;
+  kind: WearableKind;
+  metrics: string[];
+  imageKey: string;
+  syncMode: WearableSyncMode;
+  status: WearableConnectionStatus;
+  lastSyncedAt: string | null;
+  enabled: boolean;
+}
+
+export interface WearableReading {
+  id: string;
+  deviceId: WearableKind;
+  metric: string;
+  value: number;
+  unit: string;
+  secondaryValue?: number;
+  secondaryUnit?: string;
+  note?: string;
+  source: "upload" | "manual" | "sync" | "continuous";
+  recordedAt: string;
+  createdAt: string;
+}
+
 export interface DashboardData {
   user: DashboardUser;
   treatments: Treatment[];
@@ -91,4 +129,6 @@ export interface DashboardData {
   messages: MessageThread[];
   transactions: Transaction[];
   supportTopics: SupportTopic[];
+  wearableDevices: WearableDevice[];
+  wearableReadings: WearableReading[];
 }
