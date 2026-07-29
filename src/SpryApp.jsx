@@ -22,6 +22,7 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
+import imgEarthSpace from "./assets/earth-from-space.webp";
 import {
   signInCustomer,
   signUpCustomer,
@@ -136,8 +137,11 @@ const FontInjector = () => (
     .orbit-spin-rev { transform-box: fill-box; transform-origin: center; animation: orbitSpinRev 64s linear infinite; }
     .telemetry-track { animation: telemetryScroll 28s linear infinite; }
     .scan-line { animation: scanSweep 4.5s ease-in-out infinite; }
-    .breath-glow { animation: breathGlow 5s ease-in-out infinite; }
-    .hairline-in { transform-origin: left; animation: hairlineIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes earthDrift {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.03) rotate(1.2deg); }
+    }
+    .earth-distant { animation: earthDrift 48s ease-in-out infinite; will-change: transform; }
     .grain { position: relative; }
     .grain::after {
       content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04; z-index: 2;
@@ -160,7 +164,7 @@ const FontInjector = () => (
       background: radial-gradient(ellipse at 80% 20%, rgba(30,200,165,0.08), transparent 50%);
     }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant {
         animation: none !important;
       }
     }
@@ -661,16 +665,36 @@ const Landing = ({ go }) => {
   const [chatDocked, setChatDocked] = useState(false);
 
   return (
-  <div className="anim-fadeIn">
+  <div className="anim-fadeIn relative">
+    {/* Distant Earth — fixed dead-center of the viewport, far background */}
+    <div
+      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
+      aria-hidden="true"
+    >
+      <img
+        src={imgEarthSpace}
+        alt=""
+        className="earth-distant select-none"
+        style={{
+          width: "min(48vw, 520px)",
+          height: "auto",
+          opacity: 0.28,
+          filter: "saturate(0.85) brightness(0.72) contrast(1.05)",
+          maskImage: "radial-gradient(circle, rgba(0,0,0,1) 35%, rgba(0,0,0,0.55) 62%, transparent 78%)",
+          WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 35%, rgba(0,0,0,0.55) 62%, transparent 78%)",
+        }}
+      />
+    </div>
+
     {/* Hero — full-bleed signal field, brand-first, content-height */}
-    <section className="grain relative overflow-hidden" style={{ background: C.bg, minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
+    <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent", minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
       <div className="absolute inset-0 pointer-events-none">
-        <SignalField density={56} />
+        <SignalField density={40} />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(105deg, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.55) 42%, rgba(5,5,5,0.25) 68%, rgba(5,5,5,0.55) 100%), linear-gradient(180deg, rgba(5,5,5,0.2) 0%, transparent 35%, rgba(5,5,5,0.92) 100%)",
+              "linear-gradient(105deg, rgba(5,5,5,0.82) 0%, rgba(5,5,5,0.35) 42%, rgba(5,5,5,0.18) 55%, rgba(5,5,5,0.4) 72%, rgba(5,5,5,0.75) 100%), linear-gradient(180deg, rgba(5,5,5,0.25) 0%, transparent 40%, rgba(5,5,5,0.88) 100%)",
           }}
         />
       </div>
