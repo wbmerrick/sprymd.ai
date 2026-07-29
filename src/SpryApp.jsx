@@ -138,10 +138,14 @@ const FontInjector = () => (
     .telemetry-track { animation: telemetryScroll 28s linear infinite; }
     .scan-line { animation: scanSweep 4.5s ease-in-out infinite; }
     @keyframes earthDrift {
-      0%, 100% { transform: scale(1) rotate(0deg); }
-      50% { transform: scale(1.03) rotate(1.2deg); }
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(0, -1.2%, 0) scale(1.025); }
     }
-    .earth-distant { animation: earthDrift 48s ease-in-out infinite; will-change: transform; }
+    .earth-distant {
+      animation: earthDrift 42s ease-in-out infinite;
+      will-change: transform;
+      object-fit: cover;
+    }
     .grain { position: relative; }
     .grain::after {
       content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04; z-index: 2;
@@ -666,9 +670,9 @@ const Landing = ({ go }) => {
 
   return (
   <div className="anim-fadeIn relative">
-    {/* Distant Earth — fixed dead-center of the viewport, far background */}
+    {/* ISS orbital Earth — fixed center of viewport, far background */}
     <div
-      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
+      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
       aria-hidden="true"
     >
       <img
@@ -676,12 +680,22 @@ const Landing = ({ go }) => {
         alt=""
         className="earth-distant select-none"
         style={{
-          width: "min(56vw, 620px)",
-          height: "auto",
-          opacity: 0.38,
-          filter: "saturate(0.9) brightness(0.78) contrast(1.08)",
-          maskImage: "radial-gradient(circle, rgba(0,0,0,1) 32%, rgba(0,0,0,0.65) 58%, transparent 76%)",
-          WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 32%, rgba(0,0,0,0.65) 58%, transparent 76%)",
+          width: "min(110vw, 1400px)",
+          height: "min(72vh, 780px)",
+          opacity: 0.55,
+          filter: "saturate(1.05) brightness(0.88) contrast(1.12)",
+          maskImage:
+            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
+        }}
+      />
+      {/* Soft space vignette so the curved limb reads like a station window view */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 55% 48% at 50% 50%, transparent 0%, rgba(5,5,5,0.25) 55%, rgba(5,5,5,0.72) 100%)",
         }}
       />
     </div>
@@ -694,7 +708,7 @@ const Landing = ({ go }) => {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(105deg, rgba(5,5,5,0.78) 0%, rgba(5,5,5,0.22) 38%, rgba(5,5,5,0.08) 50%, rgba(5,5,5,0.28) 62%, rgba(5,5,5,0.72) 100%), linear-gradient(180deg, rgba(5,5,5,0.2) 0%, transparent 42%, rgba(5,5,5,0.88) 100%)",
+              "linear-gradient(105deg, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.18) 36%, rgba(5,5,5,0.04) 50%, rgba(5,5,5,0.22) 64%, rgba(5,5,5,0.7) 100%), linear-gradient(180deg, rgba(5,5,5,0.28) 0%, transparent 45%, rgba(5,5,5,0.9) 100%)",
           }}
         />
       </div>
