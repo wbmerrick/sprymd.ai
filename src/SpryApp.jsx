@@ -123,25 +123,25 @@ const FontInjector = () => (
       50% { transform: scale(1.015, 1.03); }
     }
     @keyframes ospryFlopA {
-      0%, 100% { transform: translateY(0) rotate(-1deg); }
-      50% { transform: translateY(4px) rotate(2deg); }
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(7px) rotate(3deg); }
     }
     @keyframes ospryFlopB {
-      0%, 100% { transform: translateY(0) rotate(1.5deg); }
-      50% { transform: translateY(5px) rotate(-2deg); }
+      0%, 100% { transform: translateY(0) rotate(2deg); }
+      50% { transform: translateY(8px) rotate(-3.5deg); }
     }
     @keyframes ospryFlopC {
-      0%, 100% { transform: translateX(0) scaleY(1); }
-      50% { transform: translateX(2px) scaleY(1.06); }
+      0%, 100% { transform: translateX(0) scaleY(1) rotate(0deg); }
+      50% { transform: translateX(4px) scaleY(1.1) rotate(3deg); }
     }
     @keyframes ospryDewlap {
       0%, 100% { transform: translateY(0) scaleY(1) rotate(0deg); }
-      35% { transform: translateY(5px) scaleY(1.08) rotate(-1.5deg); }
-      70% { transform: translateY(3px) scaleY(1.04) rotate(1.2deg); }
+      35% { transform: translateY(7px) scaleY(1.1) rotate(-2deg); }
+      70% { transform: translateY(4px) scaleY(1.06) rotate(1.8deg); }
     }
     @keyframes ospryDewlapSack {
       0%, 100% { transform: translateY(0) scale(1, 1); }
-      50% { transform: translateY(6px) scale(1.03, 1.1); }
+      50% { transform: translateY(9px) scale(1.05, 1.14); }
     }
     @keyframes ospryHead {
       0%, 100% { transform: rotate(-1deg) translateY(0); }
