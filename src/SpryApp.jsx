@@ -35,7 +35,7 @@ import {
   recordRefillCheckout,
   ensureAccountShell,
 } from "./lib/patientCareStore";
-import { SignalField, OrbitRings, ScanFrame, TelemetryStrip, HexMesh, GridHorizon, OspryChat } from "./components/graphics";
+import { SignalField, OrbitRings, ScanFrame, TelemetryStrip, HexMesh, GridHorizon, ISpryChat } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -714,7 +714,7 @@ const Landing = ({ go }) => (
           </div>
 
           <div className="relative flex items-stretch justify-center md:justify-end">
-            <OspryChat onAction={() => go("landing-conditions")} />
+            <ISpryChat onAction={() => go("landing-conditions")} />
           </div>
         </div>
       </div>

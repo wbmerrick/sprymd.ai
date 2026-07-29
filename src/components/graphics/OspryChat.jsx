@@ -24,17 +24,17 @@ function replyFor(input) {
   if (q.includes("refill")) {
     return "Sign in to your account for Quick Refills — active prescriptions only, tied to your chart. New therapy starts with a protocol intake.";
   }
-  return "I'm Ospry — SpryMD's care agent. Ask about protocols, how the system works, pricing, PCP membership, or refills. For clinical decisions, a licensed clinician still signs every protocol.";
+  return "I'm iSpry — SpryMD's care agent. Ask about protocols, how the system works, pricing, PCP membership, or refills. For clinical decisions, a licensed clinician still signs every protocol.";
 }
 
 /**
- * Ospry chat — hero AI agent interface (no mascot animation).
+ * iSpry chat — hero AI agent interface (no mascot animation).
  */
-export default function OspryChat({ onAction }) {
+export default function ISpryChat({ onAction }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "I'm Ospry, your SpryMD care agent. Ask about protocols, PCP membership, or how the system works.",
+      text: "I'm iSpry, your SpryMD care agent. Ask about protocols, PCP membership, or how the system works.",
     },
   ]);
   const [draft, setDraft] = useState("");
@@ -74,7 +74,7 @@ export default function OspryChat({ onAction }) {
         isolation: "isolate",
         overflow: "hidden",
       }}
-      aria-label="Chat with Ospry, SpryMD AI care agent"
+      aria-label="Chat with iSpry, SpryMD AI care agent"
     >
       <div
         aria-hidden="true"
@@ -113,7 +113,7 @@ export default function OspryChat({ onAction }) {
           />
           <div>
             <div className="display" style={{ fontSize: 16, fontWeight: 600, color: "#FAFAFA", letterSpacing: "-0.02em" }}>
-              Ospry
+              iSpry
             </div>
             <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(30,200,165,0.85)", textTransform: "uppercase" }}>
               AI care agent · online
@@ -158,7 +158,7 @@ export default function OspryChat({ onAction }) {
             >
               {!mine && (
                 <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#1EC8A5", marginBottom: 6, textTransform: "uppercase" }}>
-                  Ospry
+                  iSpry
                 </div>
               )}
               {msg.text}
@@ -177,7 +177,7 @@ export default function OspryChat({ onAction }) {
               padding: "6px 2px",
             }}
           >
-            Ospry is typing…
+            iSpry is typing…
           </div>
         )}
       </div>
@@ -236,10 +236,10 @@ export default function OspryChat({ onAction }) {
           ref={inputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Ask Ospry anything…"
+          placeholder="Ask iSpry anything…"
           className="focus-ring"
           disabled={busy}
-          aria-label="Message Ospry"
+          aria-label="Message iSpry"
           style={{
             flex: 1,
             background: "#0B0B0C",
