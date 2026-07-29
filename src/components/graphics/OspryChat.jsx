@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Send } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ArrowRight, MessageCircle, Minus, Send, X } from "lucide-react";
 
 const STARTERS = [
   "Which protocol fits me?",
@@ -28,9 +29,9 @@ function replyFor(input) {
 }
 
 /**
- * iSpry chat — hero AI agent interface (no mascot animation).
+ * iSpry chat — hero panel; docks to a bottom-right chat bar once the page scrolls.
  */
-export default function ISpryChat({ onAction }) {
+export default function ISpryChat({ onAction, onDockChange }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -39,13 +40,36 @@ export default function ISpryChat({ onAction }) {
   ]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [docked, setDocked] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const scrollerRef = useRef(null);
   const inputRef = useRef(null);
+  const wasDocked = useRef(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const next = window.scrollY > 48;
+      setDocked((prev) => {
+        if (prev === next) return prev;
+        if (next && !wasDocked.current) setExpanded(false);
+        if (!next) setExpanded(false);
+        wasDocked.current = next;
+        return next;
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    onDockChange?.(docked);
+  }, [docked, onDockChange]);
 
   useEffect(() => {
     const el = scrollerRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, busy]);
+  }, [messages, busy, expanded, docked]);
 
   const send = (raw) => {
     const text = (raw ?? draft).trim();
@@ -53,16 +77,28 @@ export default function ISpryChat({ onAction }) {
     setDraft("");
     setMessages((m) => [...m, { role: "user", text }]);
     setBusy(true);
+    if (docked) setExpanded(true);
     window.setTimeout(() => {
       setMessages((m) => [...m, { role: "assistant", text: replyFor(text) }]);
       setBusy(false);
     }, 450 + Math.min(600, text.length * 8));
   };
 
-  return (
-    <div
-      className="ospry-chat spry-rise w-full max-w-md md:max-w-none"
-      style={{
+  const shellStyle = docked
+    ? {
+        display: "flex",
+        flexDirection: "column",
+        width: "min(380px, calc(100vw - 24px))",
+        height: "min(520px, calc(100vh - 96px))",
+        border: "1px solid #1F1F22",
+        background: "linear-gradient(165deg, rgba(18,18,20,0.98) 0%, rgba(5,5,5,0.99) 100%)",
+        position: "relative",
+        isolation: "isolate",
+        overflow: "hidden",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.55)",
+        borderRadius: 16,
+      }
+    : {
         animationDelay: "0.12s",
         display: "flex",
         flexDirection: "column",
@@ -73,7 +109,13 @@ export default function ISpryChat({ onAction }) {
         position: "relative",
         isolation: "isolate",
         overflow: "hidden",
-      }}
+        width: "100%",
+      };
+
+  const panel = (
+    <div
+      className={docked ? "ospry-chat" : "ospry-chat spry-rise w-full max-w-md md:max-w-none"}
+      style={shellStyle}
       aria-label="Chat with iSpry, SpryMD AI care agent"
     >
       <div
@@ -87,7 +129,6 @@ export default function ISpryChat({ onAction }) {
         }}
       />
 
-      {/* Header */}
       <div
         style={{
           position: "relative",
@@ -96,7 +137,7 @@ export default function ISpryChat({ onAction }) {
           alignItems: "center",
           justifyContent: "space-between",
           gap: 12,
-          padding: "14px 16px",
+          padding: docked ? "12px 14px" : "14px 16px",
           borderBottom: "1px solid #1F1F22",
         }}
       >
@@ -112,7 +153,7 @@ export default function ISpryChat({ onAction }) {
             }}
           />
           <div>
-            <div className="display" style={{ fontSize: 16, fontWeight: 600, color: "#FAFAFA", letterSpacing: "-0.02em" }}>
+            <div className="display" style={{ fontSize: docked ? 15 : 16, fontWeight: 600, color: "#FAFAFA", letterSpacing: "-0.02em" }}>
               iSpry
             </div>
             <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(30,200,165,0.85)", textTransform: "uppercase" }}>
@@ -120,12 +161,59 @@ export default function ISpryChat({ onAction }) {
             </div>
           </div>
         </div>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#8A8A8E", textTransform: "uppercase" }}>
-          Secure
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {!docked && (
+            <span className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#8A8A8E", textTransform: "uppercase" }}>
+              Secure
+            </span>
+          )}
+          {docked && (
+            <>
+              <button
+                type="button"
+                className="focus-ring"
+                aria-label="Minimize iSpry"
+                onClick={() => setExpanded(false)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 999,
+                  border: "1px solid #1F1F22",
+                  background: "transparent",
+                  color: "#C8C8C8",
+                  cursor: "pointer",
+                }}
+              >
+                <Minus size={14} />
+              </button>
+              <button
+                type="button"
+                className="focus-ring"
+                aria-label="Close iSpry panel"
+                onClick={() => setExpanded(false)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 999,
+                  border: "1px solid #1F1F22",
+                  background: "transparent",
+                  color: "#C8C8C8",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={14} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Messages */}
       <div
         ref={scrollerRef}
         className="scrollbar-hide"
@@ -134,7 +222,7 @@ export default function ISpryChat({ onAction }) {
           zIndex: 1,
           flex: 1,
           overflowY: "auto",
-          padding: "16px",
+          padding: docked ? "12px" : "16px",
           display: "flex",
           flexDirection: "column",
           gap: 12,
@@ -182,7 +270,6 @@ export default function ISpryChat({ onAction }) {
         )}
       </div>
 
-      {/* Starters */}
       {messages.length < 3 && (
         <div
           style={{
@@ -191,7 +278,7 @@ export default function ISpryChat({ onAction }) {
             display: "flex",
             flexWrap: "wrap",
             gap: 8,
-            padding: "0 16px 12px",
+            padding: docked ? "0 12px 10px" : "0 16px 12px",
           }}
         >
           {STARTERS.map((s) => (
@@ -216,7 +303,6 @@ export default function ISpryChat({ onAction }) {
         </div>
       )}
 
-      {/* Composer */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -227,7 +313,7 @@ export default function ISpryChat({ onAction }) {
           zIndex: 1,
           display: "flex",
           gap: 8,
-          padding: 12,
+          padding: docked ? 10 : 12,
           borderTop: "1px solid #1F1F22",
           background: "rgba(5,5,5,0.65)",
         }}
@@ -270,14 +356,8 @@ export default function ISpryChat({ onAction }) {
         </button>
       </form>
 
-      {onAction && (
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            padding: "0 12px 12px",
-          }}
-        >
+      {onAction && !docked && (
+        <div style={{ position: "relative", zIndex: 1, padding: "0 12px 12px" }}>
           <button
             type="button"
             className="focus-ring"
@@ -304,5 +384,102 @@ export default function ISpryChat({ onAction }) {
         </div>
       )}
     </div>
+  );
+
+  const dockBar = (
+    <button
+      type="button"
+      className="focus-ring"
+      onClick={() => setExpanded(true)}
+      aria-label="Open iSpry chat"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "12px 16px 12px 14px",
+        borderRadius: 999,
+        border: "1px solid rgba(255,255,255,0.12)",
+        background: "rgba(11,11,12,0.94)",
+        backdropFilter: "blur(12px)",
+        boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
+        color: "#FAFAFA",
+        cursor: "pointer",
+        maxWidth: "calc(100vw - 24px)",
+      }}
+    >
+      <span
+        className="breath-glow"
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 999,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(30,200,165,0.15)",
+          border: "1px solid rgba(30,200,165,0.35)",
+          color: "#1EC8A5",
+          flexShrink: 0,
+        }}
+      >
+        <MessageCircle size={16} strokeWidth={2} />
+      </span>
+      <span style={{ textAlign: "left", minWidth: 0 }}>
+        <span className="display" style={{ display: "block", fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em" }}>
+          iSpry
+        </span>
+        <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(30,200,165,0.9)", textTransform: "uppercase" }}>
+          Ask anything
+        </span>
+      </span>
+      <span
+        style={{
+          marginLeft: 4,
+          width: 8,
+          height: 8,
+          borderRadius: 99,
+          background: "#1EC8A5",
+          flexShrink: 0,
+        }}
+      />
+    </button>
+  );
+
+  const floating = (
+    <div
+      style={{
+        position: "fixed",
+        right: 16,
+        bottom: 16,
+        zIndex: 70,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        gap: 10,
+      }}
+    >
+      {expanded ? panel : dockBar}
+    </div>
+  );
+
+  return (
+    <>
+      {/* Hero slot — collapses when docked so the headline column can breathe */}
+      <div
+        aria-hidden={docked}
+        style={{
+          width: "100%",
+          minHeight: docked ? 0 : undefined,
+          height: docked ? 0 : undefined,
+          overflow: "hidden",
+          opacity: docked ? 0 : 1,
+          pointerEvents: docked ? "none" : "auto",
+          transition: "opacity 0.25s ease",
+        }}
+      >
+        {!docked && panel}
+      </div>
+      {docked && typeof document !== "undefined" && createPortal(floating, document.body)}
+    </>
   );
 }

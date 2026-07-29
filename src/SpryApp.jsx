@@ -657,10 +657,13 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
-const Landing = ({ go }) => (
+const Landing = ({ go }) => {
+  const [chatDocked, setChatDocked] = useState(false);
+
+  return (
   <div className="anim-fadeIn">
     {/* Hero — full-bleed signal field, brand-first, content-height */}
-    <section className="grain relative overflow-hidden" style={{ background: C.bg, minHeight: "min(100svh, 820px)" }}>
+    <section className="grain relative overflow-hidden" style={{ background: C.bg, minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
       <div className="absolute inset-0 pointer-events-none">
         <SignalField density={56} />
         <div
@@ -673,9 +676,9 @@ const Landing = ({ go }) => (
       </div>
       <div
         className="relative z-10 max-w-7xl mx-auto px-6 md:px-12"
-        style={{ minHeight: "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
+        style={{ minHeight: chatDocked ? undefined : "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
       >
-        <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-14 items-center">
+        <div className={`grid gap-8 md:gap-10 lg:gap-14 items-center ${chatDocked ? "" : "md:grid-cols-2"}`}>
           <div className="flex flex-col justify-center">
             <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.03em", marginBottom: 22 }}>
               Spry<span style={{ color: C.accent, fontWeight: 600 }}>MD</span>
@@ -688,7 +691,7 @@ const Landing = ({ go }) => (
                 lineHeight: 0.96,
                 fontWeight: 700,
                 color: C.ink,
-                maxWidth: 560,
+                maxWidth: chatDocked ? 900 : 560,
                 marginBottom: 22,
               }}
             >
@@ -713,8 +716,11 @@ const Landing = ({ go }) => (
             </div>
           </div>
 
-          <div className="relative flex items-stretch justify-center md:justify-end">
-            <ISpryChat onAction={() => go("landing-conditions")} />
+          <div
+            className="relative flex items-stretch justify-center md:justify-end"
+            style={chatDocked ? { position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" } : undefined}
+          >
+            <ISpryChat onAction={() => go("landing-conditions")} onDockChange={setChatDocked} />
           </div>
         </div>
       </div>
@@ -931,7 +937,8 @@ const Landing = ({ go }) => (
 
     <Footer go={go} />
   </div>
-);
+  );
+};
 
 const ConditionCard = ({ condition, onClick, delay }) => {
   const [hover, setHover] = useState(false);
