@@ -49,13 +49,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
   useEffect(() => {
     const onScroll = () => {
       const next = window.scrollY > 48;
-      setDocked((prev) => {
-        if (prev === next) return prev;
-        if (next && !wasDocked.current) setExpanded(false);
-        if (!next) setExpanded(false);
-        wasDocked.current = next;
-        return next;
-      });
+      setDocked((prev) => (prev === next ? prev : next));
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -63,6 +57,9 @@ export default function ISpryChat({ onAction, onDockChange }) {
   }, []);
 
   useEffect(() => {
+    if (docked && !wasDocked.current) setExpanded(false);
+    if (!docked) setExpanded(false);
+    wasDocked.current = docked;
     onDockChange?.(docked);
   }, [docked, onDockChange]);
 
