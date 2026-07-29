@@ -1,5 +1,6 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
+import { WearableToolbar } from "@/components/dashboard/WearableToolbar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createContext, useContext } from "react";
 import type { UseDashboardDataReturn } from "@/hooks/useDashboardData";
@@ -54,9 +55,10 @@ export default function DashboardLayout() {
         </div>
         <div className="relative z-10">
           <DashboardNav user={data.user} unreadCount={data.unreadCount} />
-          <main className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
+          <main className="mx-auto max-w-6xl px-4 py-8 pb-28 md:px-6 md:py-10 md:pb-32">
             <Outlet />
           </main>
+          <WearableToolbar />
         </div>
       </div>
     </DashboardContext.Provider>
