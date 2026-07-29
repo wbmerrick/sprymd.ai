@@ -1,5 +1,5 @@
 export { default as SignalField } from "./SignalField";
-export { default as Ospry } from "./Ospry";
+export { default as OspryChat } from "./OspryChat";
 export {
   OrbitRings,
   ScanFrame,
