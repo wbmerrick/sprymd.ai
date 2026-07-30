@@ -5,16 +5,24 @@ import type {
   Subscription,
   Treatment,
   TreatmentStatus,
+  WearableKind,
+  WearableReading,
+  WearableSyncMode,
 } from "@/types/dashboard";
 import {
   buildDashboardForEmail,
   clearCareNotifications,
   dismissCareNotification,
   getSignedInEmail,
+  importWearableUpload,
+  recordWearableReading,
+  setWearableSyncMode,
+  syncWearableDevice,
   toggleCareAutoship,
   updateCareProfile,
 } from "@/lib/patientCareStore";
 import { restoreCustomerSession } from "@/lib/customerAccounts";
+import { defaultWearableDevices } from "@/data/wearables";
 
 const STATUS_PRIORITY: Record<TreatmentStatus, number> = {
   expiring_soon: 0,
@@ -40,6 +48,8 @@ const emptyDashboard = (): DashboardData => ({
   messages: [],
   transactions: [],
   supportTopics: [],
+  wearableDevices: defaultWearableDevices(),
+  wearableReadings: [],
 });
 
 export function useDashboardData() {
@@ -133,6 +143,52 @@ export function useDashboardData() {
     [email, refresh],
   );
 
+  const setWearableMode = useCallback(
+    (deviceId: WearableKind, syncMode: WearableSyncMode) => {
+      if (!email) return;
+      setWearableSyncMode(email, deviceId, syncMode);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const syncWearable = useCallback(
+    (deviceId: WearableKind) => {
+      if (!email) return;
+      syncWearableDevice(email, deviceId);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const saveWearableReading = useCallback(
+    (input: {
+      deviceId: WearableKind;
+      metric: string;
+      value: number;
+      unit: string;
+      secondaryValue?: number;
+      secondaryUnit?: string;
+      note?: string;
+      source?: WearableReading["source"];
+      recordedAt?: string;
+    }) => {
+      if (!email) return;
+      recordWearableReading(email, input);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const importWearableFile = useCallback(
+    (deviceId: WearableKind, fileName: string, text: string) => {
+      if (!email) return;
+      importWearableUpload(email, deviceId, fileName, text);
+      refresh();
+    },
+    [email, refresh],
+  );
+
   return {
     ...data,
     notifications,
@@ -144,6 +200,10 @@ export function useDashboardData() {
     toggleAutoship,
     getTreatment,
     updateProfile,
+    setWearableSyncMode: setWearableMode,
+    syncWearable,
+    saveWearableReading,
+    importWearableFile,
     ready,
     isAuthenticated: !!email,
     email,

@@ -8,6 +8,10 @@ import type {
   SupportTopic,
   Transaction,
   Treatment,
+  WearableDevice,
+  WearableKind,
+  WearableReading,
+  WearableSyncMode,
 } from "@/types/dashboard";
 import {
   addCustomerOrder,
@@ -18,6 +22,7 @@ import {
   updateCustomerProfile,
   upsertStoredAccount,
 } from "@/lib/customerAccounts";
+import { defaultWearableDevices } from "@/data/wearables";
 
 const CARE_KEY = "sprymd_patient_care_v1";
 
@@ -44,6 +49,8 @@ export interface PatientCareRecord {
   messages: MessageThread[];
   transactions: Transaction[];
   clinicalCases: ClinicalCase[];
+  wearableDevices: WearableDevice[];
+  wearableReadings: WearableReading[];
   updatedAt: string;
 }
 
@@ -80,6 +87,8 @@ function emptyCare(email: string): PatientCareRecord {
     messages: [],
     transactions: [],
     clinicalCases: [],
+    wearableDevices: defaultWearableDevices(),
+    wearableReadings: [],
     updatedAt: new Date().toISOString(),
   };
 }
@@ -89,7 +98,20 @@ export function getPatientCare(email: string): PatientCareRecord {
   const key = emailKey(email);
   if (!key) return emptyCare("");
   const store = readAll();
-  if (store[key]) return store[key];
+  if (store[key]) {
+    const care = store[key];
+    // Backfill wearables for records created before this feature.
+    if (!care.wearableDevices?.length) {
+      care.wearableDevices = defaultWearableDevices();
+      care.wearableReadings = care.wearableReadings || [];
+      return saveCare(care);
+    }
+    if (!Array.isArray(care.wearableReadings)) {
+      care.wearableReadings = [];
+      return saveCare(care);
+    }
+    return care;
+  }
 
   // Migrate any legacy protocols/orders from customerAccounts into care shapes.
   const account = getStoredAccount(key);
@@ -176,6 +198,8 @@ export function buildDashboardForEmail(email: string): DashboardData | null {
     messages: care.messages,
     transactions: care.transactions,
     supportTopics: SUPPORT_TOPICS,
+    wearableDevices: care.wearableDevices || defaultWearableDevices(),
+    wearableReadings: care.wearableReadings || [],
   };
 }
 
@@ -419,4 +443,262 @@ export function ensureAccountShell(email: string, name?: string) {
     );
   }
   getPatientCare(key);
+}
+
+function statusForMode(mode: WearableSyncMode): WearableDevice["status"] {
+  if (mode === "continuous") return "monitoring";
+  if (mode === "sync") return "paired";
+  return "disconnected";
+}
+
+/** Update sync / continuous monitoring mode for a home wearable. */
+export function setWearableSyncMode(email: string, deviceId: WearableKind, syncMode: WearableSyncMode) {
+  const care = getPatientCare(email);
+  care.wearableDevices = (care.wearableDevices || defaultWearableDevices()).map((d) =>
+    d.id === deviceId
+      ? {
+          ...d,
+          syncMode,
+          status: statusForMode(syncMode),
+          lastSyncedAt: syncMode === "manual" ? d.lastSyncedAt : new Date().toISOString(),
+          enabled: true,
+        }
+      : d,
+  );
+  const device = care.wearableDevices.find((d) => d.id === deviceId);
+  if (device) {
+    pushNotification(care, {
+      icon: "activity",
+      title:
+        syncMode === "continuous"
+          ? `${device.name} · continuous monitoring on`
+          : syncMode === "sync"
+            ? `${device.name} · sync enabled`
+            : `${device.name} · manual upload`,
+      description:
+        syncMode === "continuous"
+          ? "Readings will stream into your dashboard when the device is in range."
+          : syncMode === "sync"
+            ? "Pull the latest session from your home device anytime."
+            : "Upload files or enter readings manually for this device.",
+    });
+  }
+  return saveCare(care);
+}
+
+/** Simulate a device sync pull and persist generated readings. */
+export function syncWearableDevice(email: string, deviceId: WearableKind) {
+  const care = getPatientCare(email);
+  const devices = care.wearableDevices || defaultWearableDevices();
+  const device = devices.find((d) => d.id === deviceId);
+  if (!device) return care;
+
+  care.wearableDevices = devices.map((d) =>
+    d.id === deviceId
+      ? { ...d, status: "syncing", lastSyncedAt: new Date().toISOString(), syncMode: d.syncMode === "manual" ? "sync" : d.syncMode }
+      : d,
+  );
+
+  const sample = sampleReadingForDevice(deviceId);
+  care.wearableReadings = [sample, ...(care.wearableReadings || [])].slice(0, 200);
+  care.wearableDevices = care.wearableDevices.map((d) =>
+    d.id === deviceId ? { ...d, status: d.syncMode === "continuous" ? "monitoring" : "paired" } : d,
+  );
+  pushNotification(care, {
+    icon: "activity",
+    title: `${device.name} synced`,
+    description: `${sample.metric}: ${formatReadingValue(sample)} saved to your dashboard.`,
+  });
+  return saveCare(care);
+}
+
+/** Save a manual or uploaded reading to the patient dashboard. */
+export function recordWearableReading(
+  email: string,
+  input: {
+    deviceId: WearableKind;
+    metric: string;
+    value: number;
+    unit: string;
+    secondaryValue?: number;
+    secondaryUnit?: string;
+    note?: string;
+    source?: WearableReading["source"];
+    recordedAt?: string;
+  },
+) {
+  const care = getPatientCare(email);
+  const reading: WearableReading = {
+    id: `wr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    deviceId: input.deviceId,
+    metric: input.metric,
+    value: input.value,
+    unit: input.unit,
+    secondaryValue: input.secondaryValue,
+    secondaryUnit: input.secondaryUnit,
+    note: input.note,
+    source: input.source || "manual",
+    recordedAt: input.recordedAt || new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+  };
+  care.wearableReadings = [reading, ...(care.wearableReadings || [])].slice(0, 200);
+  care.wearableDevices = (care.wearableDevices || defaultWearableDevices()).map((d) =>
+    d.id === input.deviceId ? { ...d, lastSyncedAt: reading.recordedAt, status: d.status === "disconnected" ? "paired" : d.status } : d,
+  );
+  const device = care.wearableDevices.find((d) => d.id === input.deviceId);
+  pushNotification(care, {
+    icon: "activity",
+    title: `${device?.name || "Device"} reading saved`,
+    description: `${reading.metric}: ${formatReadingValue(reading)}`,
+  });
+  return saveCare(care);
+}
+
+/** Parse a simple CSV/TSV/JSON upload into readings for a device. */
+export function importWearableUpload(
+  email: string,
+  deviceId: WearableKind,
+  fileName: string,
+  text: string,
+) {
+  const rows = parseWearableFile(text, deviceId);
+  if (!rows.length) {
+    throw new Error("No readable rows found. Use CSV with value columns, or a JSON array of readings.");
+  }
+  const care = getPatientCare(email);
+  const stamped = rows.map((r, i) => ({
+    ...r,
+    id: `wr_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 6)}`,
+    deviceId,
+    source: "upload" as const,
+    createdAt: new Date().toISOString(),
+  }));
+  care.wearableReadings = [...stamped, ...(care.wearableReadings || [])].slice(0, 200);
+  care.wearableDevices = (care.wearableDevices || defaultWearableDevices()).map((d) =>
+    d.id === deviceId
+      ? { ...d, lastSyncedAt: new Date().toISOString(), status: d.syncMode === "continuous" ? "monitoring" : "paired" }
+      : d,
+  );
+  const device = care.wearableDevices.find((d) => d.id === deviceId);
+  pushNotification(care, {
+    icon: "activity",
+    title: `${device?.name || "Device"} upload saved`,
+    description: `Imported ${stamped.length} reading${stamped.length === 1 ? "" : "s"} from ${fileName}.`,
+  });
+  return saveCare(care);
+}
+
+function formatReadingValue(r: Pick<WearableReading, "value" | "unit" | "secondaryValue" | "secondaryUnit">) {
+  const primary = `${r.value}${r.unit ? ` ${r.unit}` : ""}`;
+  if (r.secondaryValue != null) {
+    return `${primary} · ${r.secondaryValue}${r.secondaryUnit ? ` ${r.secondaryUnit}` : ""}`;
+  }
+  return primary;
+}
+
+function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
+  const now = new Date().toISOString();
+  const base = {
+    id: `wr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    deviceId,
+    source: "sync" as const,
+    recordedAt: now,
+    createdAt: now,
+  };
+  switch (deviceId) {
+    case "bp_monitor":
+      return { ...base, metric: "Blood pressure", value: 118 + Math.round(Math.random() * 10), unit: "mmHg", secondaryValue: 74 + Math.round(Math.random() * 6), secondaryUnit: "mmHg", note: "Systolic / diastolic" };
+    case "pulse_oximeter":
+      return { ...base, metric: "SpO₂", value: 96 + Math.round(Math.random() * 3), unit: "%", secondaryValue: 62 + Math.round(Math.random() * 12), secondaryUnit: "bpm" };
+    case "smart_scale":
+      return { ...base, metric: "Weight", value: Number((165 + Math.random() * 4).toFixed(1)), unit: "lb", secondaryValue: Number((22 + Math.random() * 2).toFixed(1)), secondaryUnit: "%" };
+    case "cpap":
+      return { ...base, metric: "AHI", value: Number((1.2 + Math.random() * 2).toFixed(1)), unit: "events/hr", secondaryValue: Number((6.5 + Math.random()).toFixed(1)), secondaryUnit: "hr" };
+    case "sleep_tracker":
+      return { ...base, metric: "Sleep score", value: 78 + Math.round(Math.random() * 15), unit: "/100", secondaryValue: Number((6.8 + Math.random()).toFixed(1)), secondaryUnit: "hr" };
+    default:
+      return { ...base, metric: "Reading", value: 0, unit: "" };
+  }
+}
+
+function parseWearableFile(text: string, deviceId: WearableKind): Omit<WearableReading, "id" | "deviceId" | "source" | "createdAt">[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+
+  if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      const arr = Array.isArray(parsed) ? parsed : [parsed];
+      return arr
+        .map((row) => normalizeJsonReading(row, deviceId))
+        .filter(Boolean) as Omit<WearableReading, "id" | "deviceId" | "source" | "createdAt">[];
+    } catch {
+      /* fall through to CSV */
+    }
+  }
+
+  const lines = trimmed.split(/\r?\n/).filter((l) => l.trim());
+  if (lines.length < 1) return [];
+  const delim = lines[0].includes("\t") ? "\t" : ",";
+  const headers = lines[0].split(delim).map((h) => h.trim().toLowerCase());
+  const hasHeader = headers.some((h) => /value|systolic|weight|spo|ahi|score|pulse|diastolic/.test(h));
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+
+  return dataLines
+    .map((line) => {
+      const cols = line.split(delim).map((c) => c.trim());
+      if (hasHeader) {
+        const get = (keys: string[]) => {
+          const idx = headers.findIndex((h) => keys.some((k) => h.includes(k)));
+          return idx >= 0 ? cols[idx] : undefined;
+        };
+        const value = Number(get(["systolic", "weight", "spo", "ahi", "score", "value", "primary"]));
+        if (!Number.isFinite(value)) return null;
+        const secondaryRaw = get(["diastolic", "pulse", "fat", "usage", "hours", "secondary"]);
+        const secondaryValue = secondaryRaw != null && secondaryRaw !== "" ? Number(secondaryRaw) : undefined;
+        return normalizeFromValues(deviceId, value, Number.isFinite(secondaryValue as number) ? secondaryValue : undefined, get(["date", "time", "recorded"]));
+      }
+      const value = Number(cols[0]);
+      if (!Number.isFinite(value)) return null;
+      const secondaryValue = cols[1] != null && cols[1] !== "" ? Number(cols[1]) : undefined;
+      return normalizeFromValues(deviceId, value, Number.isFinite(secondaryValue as number) ? secondaryValue : undefined, cols[2]);
+    })
+    .filter(Boolean) as Omit<WearableReading, "id" | "deviceId" | "source" | "createdAt">[];
+}
+
+function normalizeJsonReading(row: Record<string, unknown>, deviceId: WearableKind) {
+  const value = Number(row.value ?? row.systolic ?? row.weight ?? row.spo2 ?? row.ahi ?? row.score);
+  if (!Number.isFinite(value)) return null;
+  const secondaryValueRaw = row.secondaryValue ?? row.diastolic ?? row.pulse ?? row.bodyFat ?? row.usageHours ?? row.hours;
+  const secondaryValue = secondaryValueRaw != null && secondaryValueRaw !== "" ? Number(secondaryValueRaw) : undefined;
+  return normalizeFromValues(
+    deviceId,
+    value,
+    Number.isFinite(secondaryValue as number) ? (secondaryValue as number) : undefined,
+    String(row.recordedAt || row.date || ""),
+    String(row.metric || ""),
+    String(row.unit || ""),
+    String(row.note || ""),
+  );
+}
+
+function normalizeFromValues(
+  deviceId: WearableKind,
+  value: number,
+  secondaryValue?: number,
+  recordedAt?: string,
+  metric?: string,
+  unit?: string,
+  note?: string,
+): Omit<WearableReading, "id" | "deviceId" | "source" | "createdAt"> {
+  const defaults = sampleReadingForDevice(deviceId);
+  return {
+    metric: metric || defaults.metric,
+    value,
+    unit: unit || defaults.unit,
+    secondaryValue: secondaryValue ?? undefined,
+    secondaryUnit: secondaryValue != null ? defaults.secondaryUnit : undefined,
+    note: note || undefined,
+    recordedAt: recordedAt && !Number.isNaN(Date.parse(recordedAt)) ? new Date(recordedAt).toISOString() : new Date().toISOString(),
+  };
 }
