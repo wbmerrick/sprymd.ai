@@ -22,7 +22,6 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
-import imgEarthSpace from "./assets/earth-from-space.webp";
 import {
   signInCustomer,
   signUpCustomer,
@@ -137,15 +136,6 @@ const FontInjector = () => (
     .orbit-spin-rev { transform-box: fill-box; transform-origin: center; animation: orbitSpinRev 64s linear infinite; }
     .telemetry-track { animation: telemetryScroll 28s linear infinite; }
     .scan-line { animation: scanSweep 4.5s ease-in-out infinite; }
-    @keyframes earthDrift {
-      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-      50% { transform: translate3d(0, -1.2%, 0) scale(1.025); }
-    }
-    .earth-distant {
-      animation: earthDrift 42s ease-in-out infinite;
-      will-change: transform;
-      object-fit: cover;
-    }
     .grain { position: relative; }
     .grain::after {
       content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04; z-index: 2;
@@ -168,7 +158,7 @@ const FontInjector = () => (
       background: radial-gradient(ellipse at 80% 20%, rgba(30,200,165,0.08), transparent 50%);
     }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise {
         animation: none !important;
       }
     }
@@ -670,38 +660,8 @@ const Landing = ({ go }) => {
 
   return (
   <div className="anim-fadeIn relative">
-    {/* ISS orbital Earth — fixed center of viewport, far background */}
-    <div
-      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
-      aria-hidden="true"
-    >
-      <img
-        src={imgEarthSpace}
-        alt=""
-        className="earth-distant select-none"
-        style={{
-          width: "min(110vw, 1400px)",
-          height: "min(72vh, 780px)",
-          opacity: 0.55,
-          filter: "saturate(1.05) brightness(0.88) contrast(1.12)",
-          maskImage:
-            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
-        }}
-      />
-      {/* Soft space vignette so the curved limb reads like a station window view */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 55% 48% at 50% 50%, transparent 0%, rgba(5,5,5,0.25) 55%, rgba(5,5,5,0.72) 100%)",
-        }}
-      />
-    </div>
-
     {/* Hero — full-bleed signal field, brand-first, content-height */}
-    <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent", minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
+    <section className="grain relative z-10 overflow-hidden" style={{ background: C.bg, minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
       <div className="absolute inset-0 pointer-events-none">
         <SignalField density={40} />
         <div
