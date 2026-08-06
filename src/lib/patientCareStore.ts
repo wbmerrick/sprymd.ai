@@ -495,6 +495,10 @@ function statusForMode(mode: WearableSyncMode): WearableDevice["status"] {
 /** Update sync / continuous monitoring mode for a home wearable. */
 export function setWearableSyncMode(email: string, deviceId: WearableKind, syncMode: WearableSyncMode) {
   const care = getPatientCare(email);
+  const target = (care.wearableDevices || []).find((d) => d.id === deviceId);
+  if (target && target.owned === false) {
+    throw new Error("Purchase this device in the marketplace to unlock monitoring.");
+  }
   care.wearableDevices = (care.wearableDevices || defaultWearableDevices()).map((d) =>
     d.id === deviceId
       ? {

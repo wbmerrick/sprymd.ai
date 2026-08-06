@@ -17,6 +17,7 @@ export function BodyMetricsPanel({
   const [inches, setInches] = useState(String(fi.inches));
   const [weight, setWeight] = useState(bodyProfile.weightLb != null ? String(bodyProfile.weightLb) : "");
   const [target, setTarget] = useState(bodyProfile.targetWeightLb != null ? String(bodyProfile.targetWeightLb) : "");
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     const next = bodyProfile.heightCm != null ? heightCmToFeetInches(bodyProfile.heightCm) : { feet: 5, inches: 10 };
@@ -51,11 +52,27 @@ export function BodyMetricsPanel({
     const i = Number(inches);
     const w = weight.trim() === "" ? null : Number(weight);
     const t = target.trim() === "" ? null : Number(target);
-    if (!Number.isFinite(f) || !Number.isFinite(i)) return;
+    if (!Number.isFinite(f) || f < 3 || f > 8) {
+      setFormError("Height feet must be between 3 and 8.");
+      return;
+    }
+    if (!Number.isFinite(i) || i < 0 || i > 11) {
+      setFormError("Height inches must be between 0 and 11.");
+      return;
+    }
+    if (w != null && (!Number.isFinite(w) || w < 50 || w > 800)) {
+      setFormError("Weight must be between 50 and 800 lb.");
+      return;
+    }
+    if (t != null && (!Number.isFinite(t) || t < 50 || t > 800)) {
+      setFormError("Target weight must be between 50 and 800 lb.");
+      return;
+    }
+    setFormError("");
     onUpdateBody({
       heightCm: feetInchesToCm(f, i),
-      weightLb: w != null && Number.isFinite(w) ? w : null,
-      targetWeightLb: t != null && Number.isFinite(t) ? t : null,
+      weightLb: w,
+      targetWeightLb: t,
     });
   };
 
@@ -111,6 +128,7 @@ export function BodyMetricsPanel({
           <input value={target} onChange={(e) => setTarget(e.target.value)} className="mt-1 w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-sm" />
         </label>
       </div>
+      {formError ? <p className="mt-2 text-xs text-rose-300">{formError}</p> : null}
       <button
         type="button"
         onClick={save}
