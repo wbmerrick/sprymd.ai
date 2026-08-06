@@ -87,7 +87,12 @@ export type WearableKind =
   | "pulse_oximeter"
   | "smart_scale"
   | "cpap"
-  | "sleep_tracker";
+  | "sleep_tracker"
+  | "oura_ring"
+  | "whoop_band"
+  | "apple_watch"
+  | "garmin_watch"
+  | "cgm";
 
 export type WearableSyncMode = "manual" | "sync" | "continuous";
 
@@ -104,6 +109,11 @@ export interface WearableDevice {
   status: WearableConnectionStatus;
   lastSyncedAt: string | null;
   enabled: boolean;
+  /** Purchase-gated — unlocked via marketplace checkout */
+  owned: boolean;
+  marketplaceProductId?: string;
+  priceUsd?: number;
+  tier?: "clinical" | "recovery" | "metabolic" | "sleep";
 }
 
 export interface WearableReading {
@@ -120,6 +130,39 @@ export interface WearableReading {
   createdAt: string;
 }
 
+export interface BodyProfile {
+  heightCm: number | null;
+  weightLb: number | null;
+  targetWeightLb: number | null;
+  updatedAt: string;
+}
+
+export type BodyGoalMetric =
+  | "weight"
+  | "bmi"
+  | "bp_sys"
+  | "spo2"
+  | "sleep_score"
+  | "glucose"
+  | "hr"
+  | "custom";
+
+export interface BodyGoal {
+  id: string;
+  title: string;
+  metric: BodyGoalMetric;
+  targetValue: number;
+  unit: string;
+  currentValue?: number;
+  treatmentId?: string;
+  deviceId?: WearableKind;
+  status: "active" | "achieved" | "paused";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DashboardLayoutPreset = "care_simple" | "clinical_terminal" | "device_ops";
+
 export interface DashboardData {
   user: DashboardUser;
   treatments: Treatment[];
@@ -131,4 +174,6 @@ export interface DashboardData {
   supportTopics: SupportTopic[];
   wearableDevices: WearableDevice[];
   wearableReadings: WearableReading[];
+  bodyProfile: BodyProfile;
+  bodyGoals: BodyGoal[];
 }

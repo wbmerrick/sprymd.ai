@@ -35,7 +35,7 @@ interface DashboardNavProps {
 export function DashboardNav({ user, unreadCount }: DashboardNavProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#050505]/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-3 py-3 md:px-5">
         <div className="flex items-center gap-6 min-w-0">
           <Link to="/" className="shrink-0 font-semibold tracking-tight text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
             Spry<span className="text-[#1EC8A5]">MD</span>
@@ -52,7 +52,7 @@ export function DashboardNav({ user, unreadCount }: DashboardNavProps) {
                         end={item.end}
                         className={({ isActive }) =>
                           cn(
-                            "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                             isActive
                               ? "bg-white text-black"
                               : "text-zinc-300 hover:bg-white/5 hover:text-white",

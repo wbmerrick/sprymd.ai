@@ -55,7 +55,7 @@ export default function DashboardLayout() {
         </div>
         <div className="relative z-10">
           <DashboardNav user={data.user} unreadCount={data.unreadCount} />
-          <main className="mx-auto max-w-6xl px-4 py-8 pb-28 md:px-6 md:py-10 md:pb-32">
+          <main className="mx-auto max-w-[1440px] px-3 py-6 pb-28 md:px-5 md:py-8 md:pb-32">
             <Outlet />
           </main>
           <WearableToolbar />

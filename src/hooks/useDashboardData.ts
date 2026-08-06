@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
+  BodyGoal,
+  BodyGoalMetric,
+  BodyProfile,
   DashboardData,
   NotificationItem,
   Subscription,
@@ -12,17 +15,25 @@ import type {
 import {
   buildDashboardForEmail,
   clearCareNotifications,
+  deleteBodyGoal,
   dismissCareNotification,
+  emptyBodyProfile,
   getSignedInEmail,
   importWearableUpload,
   recordWearableReading,
+  setWearableEnabled,
   setWearableSyncMode,
   syncWearableDevice,
   toggleCareAutoship,
+  unlockWearableDevice,
   updateCareProfile,
+  updateVitalsProfile,
+  upsertBodyGoal,
 } from "@/lib/patientCareStore";
 import { restoreCustomerSession } from "@/lib/customerAccounts";
 import { defaultWearableDevices } from "@/data/wearables";
+import { subscribeVitalsEvents } from "@/lib/vitalsBus";
+import { useWearableStream } from "@/hooks/useWearableStream";
 
 const STATUS_PRIORITY: Record<TreatmentStatus, number> = {
   expiring_soon: 0,
@@ -50,6 +61,8 @@ const emptyDashboard = (): DashboardData => ({
   supportTopics: [],
   wearableDevices: defaultWearableDevices(),
   wearableReadings: [],
+  bodyProfile: emptyBodyProfile(),
+  bodyGoals: [],
 });
 
 export function useDashboardData() {
@@ -85,6 +98,12 @@ export function useDashboardData() {
     setNotifications(data.notifications);
     setSubscriptions(data.subscriptions);
   }, [data.notifications, data.subscriptions]);
+
+  useEffect(() => {
+    return subscribeVitalsEvents(() => refresh());
+  }, [refresh]);
+
+  useWearableStream(email, data.wearableDevices, refresh);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.dismissed).length,
@@ -189,6 +208,60 @@ export function useDashboardData() {
     [email, refresh],
   );
 
+  const updateBody = useCallback(
+    (patch: Partial<Pick<BodyProfile, "heightCm" | "weightLb" | "targetWeightLb">>) => {
+      if (!email) return;
+      updateVitalsProfile(email, patch);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const saveBodyGoal = useCallback(
+    (input: {
+      id?: string;
+      title: string;
+      metric: BodyGoalMetric;
+      targetValue: number;
+      unit: string;
+      treatmentId?: string;
+      deviceId?: WearableKind;
+      status?: BodyGoal["status"];
+    }) => {
+      if (!email) return;
+      upsertBodyGoal(email, input);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const removeBodyGoal = useCallback(
+    (goalId: string) => {
+      if (!email) return;
+      deleteBodyGoal(email, goalId);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const unlockDevice = useCallback(
+    (kind: WearableKind) => {
+      if (!email) return;
+      unlockWearableDevice(email, kind);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const toggleDeviceEnabled = useCallback(
+    (kind: WearableKind, enabled: boolean) => {
+      if (!email) return;
+      setWearableEnabled(email, kind, enabled);
+      refresh();
+    },
+    [email, refresh],
+  );
+
   return {
     ...data,
     notifications,
@@ -204,6 +277,11 @@ export function useDashboardData() {
     syncWearable,
     saveWearableReading,
     importWearableFile,
+    updateBody,
+    saveBodyGoal,
+    removeBodyGoal,
+    unlockDevice,
+    toggleDeviceEnabled,
     ready,
     isAuthenticated: !!email,
     email,

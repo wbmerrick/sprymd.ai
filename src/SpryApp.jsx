@@ -5,6 +5,7 @@ import {
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
   Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
+  Watch,
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
 
@@ -436,6 +437,26 @@ const products = [
     icon: Leaf, image: imgLTheanine, color: "hsl(150, 55%, 40%)",
     benefit: "Calm without sedation",
     desc: "Smooth focus for high-stress days. Pairs cleanly with coffee — no crash, no fog." },
+  { id: "p13", name: "Oura Ring 4", brand: "Oura", cat: "Devices", price: 349, compareAt: 399, hsa: false, badge: "Bioinformatic", rating: 4.7, reviews: 2104,
+    icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
+    benefit: "HRV, sleep, and recovery on your finger",
+    desc: "Clinical-grade nightly biometrics. Unlocks realtime Oura signals on your SpryMD patient terminal. Membership sold separately." },
+  { id: "p14", name: "Whoop 5.0 Membership", brand: "Whoop", cat: "Devices", price: 239, compareAt: 269, hsa: false, badge: "Strain + recovery", rating: 4.6, reviews: 1588,
+    icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
+    benefit: "24/7 strain, recovery, and sleep coaching",
+    desc: "Annual membership hardware kit. Streams recovery and strain into your clinical terminal watchlist." },
+  { id: "p15", name: "Apple Watch Series", brand: "Apple", cat: "Devices", price: 429, compareAt: 499, hsa: false, badge: "Top wearable", rating: 4.8, reviews: 5402,
+    icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
+    benefit: "HR, SpO₂, and activity that clinicians recognize",
+    desc: "GPS model. Sync or stream heart rate and SpO₂ into SpryMD for protocol review." },
+  { id: "p16", name: "Garmin Venu 3", brand: "Garmin", cat: "Devices", price: 449, compareAt: 499, hsa: false, badge: null, rating: 4.7, reviews: 976,
+    icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
+    benefit: "Training load with clinical-grade HR",
+    desc: "AMOLED sports watch. Unlocks Garmin vitals panels on the patient desk." },
+  { id: "p17", name: "Dexcom G7 CGM Kit", brand: "Dexcom", cat: "Devices", price: 199, compareAt: 249, hsa: true, badge: "Metabolic", rating: 4.8, reviews: 3210,
+    icon: Droplets, image: imgPulseOximeter, color: "hsl(150, 55%, 40%)",
+    benefit: "Glucose on the ticker, every few minutes",
+    desc: "Sensor starter kit for continuous glucose. Rx pathway may apply — streams to your terminal when unlocked." },
 ];
 
 const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Sleep"];
@@ -2826,7 +2847,7 @@ export default function App() {
     return () => { cancelled = true; };
   }, []);
 
-  // Deep-link from /dashboard auth redirect: /?auth=1&returnTo=...
+  // Deep-link: /?auth=1&returnTo=... or /?view=marketplace&filter=Devices
   useEffect(() => {
     if (!authReady) return;
     const qs = new URLSearchParams(window.location.search);
@@ -2835,6 +2856,13 @@ export default function App() {
       const target = returnTo.startsWith("/dashboard") ? "account" : returnTo;
       setParams({ returnTo: target === "account" ? "account" : target });
       setView("signin");
+      window.history.replaceState({}, "", "/");
+      return;
+    }
+    const deepView = qs.get("view");
+    if (deepView === "marketplace") {
+      setParams({ filter: qs.get("filter") || "All" });
+      setView("marketplace");
       window.history.replaceState({}, "", "/");
     }
   }, [authReady]);
@@ -2978,7 +3006,7 @@ export default function App() {
       const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
       recordCartCheckout({
         email,
-        items: cart.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+        items: cart.map((i) => ({ name: i.name, qty: i.qty, price: i.price, productId: i.id })),
         total,
       });
     }
