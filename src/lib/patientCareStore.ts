@@ -1,4 +1,7 @@
 import type {
+  BodyGoal,
+  BodyGoalMetric,
+  BodyProfile,
   DashboardData,
   DashboardUser,
   MessageThread,
@@ -22,7 +25,10 @@ import {
   updateCustomerProfile,
   upsertStoredAccount,
 } from "@/lib/customerAccounts";
-import { defaultWearableDevices } from "@/data/wearables";
+import { defaultWearableDevices, MARKETPLACE_DEVICE_MAP, mergeWearableCatalog } from "@/data/wearables";
+import { publishVitalsEvent } from "@/lib/vitalsBus";
+
+const READINGS_CAP = 500;
 
 const CARE_KEY = "sprymd_patient_care_v1";
 
@@ -40,6 +46,15 @@ export interface ClinicalCase {
   reviewedAt?: string;
 }
 
+export function emptyBodyProfile(): BodyProfile {
+  return {
+    heightCm: null,
+    weightLb: null,
+    targetWeightLb: null,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 export interface PatientCareRecord {
   email: string;
   treatments: Treatment[];
@@ -51,6 +66,8 @@ export interface PatientCareRecord {
   clinicalCases: ClinicalCase[];
   wearableDevices: WearableDevice[];
   wearableReadings: WearableReading[];
+  bodyProfile: BodyProfile;
+  bodyGoals: BodyGoal[];
   updatedAt: string;
 }
 
@@ -89,6 +106,8 @@ function emptyCare(email: string): PatientCareRecord {
     clinicalCases: [],
     wearableDevices: defaultWearableDevices(),
     wearableReadings: [],
+    bodyProfile: emptyBodyProfile(),
+    bodyGoals: [],
     updatedAt: new Date().toISOString(),
   };
 }
@@ -100,16 +119,34 @@ export function getPatientCare(email: string): PatientCareRecord {
   const store = readAll();
   if (store[key]) {
     const care = store[key];
+    let dirty = false;
     // Backfill wearables for records created before this feature.
     if (!care.wearableDevices?.length) {
       care.wearableDevices = defaultWearableDevices();
       care.wearableReadings = care.wearableReadings || [];
-      return saveCare(care);
+      dirty = true;
+    } else {
+      const merged = mergeWearableCatalog(care.wearableDevices);
+      if (merged.length !== care.wearableDevices.length || merged.some((d, i) => d.id !== care.wearableDevices[i]?.id || d.owned !== care.wearableDevices[i]?.owned)) {
+        care.wearableDevices = merged;
+        dirty = true;
+      } else {
+        care.wearableDevices = merged;
+      }
     }
     if (!Array.isArray(care.wearableReadings)) {
       care.wearableReadings = [];
-      return saveCare(care);
+      dirty = true;
     }
+    if (!care.bodyProfile) {
+      care.bodyProfile = emptyBodyProfile();
+      dirty = true;
+    }
+    if (!Array.isArray(care.bodyGoals)) {
+      care.bodyGoals = [];
+      dirty = true;
+    }
+    if (dirty) return saveCare(care);
     return care;
   }
 
@@ -200,6 +237,8 @@ export function buildDashboardForEmail(email: string): DashboardData | null {
     supportTopics: SUPPORT_TOPICS,
     wearableDevices: care.wearableDevices || defaultWearableDevices(),
     wearableReadings: care.wearableReadings || [],
+    bodyProfile: care.bodyProfile || emptyBodyProfile(),
+    bodyGoals: care.bodyGoals || [],
   };
 }
 
@@ -346,7 +385,7 @@ export function recordSubscriptionCheckout(input: {
 
 export function recordCartCheckout(input: {
   email: string;
-  items: { name: string; qty: number; price: number }[];
+  items: { name: string; qty: number; price: number; productId?: string }[];
   total: number;
 }) {
   const email = emailKey(input.email);
@@ -365,7 +404,9 @@ export function recordCartCheckout(input: {
     title: "Marketplace order placed",
     description: "Your stack order is recorded. Payment processing will be confirmed by email.",
   });
+  linkMarketplacePurchaseToWearables(email, input.items, care);
   saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: "cart", at: new Date().toISOString() });
   addCustomerOrder(email, { label, mode: "cart", total: input.total });
   return care;
 }
@@ -500,16 +541,19 @@ export function syncWearableDevice(email: string, deviceId: WearableKind) {
   );
 
   const sample = sampleReadingForDevice(deviceId);
-  care.wearableReadings = [sample, ...(care.wearableReadings || [])].slice(0, 200);
+  care.wearableReadings = [sample, ...(care.wearableReadings || [])].slice(0, READINGS_CAP);
   care.wearableDevices = care.wearableDevices.map((d) =>
     d.id === deviceId ? { ...d, status: d.syncMode === "continuous" ? "monitoring" : "paired" } : d,
   );
+  applyReadingToBodyProfile(care, sample);
   pushNotification(care, {
     icon: "activity",
     title: `${device.name} synced`,
     description: `${sample.metric}: ${formatReadingValue(sample)} saved to your dashboard.`,
   });
-  return saveCare(care);
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "reading", deviceId, readingId: sample.id, at: sample.recordedAt });
+  return saved;
 }
 
 /** Save a manual or uploaded reading to the patient dashboard. */
@@ -541,17 +585,22 @@ export function recordWearableReading(
     recordedAt: input.recordedAt || new Date().toISOString(),
     createdAt: new Date().toISOString(),
   };
-  care.wearableReadings = [reading, ...(care.wearableReadings || [])].slice(0, 200);
+  care.wearableReadings = [reading, ...(care.wearableReadings || [])].slice(0, READINGS_CAP);
   care.wearableDevices = (care.wearableDevices || defaultWearableDevices()).map((d) =>
     d.id === input.deviceId ? { ...d, lastSyncedAt: reading.recordedAt, status: d.status === "disconnected" ? "paired" : d.status } : d,
   );
+  applyReadingToBodyProfile(care, reading);
   const device = care.wearableDevices.find((d) => d.id === input.deviceId);
-  pushNotification(care, {
-    icon: "activity",
-    title: `${device?.name || "Device"} reading saved`,
-    description: `${reading.metric}: ${formatReadingValue(reading)}`,
-  });
-  return saveCare(care);
+  if (input.source !== "continuous") {
+    pushNotification(care, {
+      icon: "activity",
+      title: `${device?.name || "Device"} reading saved`,
+      description: `${reading.metric}: ${formatReadingValue(reading)}`,
+    });
+  }
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "reading", deviceId: input.deviceId, readingId: reading.id, at: reading.recordedAt });
+  return saved;
 }
 
 /** Parse a simple CSV/TSV/JSON upload into readings for a device. */
@@ -573,19 +622,22 @@ export function importWearableUpload(
     source: "upload" as const,
     createdAt: new Date().toISOString(),
   }));
-  care.wearableReadings = [...stamped, ...(care.wearableReadings || [])].slice(0, 200);
+  care.wearableReadings = [...stamped, ...(care.wearableReadings || [])].slice(0, READINGS_CAP);
   care.wearableDevices = (care.wearableDevices || defaultWearableDevices()).map((d) =>
     d.id === deviceId
       ? { ...d, lastSyncedAt: new Date().toISOString(), status: d.syncMode === "continuous" ? "monitoring" : "paired" }
       : d,
   );
+  for (const row of stamped) applyReadingToBodyProfile(care, row);
   const device = care.wearableDevices.find((d) => d.id === deviceId);
   pushNotification(care, {
     icon: "activity",
     title: `${device?.name || "Device"} upload saved`,
     description: `Imported ${stamped.length} reading${stamped.length === 1 ? "" : "s"} from ${fileName}.`,
   });
-  return saveCare(care);
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "reading", deviceId, readingId: stamped[0]?.id || "", at: new Date().toISOString() });
+  return saved;
 }
 
 function formatReadingValue(r: Pick<WearableReading, "value" | "unit" | "secondaryValue" | "secondaryUnit">) {
@@ -616,9 +668,239 @@ function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
       return { ...base, metric: "AHI", value: Number((1.2 + Math.random() * 2).toFixed(1)), unit: "events/hr", secondaryValue: Number((6.5 + Math.random()).toFixed(1)), secondaryUnit: "hr" };
     case "sleep_tracker":
       return { ...base, metric: "Sleep score", value: 78 + Math.round(Math.random() * 15), unit: "/100", secondaryValue: Number((6.8 + Math.random()).toFixed(1)), secondaryUnit: "hr" };
+    case "oura_ring":
+      return { ...base, metric: "HRV", value: 38 + Math.round(Math.random() * 28), unit: "ms", secondaryValue: 72 + Math.round(Math.random() * 20), secondaryUnit: "/100" };
+    case "whoop_band":
+      return { ...base, metric: "Recovery", value: 45 + Math.round(Math.random() * 45), unit: "%", secondaryValue: Number((8 + Math.random() * 12).toFixed(1)), secondaryUnit: "" };
+    case "apple_watch":
+      return { ...base, metric: "Heart rate", value: 58 + Math.round(Math.random() * 30), unit: "bpm", secondaryValue: 96 + Math.round(Math.random() * 3), secondaryUnit: "%" };
+    case "garmin_watch":
+      return { ...base, metric: "Heart rate", value: 60 + Math.round(Math.random() * 28), unit: "bpm", secondaryValue: 40 + Math.round(Math.random() * 30), secondaryUnit: "ms" };
+    case "cgm":
+      return { ...base, metric: "Glucose", value: 90 + Math.round(Math.random() * 50), unit: "mg/dL" };
     default:
       return { ...base, metric: "Reading", value: 0, unit: "" };
   }
+}
+
+function applyReadingToBodyProfile(care: PatientCareRecord, reading: Pick<WearableReading, "deviceId" | "metric" | "value" | "unit">) {
+  if (!care.bodyProfile) care.bodyProfile = emptyBodyProfile();
+  const metric = reading.metric.toLowerCase();
+  if (reading.deviceId === "smart_scale" && (metric.includes("weight") || reading.unit === "lb")) {
+    care.bodyProfile.weightLb = reading.value;
+    care.bodyProfile.updatedAt = new Date().toISOString();
+  }
+  // Keep active weight goals current
+  care.bodyGoals = (care.bodyGoals || []).map((g) => {
+    if (g.metric === "weight" && metric.includes("weight")) {
+      return { ...g, currentValue: reading.value, updatedAt: new Date().toISOString(), status: reading.value <= g.targetValue ? "achieved" : g.status };
+    }
+    return g;
+  });
+}
+
+/** Quiet continuous tick — no notification spam. */
+export function appendContinuousTick(email: string, deviceId: WearableKind) {
+  const care = getPatientCare(email);
+  const device = (care.wearableDevices || []).find((d) => d.id === deviceId);
+  if (!device?.owned || !device.enabled || device.syncMode !== "continuous") return care;
+
+  const sample = { ...sampleReadingForDevice(deviceId), source: "continuous" as const };
+  care.wearableReadings = [sample, ...(care.wearableReadings || [])].slice(0, READINGS_CAP);
+  care.wearableDevices = care.wearableDevices.map((d) =>
+    d.id === deviceId ? { ...d, lastSyncedAt: sample.recordedAt, status: "monitoring" } : d,
+  );
+  applyReadingToBodyProfile(care, sample);
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "reading", deviceId, readingId: sample.id, at: sample.recordedAt });
+  return saved;
+}
+
+export function unlockWearableDevice(email: string, kind: WearableKind) {
+  const care = getPatientCare(email);
+  care.wearableDevices = mergeWearableCatalog(care.wearableDevices).map((d) =>
+    d.id === kind ? { ...d, owned: true, enabled: true, status: d.status === "disconnected" ? "paired" : d.status } : d,
+  );
+  const device = care.wearableDevices.find((d) => d.id === kind);
+  if (device) {
+    pushNotification(care, {
+      icon: "activity",
+      title: `${device.brand} ${device.name} unlocked`,
+      description: "Device is ready to sync, upload, or stream on your clinical terminal.",
+    });
+  }
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: kind, at: new Date().toISOString() });
+  return saved;
+}
+
+export function setWearableEnabled(email: string, kind: WearableKind, enabled: boolean) {
+  const care = getPatientCare(email);
+  care.wearableDevices = (care.wearableDevices || []).map((d) =>
+    d.id === kind ? { ...d, enabled, status: enabled ? d.status : "disconnected", syncMode: enabled ? d.syncMode : "manual" } : d,
+  );
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: kind, at: new Date().toISOString() });
+  return saved;
+}
+
+export function getOwnedWearableKinds(email: string): WearableKind[] {
+  return (getPatientCare(email).wearableDevices || []).filter((d) => d.owned).map((d) => d.id);
+}
+
+export function linkMarketplacePurchaseToWearables(
+  email: string,
+  items: { productId?: string; name?: string }[],
+  existingCare?: PatientCareRecord,
+) {
+  const care = existingCare || getPatientCare(email);
+  care.wearableDevices = mergeWearableCatalog(care.wearableDevices);
+  let unlocked = 0;
+  for (const item of items) {
+    const kind =
+      (item.productId && MARKETPLACE_DEVICE_MAP[item.productId]) ||
+      WEARABLE_NAME_HINTS.find((h) => item.name && h.re.test(item.name))?.kind;
+    if (!kind) continue;
+    care.wearableDevices = care.wearableDevices.map((d) =>
+      d.id === kind ? { ...d, owned: true, enabled: true, status: "paired" as const } : d,
+    );
+    unlocked += 1;
+  }
+  if (unlocked && !existingCare) {
+    pushNotification(care, {
+      icon: "activity",
+      title: "Wearable unlocked on your terminal",
+      description: "Open the Signals panel to sync or start continuous monitoring.",
+    });
+    return saveCare(care);
+  }
+  return care;
+}
+
+const WEARABLE_NAME_HINTS: { re: RegExp; kind: WearableKind }[] = [
+  { re: /blood pressure|omron/i, kind: "bp_monitor" },
+  { re: /pulse ox|masimo|spo/i, kind: "pulse_oximeter" },
+  { re: /body composition|withings|scale/i, kind: "smart_scale" },
+  { re: /oura/i, kind: "oura_ring" },
+  { re: /whoop/i, kind: "whoop_band" },
+  { re: /apple watch/i, kind: "apple_watch" },
+  { re: /garmin|venu/i, kind: "garmin_watch" },
+  { re: /dexcom|cgm|glucose/i, kind: "cgm" },
+];
+
+export function getVitalsProfile(email: string): BodyProfile {
+  return getPatientCare(email).bodyProfile || emptyBodyProfile();
+}
+
+export function updateVitalsProfile(
+  email: string,
+  patch: Partial<Pick<BodyProfile, "heightCm" | "weightLb" | "targetWeightLb">>,
+) {
+  const care = getPatientCare(email);
+  care.bodyProfile = {
+    ...(care.bodyProfile || emptyBodyProfile()),
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+  if (patch.weightLb != null) {
+    care.bodyGoals = (care.bodyGoals || []).map((g) =>
+      g.metric === "weight"
+        ? {
+            ...g,
+            currentValue: patch.weightLb!,
+            updatedAt: new Date().toISOString(),
+            status: patch.weightLb! <= g.targetValue ? "achieved" : g.status === "achieved" ? "active" : g.status,
+          }
+        : g,
+    );
+  }
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "profile", at: new Date().toISOString() });
+  return saved;
+}
+
+export function upsertBodyGoal(
+  email: string,
+  input: {
+    id?: string;
+    title: string;
+    metric: BodyGoalMetric;
+    targetValue: number;
+    unit: string;
+    treatmentId?: string;
+    deviceId?: WearableKind;
+    status?: BodyGoal["status"];
+  },
+) {
+  const care = getPatientCare(email);
+  const now = new Date().toISOString();
+  const current =
+    input.metric === "weight" && care.bodyProfile?.weightLb != null
+      ? care.bodyProfile.weightLb
+      : undefined;
+  if (input.id) {
+    care.bodyGoals = (care.bodyGoals || []).map((g) =>
+      g.id === input.id
+        ? {
+            ...g,
+            title: input.title,
+            metric: input.metric,
+            targetValue: input.targetValue,
+            unit: input.unit,
+            treatmentId: input.treatmentId,
+            deviceId: input.deviceId,
+            status: input.status || g.status,
+            currentValue: current ?? g.currentValue,
+            updatedAt: now,
+          }
+        : g,
+    );
+  } else {
+    care.bodyGoals = [
+      {
+        id: `goal_${Date.now()}`,
+        title: input.title,
+        metric: input.metric,
+        targetValue: input.targetValue,
+        unit: input.unit,
+        treatmentId: input.treatmentId,
+        deviceId: input.deviceId,
+        status: input.status || "active",
+        currentValue: current,
+        createdAt: now,
+        updatedAt: now,
+      },
+      ...(care.bodyGoals || []),
+    ];
+  }
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "goal", at: now });
+  return saved;
+}
+
+export function deleteBodyGoal(email: string, goalId: string) {
+  const care = getPatientCare(email);
+  care.bodyGoals = (care.bodyGoals || []).filter((g) => g.id !== goalId);
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "goal", at: new Date().toISOString() });
+  return saved;
+}
+
+export function clearWearableReadings(email: string, kind?: WearableKind) {
+  const care = getPatientCare(email);
+  care.wearableReadings = kind
+    ? (care.wearableReadings || []).filter((r) => r.deviceId !== kind)
+    : [];
+  return saveCare(care);
+}
+
+export function listLatestReadingsByDevice(email: string): Partial<Record<WearableKind, WearableReading>> {
+  const readings = getPatientCare(email).wearableReadings || [];
+  const out: Partial<Record<WearableKind, WearableReading>> = {};
+  for (const r of readings) {
+    if (!out[r.deviceId]) out[r.deviceId] = r;
+  }
+  return out;
 }
 
 function parseWearableFile(text: string, deviceId: WearableKind): Omit<WearableReading, "id" | "deviceId" | "source" | "createdAt">[] {

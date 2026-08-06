@@ -9,12 +9,14 @@ import {
   MessageSquare,
   LogOut,
   ChevronRight,
+  Ruler,
 } from "lucide-react";
 import { useDashboard } from "@/pages/dashboard/DashboardLayout";
 import { signOutCustomer } from "@/lib/customerAccounts";
+import { BodyMetricsPanel } from "@/components/dashboard/pro/BodyMetricsPanel";
 
 export default function ProfilePage() {
-  const { user } = useDashboard();
+  const { user, bodyProfile, bodyGoals, updateBody } = useDashboard();
   const navigate = useNavigate();
 
   const shortcuts = [
@@ -25,6 +27,7 @@ export default function ProfilePage() {
 
   const settings = [
     { to: "/dashboard/profile", label: "Account settings", icon: Settings },
+    { to: "/dashboard/goals", label: "Body size & goals", icon: Ruler },
     { to: "/dashboard/profile", label: "Lab history", icon: FlaskConical },
     { to: "/dashboard/support", label: "Help center", icon: LifeBuoy },
     { to: "/dashboard/support", label: "Support", icon: MessageSquare },
@@ -44,6 +47,8 @@ export default function ProfilePage() {
         </h1>
         <p className="text-sm text-zinc-400">{user.email}</p>
       </header>
+
+      <BodyMetricsPanel bodyProfile={bodyProfile} bodyGoals={bodyGoals || []} onUpdateBody={updateBody} />
 
       <section aria-labelledby="shortcuts-heading">
         <h2 id="shortcuts-heading" className="sr-only">

@@ -40,7 +40,7 @@ export function WearableToolbar() {
   const [note, setNote] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const devices = wearableDevices?.length ? wearableDevices : [];
+  const devices = (wearableDevices || []).filter((d) => d.owned !== false);
   const selected = useMemo(
     () => devices.find((d) => d.id === (selectedId || devices[0]?.id)) || null,
     [devices, selectedId],

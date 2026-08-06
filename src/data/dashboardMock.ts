@@ -1,4 +1,6 @@
 import type { DashboardData } from "@/types/dashboard";
+import { defaultWearableDevices } from "@/data/wearables";
+import { emptyBodyProfile } from "@/lib/patientCareStore";
 
 /** Realistic mock payload so every dashboard page is fully previewable. */
 export const mockDashboardData: DashboardData = {
@@ -319,6 +321,22 @@ export const mockDashboardData: DashboardData = {
       id: "topic_4",
       title: "Labs & visits",
       description: "Ordering labs and reviewing results",
+    },
+  ],
+  wearableDevices: defaultWearableDevices(),
+  wearableReadings: [],
+  bodyProfile: { ...emptyBodyProfile(), heightCm: 178, weightLb: 198, targetWeightLb: 175 },
+  bodyGoals: [
+    {
+      id: "goal_mock_1",
+      title: "Reach target weight",
+      metric: "weight",
+      targetValue: 175,
+      unit: "lb",
+      currentValue: 198,
+      status: "active",
+      createdAt: "2026-07-01T12:00:00.000Z",
+      updatedAt: "2026-08-01T12:00:00.000Z",
     },
   ],
 };
