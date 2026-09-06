@@ -113,7 +113,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
     <div
       className={docked ? "ospry-chat" : "ospry-chat spry-rise w-full max-w-md md:max-w-none"}
       style={shellStyle}
-      aria-label="Chat with iSpry, SpryMD AI care agent"
+      aria-label="Chat with iSpry, SpryMD care helper"
     >
       <div
         aria-hidden="true"
@@ -154,7 +154,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
               iSpry
             </div>
             <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(232,119,34,0.85)", textTransform: "uppercase" }}>
-              AI care agent · online
+              Chat helper · online
             </div>
           </div>
         </div>

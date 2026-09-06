@@ -31,7 +31,7 @@ function loadPreset(): Preset {
   } catch {
     /* ignore */
   }
-  return "clinical_terminal";
+  return "care_simple";
 }
 
 export function ClinicalTerminal({

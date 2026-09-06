@@ -115,7 +115,7 @@ export function ActionDock({
       {tab === "buy" ? (
         <div className="space-y-3 p-1">
           <p className="text-xs text-zinc-400">
-            Unlock top bioinformatic wearables — Oura, Whoop, Apple Watch, Garmin, Dexcom — and stream them into this terminal.
+            Add fitness devices — Oura, Whoop, Apple Watch, Garmin, Dexcom — and see their readings here.
           </p>
           <Link
             to="/?view=marketplace&filter=Devices"

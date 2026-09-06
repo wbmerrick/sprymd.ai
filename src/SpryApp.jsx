@@ -5,7 +5,7 @@ import {
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
   Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
-  Watch,
+  Watch, Menu,
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
 
@@ -37,7 +37,7 @@ import {
   recordRefillCheckout,
   ensureAccountShell,
 } from "./lib/patientCareStore";
-import { SignalField, OrbitRings, ScanFrame, TelemetryStrip, HexMesh, GridHorizon, ISpryChat } from "./components/graphics";
+import { SignalField, ScanFrame, GridHorizon, OrbitRings, ISpryChat } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -86,7 +86,7 @@ const FontInjector = () => (
       font-family: ${fonts.body}; letter-spacing: -0.005em;
       background-image:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.10), transparent 55%),
-        radial-gradient(ellipse 55% 40% at 100% 0%, rgba(0,51,153,0.18), transparent 50%);
+        radial-gradient(ellipse 50% 35% at 100% 0%, rgba(20,20,20,0.55), transparent 50%);
       background-attachment: fixed;
     }
     .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.02em; }
@@ -565,7 +565,7 @@ const Btn = ({ children, onClick, variant = "primary", size = "md", className = 
   return (
     <button type={type} onClick={onClick} disabled={disabled}
       className={`focus-ring inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 ${className}`}
-      style={{ ...sizes[size], ...variants[variant], borderRadius: 999, opacity: disabled ? 0.4 : 1, cursor: disabled ? "not-allowed" : "pointer", letterSpacing: "0.01em" }}
+      style={{ ...sizes[size], ...variants[variant], borderRadius: 8, opacity: disabled ? 0.4 : 1, cursor: disabled ? "not-allowed" : "pointer", letterSpacing: "0.01em" }}
       onMouseEnter={(e) => {
         if (disabled) return;
         if (variant === "primary") e.currentTarget.style.background = C.accentDeep;
@@ -626,6 +626,7 @@ const Row = ({ label, value }) => (
 // Header
 // ─────────────────────────────────────────────────────────────────────────────
 const Header = ({ go, cartCount, dark, user }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
   const fg = dark ? C.paper : C.ink;
   const navItems = [
     { label: "How it works", view: "how" },
@@ -634,43 +635,92 @@ const Header = ({ go, cartCount, dark, user }) => {
     { label: "Refills", view: "refills" },
     ...(user ? [{ label: "Dashboard", view: "dashboard" }] : []),
   ];
+  const goNav = (view) => {
+    setMenuOpen(false);
+    if (view === "signin") go("signin", { returnTo: "dashboard" });
+    else go(view);
+  };
   return (
-    <header className="w-full px-6 md:px-12 py-5 flex items-center justify-between"
+    <header className="relative w-full px-6 md:px-12 py-5"
       style={{ borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}` }}>
-      <button onClick={() => go("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
-      <nav className="hidden md:flex items-center gap-8">
-        {navItems.map((item) => (
-          <button key={item.label} onClick={() => go(item.view)}
-            className="focus-ring rounded text-sm transition-opacity hover:opacity-60"
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="focus-ring md:hidden rounded p-2"
+            style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt, color: fg }}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+          >
+            {menuOpen ? <X size={18} strokeWidth={1.75} /> : <Menu size={18} strokeWidth={1.75} />}
+          </button>
+          <button onClick={() => goNav("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
+        </div>
+        <nav className="hidden md:flex items-center gap-8">
+          {navItems.map((item) => (
+            <button key={item.label} onClick={() => goNav(item.view)}
+              className="focus-ring rounded text-sm transition-opacity hover:opacity-60"
+              style={{
+                color: item.view === "dashboard" ? C.accent : fg,
+                fontWeight: item.view === "dashboard" ? 600 : 500,
+              }}>{item.label}</button>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => goNav(user ? "dashboard" : "signin")}
+            className="focus-ring inline-flex items-center gap-2 rounded-lg px-3 py-2 transition-colors"
             style={{
-              color: item.view === "dashboard" ? C.accent : fg,
-              fontWeight: item.view === "dashboard" ? 600 : 500,
-            }}>{item.label}</button>
-        ))}
-      </nav>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => go(user ? "dashboard" : "signin", user ? {} : { returnTo: "dashboard" })}
-          className="focus-ring inline-flex items-center gap-2 rounded-full px-3 py-2 transition-colors"
-          style={{
-            background: user ? C.accent : (dark ? "rgba(255,255,255,0.08)" : C.bgAlt),
-            color: user ? "#FFFFFF" : fg,
-          }}
-          aria-label={user ? "Open patient dashboard" : "Sign in to dashboard"}>
-          <User size={18} strokeWidth={1.75} color={user ? "#FFFFFF" : fg} />
-          <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 600, color: user ? "#FFFFFF" : fg }}>
-            {user ? "Dashboard" : "Sign in"}
-          </span>
-        </button>
-        <button onClick={() => go("marketplace")} className="focus-ring relative rounded-full p-2 transition-colors"
-          style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}>
-          <ShoppingBag size={18} strokeWidth={1.75} color={fg} />
-          {cartCount > 0 && (
-            <span className="mono absolute -top-1 -right-1 flex items-center justify-center"
-              style={{ background: C.accent, color: "#fff", fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
-          )}
-        </button>
+              background: user ? C.accent : (dark ? "rgba(255,255,255,0.08)" : C.bgAlt),
+              color: user ? "#FFFFFF" : fg,
+            }}
+            aria-label={user ? "Open patient dashboard" : "Sign in to dashboard"}>
+            <User size={18} strokeWidth={1.75} color={user ? "#FFFFFF" : fg} />
+            <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 600, color: user ? "#FFFFFF" : fg }}>
+              {user ? "Dashboard" : "Sign in"}
+            </span>
+          </button>
+          <button onClick={() => goNav("marketplace")} className="focus-ring relative rounded-lg p-2 transition-colors"
+            style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}>
+            <ShoppingBag size={18} strokeWidth={1.75} color={fg} />
+            {cartCount > 0 && (
+              <span className="mono absolute -top-1 -right-1 flex items-center justify-center"
+                style={{ background: C.accent, color: "#fff", fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
+            )}
+          </button>
+        </div>
       </div>
+      {menuOpen ? (
+        <nav
+          id="mobile-nav"
+          className="md:hidden mt-4 flex flex-col gap-1 rounded-lg p-2"
+          style={{ background: dark ? "rgba(255,255,255,0.06)" : C.paper, border: `1px solid ${C.line}` }}
+        >
+          {navItems.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => goNav(item.view)}
+              className="focus-ring rounded-md px-3 py-3 text-left text-sm font-medium"
+              style={{ color: item.view === "dashboard" ? C.accent : fg }}
+            >
+              {item.label}
+            </button>
+          ))}
+          {!user ? (
+            <button
+              type="button"
+              onClick={() => goNav("signin")}
+              className="focus-ring rounded-md px-3 py-3 text-left text-sm font-semibold"
+              style={{ color: C.accent }}
+            >
+              Sign in
+            </button>
+          ) : null}
+        </nav>
+      ) : null}
     </header>
   );
 };
@@ -802,7 +852,6 @@ const Landing = ({ go }) => {
             <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
               <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Get started</Btn>
               <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
-              <Btn onClick={() => go("dashboard")} size="lg" variant="ghost">My dashboard</Btn>
             </div>
           </div>
 
@@ -812,14 +861,6 @@ const Landing = ({ go }) => {
           >
             <ISpryChat onAction={() => go("landing-conditions")} onDockChange={setChatDocked} />
           </div>
-        </div>
-      </div>
-      <div className="hero-rail relative z-10 px-6 md:px-12 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 overflow-hidden">
-          <span className="shrink-0" style={{ fontSize: 12, letterSpacing: "0.08em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>
-            Here to help
-          </span>
-          <TelemetryStrip className="flex-1 min-w-0" />
         </div>
       </div>
     </section>
@@ -843,9 +884,6 @@ const Landing = ({ go }) => {
 
     {/* System */}
     <section id="how" className="px-6 md:px-12 py-16 md:py-24 relative overflow-hidden" style={{ background: C.bgAlt }}>
-      <div className="absolute inset-0 opacity-25 pointer-events-none" aria-hidden="true">
-        <HexMesh />
-      </div>
       <div className="max-w-7xl mx-auto relative z-10">
         <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>How it works</span>
         <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650, maxWidth: 720 }}>
@@ -871,9 +909,6 @@ const Landing = ({ go }) => {
 
     {/* Signal domains */}
     <section className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="absolute right-[-8%] top-[10%] pointer-events-none opacity-35 hidden md:block" aria-hidden="true">
-        <OrbitRings size={520} />
-      </div>
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
           <div>
@@ -891,7 +926,7 @@ const Landing = ({ go }) => {
             { t: "Energy", d: "Feel stronger and less run-down", c: "02" },
             { t: "Mood", d: "Feel calmer and more focused", c: "03" },
             { t: "Sleep", d: "Rest better and wake up ready", c: "04" },
-            { t: "Men's health", d: "Sexual health and confidence", c: "05" },
+            { t: "Men's care", d: "Sexual health and confidence", c: "05" },
             { t: "Everyday care", d: "A doctor for checkups and questions", c: "06" }].map((d) => (
             <div key={d.t} className="p-6 md:p-8 group relative transition-colors" style={{ background: C.bg }}>
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ background: "radial-gradient(ellipse at top left, rgba(232,119,34,0.10), transparent 60%)" }} />
@@ -961,7 +996,7 @@ const Landing = ({ go }) => {
               <div className="absolute inset-0 flex items-center justify-center opacity-80">
                 <OrbitRings size={280} />
               </div>
-              <ScanFrame className="absolute inset-4" label="PCP // LINKED" />
+              <ScanFrame className="absolute inset-4" label="Doctor linked" />
               <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
                 <div className="rounded-full flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
                   <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
@@ -976,7 +1011,7 @@ const Landing = ({ go }) => {
               </div>
               <div className="mt-6 space-y-4">
                 {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
-                  { t: "Doctor + yearly labs", d: "$99/mo · full lab panel included", tag: "Best value" },
+                  { t: "Doctor + yearly labs", d: "$99/mo · full blood work included", tag: "Best value" },
                   { t: "Household", d: "$129/mo · two adults", tag: null }].map((tier) => (
                   <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
                     <div>
@@ -1001,8 +1036,7 @@ const Landing = ({ go }) => {
         <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
           <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.25) 100%)" }} />
-          <div className="absolute inset-0 opacity-25 pointer-events-none"><HexMesh /></div>
-          <ScanFrame className="absolute inset-3 md:inset-5" label="SHOP // READY" />
+          <ScanFrame className="absolute inset-3 md:inset-5" label="Shop ready" />
           <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
             <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Shop</span>
             <h2 className="display" style={{ fontSize: "clamp(30px, 4.5vw, 48px)", lineHeight: 1.05, marginTop: 12, color: C.ink, fontWeight: 650, maxWidth: 520 }}>
@@ -1373,9 +1407,8 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
           <div className="hidden md:block rounded-3xl overflow-hidden relative instrument-panel min-h-[480px]">
             <SignalField density={40} />
             <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,5,5,0.15) 0%, rgba(5,5,5,0.85) 100%)" }} />
-            <ScanFrame className="absolute inset-5" label="AUTH // SECURE" />
+            <ScanFrame className="absolute inset-5" label="Secure sign-in" />
             <div className="absolute left-7 right-7 bottom-7 z-10">
-              <div className="mb-6 opacity-80"><OrbitRings size={160} /></div>
               <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.accent, textTransform: "uppercase" }}>Your account</p>
               <p style={{ fontSize: 20, lineHeight: 1.3, color: C.ink, marginTop: 10 }}>
                 Sign in to open your health dashboard — care plans, goals, devices, refills, and orders.
