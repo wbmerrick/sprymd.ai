@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { isMasterEmail } from "@/lib/masterAccount";
 
 const ACCOUNTS_KEY = "sprymd_accounts_v1";
 const SESSION_KEY = "sprymd_session_email_v1";
@@ -158,7 +159,7 @@ export async function signUpCustomer({ email, password, name, dob }) {
   const key = emailKey(email);
   const passwordHash = await hashPassword(password, key);
   const existing = getStoredAccount(key);
-  if (existing?.passwordHash) {
+  if (existing?.passwordHash && !isMasterEmail(key)) {
     const err = new Error("An account already exists for this email. Sign in instead.");
     err.code = "exists";
     throw err;
@@ -171,7 +172,7 @@ export async function signUpCustomer({ email, password, name, dob }) {
     const { data, error } = await supabase.auth.signUp({
       email: key,
       password,
-      options: { data: { full_name: name.trim(), dob } },
+      options: { data: { full_name: name.trim(), dob, role: isMasterEmail(key) ? "master" : "patient" } },
     });
     if (error) throw error;
     supabaseUser = data?.user || null;
@@ -186,17 +187,24 @@ export async function signUpCustomer({ email, password, name, dob }) {
   }
 
   const profile = buildCustomerProfile(key, {
-    id: supabaseUser?.id,
-    name: name.trim(),
-    dob,
+    id: supabaseUser?.id || existing?.id,
+    name: name.trim() || existing?.name,
+    dob: dob || existing?.dob,
     authProvider: supabaseUser ? "supabase" : "local",
     user_metadata: supabaseUser?.user_metadata,
-    rxHistory: [],
-    protocols: [],
-    orders: [],
+    rxHistory: existing?.rxHistory || [],
+    protocols: existing?.protocols || [],
+    orders: existing?.orders || [],
   });
   upsertStoredAccount({ ...profile, passwordHash });
   setSessionEmail(key);
+
+  try {
+    const { ensureAccountShell } = await import("@/lib/patientCareStore");
+    ensureAccountShell(key, profile.name);
+  } catch {
+    /* ignore care bootstrap errors during auth */
+  }
 
   if (supabaseUser) {
     return {
@@ -238,6 +246,12 @@ export async function signInCustomer({ email, password }) {
       // Keep / refresh local verifier so future sessions work offline of Auth.
       upsertStoredAccount({ ...profile, passwordHash: stored.passwordHash || passwordHash });
       setSessionEmail(key);
+      try {
+        const { ensureAccountShell } = await import("@/lib/patientCareStore");
+        ensureAccountShell(key, profile?.name);
+      } catch {
+        /* ignore */
+      }
       return { profile, provider: "supabase" };
     }
   } catch {
@@ -245,6 +259,12 @@ export async function signInCustomer({ email, password }) {
   }
 
   const profile = await signInLocalAccount({ email: key, password });
+  try {
+    const { ensureAccountShell } = await import("@/lib/patientCareStore");
+    ensureAccountShell(key, profile?.name);
+  } catch {
+    /* ignore */
+  }
   return { profile, provider: "local" };
 }
 

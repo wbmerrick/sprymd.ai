@@ -27,6 +27,7 @@ import {
 } from "@/lib/customerAccounts";
 import { defaultWearableDevices, MARKETPLACE_DEVICE_MAP, mergeWearableCatalog } from "@/data/wearables";
 import { publishVitalsEvent } from "@/lib/vitalsBus";
+import { isMasterEmail } from "@/lib/masterAccount";
 
 const READINGS_CAP = 500;
 
@@ -110,6 +111,55 @@ function emptyCare(email: string): PatientCareRecord {
     bodyGoals: [],
     updatedAt: new Date().toISOString(),
   };
+}
+
+/** Unlock full device rack + seed body profile for master accounts. */
+export function bootstrapMasterCare(email: string): PatientCareRecord {
+  const care = getPatientCare(email);
+  if (!isMasterEmail(email)) return care;
+
+  care.wearableDevices = mergeWearableCatalog(care.wearableDevices).map((d) => ({
+    ...d,
+    owned: true,
+    enabled: true,
+    status: d.status === "disconnected" ? "paired" : d.status,
+  }));
+
+  if (!care.bodyProfile?.heightCm) {
+    care.bodyProfile = {
+      heightCm: 180,
+      weightLb: care.bodyProfile?.weightLb ?? 185,
+      targetWeightLb: care.bodyProfile?.targetWeightLb ?? 175,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  if (!care.bodyGoals?.length) {
+    const now = new Date().toISOString();
+    care.bodyGoals = [
+      {
+        id: "goal_master_weight",
+        title: "Master target weight",
+        metric: "weight",
+        targetValue: care.bodyProfile.targetWeightLb || 175,
+        unit: "lb",
+        currentValue: care.bodyProfile.weightLb || 185,
+        status: "active",
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+  }
+
+  if (!care.notifications.some((n) => n.title.includes("Master account"))) {
+    pushNotification(care, {
+      icon: "activity",
+      title: "Master account ready",
+      description: "Full wearable rack unlocked. Open the clinical terminal to stream, upload, and manage care.",
+    });
+  }
+
+  return saveCare(care);
 }
 
 /** Ensure care record exists and is synced with account shell. */
@@ -484,6 +534,9 @@ export function ensureAccountShell(email: string, name?: string) {
     );
   }
   getPatientCare(key);
+  if (isMasterEmail(key)) {
+    bootstrapMasterCare(key);
+  }
 }
 
 function statusForMode(mode: WearableSyncMode): WearableDevice["status"] {
