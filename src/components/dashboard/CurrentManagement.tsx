@@ -18,9 +18,9 @@ export function CurrentManagement({ treatments }: CurrentManagementProps) {
       <div className="flex items-end justify-between gap-3">
         <div>
           <h2 id="current-management-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-            Current management
+            Your treatments
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">Active protocols tied to your goals.</p>
+          <p className="mt-1 text-sm text-zinc-500">Active care plans linked to your goals.</p>
         </div>
         <Link to="/dashboard/goals" className="inline-flex items-center gap-1 text-sm text-[#E87722] hover:underline">
           All goals <ArrowRight className="h-3.5 w-3.5" />
@@ -29,7 +29,7 @@ export function CurrentManagement({ treatments }: CurrentManagementProps) {
 
       {sorted.length === 0 ? (
         <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-8 text-sm text-zinc-500">
-          No active treatments yet. Start a protocol from the SpryMD home page.
+          No active treatments yet. Start a care plan from the SpryMD home page.
         </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">

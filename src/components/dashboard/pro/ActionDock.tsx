@@ -88,7 +88,7 @@ export function ActionDock({
   ];
 
   return (
-    <ProPanel title="Action dock" eyebrow="Order form" dense className="min-h-[280px]">
+    <ProPanel title="Quick actions" eyebrow="Log · upload · goals" dense className="min-h-[280px]">
       <div className="mb-2 flex gap-1">
         {(
           [
@@ -127,7 +127,7 @@ export function ActionDock({
       ) : null}
 
       {tab !== "buy" && !selected ? (
-        <p className="p-2 text-xs text-zinc-500">Buy a device to start logging vitals.</p>
+        <p className="p-2 text-xs text-zinc-500">Buy a device to start logging your health numbers.</p>
       ) : null}
 
       {tab !== "buy" && selected ? (
@@ -242,7 +242,7 @@ export function ActionDock({
 
           {tab === "upload" ? (
             <div className="space-y-2">
-              <p className="text-xs text-zinc-500">CSV/TSV/JSON with value columns. Streams into the ladder instantly.</p>
+              <p className="text-xs text-zinc-500">Upload a CSV or JSON file from your device app. New numbers show up right away.</p>
               <input
                 ref={fileRef}
                 type="file"

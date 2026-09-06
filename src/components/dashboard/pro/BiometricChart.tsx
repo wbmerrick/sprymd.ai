@@ -12,13 +12,13 @@ import type { WearableKind, WearableReading } from "@/types/dashboard";
 import { ProPanel } from "./ProPanel";
 
 const METRIC_TABS: { id: string; label: string; match: RegExp; kinds?: WearableKind[] }[] = [
-  { id: "hr", label: "HR", match: /heart rate|^hr$|pulse/i },
-  { id: "spo2", label: "SpO₂", match: /spo/i },
-  { id: "wt", label: "WT", match: /weight/i },
+  { id: "hr", label: "Heart", match: /heart rate|^hr$|pulse/i },
+  { id: "spo2", label: "Oxygen", match: /spo/i },
+  { id: "wt", label: "Weight", match: /weight/i },
   { id: "bp", label: "BP", match: /blood pressure/i },
-  { id: "sleep", label: "SLEEP", match: /sleep score/i },
-  { id: "hrv", label: "HRV", match: /hrv/i },
-  { id: "glucose", label: "CGM", match: /glucose/i },
+  { id: "sleep", label: "Sleep", match: /sleep score/i },
+  { id: "hrv", label: "Recovery", match: /hrv/i },
+  { id: "glucose", label: "Sugar", match: /glucose/i },
 ];
 
 export function BiometricChart({
@@ -50,8 +50,8 @@ export function BiometricChart({
 
   return (
     <ProPanel
-      title="Biometric chart"
-      eyebrow="Market · vitals"
+      title="Your body readings"
+      eyebrow="Live chart"
       action={
         <div className="flex flex-wrap justify-end gap-1">
           {METRIC_TABS.map((m) => (
@@ -75,7 +75,7 @@ export function BiometricChart({
       {series.length < 2 ? (
         <div className="flex h-[220px] items-center justify-center text-center">
           <p className="max-w-xs text-sm text-zinc-500">
-            Sync, upload, or enable continuous monitoring to populate the {tab.label} series.
+            Sync a device, upload a file, or turn on live stream to see your {tab.label} numbers.
           </p>
         </div>
       ) : (

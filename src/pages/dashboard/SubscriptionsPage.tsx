@@ -14,7 +14,7 @@ export default function SubscriptionsPage() {
           Subscriptions
         </h1>
         <p className="text-sm text-zinc-400">
-          Billing for each protocol — linked to Current management via treatment.
+          Billing for each care plan — linked to your treatments.
         </p>
       </header>
 

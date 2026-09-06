@@ -24,8 +24,8 @@ export function SignalsWatchlist({
 
   return (
     <ProPanel
-      title="Signals"
-      eyebrow="Watchlist"
+      title="Your devices"
+      eyebrow="Connected gear"
       dense
       action={
         <Link

@@ -6,7 +6,7 @@ export function QuickLinksFooter() {
     {
       to: "/dashboard/goals",
       title: "Manage goals",
-      description: "Review protocols and refill windows",
+      description: "Review care plans and refill dates",
       icon: Target,
     },
     {

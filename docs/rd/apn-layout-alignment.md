@@ -3,7 +3,7 @@
 > **Status:** Practical implementer note (layout + color rules).  
 > **Source of truth for tokens:** `src/SpryApp.jsx` (`C.accent` = `#E87722`, `C.navy` = `#003399`).  
 > **Reference site:** [apn.com](https://www.apn.com) (All Points North marketing homepage patterns).  
-> **Scope:** Marketing `Landing` in `SpryApp.jsx` only — not dashboard chrome.
+> **Scope:** Marketing `Landing` in `SpryApp.jsx` + plain dashboard labels.
 
 ---
 
@@ -135,7 +135,20 @@ Current sections (top → bottom) and what should change:
 
 ---
 
-## 5. One-pass implementer checklist
+## 5. Dashboard labels (plain)
+
+| Avoid | Prefer |
+| --- | --- |
+| Biometric / vitals | Body readings / health numbers |
+| Clinical terminal | Health desk / dashboard |
+| Watchlist / signals | Your devices |
+| Action dock / order form | Quick actions |
+| Protocols | Care plans |
+| Clinician | Doctor |
+
+---
+
+## 6. One-pass implementer checklist
 
 Copy this into the PR:
 
@@ -149,11 +162,12 @@ Copy this into the PR:
 - [ ] Cards only where the user clicks (care options / products)
 - [ ] Closing section remounts brand + CTA like APN end-rail
 - [ ] Tokens remain `C.accent` / `C.navy` in `SpryApp.jsx` — no one-off hex drift
+- [ ] Dashboard panel titles use everyday words
+- [ ] Chat / marketplace copy matches GED-level language
 
 ---
 
-## 6. Out of scope (this note)
+## 7. Out of scope (this note)
 
-- Dashboard / Kraken panels (see `kraken-pt-dashboard-spec.md`)
-- Copy rewriting beyond layout hierarchy (already plain-language on branch)
+- Full Kraken panel redesign (see `kraken-pt-dashboard-spec.md`)
 - Pixel-perfect APN clone — borrow **structure and restraint**, keep SpryMD product identity

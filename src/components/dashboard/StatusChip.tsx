@@ -37,7 +37,7 @@ const STYLES: Record<string, string> = {
   inactive: "bg-zinc-500/15 text-zinc-400 border-zinc-500/25",
   scheduled: "bg-sky-500/15 text-sky-200 border-sky-500/30",
   processing: "bg-violet-500/15 text-violet-200 border-violet-500/30",
-  shipped: "bg-teal-500/15 text-teal-200 border-teal-500/30",
+  shipped: "bg-orange-500/15 text-orange-200 border-orange-500/30",
   delivered: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
   no_action: "bg-zinc-500/15 text-zinc-300 border-zinc-500/25",
   action_required: "bg-rose-500/15 text-rose-200 border-rose-500/35",

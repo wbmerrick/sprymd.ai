@@ -15,7 +15,7 @@ export function ReadingsLadder({ readings }: { readings: WearableReading[] }) {
   const rows = readings.slice(0, 24);
 
   return (
-    <ProPanel title="Readings ladder" eyebrow="Order book · feed" dense className="min-h-[220px]">
+    <ProPanel title="Recent readings" eyebrow="Newest first" dense className="min-h-[220px]">
       {rows.length === 0 ? (
         <p className="px-1 py-6 text-center text-xs text-zinc-500">No readings yet — upload or stream a device.</p>
       ) : (

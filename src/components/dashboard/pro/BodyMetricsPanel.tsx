@@ -77,7 +77,7 @@ export function BodyMetricsPanel({
   };
 
   return (
-    <ProPanel title="Body metrics" eyebrow="Balances" dense className="min-h-[220px]">
+    <ProPanel title="Height & weight" eyebrow="Your body" dense className="min-h-[220px]">
       <div className="grid grid-cols-3 gap-2 text-center">
         <MetricStat
           label="Height"

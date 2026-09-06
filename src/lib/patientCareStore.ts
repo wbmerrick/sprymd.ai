@@ -730,7 +730,7 @@ export function unlockWearableDevice(email: string, kind: WearableKind) {
     pushNotification(care, {
       icon: "activity",
       title: `${device.brand} ${device.name} unlocked`,
-      description: "Device is ready to sync, upload, or stream on your clinical terminal.",
+      description: "Device is ready to sync, upload, or stream on your dashboard.",
     });
   }
   const saved = saveCare(care);

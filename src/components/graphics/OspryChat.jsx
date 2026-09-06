@@ -3,29 +3,29 @@ import { createPortal } from "react-dom";
 import { ArrowRight, MessageCircle, Minus, Send, X } from "lucide-react";
 
 const STARTERS = [
-  "Which protocol fits me?",
+  "Which care plan fits me?",
   "How does Spry work?",
-  "Can Spry be my PCP?",
+  "Can Spry be my doctor?",
 ];
 
 function replyFor(input) {
   const q = input.toLowerCase();
-  if (q.includes("pcp") || q.includes("primary")) {
+  if (q.includes("pcp") || q.includes("primary") || q.includes("doctor")) {
     return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Get started and choose Your doctor.";
   }
   if (q.includes("how") || q.includes("work") || q.includes("system")) {
-    return "Three steps: baseline intake (≈5 min) → licensed clinician review within 24h → compounded fulfillment + ongoing titration from your dashboard. No waiting room. Cancel anytime.";
+    return "Three steps: answer a short form (about 5 min) → a licensed doctor reviews it within 24 hours → medicine ships to you when approved, and you track progress on your dashboard. No waiting room. Cancel anytime.";
   }
-  if (q.includes("protocol") || q.includes("fit") || q.includes("start") || q.includes("treat")) {
-    return "Pick the domain you want to instrument — Metabolic, Hormonal, Cognitive, Recovery, Performance, or Primary Care. Every plan is preference-aware and signed by a board-certified clinician.";
+  if (q.includes("protocol") || q.includes("fit") || q.includes("start") || q.includes("treat") || q.includes("plan")) {
+    return "Pick the area you want help with — weight, hormones, focus, sleep, performance, or your main doctor. Every plan is built around you and signed by a licensed doctor.";
   }
   if (q.includes("price") || q.includes("cost") || q.includes("how much")) {
-    return "Protocols start from $25–$149/mo depending on the domain. GLP-1 metabolic plans are clinician-titrated; PCP membership from $49/mo. Shipping is included on compounded Rx when prescribed.";
+    return "Care plans start from $25–$149/mo depending on what you need. Weight-loss plans are adjusted by a doctor; main-doctor membership starts at $49/mo. Shipping is included when medicine is prescribed.";
   }
   if (q.includes("refill")) {
-    return "Sign in to your account for Quick Refills — active prescriptions only, tied to your chart. New therapy starts with a protocol intake.";
+    return "Sign in for Quick Refills — only for medicine you already have. New care starts with a short form.";
   }
-  return "I'm iSpry — SpryMD's care agent. Ask about protocols, how the system works, pricing, PCP membership, or refills. For clinical decisions, a licensed clinician still signs every protocol.";
+  return "I'm iSpry — SpryMD's care helper. Ask about care plans, how Spry works, pricing, your doctor, or refills. For medical decisions, a licensed doctor still signs every plan.";
 }
 
 /**
@@ -35,7 +35,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "I'm iSpry, your SpryMD care agent. Ask about protocols, PCP membership, or how the system works.",
+      text: "I'm iSpry, your SpryMD care helper. Ask about care plans, your doctor, or how Spry works.",
     },
   ]);
   const [draft, setDraft] = useState("");
@@ -376,7 +376,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
               fontFamily: "var(--font-mono), ui-monospace, monospace",
             }}
           >
-            Begin a protocol <ArrowRight size={14} />
+            Start a care plan <ArrowRight size={14} />
           </button>
         </div>
       )}

@@ -22,7 +22,7 @@ export function VitalTicker({
     const bp = latestByMetric(readings, /blood pressure/i);
     const weight =
       bodyProfile.weightLb != null
-        ? { value: bodyProfile.weightLb, unit: "lb", label: "WT" }
+        ? { value: bodyProfile.weightLb, unit: "lb", label: "Weight" }
         : latestByMetric(readings, /weight/i);
     const sleep = latestByMetric(readings, /sleep score/i);
     const hrv = latestByMetric(readings, /hrv/i);
@@ -30,12 +30,12 @@ export function VitalTicker({
     const bmi = computeBmi(bodyProfile.heightCm, bodyProfile.weightLb);
 
     const row: { key: string; label: string; value: string; hot?: boolean }[] = [];
-    if (hr) row.push({ key: "hr", label: "HR", value: `${hr.value} ${hr.unit}`, hot: true });
-    if (spo2) row.push({ key: "spo2", label: "SpO₂", value: `${spo2.value}${spo2.unit}` });
+    if (hr) row.push({ key: "hr", label: "Heart", value: `${hr.value} ${hr.unit}`, hot: true });
+    if (spo2) row.push({ key: "spo2", label: "Oxygen", value: `${spo2.value}${spo2.unit}` });
     if (weight && "value" in weight)
       row.push({
         key: "wt",
-        label: "WT",
+        label: "Weight",
         value: `${typeof weight.value === "number" ? weight.value : (weight as WearableReading).value} ${"unit" in weight ? weight.unit : "lb"}`,
       });
     if (bp)
@@ -44,15 +44,15 @@ export function VitalTicker({
         label: "BP",
         value: bp.secondaryValue != null ? `${bp.value}/${bp.secondaryValue}` : `${bp.value}`,
       });
-    if (sleep) row.push({ key: "sleep", label: "SLEEP", value: `${sleep.value}` });
-    if (hrv) row.push({ key: "hrv", label: "HRV", value: `${hrv.value}${hrv.unit}` });
-    if (glucose) row.push({ key: "cgm", label: "CGM", value: `${glucose.value}` });
+    if (sleep) row.push({ key: "sleep", label: "Sleep", value: `${sleep.value}` });
+    if (hrv) row.push({ key: "hrv", label: "Recovery", value: `${hrv.value}${hrv.unit}` });
+    if (glucose) row.push({ key: "cgm", label: "Sugar", value: `${glucose.value}` });
     if (bmi != null) row.push({ key: "bmi", label: "BMI", value: String(bmi) });
     if (!row.length) {
       row.push(
-        { key: "hr", label: "HR", value: "—" },
-        { key: "spo2", label: "SpO₂", value: "—" },
-        { key: "wt", label: "WT", value: "—" },
+        { key: "hr", label: "Heart", value: "—" },
+        { key: "spo2", label: "Oxygen", value: "—" },
+        { key: "wt", label: "Weight", value: "—" },
         { key: "bp", label: "BP", value: "—" },
       );
     }

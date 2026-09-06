@@ -422,16 +422,16 @@ const products = [
     desc: "Unscented, alcohol-free wipes safe for daily mask and tubing cleaning. 110 count." },
   { id: "p8", name: "Smart Blood Pressure Monitor", brand: "Omron", cat: "Devices", price: 89, compareAt: 119, hsa: true, badge: "FDA-cleared", rating: 4.8, reviews: 1450,
     icon: Heart, image: imgBpMonitor, color: "hsl(150, 55%, 40%)",
-    benefit: "Clinical accuracy at home",
-    desc: "Bluetooth-enabled, FDA-cleared Omron monitor. Syncs readings for clinician review." },
+    benefit: "Accurate readings at home",
+    desc: "Bluetooth Omron monitor. Sends readings to your care team." },
   { id: "p9", name: "Pulse Oximeter · Fingertip", brand: "Masimo", cat: "Devices", price: 42, compareAt: 59, hsa: true, badge: null, rating: 4.7, reviews: 803,
     icon: Activity, image: imgPulseOximeter, color: "hsl(150, 55%, 40%)",
-    benefit: "Hospital-grade SpO₂ on demand",
-    desc: "Masimo fingertip accuracy for SpO2 and pulse rate. Compact, travel-ready." },
+    benefit: "Check oxygen anytime",
+    desc: "Masimo fingertip accuracy for oxygen and pulse. Compact, travel-ready." },
   { id: "p10", name: "Smart Body Composition Scale", brand: "Withings", cat: "Devices", price: 99, compareAt: 129, hsa: false, badge: "GLP-1 companion", rating: 4.8, reviews: 992,
     icon: Scale, image: imgSmartScale, color: "hsl(220, 60%, 20%)",
     benefit: "Track fat, muscle, and progress",
-    desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit — perfect alongside GLP-1 therapy." },
+    desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit — great with weight-loss care." },
   { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Spry Essentials", cat: "Sleep", price: 16, compareAt: 22, hsa: true, badge: null, rating: 4.6, reviews: 1544,
     icon: Moon, image: imgMelatonin, color: "hsl(220, 60%, 20%)",
     benefit: "Fall asleep. Stay asleep.",
@@ -440,26 +440,26 @@ const products = [
     icon: Leaf, image: imgLTheanine, color: "hsl(150, 55%, 40%)",
     benefit: "Calm without sedation",
     desc: "Smooth focus for high-stress days. Pairs cleanly with coffee — no crash, no fog." },
-  { id: "p13", name: "Oura Ring 4", brand: "Oura", cat: "Devices", price: 349, compareAt: 399, hsa: false, badge: "Bioinformatic", rating: 4.7, reviews: 2104,
+  { id: "p13", name: "Oura Ring 4", brand: "Oura", cat: "Devices", price: 349, compareAt: 399, hsa: false, badge: "Top pick", rating: 4.7, reviews: 2104,
     icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
-    benefit: "HRV, sleep, and recovery on your finger",
-    desc: "Clinical-grade nightly biometrics. Unlocks realtime Oura signals on your SpryMD patient terminal. Membership sold separately." },
+    benefit: "Sleep and recovery on your finger",
+    desc: "Nightly body readings. Unlocks live Oura numbers on your SpryMD dashboard. Membership sold separately." },
   { id: "p14", name: "Whoop 5.0 Membership", brand: "Whoop", cat: "Devices", price: 239, compareAt: 269, hsa: false, badge: "Strain + recovery", rating: 4.6, reviews: 1588,
     icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
-    benefit: "24/7 strain, recovery, and sleep coaching",
-    desc: "Annual membership hardware kit. Streams recovery and strain into your clinical terminal watchlist." },
+    benefit: "All-day strain, recovery, and sleep coaching",
+    desc: "Yearly kit. Streams recovery and strain into your device list on the dashboard." },
   { id: "p15", name: "Apple Watch Series", brand: "Apple", cat: "Devices", price: 429, compareAt: 499, hsa: false, badge: "Top wearable", rating: 4.8, reviews: 5402,
     icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
-    benefit: "HR, SpO₂, and activity that clinicians recognize",
-    desc: "GPS model. Sync or stream heart rate and SpO₂ into SpryMD for protocol review." },
+    benefit: "Heart, oxygen, and activity your doctor knows",
+    desc: "GPS model. Sync or stream heart rate and oxygen into SpryMD for your care plan." },
   { id: "p16", name: "Garmin Venu 3", brand: "Garmin", cat: "Devices", price: 449, compareAt: 499, hsa: false, badge: null, rating: 4.7, reviews: 976,
     icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
-    benefit: "Training load with clinical-grade HR",
-    desc: "AMOLED sports watch. Unlocks Garmin vitals panels on the patient desk." },
-  { id: "p17", name: "Dexcom G7 CGM Kit", brand: "Dexcom", cat: "Devices", price: 199, compareAt: 249, hsa: true, badge: "Metabolic", rating: 4.8, reviews: 3210,
+    benefit: "Training load with accurate heart rate",
+    desc: "Bright sports watch. Unlocks Garmin health panels on your dashboard." },
+  { id: "p17", name: "Dexcom G7 CGM Kit", brand: "Dexcom", cat: "Devices", price: 199, compareAt: 249, hsa: true, badge: "Blood sugar", rating: 4.8, reviews: 3210,
     icon: Droplets, image: imgPulseOximeter, color: "hsl(150, 55%, 40%)",
-    benefit: "Glucose on the ticker, every few minutes",
-    desc: "Sensor starter kit for continuous glucose. Rx pathway may apply — streams to your terminal when unlocked." },
+    benefit: "Blood sugar updates every few minutes",
+    desc: "Sensor starter kit for continuous glucose. A prescription may be needed — streams to your dashboard when unlocked." },
 ];
 
 const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Sleep"];
@@ -1105,9 +1105,9 @@ const MiniProduct = ({ p, onClick }) => {
 };
 
 const footerColumns = [
-  { h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
-  { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
-  { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] },
+  { h: "Care plans", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+  { h: "Shop", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
+  { h: "Company", l: ["About", "Doctors", "Press", "Contact"] },
 ];
 
 const Footer = ({ go }) => (
@@ -1116,7 +1116,7 @@ const Footer = ({ go }) => (
       <div>
         <Logo />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
-          Performance medicine infrastructure. Licensed clinicians. Compounded by Empower Pharmacy. Not a substitute for emergency care.
+          Online care with licensed doctors. Medicine made by Empower Pharmacy when prescribed. Not for emergencies.
         </p>
       </div>
       {footerColumns.map((col) => (
@@ -1927,7 +1927,7 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
 
   const tabs = [
     { id: "overview", label: "Overview" },
-    { id: "protocols", label: "Protocols" },
+    { id: "protocols", label: "Care plans" },
     { id: "orders", label: "Orders" },
     { id: "profile", label: "Profile" },
   ];
@@ -1974,8 +1974,8 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
             <div className="space-y-6 anim-fadeUp">
               <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  { i: RefreshCw, t: "Quick Refills", d: rxs.length ? `${rxs.length} active prescription${rxs.length === 1 ? "" : "s"}` : "No Rx yet — start a protocol", action: () => go(rxs.length ? "refills" : "landing-conditions"), accent: true },
-                  { i: Stethoscope, t: "Start a protocol", d: "Metabolic, hormones, mental health, PCP", action: () => go("landing-conditions") },
+                  { i: RefreshCw, t: "Quick Refills", d: rxs.length ? `${rxs.length} active prescription${rxs.length === 1 ? "" : "s"}` : "No medicine yet — start a care plan", action: () => go(rxs.length ? "refills" : "landing-conditions"), accent: true },
+                  { i: Stethoscope, t: "Start a care plan", d: "Weight, hormones, mental health, your doctor", action: () => go("landing-conditions") },
                   { i: ShoppingBag, t: "Browse the shop", d: "Supplements & devices", action: () => go("marketplace") },
                 ].map((card) => (
                   <button key={card.t} onClick={card.action}
@@ -1994,9 +1994,9 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
                 {rxs.length === 0 ? (
                   <div className="py-6">
                     <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 16 }}>
-                      This account is empty until you start care. Begin a protocol and your prescriptions will appear here — only for you.
+                      This account is empty until you start care. Begin a care plan and your prescriptions will appear here — only for you.
                     </p>
-                    <Btn onClick={() => go("landing-conditions")} size="md" icon={ArrowRight}>Browse protocols</Btn>
+                    <Btn onClick={() => go("landing-conditions")} size="md" icon={ArrowRight}>Browse care plans</Btn>
                   </div>
                 ) : (
                   <>
@@ -2029,10 +2029,10 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
 
           {tab === "protocols" && (
             <div className="anim-fadeUp rounded-2xl p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Your protocols</h3>
+              <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Your care plans</h3>
               {protocols.length === 0 ? (
                 <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55 }}>
-                  No protocols on this account yet.{" "}
+                  No care plans on this account yet.{" "}
                   <button onClick={() => go("landing-conditions")} className="focus-ring" style={{ color: C.accent, textDecoration: "underline" }}>Start one</button>.
                 </p>
               ) : (
@@ -2358,7 +2358,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
               Your <Mark>{condition.name.toLowerCase()}</Mark><br />treatment plan.
             </h1>
             <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 16, maxWidth: 600, lineHeight: 1.5 }}>
-              Based on your answers, you're a strong candidate for the protocol below. A licensed clinician will review your case before any prescription is issued.
+              Based on your answers, you're a good fit for the care plan below. A licensed doctor will review your case before any prescription is issued.
             </p>
           </div>
           <div className="anim-fadeUp rounded-3xl overflow-hidden mb-8 relative" style={{ border: `1px solid ${C.line}` }}>

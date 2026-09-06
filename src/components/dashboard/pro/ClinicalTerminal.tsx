@@ -183,12 +183,12 @@ export function ClinicalTerminal({
         {showCare && (
           <div className="space-y-3">
             <div className="rounded-lg border border-white/10 bg-[#0B0B0C]/90 p-3">
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Positions · management</p>
+              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Your care plans</p>
               <CurrentManagement treatments={activeTreatments} />
             </div>
             {preset !== "device_ops" ? (
               <div className="rounded-lg border border-white/10 bg-[#0B0B0C]/90 p-3">
-                <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Open orders · shipments</p>
+                <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Shipments on the way</p>
                 <UpcomingShipments shipments={shipments} />
               </div>
             ) : null}
