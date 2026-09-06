@@ -37,7 +37,7 @@ import {
   recordRefillCheckout,
   ensureAccountShell,
 } from "./lib/patientCareStore";
-import { SignalField, ScanFrame, GridHorizon, OrbitRings, ISpryChat } from "./components/graphics";
+import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -993,12 +993,9 @@ const Landing = ({ go }) => {
         <div className="md:col-span-6">
           <div className="instrument-panel rounded-2xl overflow-hidden">
             <div className="relative h-52 overflow-hidden flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center justify-center opacity-80">
-                <OrbitRings size={280} />
-              </div>
               <ScanFrame className="absolute inset-4" label="Doctor linked" />
               <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
-                <div className="rounded-full flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                <div className="rounded-lg flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
                   <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
                 </div>
                 <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Doctor care online</span>
