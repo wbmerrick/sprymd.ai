@@ -17,12 +17,12 @@ export function CurrentManagement({ treatments }: CurrentManagementProps) {
     <section aria-labelledby="current-management-heading" className="space-y-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h2 id="current-management-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <h2 id="current-management-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Current management
           </h2>
           <p className="mt-1 text-sm text-zinc-500">Active protocols tied to your goals.</p>
         </div>
-        <Link to="/dashboard/goals" className="inline-flex items-center gap-1 text-sm text-[#1EC8A5] hover:underline">
+        <Link to="/dashboard/goals" className="inline-flex items-center gap-1 text-sm text-[#E87722] hover:underline">
           All goals <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -37,10 +37,10 @@ export function CurrentManagement({ treatments }: CurrentManagementProps) {
             <li key={tx.id}>
               <Link
                 to={`/dashboard/goals/${tx.id}`}
-                className="group flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:-translate-y-0.5 hover:border-[#1EC8A5]/40 hover:bg-white/[0.05]"
+                className="group flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:-translate-y-0.5 hover:border-[#E87722]/40 hover:bg-white/[0.05]"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-base font-medium text-white group-hover:text-[#1EC8A5] transition-colors">
+                  <h3 className="text-base font-medium text-white group-hover:text-[#E87722] transition-colors">
                     {tx.medicationName}
                   </h3>
                   <StatusChip status={tx.status} />

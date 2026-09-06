@@ -30,7 +30,7 @@ export function ProPanel({
           ) : null}
           <h2
             className="truncate text-sm font-semibold text-white"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             {title}
           </h2>

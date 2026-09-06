@@ -119,7 +119,7 @@ export function ActionDock({
           </p>
           <Link
             to="/?view=marketplace&filter=Devices"
-            className="inline-flex w-full items-center justify-center rounded-md bg-[#1EC8A5] px-3 py-2 text-sm font-semibold text-[#04120e]"
+            className="inline-flex w-full items-center justify-center rounded-md bg-[#E87722] px-3 py-2 text-sm font-semibold text-white"
           >
             Open device marketplace
           </Link>
@@ -157,7 +157,7 @@ export function ActionDock({
                 className={cn(
                   "flex-1 rounded-md border px-1 py-1.5 font-mono text-[10px] uppercase tracking-wider",
                   selected.syncMode === m.id
-                    ? "border-[#1EC8A5]/50 bg-[#1EC8A5]/15 text-[#1EC8A5]"
+                    ? "border-[#E87722]/50 bg-[#E87722]/15 text-[#E87722]"
                     : "border-white/10 text-zinc-400 hover:border-white/20",
                 )}
               >
@@ -223,7 +223,7 @@ export function ActionDock({
                       setNote("");
                     }, "Reading saved")
                   }
-                  className="flex-1 rounded-md bg-[#1EC8A5] px-3 py-2 text-sm font-semibold text-[#04120e]"
+                  className="flex-1 rounded-md bg-[#E87722] px-3 py-2 text-sm font-semibold text-white"
                 >
                   Save reading
                 </button>
@@ -265,7 +265,7 @@ export function ActionDock({
                 <Upload className="h-4 w-4" /> Upload data file
               </button>
               {selected.syncMode === "continuous" ? (
-                <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#1EC8A5]">
+                <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#E87722]">
                   <Radio className="h-3 w-3" /> Stream active
                 </p>
               ) : null}
@@ -303,7 +303,7 @@ export function ActionDock({
                     setGoalTarget("");
                   }, "Goal saved")
                 }
-                className="w-full rounded-md bg-[#1EC8A5] px-3 py-2 text-sm font-semibold text-[#04120e]"
+                className="w-full rounded-md bg-[#E87722] px-3 py-2 text-sm font-semibold text-white"
               >
                 Set goal
               </button>
@@ -312,7 +312,7 @@ export function ActionDock({
         </div>
       ) : null}
 
-      {notice ? <p className="mt-2 text-xs text-[#1EC8A5]">{notice}</p> : null}
+      {notice ? <p className="mt-2 text-xs text-[#E87722]">{notice}</p> : null}
       {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
     </ProPanel>
   );

@@ -37,8 +37,8 @@ export function DashboardNav({ user, unreadCount }: DashboardNavProps) {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#050505]/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-3 py-3 md:px-5">
         <div className="flex items-center gap-6 min-w-0">
-          <Link to="/" className="shrink-0 font-semibold tracking-tight text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
-            Spry<span className="text-[#1EC8A5]">MD</span>
+          <Link to="/" className="shrink-0 font-semibold tracking-tight text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            Spry<span className="text-[#E87722]">MD</span>
           </Link>
           <nav aria-label="Patient account" className="hidden md:flex items-center gap-6">
             {NAV_GROUPS.map((group) => (
@@ -77,14 +77,14 @@ export function DashboardNav({ user, unreadCount }: DashboardNavProps) {
           >
             <Bell className="h-4 w-4" strokeWidth={1.75} />
             {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1EC8A5] px-1 text-[10px] font-semibold text-[#04120e]">
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E87722] px-1 text-[10px] font-semibold text-white">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </Link>
           <Link
             to="/dashboard/profile"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1EC8A5]/20 text-sm font-semibold text-[#1EC8A5] ring-1 ring-[#1EC8A5]/30"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#E87722]/20 text-sm font-semibold text-[#E87722] ring-1 ring-[#E87722]/30"
             aria-label={`Account for ${user.name}`}
           >
             {user.avatarInitials}

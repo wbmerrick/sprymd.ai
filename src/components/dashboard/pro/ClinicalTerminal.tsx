@@ -102,15 +102,15 @@ export function ClinicalTerminal({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1EC8A5]">Clinical terminal</p>
-          <h1 className="text-2xl font-semibold text-white md:text-3xl" style={{ fontFamily: "'Syne', sans-serif" }}>
-            Patient desk
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#E87722]">Health desk</p>
+          <h1 className="text-2xl font-semibold text-white md:text-3xl" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            Your care at a glance
           </h1>
         </div>
         <div className="flex gap-1 rounded-md border border-white/10 p-0.5">
           {(
             [
-              ["clinical_terminal", "Terminal"],
+              ["clinical_terminal", "Full"],
               ["care_simple", "Care"],
               ["device_ops", "Devices"],
             ] as const

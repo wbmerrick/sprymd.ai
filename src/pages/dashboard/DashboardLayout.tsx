@@ -24,7 +24,7 @@ export default function DashboardLayout() {
         <div className="pointer-events-none absolute inset-0 opacity-40">
           <HexMesh />
         </div>
-        <span className="relative font-mono text-xs tracking-[0.16em] uppercase animate-pulse text-[#1EC8A5]/80">
+        <span className="relative font-mono text-xs tracking-[0.16em] uppercase animate-pulse text-[#E87722]/80">
           Syncing uplink…
         </span>
       </div>
@@ -47,7 +47,7 @@ export default function DashboardLayout() {
           aria-hidden="true"
           style={{
             background:
-              "radial-gradient(ellipse 70% 40% at 50% -10%, rgba(30,200,165,0.08), transparent 55%), radial-gradient(ellipse 50% 30% at 100% 0%, rgba(18,28,36,0.55), transparent 50%)",
+              "radial-gradient(ellipse 70% 40% at 50% -10%, rgba(232,119,34,0.08), transparent 55%), radial-gradient(ellipse 50% 30% at 100% 0%, rgba(18,28,36,0.55), transparent 50%)",
           }}
         />
         <div className="pointer-events-none absolute inset-0 opacity-25" aria-hidden="true">

@@ -28,11 +28,11 @@ export function WearableReadings({ readings }: WearableReadingsProps) {
     <section aria-labelledby="wearable-readings-heading" className="space-y-4 pb-24 md:pb-28">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#1EC8A5]">Home devices</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#E87722]">Home devices</p>
           <h2
             id="wearable-readings-heading"
             className="mt-1 text-2xl font-semibold tracking-tight text-white"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             Wearable readings
           </h2>
@@ -63,7 +63,7 @@ export function WearableReadings({ readings }: WearableReadingsProps) {
             return (
               <li
                 key={r.id}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#1EC8A5]/30"
+                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#E87722]/30"
               >
                 <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/30">
                   <img
@@ -81,7 +81,7 @@ export function WearableReadings({ readings }: WearableReadingsProps) {
                       {r.source}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-lg font-semibold tracking-tight text-[#1EC8A5]" style={{ fontFamily: "'Syne', sans-serif" }}>
+                  <p className="mt-0.5 text-lg font-semibold tracking-tight text-[#E87722]" style={{ fontFamily: "'Outfit', sans-serif" }}>
                     {formatValue(r)}
                   </p>
                   <p className="text-xs text-zinc-500">

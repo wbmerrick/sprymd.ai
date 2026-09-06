@@ -11,7 +11,7 @@ const STARTERS = [
 function replyFor(input) {
   const q = input.toLowerCase();
   if (q.includes("pcp") || q.includes("primary")) {
-    return "Yes — Spry Primary Care keeps one clinician on your chart for wellness, labs, messaging, and referrals. Membership starts at $49/mo. Tap Make Spry my PCP below the fold, or Begin protocol and choose Primary Care.";
+    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Get started and choose Your doctor.";
   }
   if (q.includes("how") || q.includes("work") || q.includes("system")) {
     return "Three steps: baseline intake (≈5 min) → licensed clinician review within 24h → compounded fulfillment + ongoing titration from your dashboard. No waiting room. Cancel anytime.";
@@ -121,7 +121,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
-          background: "radial-gradient(ellipse at 90% 0%, rgba(30,200,165,0.08), transparent 45%)",
+          background: "radial-gradient(ellipse at 90% 0%, rgba(232,119,34,0.08), transparent 45%)",
           zIndex: 0,
         }}
       />
@@ -145,15 +145,15 @@ export default function ISpryChat({ onAction, onDockChange }) {
               width: 8,
               height: 8,
               borderRadius: 99,
-              background: "#1EC8A5",
-              boxShadow: "0 0 0 3px rgba(30,200,165,0.15)",
+              background: "#E87722",
+              boxShadow: "0 0 0 3px rgba(232,119,34,0.15)",
             }}
           />
           <div>
             <div className="display" style={{ fontSize: docked ? 15 : 16, fontWeight: 600, color: "#FAFAFA", letterSpacing: "-0.02em" }}>
               iSpry
             </div>
-            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(30,200,165,0.85)", textTransform: "uppercase" }}>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(232,119,34,0.85)", textTransform: "uppercase" }}>
               AI care agent · online
             </div>
           </div>
@@ -234,15 +234,15 @@ export default function ISpryChat({ onAction, onDockChange }) {
                 alignSelf: mine ? "flex-end" : "flex-start",
                 maxWidth: "92%",
                 padding: "10px 12px",
-                background: mine ? "rgba(30,200,165,0.12)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${mine ? "rgba(30,200,165,0.35)" : "#1F1F22"}`,
+                background: mine ? "rgba(232,119,34,0.12)" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${mine ? "rgba(232,119,34,0.35)" : "#1F1F22"}`,
                 color: mine ? "#FAFAFA" : "#C8C8C8",
                 fontSize: 14,
                 lineHeight: 1.45,
               }}
             >
               {!mine && (
-                <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#1EC8A5", marginBottom: 6, textTransform: "uppercase" }}>
+                <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#E87722", marginBottom: 6, textTransform: "uppercase" }}>
                   iSpry
                 </div>
               )}
@@ -368,7 +368,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
               padding: "10px 12px",
               background: "transparent",
               border: "1px solid #1F1F22",
-              color: "#1EC8A5",
+              color: "#E87722",
               fontSize: 12,
               letterSpacing: "0.06em",
               textTransform: "uppercase",
@@ -413,9 +413,9 @@ export default function ISpryChat({ onAction, onDockChange }) {
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "rgba(30,200,165,0.15)",
-          border: "1px solid rgba(30,200,165,0.35)",
-          color: "#1EC8A5",
+          background: "rgba(232,119,34,0.15)",
+          border: "1px solid rgba(232,119,34,0.35)",
+          color: "#E87722",
           flexShrink: 0,
         }}
       >
@@ -425,7 +425,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
         <span className="display" style={{ display: "block", fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em" }}>
           iSpry
         </span>
-        <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(30,200,165,0.9)", textTransform: "uppercase" }}>
+        <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(232,119,34,0.9)", textTransform: "uppercase" }}>
           Ask anything
         </span>
       </span>
@@ -435,7 +435,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
           width: 8,
           height: 8,
           borderRadius: 99,
-          background: "#1EC8A5",
+          background: "#E87722",
           flexShrink: 0,
         }}
       />

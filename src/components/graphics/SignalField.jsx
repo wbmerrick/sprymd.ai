@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
  */
 export default function SignalField({
   density = 48,
-  accent = "#1EC8A5",
+  accent = "#E87722",
   className = "",
   interactive = true,
 }) {
@@ -86,7 +86,7 @@ export default function SignalField({
       ctx.beginPath();
       ctx.rect(0, horizon, w, h - horizon);
       ctx.clip();
-      ctx.strokeStyle = "rgba(30, 200, 165, 0.065)";
+      ctx.strokeStyle = "rgba(232, 119, 34, 0.065)";
       ctx.lineWidth = 1;
       const rows = 14;
       for (let i = 0; i <= rows; i++) {
@@ -109,8 +109,8 @@ export default function SignalField({
 
       // Soft accent bloom near vanishing point
       const bloom = ctx.createRadialGradient(vanishX, horizon, 0, vanishX, horizon, w * 0.42);
-      bloom.addColorStop(0, "rgba(30, 200, 165, 0.07)");
-      bloom.addColorStop(0.45, "rgba(30, 200, 165, 0.02)");
+      bloom.addColorStop(0, "rgba(232, 119, 34, 0.07)");
+      bloom.addColorStop(0.45, "rgba(232, 119, 34, 0.02)");
       bloom.addColorStop(1, "transparent");
       ctx.fillStyle = bloom;
       ctx.fillRect(0, 0, w, h);
@@ -130,7 +130,7 @@ export default function SignalField({
         const dist = Math.hypot(ax - bx, ay - by);
         if (dist > Math.min(w, h) * 0.28) continue;
         const alpha = (0.04 + 0.08 * Math.sin(t * 1.2 + beam.phase)) * Math.min(na.z, nb.z);
-        ctx.strokeStyle = `rgba(30, 200, 165, ${Math.max(0.02, alpha)})`;
+        ctx.strokeStyle = `rgba(232, 119, 34, ${Math.max(0.02, alpha)})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(ax, ay);
@@ -154,7 +154,7 @@ export default function SignalField({
         ctx.fill();
         if (n.z > 0.7) {
           ctx.beginPath();
-          ctx.fillStyle = `rgba(30, 200, 165, ${0.15 + 0.2 * Math.sin(t * 3 + n.pulse)})`;
+          ctx.fillStyle = `rgba(232, 119, 34, ${0.15 + 0.2 * Math.sin(t * 3 + n.pulse)})`;
           ctx.arc(x, y, r * 0.45, 0, Math.PI * 2);
           ctx.fill();
         }
@@ -167,7 +167,7 @@ export default function SignalField({
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(t * 0.08);
-      ctx.strokeStyle = "rgba(30, 200, 165, 0.18)";
+      ctx.strokeStyle = "rgba(232, 119, 34, 0.18)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 10]);
       ctx.beginPath();
@@ -192,7 +192,7 @@ export default function SignalField({
         ctx.stroke();
       }
       // Sweep arc
-      ctx.strokeStyle = `rgba(30, 200, 165, ${0.35 + 0.2 * Math.sin(t * 2)})`;
+      ctx.strokeStyle = `rgba(232, 119, 34, ${0.35 + 0.2 * Math.sin(t * 2)})`;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(0, 0, R * 0.55, t % (Math.PI * 2), (t % (Math.PI * 2)) + 0.9);
