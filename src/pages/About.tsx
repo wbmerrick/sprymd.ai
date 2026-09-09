@@ -6,8 +6,8 @@ const AboutHero = () => (
   <section className="bg-navy py-24 px-4 text-center">
     <div className="section-container">
       <AnimatedSection>
-        <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About Your Doctor</h1>
-        <p className="font-body text-primary-foreground/70 text-xl">Real medicine. Real experience. Real results.</p>
+        <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
+        <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men.</p>
       </AnimatedSection>
     </div>
   </section>
@@ -27,24 +27,24 @@ const DoctorBio = () => (
                 <Stethoscope className="w-10 h-10 text-primary-foreground" strokeWidth={1.5} />
               </div>
               <div>
-                <p className="font-display text-primary-foreground text-2xl font-bold">Board-Certified Physician</p>
-                <p className="font-body text-primary-foreground/70 mt-2 text-sm">Internal Medicine · Telehealth</p>
+                <p className="font-display text-primary-foreground text-2xl font-bold">Licensed clinical care</p>
+                <p className="font-body text-primary-foreground/70 mt-2 text-sm">Telehealth for men in Tennessee</p>
               </div>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-6">
-            {["Board-Certified DO", "Licensed in Tennessee", "10+ Years Experience"].map((b, i) => (
+            {["Licensed clinicians", "Tennessee service area", "Private & discreet"].map((b, i) => (
               <span key={i} className="font-body text-xs font-medium bg-primary/10 text-primary px-3 py-1.5 rounded-full">{b}</span>
             ))}
           </div>
         </AnimatedSection>
         <AnimatedSection delay={0.2}>
-          <h2 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">William Merrick, DO</h2>
-          <p className="font-body text-primary font-medium mb-6">Board-Certified Physician · Telehealth Provider</p>
+          <h2 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">Care without the waiting room</h2>
+          <p className="font-body text-primary font-medium mb-6">Clinician-reviewed telehealth · Tennessee</p>
           <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
-            <p>Dr. Merrick is an internal medicine board-certified osteopathic physician with over 10 years of clinical experience in hospital medicine, outpatient care, and chronic disease management. He practices brings the same rigor of hospital-level medicine to every telehealth consultation.</p>
-            <p>He built this practice for a simple reason: millions of men suffer from and deal with ED in silence because they're embarrassed, too busy, or priced out of traditional care. That's not a medical problem — that's a system problem. This platform exists to remove every barrier between you and effective treatment.</p>
-            <p>Dr. Merrick lives and practices in rural Tennessee. He understands that not every patient has easy access to specialists or same-day appointments — and that discretion matters. Every case he reviews gets the same attention he'd give a patient in his clinic.</p>
+            <p>SpryMD is a telehealth practice for men who want clear, private care — without sitting in a waiting room or explaining themselves in public.</p>
+            <p>This platform exists to remove the usual barriers: scheduling weeks out, awkward in-person visits, and care that feels like a mill. A licensed clinician reviews every case. Treatment ships only when it is clinically appropriate.</p>
+            <p>We currently care for patients located in Tennessee. Discretion matters. Every visit gets the same attention you would expect in a clinic.</p>
           </div>
         </AnimatedSection>
       </div>
@@ -54,12 +54,12 @@ const DoctorBio = () => (
 
 const CredentialsGrid = () => {
   const creds = [
-    { icon: GraduationCap, text: "Doctor of Osteopathic Medicine (DO)" },
-    { icon: ClipboardCheck, text: "Board Certified — American Osteopathic Board of Internal Medicine" },
-    { icon: Building, text: "Licensed in Tennessee" },
-    { icon: Stethoscope, text: "10+ Years Clinical Experience" },
-    { icon: Lock, text: "HIPAA-Compliant Practice" },
-    { icon: Pill, text: "Hospital Medicine · Telehealth" },
+    { icon: Stethoscope, text: "Licensed clinician review on every case" },
+    { icon: ClipboardCheck, text: "Treatment only when clinically appropriate" },
+    { icon: Building, text: "Tennessee service area" },
+    { icon: Lock, text: "HIPAA-compliant practice" },
+    { icon: Pill, text: "Pharmacy fulfillment after approval" },
+    { icon: GraduationCap, text: "Private telehealth — no waiting rooms" },
   ];
 
   return (

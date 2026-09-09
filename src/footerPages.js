@@ -770,7 +770,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "Your dashboard pulls live from the Empower medication database — strength, sig, refills remaining, and prescriber on every line. Dr. William Merrick, DO signs every script in your history. Your record at gethealthy.com updates automatically after payment."
+            "text": "Your dashboard pulls live from the Empower medication database — strength, sig, refills remaining, and prescriber on every line. A licensed SpryMD clinician signs every script in your history. Your record at gethealthy.com updates automatically after payment."
           },
           {
             "type": "p",
@@ -832,7 +832,7 @@ export const footerPages = {
             "type": "ul",
             "items": [
               "**Empower-compounded** — Same pharmacy, same formulations, every refill.",
-              "**Clinician continuity** — Merrick, William DO on every active script.",
+              "**Clinician continuity** — The same licensed care team on every active script.",
               "**Zero friction** — Dashboard reordering. No new intake unless your protocol changes."
             ]
           }
@@ -1167,7 +1167,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**William Merrick, DO** — Board-certified in osteopathic internal medicine. Licensed in Tennessee. 10+ years of clinical experience across inpatient, outpatient, and telehealth settings."
+            "text": "Cases are reviewed by licensed clinicians. We do not publish individual physician biographies or credential lists on this site."
           },
           {
             "type": "p",
@@ -1370,7 +1370,7 @@ export const footerPages = {
               "**Category:** Performance-health telehealth / men's health infrastructure",
               "**Model:** Clinician-supervised protocols — assess → interpret → optimize",
               "**Fulfillment:** Compounded medications via Empower Pharmacy; discreet shipping",
-              "**Clinical lead:** William Merrick, DO — board-certified osteopathic internal medicine, licensed in Tennessee, 10+ years clinical experience",
+              "**Clinical model:** Licensed clinicians review every case before treatment is authorized",
               "**Positioning:** Elite performance medicine — not a pill mill; declines when inappropriate; not emergency care",
               "**Tagline:** Operate at your ceiling / Modern medicine, made for men"
             ]
