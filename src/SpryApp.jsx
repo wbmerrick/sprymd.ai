@@ -340,27 +340,27 @@ const mockRxHistory = [
   { rxId: "EMP-294817", name: "Tirzepatide Injection", strength: "8 mg/2 mL · grapeseed oil",
     sig: "Inject 0.25 mL (10 units) subQ once weekly", lastFilled: "Mar 14, 2026", refills: 5, refillsUsed: 1,
     price: 279, chilled: true, category: "Weight Loss", icon: Scale, color: "hsl(150, 55%, 40%)",
-    prescriber: "Merrick, William DO", daysSupply: 28 },
+    prescriber: "SpryMD Clinician", daysSupply: 28 },
   { rxId: "EMP-294112", name: "Tadalafil ODT", strength: "6 mg · oral dissolve",
     sig: "Dissolve one tablet under tongue daily", lastFilled: "Apr 02, 2026", refills: 11, refillsUsed: 0,
     price: 99, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
   { rxId: "EMP-291003", name: "Hair Restore MFK Topical", strength: "Minoxidil 5% / Fin 0.3% / Ketoconazole 2% · 60 mL",
     sig: "Apply 1 mL to scalp twice daily", lastFilled: "Feb 28, 2026", refills: 5, refillsUsed: 2,
     price: 89, chilled: false, category: "Hair Loss", icon: Sparkles, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 60 },
+    prescriber: "SpryMD Clinician", daysSupply: 60 },
   { rxId: "EMP-289445", name: "Tretinoin TAAN Mild Cream", strength: "Tret 0.03% / Azelaic 4% / Niac 4% · 30 g",
     sig: "Apply pea-sized amount nightly", lastFilled: "Mar 22, 2026", refills: 11, refillsUsed: 1,
     price: 59, chilled: false, category: "Dermatology", icon: Leaf, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
   { rxId: "EMP-285332", name: "Sildenafil 50mg", strength: "50 mg · 10 tablets",
     sig: "Take one tablet 30–60 min before activity", lastFilled: "Apr 18, 2026", refills: 5, refillsUsed: 0,
     price: 69, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
   { rxId: "EMP-281109", name: "Methylene Blue Capsule", strength: "10 mg · cognition / mitochondrial support",
     sig: "Take one capsule each morning", lastFilled: "Mar 30, 2026", refills: 2, refillsUsed: 1,
     price: 79, chilled: false, category: "Longevity", icon: Zap, color: "hsl(150, 55%, 40%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
 ];
 
 const rxIconFor = (rx) => {
@@ -959,19 +959,19 @@ const Landing = ({ go }) => (
                 <Stethoscope size={20} color={C.accent} />
               </div>
               <div>
-                <div className="display" style={{ fontSize: 20, fontWeight: 600, color: C.ink }}>William Merrick, DO</div>
-                <div style={{ fontSize: 13, color: C.inkSoft }}>Board-certified osteopathic internal medicine</div>
+                <div className="display" style={{ fontSize: 20, fontWeight: 600, color: C.ink }}>Licensed clinical care</div>
+                <div style={{ fontSize: 13, color: C.inkSoft }}>A licensed clinician reviews every case before treatment ships</div>
               </div>
             </div>
             <div className="space-y-2 mb-5">
-              {["Licensed in Tennessee", "10+ years of clinical experience", "Hospital, clinic, and telehealth practice"].map((item) => (
+              {["Independent medical review on every visit", "Treatment only when clinically appropriate", "Private telehealth — no waiting rooms"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <Check size={14} color={C.accent} />
                   <span style={{ fontSize: 14, color: C.inkSoft }}>{item}</span>
                 </div>
               ))}
             </div>
-            <Btn onClick={() => go("page", { slug: "clinicians" })} size="md" variant="secondary" icon={ArrowRight}>Physician credentials</Btn>
+            <Btn onClick={() => go("page", { slug: "clinicians" })} size="md" variant="secondary" icon={ArrowRight}>How we practice</Btn>
           </div>
           <div className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
             <div className="flex items-center gap-3 mb-4">
@@ -1517,7 +1517,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
               {mode === "signup" && (
                 <>
                   <Field label="Full legal name">
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="William B Merrick" className="focus-ring w-full p-4" style={inputStyle} />
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={inputStyle} />
                   </Field>
                   <Field label="Date of birth">
                     <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
@@ -1627,7 +1627,7 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
           </div>
           <div className="mt-6 flex items-center gap-3 flex-wrap">
             <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} active Rx</Tag>
-            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: Merrick, William DO</Tag>
+            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: SpryMD Clinician</Tag>
             <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />gethealthy.com synced</Tag>
           </div>
         </div>
