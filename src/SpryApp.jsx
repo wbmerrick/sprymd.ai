@@ -879,15 +879,14 @@ const Landing = ({ go }) => (
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl" style={{ border: `1px solid ${C.line}`, minHeight: 320 }}>
+          <div className="relative overflow-hidden rounded-3xl" style={{ border: `1px solid ${C.line}`, height: "min(520px, 78vw)" }}>
             <img
               src={imgLifestyleHero}
               alt="A man on a Tennessee porch at golden hour — confident, at home, not in a clinic"
-              className="w-full h-full object-cover ken-burns"
-              style={{ minHeight: 360, maxHeight: 520 }}
+              className="absolute inset-0 w-full h-full object-cover ken-burns"
+              style={{ objectPosition: "center 28%" }}
             />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 42%, rgba(0,0,0,0.78) 100%)" }} />
-            <div className="absolute left-5 right-5 bottom-5 md:left-6 md:right-6 md:bottom-6">
+            <div className="absolute inset-x-0 bottom-0 p-5 md:p-6" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.88) 55%)" }}>
               <p style={{ fontSize: 15, color: "#fff", lineHeight: 1.45, maxWidth: 420 }}>
                 “I started after work in Nashville. A real doctor reviewed my case — no waiting room.”
               </p>
