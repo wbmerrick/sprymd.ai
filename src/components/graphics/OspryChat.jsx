@@ -11,10 +11,10 @@ const STARTERS = [
 function replyFor(input) {
   const q = input.toLowerCase();
   if (q.includes("pcp") || q.includes("primary") || q.includes("doctor")) {
-    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Get started and choose Your doctor.";
+    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Start your confidential visit and choose Your doctor.";
   }
   if (q.includes("how") || q.includes("work") || q.includes("system")) {
-    return "Three steps: answer a short form (about 5 min) → a licensed doctor reviews it within 24 hours → medicine ships to you when approved, and you track progress on your dashboard. No waiting room. Cancel anytime.";
+    return "Three steps: choose care → a licensed clinician reviews your case → treatment ships when approved and filled. Eligible Tennessee orders can move next business day after the 2:00 p.m. CT weekday cutoff. No waiting room.";
   }
   if (q.includes("protocol") || q.includes("fit") || q.includes("start") || q.includes("treat") || q.includes("plan")) {
     return "Pick the area you want help with — weight, hormones, focus, sleep, performance, or your main doctor. Every plan is built around you and signed by a licensed doctor.";
@@ -31,7 +31,7 @@ function replyFor(input) {
 /**
  * iSpry chat — hero panel; docks to a bottom-right chat bar once the page scrolls.
  */
-export default function ISpryChat({ onAction, onDockChange }) {
+export default function ISpryChat({ onAction, onDockChange, forceDocked = false }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -40,13 +40,17 @@ export default function ISpryChat({ onAction, onDockChange }) {
   ]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
-  const [docked, setDocked] = useState(false);
+  const [docked, setDocked] = useState(forceDocked);
   const [expanded, setExpanded] = useState(false);
   const scrollerRef = useRef(null);
   const inputRef = useRef(null);
   const wasDocked = useRef(false);
 
   useEffect(() => {
+    if (forceDocked) {
+      setDocked(true);
+      return undefined;
+    }
     const onScroll = () => {
       const next = window.scrollY > 48;
       setDocked((prev) => (prev === next ? prev : next));
@@ -54,7 +58,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [forceDocked]);
 
   useEffect(() => {
     if (docked && !wasDocked.current) setExpanded(false);
@@ -376,7 +380,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
               fontFamily: "var(--font-mono), ui-monospace, monospace",
             }}
           >
-            Start a care plan <ArrowRight size={14} />
+            Start your confidential visit <ArrowRight size={14} />
           </button>
         </div>
       )}

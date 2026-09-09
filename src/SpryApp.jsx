@@ -23,7 +23,7 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
-import imgEarthSpace from "./assets/earth-from-space.webp";
+import imgLifestyleHero from "./assets/tn-lifestyle-hero.png";
 import {
   signInCustomer,
   signUpCustomer,
@@ -622,6 +622,68 @@ const Row = ({ label, value }) => (
   </div>
 );
 
+const TN_DELIVERY = {
+  cutoff: "2:00 p.m. Central Time",
+  eligibleDays: "Monday–Thursday",
+  title: "Tennessee Next-Day Delivery",
+  heroShort: "Eligible Tennessee orders: next-business-day delivery.",
+  full: "Complete your visit by 2:00 p.m. Central Time on an eligible weekday (Monday–Thursday) and, once your prescription is approved and filled, qualifying Tennessee orders ship for next-business-day delivery. Availability varies by medication, location, pharmacy, weather, and carrier service.",
+};
+
+const DeliveryBar = ({ onClick }) => {
+  const Tag = onClick ? "button" : "div";
+  return (
+    <Tag
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
+      className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
+      style={{ background: C.paper, borderBottom: `1px solid ${C.line}`, color: C.ink, cursor: onClick ? "pointer" : "default" }}
+    >
+      <span className="inline-flex items-center gap-2">
+        <Truck size={14} color={C.accent} strokeWidth={2} />
+        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
+          {TN_DELIVERY.title}
+        </span>
+      </span>
+      <span style={{ fontSize: 12, color: C.inkSoft }}>
+        After clinician approval, for eligible orders
+      </span>
+    </Tag>
+  );
+};
+
+const DeliveryHeroNote = () => (
+  <div className="inline-flex items-start gap-2" style={{ maxWidth: 280 }}>
+    <Truck size={16} color={C.accent} strokeWidth={2} className="flex-shrink-0" style={{ marginTop: 2 }} />
+    <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.4 }}>{TN_DELIVERY.heroShort}</span>
+  </div>
+);
+
+const DeliveryDetailsCard = () => (
+  <div id="tn-delivery" className="rounded-2xl p-5 md:p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+    <div className="flex items-center gap-2 mb-3">
+      <Truck size={16} color={C.accent} strokeWidth={2} />
+      <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
+        {TN_DELIVERY.title}
+      </span>
+    </div>
+    <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.6 }}>{TN_DELIVERY.full}</p>
+    <ul className="mt-4 space-y-2">
+      {[
+        `Visit completed by ${TN_DELIVERY.cutoff} on ${TN_DELIVERY.eligibleDays}`,
+        "Prescription approved and filled by the pharmacy",
+        "Tennessee shipping address on an eligible medication",
+        "Carrier, weather, and controlled-substance rules can change timing",
+      ].map((item) => (
+        <li key={item} className="flex items-start gap-2">
+          <Check size={14} color={C.accent} strokeWidth={2} className="flex-shrink-0" style={{ marginTop: 3 }} />
+          <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{item}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Header
 // ─────────────────────────────────────────────────────────────────────────────
@@ -752,157 +814,184 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
-const Landing = ({ go }) => {
-  const [chatDocked, setChatDocked] = useState(false);
-
-  return (
+const Landing = ({ go }) => (
   <div className="anim-fadeIn relative">
-    {/* ISS orbital Earth — fixed center of viewport, far background */}
-    <div
-      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
-      aria-hidden="true"
-    >
-      <img
-        src={imgEarthSpace}
-        alt=""
-        className="earth-distant select-none"
-        style={{
-          width: "min(110vw, 1400px)",
-          height: "min(72vh, 780px)",
-          opacity: 0.55,
-          filter: "saturate(1.05) brightness(0.88) contrast(1.12)",
-          maskImage:
-            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
-        }}
-      />
-      {/* Soft space vignette so the curved limb reads like a station window view */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 55% 48% at 50% 50%, transparent 0%, rgba(5,5,5,0.25) 55%, rgba(5,5,5,0.72) 100%)",
-        }}
-      />
-    </div>
+    <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
 
-    {/* Hero — full-bleed signal field, brand-first, content-height */}
-    <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent", minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
-      <div className="absolute inset-0 pointer-events-none">
-        <SignalField density={40} />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(105deg, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.18) 36%, rgba(5,5,5,0.04) 50%, rgba(5,5,5,0.22) 64%, rgba(5,5,5,0.7) 100%), linear-gradient(180deg, rgba(5,5,5,0.28) 0%, transparent 45%, rgba(5,5,5,0.9) 100%)",
-          }}
-        />
+    <section className="grain relative z-10 overflow-hidden" style={{ background: C.bg }}>
+      <div className="absolute inset-0 pointer-events-none opacity-50">
+        <SignalField density={28} interactive={false} />
       </div>
-      <div
-        className="relative z-10 max-w-7xl mx-auto px-6 md:px-12"
-        style={{ minHeight: chatDocked ? undefined : "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
-      >
-        <div className={`grid gap-8 md:gap-10 lg:gap-14 items-center ${chatDocked ? "" : "md:grid-cols-2"}`}>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
+        <div className="grid gap-10 lg:gap-14 items-center md:grid-cols-2">
           <div className="flex flex-col justify-center">
-            <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.02em", marginBottom: 10 }}>
-              Spry<span style={{ color: C.accent, fontWeight: 700 }}>MD</span>
-            </div>
             <p
               className="spry-rise"
               style={{
-                animationDelay: "0.04s",
                 fontSize: 13,
-                letterSpacing: "0.08em",
+                letterSpacing: "0.1em",
                 color: C.accent,
                 textTransform: "uppercase",
-                fontWeight: 600,
-                marginBottom: 18,
+                fontWeight: 700,
+                marginBottom: 16,
               }}
             >
-              Online care that helps you feel better
+              Modern medicine, made for men
             </p>
             <h1
               className="spry-rise display"
               style={{
-                animationDelay: "0.08s",
-                fontSize: "clamp(42px, 7.2vw, 84px)",
+                animationDelay: "0.06s",
+                fontSize: "clamp(40px, 6.4vw, 72px)",
                 lineHeight: 0.98,
                 fontWeight: 700,
                 color: C.ink,
-                maxWidth: chatDocked ? 900 : 560,
-                marginBottom: 22,
+                maxWidth: 620,
+                marginBottom: 20,
               }}
             >
-              Feel better. Stay <span className="signal-underline">strong</span>.
+              Men’s telehealth, built for <span className="signal-underline">Tennessee</span>.
             </h1>
             <p
               className="spry-rise"
               style={{
-                animationDelay: "0.16s",
+                animationDelay: "0.12s",
                 fontSize: "clamp(16px, 2vw, 19px)",
                 lineHeight: 1.55,
                 color: C.inkSoft,
-                maxWidth: 460,
-                marginBottom: 34,
+                maxWidth: 480,
+                marginBottom: 28,
               }}
             >
-              Real doctors help with weight, energy, sleep, mood, and everyday health — from home. Clear plans. Medicine shipped to your door.
+              Licensed doctors. Private visits. Treatment that ships to your door when it’s clinically appropriate.
             </p>
-            <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
-              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Get started</Btn>
-              <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
+            <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
+              <DeliveryHeroNote />
+            </div>
+            <div className="spry-rise flex flex-wrap gap-x-5 gap-y-2 mt-6" style={{ animationDelay: "0.28s" }}>
+              {["Licensed clinical care", "Private & discreet", "No waiting rooms"].map((item) => (
+                <div key={item} className="inline-flex items-center gap-2">
+                  <Check size={14} color={C.accent} strokeWidth={2.25} />
+                  <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{item}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div
-            className="relative flex items-stretch justify-center md:justify-end"
-            style={chatDocked ? { position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" } : undefined}
-          >
-            <ISpryChat onAction={() => go("landing-conditions")} onDockChange={setChatDocked} />
+          <div className="relative overflow-hidden rounded-3xl" style={{ border: `1px solid ${C.line}`, minHeight: 320 }}>
+            <img
+              src={imgLifestyleHero}
+              alt="A man on a Tennessee porch at golden hour — confident, at home, not in a clinic"
+              className="w-full h-full object-cover ken-burns"
+              style={{ minHeight: 360, maxHeight: 520 }}
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 42%, rgba(0,0,0,0.78) 100%)" }} />
+            <div className="absolute left-5 right-5 bottom-5 md:left-6 md:right-6 md:bottom-6">
+              <p style={{ fontSize: 15, color: "#fff", lineHeight: 1.45, maxWidth: 420 }}>
+                “I started after work in Nashville. A real doctor reviewed my case — no waiting room.”
+              </p>
+              <p className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.accent, marginTop: 8, fontWeight: 700 }}>
+                Marcus · Nashville, TN
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    {/* Brand definition */}
-    <section className="relative z-10 px-6 md:px-12 py-16 md:py-20" style={{ background: "rgba(0,0,0,0.92)", borderBottom: `1px solid ${C.line}` }}>
-      <div className="max-w-3xl mx-auto text-center">
-        <p className="display" style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 600, color: C.ink, lineHeight: 1.2, letterSpacing: "-0.02em" }}>
-          We help you feel <span style={{ color: C.accent }}>spry</span> again.
-        </p>
-        <div className="mx-auto mt-8 max-w-xl text-left" style={{ borderTop: `1px solid ${C.line}`, paddingTop: 22 }}>
-          <p style={{ fontSize: 18, lineHeight: 1.6, color: C.inkSoft }}>
-            <strong style={{ color: C.ink }}>Spry</strong> means active, lively, and ready for your day.
-          </p>
-          <p style={{ fontSize: 16, lineHeight: 1.6, color: C.muted, marginTop: 12 }}>
-            That is our goal for you: more energy, better health, and care that is easy to get.
+    <section id="how" className="px-6 md:px-12 py-14 md:py-16" style={{ background: C.bgAlt, borderTop: `1px solid ${C.line}` }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div>
+            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>How it works</span>
+            <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, marginTop: 10, color: C.ink, fontWeight: 650 }}>
+              Choose care → clinician review → treatment shipped.
+            </h2>
+          </div>
+          <p style={{ fontSize: 15, color: C.inkSoft, maxWidth: 320, lineHeight: 1.5 }}>
+            Three steps. No waiting room. A licensed clinician still has to approve every prescription.
           </p>
         </div>
-      </div>
-    </section>
-
-    {/* System */}
-    <section id="how" className="px-6 md:px-12 py-16 md:py-24 relative overflow-hidden" style={{ background: C.bgAlt }}>
-      <div className="max-w-7xl mx-auto relative z-10">
-        <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>How it works</span>
-        <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650, maxWidth: 720 }}>
-          Three simple steps.
-        </h2>
-        <div className="hairline-in mt-5" style={{ height: 2, maxWidth: 80, background: C.accent, opacity: 0.9 }} />
-        <p style={{ fontSize: 17, color: C.inkSoft, marginTop: 18, maxWidth: 520, lineHeight: 1.55 }}>
-          No waiting room. No confusing paperwork. Just clear care from a licensed doctor.
-        </p>
-        <div className="grid md:grid-cols-3 gap-0 mt-14" style={{ borderTop: `1px solid ${C.line}` }}>
-          {[{ n: "01", t: "Tell us how you feel", d: "Answer a short set of questions about your health goals. It usually takes a few minutes." },
-            { n: "02", t: "A doctor reviews your answers", d: "A licensed doctor looks at your case, usually within one day, and builds a plan that fits you." },
-            { n: "03", t: "Get your plan and follow along", d: "Medicine ships to your home when approved. Track progress and message care from your dashboard." }].map((s, i) => (
-            <div key={s.n} className="anim-fadeUp py-10 md:pr-10 relative" style={{ borderBottom: `1px solid ${C.line}`, borderRight: i < 2 ? `1px solid ${C.line}` : "none", animationDelay: `${i * 0.08}s` }}>
-              <div style={{ fontSize: 13, letterSpacing: "0.12em", color: C.accent, marginBottom: 16, fontWeight: 700 }}>{s.n}</div>
-              <h3 className="display" style={{ fontSize: 26, fontWeight: 600, marginBottom: 12, color: C.ink }}>{s.t}</h3>
-              <p style={{ fontSize: 16, lineHeight: 1.55, color: C.inkSoft, maxWidth: 320 }}>{s.d}</p>
+        <div className="grid md:grid-cols-3 gap-3">
+          {[
+            { n: "01", t: "Choose care", d: "Pick a visit and answer a short, private intake." },
+            { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case before anything ships." },
+            { n: "03", t: "Treatment shipped", d: "If approved and filled, qualifying Tennessee orders can move next business day." },
+          ].map((s) => (
+            <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
+              <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
+              <h3 className="display" style={{ fontSize: 22, fontWeight: 600, marginTop: 10, color: C.ink }}>{s.t}</h3>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: C.inkSoft, marginTop: 8 }}>{s.d}</p>
             </div>
           ))}
+        </div>
+        <div className="mt-6">
+          <DeliveryDetailsCard />
+        </div>
+      </div>
+    </section>
+
+    <section className="px-6 md:px-12 py-14 md:py-20" style={{ background: C.bg }}>
+      <div className="max-w-7xl mx-auto">
+        <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Social proof</span>
+        <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, marginTop: 10, marginBottom: 28, color: C.ink, fontWeight: 650 }}>
+          Built here. Reviewed by a real physician.
+        </h2>
+        <div className="grid md:grid-cols-3 gap-3 mb-6">
+          {[
+            { q: "Private, straightforward, and a doctor actually reviewed my case. That’s what I wanted.", a: "Daniel · Knoxville, TN" },
+            { q: "Finished the visit after work. No waiting room, no awkward small talk.", a: "Marcus · Nashville, TN" },
+            { q: "Packaging was discreet and messaging the care team was easy. Felt local, not like a national mill.", a: "James · Memphis, TN" },
+          ].map((r) => (
+            <div key={r.a} className="p-5 md:p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <div className="flex gap-1 mb-3">
+                {[0, 1, 2, 3, 4].map((i) => <Star key={i} size={13} color={C.accent} fill={C.accent} />)}
+              </div>
+              <p style={{ fontSize: 15, color: C.ink, lineHeight: 1.5 }}>“{r.q}”</p>
+              <p className="mono" style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: C.muted, marginTop: 14, fontWeight: 600 }}>{r.a}</p>
+            </div>
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          <div className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                <Stethoscope size={20} color={C.accent} />
+              </div>
+              <div>
+                <div className="display" style={{ fontSize: 20, fontWeight: 600, color: C.ink }}>William Merrick, DO</div>
+                <div style={{ fontSize: 13, color: C.inkSoft }}>Board-certified osteopathic internal medicine</div>
+              </div>
+            </div>
+            <div className="space-y-2 mb-5">
+              {["Licensed in Tennessee", "10+ years of clinical experience", "Hospital, clinic, and telehealth practice"].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <Check size={14} color={C.accent} />
+                  <span style={{ fontSize: 14, color: C.inkSoft }}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <Btn onClick={() => go("page", { slug: "clinicians" })} size="md" variant="secondary" icon={ArrowRight}>Physician credentials</Btn>
+          </div>
+          <div className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                <MapPin size={20} color={C.accent} />
+              </div>
+              <div>
+                <div className="display" style={{ fontSize: 20, fontWeight: 600, color: C.ink }}>Tennessee service area</div>
+                <div style={{ fontSize: 13, color: C.inkSoft }}>We currently care for patients located in Tennessee</div>
+              </div>
+            </div>
+            <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 18 }}>
+              Questions about your visit, shipping, or account? Email <strong style={{ color: C.ink }}>support@sprymd.ai</strong> — we aim to reply within one business day. For emergencies, call 911.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Btn onClick={() => go("page", { slug: "contact" })} size="md" icon={ArrowRight}>Contact support</Btn>
+              <Btn onClick={() => go("page", { slug: "about" })} size="md" variant="ghost">About SpryMD</Btn>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1067,7 +1156,7 @@ const Landing = ({ go }) => {
           Clear plans. Private care. Help that fits your life — not a waiting room.
         </p>
         <div className="flex flex-wrap justify-center gap-3 mt-10">
-          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Get started</Btn>
+          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
           <Btn onClick={() => go("marketplace")} size="lg" variant="secondary">Browse the shop</Btn>
         </div>
       </div>
@@ -1075,8 +1164,7 @@ const Landing = ({ go }) => {
 
     <Footer go={go} />
   </div>
-  );
-};
+);
 
 const ConditionCard = ({ condition, onClick, delay }) => {
   const [hover, setHover] = useState(false);
@@ -1147,7 +1235,7 @@ const Footer = ({ go }) => (
       <div>
         <Logo />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
-          Online care with licensed doctors. Medicine made by Empower Pharmacy when prescribed. Not for emergencies.
+          Modern medicine, made for men. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
         </p>
       </div>
       {footerColumns.map((col) => (
@@ -1695,6 +1783,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <Logo />
         <button onClick={() => go("refills")} className="focus-ring rounded-full p-1 hover:opacity-60">
@@ -1717,7 +1806,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
               <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 12, fontWeight: 500 }}>Shipping</label>
               <div className="grid grid-cols-2 gap-3">
                 {[{ id: "standard", label: "2nd Day Express", days: hasChilled ? "1–2 days · refrigerated" : "1–2 days", price: hasChilled ? 20 : 15 },
-                  { id: "overnight", label: "Overnight", days: hasChilled ? "Next day · refrigerated" : "Next day", price: hasChilled ? 41 : 33 }].map((s) => (
+                  { id: "overnight", label: "Eligible TN next-business-day", days: hasChilled ? "After fill · refrigerated" : "After approval and fill", price: hasChilled ? 41 : 33 }].map((s) => (
                   <button key={s.id} onClick={() => setShipping(s.id)}
                     className="focus-ring text-left p-4 rounded-xl transition-all"
                     style={{ background: shipping === s.id ? C.primary : C.paper, color: shipping === s.id ? C.paper : C.ink,
@@ -1727,6 +1816,9 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
                     <div className="display" style={{ fontSize: 18, fontWeight: 500, marginTop: 8 }}>${s.price}</div>
                   </button>
                 ))}
+              </div>
+              <div className="mt-4">
+                <DeliveryDetailsCard />
               </div>
             </div>
 
@@ -2376,6 +2468,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <Logo /><Tag>Plan ready</Tag>
       </div>
@@ -2474,9 +2567,13 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
             </div>
           </div>
 
-          <div className="mt-12 grid md:grid-cols-3 gap-4">
+          <div className="mt-12 mb-8">
+            <DeliveryDetailsCard />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
             {[{ i: ShieldCheck, t: "Clinician-reviewed", d: "Every prescription is signed by a licensed provider in your state." },
-              { i: Truck, t: "Discreet shipping", d: "Plain packaging. Free, every refill, on every plan." },
+              { i: Truck, t: "Eligible TN delivery", d: TN_DELIVERY.heroShort },
               { i: Stethoscope, t: "Ongoing support", d: "Message your care team anytime through the app." }].map((b) => (
               <div key={b.t} className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
                 <b.i size={20} color={C.primary} strokeWidth={1.5} />
@@ -2726,6 +2823,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <Logo />
         <button onClick={() => go(isSubscription ? "plan" : "marketplace")} className="focus-ring rounded-full p-1 hover:opacity-60">
@@ -2827,6 +2925,9 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
                 <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
               </div>
               {isSubscription && <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4, marginTop: 8 }}>Then ${plan.price}/mo after clinician approval. Cancel anytime in your account.</p>}
+              <div className="mt-6">
+                <DeliveryDetailsCard />
+              </div>
             </div>
           </div>
         </div>
@@ -3084,7 +3185,7 @@ export default function App() {
     <div style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
 
-      {view === "landing" && (<><Header go={go} cartCount={cartCount} user={user} /><Landing go={go} /></>)}
+      {view === "landing" && (<><DeliveryBar onClick={() => go("how")} /><Header go={go} cartCount={cartCount} user={user} /><Landing go={go} /></>)}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
       {view === "intake" && <Intake conditionId={params.condition} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}

@@ -1422,6 +1422,7 @@ export const footerNavToSlug = {
   "Supplements": "supplements",
   "About": "about",
   "Clinicians": "clinicians",
+  "Doctors": "clinicians",
   "Contact": "contact",
   "Press": "press"
 };
