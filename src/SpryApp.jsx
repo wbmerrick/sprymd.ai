@@ -524,7 +524,7 @@ const intakes = {
     { key: "age", type: "single", title: "What's your age range?", options: ["18–29", "30–39", "40–49", "50–59", "60–69", "70+"] },
     { key: "fertility", type: "single", title: "Is preserving fertility important right now?", options: ["Yes — planning children", "Maybe in the next few years", "No — not a concern"] },
     { key: "prostate", type: "multi", title: "Do any of these apply?", sub: "Required safety screening for testosterone therapy.",
-      options: ["History of prostate cancer", "Active untreated sleep apnea", "Hematocrit above 54%", "Breast cancer history", "None of the above"],
+      options: ["History of prostate cancer", "Active untreated sleep apnea", "Hematocrit above 54%", "Breast cancer history", "I'm not sure I want a full endocrine panel ran to check all of my hormone levels and any other tests that may be relevant to how my hormone functions.", "None of the above"],
       disqualify: ["History of prostate cancer", "Breast cancer history", "Hematocrit above 54%"] },
     { key: "preference", type: "single", title: "How would you prefer to treat?", options: ["Weekly injection — most effective", "Daily oral — no needles", "Topical cream", "Not sure — recommend for me"] },
   ],
@@ -2270,8 +2270,8 @@ const Intake = ({ conditionId, go }) => {
                     className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
                     style={{ background: checked ? C.primary : C.paper, color: checked ? C.paper : C.ink,
                       border: `1px solid ${checked ? C.primary : C.line}`, borderRadius: 12, fontSize: 15, fontWeight: 500 }}>
-                    <span>{opt}</span>
-                    <div className="flex items-center justify-center"
+                    <span style={{ flex: 1, paddingRight: 16, lineHeight: 1.45 }}>{opt}</span>
+                    <div className="flex items-center justify-center flex-shrink-0"
                       style={{ width: 22, height: 22, border: `1.5px solid ${checked ? C.paper : C.line}`,
                         background: checked ? C.paper : "transparent", borderRadius: 6 }}>
                       {checked && <Check size={12} strokeWidth={3} color={C.primary} />}
