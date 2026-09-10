@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
@@ -8,6 +8,7 @@ import {
   Watch, Menu,
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
+import LaserLogo from "./components/brand/LaserLogo";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -1448,33 +1449,65 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [playCount, setPlayCount] = useState(1);
+  const animResolveRef = useRef(null);
 
   const canSubmit = email.includes("@") && password.length >= 8 &&
     (mode === "signin" || (name.trim().length > 0 && dob.length >= 8));
 
-  const submit = async () => {
+  const handleLaserComplete = () => {
+    if (animResolveRef.current) {
+      animResolveRef.current();
+      animResolveRef.current = null;
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!canSubmit || loading) return;
     setLoading(true);
     setError("");
     setNotice("");
+    setPlayCount((c) => c + 1);
+
+    let resolveAnim = () => {};
+    const animationDonePromise = new Promise((resolve) => {
+      resolveAnim = resolve;
+      animResolveRef.current = resolve;
+    });
+    const animSafety = window.setTimeout(() => resolveAnim(), 4100);
+
+    const authPromise =
+      mode === "signup"
+        ? signUpCustomer({ email, password, name, dob })
+        : signInCustomer({ email, password });
+
     try {
+      const [result] = await Promise.all([authPromise, animationDonePromise]);
       if (mode === "signup") {
-        const { profile, needsEmailConfirm } = await signUpCustomer({ email, password, name, dob });
-        onAuthSuccess(hydrateUser(profile));
-        if (needsEmailConfirm) {
+        onAuthSuccess(hydrateUser(result.profile));
+        if (result.needsEmailConfirm) {
           setNotice("Account created. Check your email to confirm — you can keep using your account now.");
         }
-        go(returnTo || "dashboard", { justLoggedIn: true });
       } else {
-        const { profile } = await signInCustomer({ email, password });
-        onAuthSuccess(hydrateUser(profile));
-        go(returnTo || "dashboard", { justLoggedIn: true });
+        onAuthSuccess(hydrateUser(result.profile));
       }
-    } catch (e) {
-      setError(e?.message || "Unable to authenticate. Try again.");
-    } finally {
+      go(returnTo || "dashboard", { justLoggedIn: true });
+    } catch (err) {
+      resolveAnim();
+      setError(err?.message || "Unable to authenticate. Try again.");
       setLoading(false);
+    } finally {
+      window.clearTimeout(animSafety);
+      animResolveRef.current = null;
     }
+  };
+
+  const cardStyle = {
+    background: C.bgAlt,
+    border: `1px solid ${C.line}`,
+    borderRadius: 12,
+    padding: "28px 24px",
   };
 
   return (
@@ -1500,35 +1533,37 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             </div>
           </div>
           <div className="w-full max-w-md md:max-w-none md:px-2">
-          <div className="anim-fadeUp">
+          <div className="anim-fadeUp" style={cardStyle}>
+            <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-6" />
+
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
               {mode === "signin" ? "Welcome back" : "Create account"}
             </span>
-            <h1 className="display" style={{ fontSize: "clamp(36px, 5vw, 52px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 12 }}>
+            <h1 className="display" style={{ fontSize: "clamp(28px, 4.5vw, 40px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 12 }}>
               {mode === "signin" ? <>Sign in to your <Mark>account</Mark>.</> : <>Create your <Mark>SpryMD</Mark> account.</>}
             </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55 }}>
+            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 28, lineHeight: 1.55 }}>
               {mode === "signin"
                 ? "Each login opens only your medical record, prescriptions, and order history."
                 : "One email, one account. Your care plan and pharmacy history stay private to you."}
             </p>
 
-            <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "signup" && (
                 <>
                   <Field label="Full legal name">
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={inputStyle} />
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
                   </Field>
                   <Field label="Date of birth">
-                    <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
+                    <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
                   </Field>
                 </>
               )}
               <Field label="Email">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" disabled={loading} />
               </Field>
               <Field label="Password">
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
               </Field>
 
               {error && (
@@ -1544,7 +1579,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
                 </div>
               )}
 
-              <Btn onClick={submit} disabled={!canSubmit || loading} size="lg" className="w-full">
+              <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
                 {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
                          : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
               </Btn>
@@ -1553,11 +1588,11 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
                 <Lock size={11} color={C.muted} />
                 <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
               </div>
-            </div>
+            </form>
 
             <div className="text-center mt-8 pt-8" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
-                className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }}>
+              <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
+                className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }} disabled={loading}>
                 {mode === "signin"
                   ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
                   : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
