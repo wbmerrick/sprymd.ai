@@ -25,7 +25,19 @@ import {
   updateCustomerProfile,
   upsertStoredAccount,
 } from "@/lib/customerAccounts";
-import { defaultWearableDevices, MARKETPLACE_DEVICE_MAP, mergeWearableCatalog } from "@/data/wearables";
+import {
+  buildCustomWearable,
+  defaultWearableDevices,
+  MARKETPLACE_DEVICE_MAP,
+  mergeWearableCatalog,
+  metricDefaults,
+  WEARABLE_CATALOG,
+} from "@/data/wearables";
+import {
+  DEFAULT_DASHBOARD_WIDGETS,
+  type DashboardLayoutConfig,
+  type DashboardWidgetId,
+} from "@/types/dashboard";
 import { publishVitalsEvent } from "@/lib/vitalsBus";
 
 const READINGS_CAP = 500;
@@ -68,6 +80,7 @@ export interface PatientCareRecord {
   wearableReadings: WearableReading[];
   bodyProfile: BodyProfile;
   bodyGoals: BodyGoal[];
+  dashboardLayout?: DashboardLayoutConfig;
   updatedAt: string;
 }
 
@@ -108,6 +121,7 @@ function emptyCare(email: string): PatientCareRecord {
     wearableReadings: [],
     bodyProfile: emptyBodyProfile(),
     bodyGoals: [],
+    dashboardLayout: defaultDashboardLayout(),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -239,6 +253,7 @@ export function buildDashboardForEmail(email: string): DashboardData | null {
     wearableReadings: care.wearableReadings || [],
     bodyProfile: care.bodyProfile || emptyBodyProfile(),
     bodyGoals: care.bodyGoals || [],
+    dashboardLayout: care.dashboardLayout || defaultDashboardLayout(),
   };
 }
 
@@ -652,6 +667,83 @@ function formatReadingValue(r: Pick<WearableReading, "value" | "unit" | "seconda
   return primary;
 }
 
+
+export function defaultDashboardLayout(): DashboardLayoutConfig {
+  return {
+    preset: "care_simple",
+    widgets: [...DEFAULT_DASHBOARD_WIDGETS],
+    pinnedDeviceIds: [],
+    selectedMetrics: ["hr", "spo2", "weight", "glucose", "sleep_score"],
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export function saveDashboardLayout(email: string, patch: Partial<DashboardLayoutConfig>) {
+  const care = getPatientCare(email);
+  const prev = care.dashboardLayout || defaultDashboardLayout();
+  care.dashboardLayout = {
+    ...prev,
+    ...patch,
+    widgets: patch.widgets ? [...patch.widgets] : prev.widgets,
+    pinnedDeviceIds: patch.pinnedDeviceIds ? [...patch.pinnedDeviceIds] : prev.pinnedDeviceIds,
+    selectedMetrics: patch.selectedMetrics ? [...patch.selectedMetrics] : prev.selectedMetrics,
+    updatedAt: new Date().toISOString(),
+  };
+  return saveCare(care);
+}
+
+/** Unlock a catalog device and mark it ready to sync. */
+export function connectWearableDevice(email: string, kind: WearableKind) {
+  const care = getPatientCare(email);
+  care.wearableDevices = mergeWearableCatalog(care.wearableDevices);
+  const exists = care.wearableDevices.some((d) => d.id === kind);
+  if (!exists) {
+    const catalog = WEARABLE_CATALOG.find((d) => d.id === kind);
+    if (!catalog) throw new Error("Unknown wearable. Use Add any device for custom gear.");
+    care.wearableDevices.push({
+      ...catalog,
+      syncMode: "manual",
+      status: "paired",
+      lastSyncedAt: null,
+      enabled: true,
+      owned: true,
+    });
+  } else {
+    care.wearableDevices = care.wearableDevices.map((d) =>
+      d.id === kind
+        ? { ...d, owned: true, enabled: true, status: d.status === "disconnected" ? "paired" : d.status }
+        : d,
+    );
+  }
+  const device = care.wearableDevices.find((d) => d.id === kind)!;
+  pushNotification(care, {
+    icon: "activity",
+    title: `${device.brand} ${device.name} connected`,
+    description: "Sync, upload a file, or turn on live stream to see readings on your dashboard.",
+  });
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: kind, at: new Date().toISOString() });
+  return saved;
+}
+
+/** Register any brand/model so patients can sync gear not yet in the stock catalog. */
+export function registerCustomWearable(
+  email: string,
+  input: { brand: string; name: string; metrics?: string[] },
+) {
+  const care = getPatientCare(email);
+  const device = buildCustomWearable(input);
+  care.wearableDevices = [...mergeWearableCatalog(care.wearableDevices), device];
+  pushNotification(care, {
+    icon: "activity",
+    title: `${device.brand} ${device.name} added`,
+    description: "Upload CSV/JSON exports from the maker's app, or log readings manually.",
+  });
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: device.id, at: new Date().toISOString() });
+  return { care: saved, device };
+}
+
 function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
   const now = new Date().toISOString();
   const base = {
@@ -682,15 +774,27 @@ function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
       return { ...base, metric: "Heart rate", value: 60 + Math.round(Math.random() * 28), unit: "bpm", secondaryValue: 40 + Math.round(Math.random() * 30), secondaryUnit: "ms" };
     case "cgm":
       return { ...base, metric: "Glucose", value: 90 + Math.round(Math.random() * 50), unit: "mg/dL" };
-    default:
-      return { ...base, metric: "Reading", value: 0, unit: "" };
+    default: {
+      const d = metricDefaults(deviceId);
+      const primary = 50 + Math.round(Math.random() * 50);
+      const secondary =
+        d.secondaryMetric != null ? 20 + Math.round(Math.random() * 40) : undefined;
+      return {
+        ...base,
+        metric: d.metric,
+        value: primary,
+        unit: d.unit,
+        secondaryValue: secondary,
+        secondaryUnit: secondary != null ? d.secondaryUnit : undefined,
+      };
+    }
   }
 }
 
 function applyReadingToBodyProfile(care: PatientCareRecord, reading: Pick<WearableReading, "deviceId" | "metric" | "value" | "unit">) {
   if (!care.bodyProfile) care.bodyProfile = emptyBodyProfile();
   const metric = reading.metric.toLowerCase();
-  if (reading.deviceId === "smart_scale" && (metric.includes("weight") || reading.unit === "lb")) {
+  if (metric.includes("weight") || (reading.unit === "lb" && /scale|weight/i.test(reading.deviceId))) {
     care.bodyProfile.weightLb = reading.value;
     care.bodyProfile.updatedAt = new Date().toISOString();
   }

@@ -82,21 +82,27 @@ export interface SupportTopic {
   description: string;
 }
 
-export type WearableKind =
-  | "bp_monitor"
-  | "pulse_oximeter"
-  | "smart_scale"
-  | "cpap"
-  | "sleep_tracker"
-  | "oura_ring"
-  | "whoop_band"
-  | "apple_watch"
-  | "garmin_watch"
-  | "cgm";
+/** Stable device id — catalog kinds or `custom_<slug>` for user-added gear. */
+export type WearableKind = string;
 
 export type WearableSyncMode = "manual" | "sync" | "continuous";
 
 export type WearableConnectionStatus = "disconnected" | "paired" | "syncing" | "monitoring";
+
+export type WearableConnector =
+  | "native_sim"
+  | "file_import"
+  | "healthkit"
+  | "google_fit"
+  | "samsung_health"
+  | "oura_cloud"
+  | "whoop_cloud"
+  | "garmin_connect"
+  | "fitbit"
+  | "dexcom"
+  | "withings"
+  | "generic_api"
+  | "custom";
 
 export interface WearableDevice {
   id: WearableKind;
@@ -109,11 +115,17 @@ export interface WearableDevice {
   status: WearableConnectionStatus;
   lastSyncedAt: string | null;
   enabled: boolean;
-  /** Purchase-gated — unlocked via marketplace checkout */
+  /** Purchase-gated — unlocked via marketplace checkout or Connect any device */
   owned: boolean;
   marketplaceProductId?: string;
   priceUsd?: number;
-  tier?: "clinical" | "recovery" | "metabolic" | "sleep";
+  tier?: "clinical" | "recovery" | "metabolic" | "sleep" | "fitness" | "custom";
+  /** How this device ingests data into SpryMD */
+  connector?: WearableConnector;
+  /** True when the patient added a device that is not in the stock catalog */
+  isCustom?: boolean;
+  /** Canonical metric keys this device can produce */
+  metricKeys?: string[];
 }
 
 export interface WearableReading {
@@ -161,7 +173,37 @@ export interface BodyGoal {
   updatedAt: string;
 }
 
-export type DashboardLayoutPreset = "care_simple" | "clinical_terminal" | "device_ops";
+export type DashboardLayoutPreset = "care_simple" | "clinical_terminal" | "device_ops" | "custom";
+
+export type DashboardWidgetId =
+  | "ticker"
+  | "chart"
+  | "devices"
+  | "actions"
+  | "body"
+  | "readings"
+  | "care"
+  | "shipments";
+
+export interface DashboardLayoutConfig {
+  preset: DashboardLayoutPreset;
+  /** Widgets visible when preset is `custom` (also used as overrides). */
+  widgets: DashboardWidgetId[];
+  pinnedDeviceIds: WearableKind[];
+  selectedMetrics: string[];
+  updatedAt: string;
+}
+
+export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetId[] = [
+  "ticker",
+  "chart",
+  "devices",
+  "actions",
+  "body",
+  "readings",
+  "care",
+  "shipments",
+];
 
 export interface DashboardData {
   user: DashboardUser;
@@ -176,4 +218,5 @@ export interface DashboardData {
   wearableReadings: WearableReading[];
   bodyProfile: BodyProfile;
   bodyGoals: BodyGoal[];
+  dashboardLayout?: DashboardLayoutConfig;
 }
