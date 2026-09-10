@@ -102,8 +102,7 @@ function LaserLogoSvg({ play }: { play: number }) {
         <style>{`
           .ll-bg-${play} { fill: #000000; }
           .ll-brand-${play} {
-            opacity: 0;
-            animation: ll-brand-in-${play} 0.85s ease-out 1.85s forwards;
+            opacity: 1;
           }
           .ll-beam-core-${play} {
             stroke: url(#${beamGradId});
@@ -138,10 +137,6 @@ function LaserLogoSvg({ play }: { play: number }) {
             stroke-dasharray: 160;
             stroke-dashoffset: 160;
             animation: ll-underline-${play} 0.55s ease-out 2.7s forwards;
-          }
-          @keyframes ll-brand-in-${play} {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
           }
           @keyframes ll-beam-run-${play} {
             0% { opacity: 0; stroke-dashoffset: 0; }
