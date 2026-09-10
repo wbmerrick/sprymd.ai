@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="100%" role="img" aria-label="SpryMD">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&amp;display=swap');
+    </style>
+  </defs>
+  <rect width="400" height="100" fill="#000000"/>
+  <g transform="translate(48, 34)">
+    <circle cx="16" cy="16" r="15" fill="none" stroke="#FFFFFF" stroke-width="1.75"/>
+    <path d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5" fill="none" stroke="#E87722" stroke-width="1.75" stroke-linecap="round"/>
+    <circle cx="16" cy="16" r="2" fill="#E87722"/>
+  </g>
+  <text x="96" y="62" font-family="Outfit, system-ui, sans-serif" font-weight="600" font-size="42" letter-spacing="-0.03em" fill="#FFFFFF">
+    Spry<tspan fill="#FFFFFF" opacity="0.55">MD</tspan>
+  </text>
+  <line x1="96" y1="74" x2="248" y2="74" stroke="#E87722" stroke-width="2" stroke-linecap="round"/>
+</svg>
