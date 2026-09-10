@@ -19,6 +19,8 @@ import NPP from "@/pages/NPP";
 import About from "@/pages/About";
 import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
+import OAuthAuthorizePage from "@/pages/oauth/AuthorizePage";
+import OAuthCallbackPage from "@/pages/oauth/CallbackPage";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
+          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           <Route path="*" element={<SpryApp />} />
         </Routes>
       </BrowserRouter>

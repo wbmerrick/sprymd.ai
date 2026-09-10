@@ -15,6 +15,7 @@ import type {
   WearableKind,
   WearableReading,
   WearableSyncMode,
+  WearableOAuthLink,
 } from "@/types/dashboard";
 import {
   addCustomerOrder,
@@ -81,6 +82,7 @@ export interface PatientCareRecord {
   bodyProfile: BodyProfile;
   bodyGoals: BodyGoal[];
   dashboardLayout?: DashboardLayoutConfig;
+  oauthLinks?: WearableOAuthLink[];
   updatedAt: string;
 }
 
@@ -122,6 +124,7 @@ function emptyCare(email: string): PatientCareRecord {
     bodyProfile: emptyBodyProfile(),
     bodyGoals: [],
     dashboardLayout: defaultDashboardLayout(),
+    oauthLinks: [],
     updatedAt: new Date().toISOString(),
   };
 }
@@ -1092,3 +1095,73 @@ function normalizeFromValues(
     recordedAt: recordedAt && !Number.isNaN(Date.parse(recordedAt)) ? new Date(recordedAt).toISOString() : new Date().toISOString(),
   };
 }
+
+
+/** Persist OEM OAuth link metadata on the care record (tokens stay in the vault). */
+export function markWearableOAuthLinked(
+  email: string,
+  link: WearableOAuthLink,
+) {
+  const care = getPatientCare(email);
+  const links = [...(care.oauthLinks || [])].filter((l) => l.deviceId !== link.deviceId);
+  links.push(link);
+  care.oauthLinks = links;
+  care.wearableDevices = (care.wearableDevices || []).map((d) =>
+    d.id === link.deviceId
+      ? { ...d, owned: true, enabled: true, status: d.status === "disconnected" ? "paired" : d.status, syncMode: d.syncMode === "manual" ? "sync" : d.syncMode }
+      : d,
+  );
+  pushNotification(care, {
+    icon: "activity",
+    title: `${link.providerId} cloud linked`,
+    description: link.sandbox
+      ? "Sandbox OAuth complete. Sync pulls OEM-shaped cloud readings into your dashboard."
+      : "Live OEM OAuth complete. Sync pulls from the vendor cloud API.",
+  });
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: link.deviceId, at: new Date().toISOString() });
+  return saved;
+}
+
+/** Sync via OEM cloud when linked; otherwise fall back to local simulator. */
+export async function syncWearableDeviceFromCloud(email: string, deviceId: WearableKind) {
+  const { hasOemCloudLink, syncOemCloud } = await import("@/connectors");
+  if (!hasOemCloudLink(email, deviceId)) {
+    return syncWearableDevice(email, deviceId);
+  }
+  const care = getPatientCare(email);
+  const device = (care.wearableDevices || []).find((d) => d.id === deviceId);
+  if (!device) return care;
+
+  care.wearableDevices = (care.wearableDevices || []).map((d) =>
+    d.id === deviceId
+      ? { ...d, status: "syncing", lastSyncedAt: new Date().toISOString(), syncMode: d.syncMode === "manual" ? "sync" : d.syncMode }
+      : d,
+  );
+  saveCare(care);
+
+  const { readings, liveApi, providerName } = await syncOemCloud(email, deviceId);
+  const next = getPatientCare(email);
+  next.wearableReadings = [...readings, ...(next.wearableReadings || [])].slice(0, READINGS_CAP);
+  next.wearableDevices = (next.wearableDevices || []).map((d) =>
+    d.id === deviceId
+      ? { ...d, status: d.syncMode === "continuous" ? "monitoring" : "paired", lastSyncedAt: new Date().toISOString() }
+      : d,
+  );
+  next.oauthLinks = (next.oauthLinks || []).map((l) =>
+    l.deviceId === deviceId ? { ...l, lastSyncAt: new Date().toISOString(), status: "connected" } : l,
+  );
+  for (const r of readings) applyReadingToBodyProfile(next, r);
+  const sample = readings[0];
+  pushNotification(next, {
+    icon: "activity",
+    title: `${providerName} cloud sync`,
+    description: sample
+      ? `${sample.metric}: ${formatReadingValue(sample)} · ${liveApi ? "live OEM API" : "sandbox cloud"}`
+      : "No new readings.",
+  });
+  const saved = saveCare(next);
+  if (sample) publishVitalsEvent({ type: "reading", deviceId, readingId: sample.id, at: sample.recordedAt });
+  return saved;
+}
+
