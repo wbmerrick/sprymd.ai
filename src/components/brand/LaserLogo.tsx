@@ -14,6 +14,7 @@ const containerStyle: CSSProperties = {
   aspectRatio: "4 / 1",
   overflow: "hidden",
   lineHeight: 0,
+  background: "#000000",
 };
 
 function usePrefersReducedMotion(): boolean {
@@ -77,7 +78,6 @@ function LaserLogoSvg({ play }: { play: number }) {
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-    // Belt-and-suspenders: reset SMIL timeline after remount.
     try {
       svg.setCurrentTime?.(0);
     } catch {
@@ -85,9 +85,12 @@ function LaserLogoSvg({ play }: { play: number }) {
     }
   }, [play]);
 
+  const glowId = `ll-glow-${play}`;
+  const beamGradId = `ll-beam-grad-${play}`;
+  const revealId = `ll-reveal-${play}`;
+
   return (
     <svg
-      key={play}
       ref={svgRef}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 400 100"
@@ -97,91 +100,119 @@ function LaserLogoSvg({ play }: { play: number }) {
     >
       <defs>
         <style>{`
-          .ll-bg { fill: #000000; }
-          .ll-mark-ring { fill: none; stroke: #FFFFFF; stroke-width: 1.75; opacity: 0; animation: ll-fade-in 0.55s ease-out 1.55s forwards; }
-          .ll-mark-path { fill: none; stroke: #E87722; stroke-width: 1.75; stroke-linecap: round; stroke-dasharray: 28; stroke-dashoffset: 28; animation: ll-draw 0.9s ease-out 1.7s forwards; }
-          .ll-mark-dot { fill: #E87722; opacity: 0; animation: ll-fade-in 0.35s ease-out 2.35s forwards; }
-          .ll-word { font-family: Outfit, system-ui, sans-serif; font-weight: 600; font-size: 42px; letter-spacing: -0.03em; fill: #FFFFFF; opacity: 0; animation: ll-fade-up 0.7s ease-out 2.55s forwards; }
-          .ll-md { fill: #FFFFFF; opacity: 0; animation: ll-md-in 0.7s ease-out 2.75s forwards; }
-          .ll-beam {
-            stroke: #E87722;
-            stroke-width: 2;
+          .ll-bg-${play} { fill: #000000; }
+          .ll-brand-${play} {
+            opacity: 0;
+            animation: ll-brand-in-${play} 0.85s ease-out 1.85s forwards;
+          }
+          .ll-beam-core-${play} {
+            stroke: url(#${beamGradId});
+            stroke-width: 3;
             stroke-linecap: round;
-            filter: url(#ll-glow-${play});
+            filter: url(#${glowId});
             opacity: 0;
-            animation: ll-beam-sweep 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+            animation: ll-beam-run-${play} 1.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
           }
-          .ll-scan {
-            fill: url(#ll-scan-grad-${play});
-            opacity: 0;
-            animation: ll-scan-pass 1.2s ease-in-out 0.35s forwards;
+          .ll-beam-core-${play} {
+            stroke-dasharray: 16 420;
           }
-          .ll-underline {
+          .ll-beam-halo-${play} {
             stroke: #E87722;
-            stroke-width: 2;
+            stroke-width: 10;
             stroke-linecap: round;
             opacity: 0;
-            animation: ll-fade-in 0.45s ease-out 3.2s forwards;
+            filter: url(#${glowId});
+            stroke-dasharray: 24 420;
+            animation: ll-beam-run-${play} 1.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
           }
-          @keyframes ll-fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
+          .ll-hotspot-${play} {
+            fill: #FFB068;
+            opacity: 0;
+            filter: url(#${glowId});
+            animation: ll-hotspot-${play} 1.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
           }
-          @keyframes ll-fade-up {
-            from { opacity: 0; transform: translateY(6px); }
+          .ll-underline-${play} {
+            stroke: #E87722;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-dasharray: 160;
+            stroke-dashoffset: 160;
+            animation: ll-underline-${play} 0.55s ease-out 2.7s forwards;
+          }
+          @keyframes ll-brand-in-${play} {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
           }
-          @keyframes ll-md-in {
-            from { opacity: 0; }
-            to { opacity: 0.55; }
+          @keyframes ll-beam-run-${play} {
+            0% { opacity: 0; stroke-dashoffset: 0; }
+            8% { opacity: 1; }
+            78% { opacity: 1; stroke-dashoffset: -400; }
+            100% { opacity: 0; stroke-dashoffset: -420; }
           }
-          @keyframes ll-draw {
+          @keyframes ll-hotspot-${play} {
+            0% { opacity: 0; transform: translateX(20px); }
+            10% { opacity: 1; }
+            78% { opacity: 1; transform: translateX(372px); }
+            100% { opacity: 0; transform: translateX(380px); }
+          }
+          @keyframes ll-underline-${play} {
             to { stroke-dashoffset: 0; }
           }
-          @keyframes ll-beam-sweep {
-            0% { opacity: 0; stroke-dasharray: 0 420; }
-            12% { opacity: 1; }
-            70% { opacity: 1; stroke-dasharray: 420 0; }
-            100% { opacity: 0; stroke-dasharray: 420 0; }
-          }
-          @keyframes ll-scan-pass {
-            0% { opacity: 0; transform: translateX(-40px); }
-            20% { opacity: 0.55; }
-            80% { opacity: 0.35; }
-            100% { opacity: 0; transform: translateX(360px); }
-          }
         `}</style>
-        <filter id={`ll-glow-${play}`} x="-40%" y="-200%" width="180%" height="500%">
-          <feGaussianBlur stdDeviation="2.5" result="b" />
+        <filter id={glowId} x="-50%" y="-250%" width="200%" height="600%">
+          <feGaussianBlur stdDeviation="3.5" result="b" />
           <feMerge>
             <feMergeNode in="b" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        <linearGradient id={`ll-scan-grad-${play}`} x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={beamGradId} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#E87722" stopOpacity="0" />
-          <stop offset="50%" stopColor="#E87722" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#E87722" stopOpacity="0" />
+          <stop offset="35%" stopColor="#FF9A4A" stopOpacity="1" />
+          <stop offset="100%" stopColor="#E87722" stopOpacity="0.2" />
         </linearGradient>
+        <clipPath id={revealId}>
+          <rect x="0" y="0" width="0" height="100">
+            <animate attributeName="width" from="0" to="400" begin="0.2s" dur="1.5s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1" />
+          </rect>
+        </clipPath>
       </defs>
 
-      <rect className="ll-bg" width="400" height="100" />
+      <rect className={`ll-bg-${play}`} width="400" height="100" />
 
-      <line className="ll-beam" x1="20" y1="50" x2="380" y2="50" />
-      <rect className="ll-scan" x="0" y="18" width="48" height="64" />
+      {/* Laser sweep */}
+      <line className={`ll-beam-halo-${play}`} x1="20" y1="50" x2="380" y2="50" />
+      <line className={`ll-beam-core-${play}`} x1="20" y1="50" x2="380" y2="50" />
+      <circle className={`ll-hotspot-${play}`} cx="0" cy="50" r="5" />
 
-      <g transform="translate(48, 34)">
-        <circle className="ll-mark-ring" cx="16" cy="16" r="15" />
-        <path className="ll-mark-path" d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5" />
-        <circle className="ll-mark-dot" cx="16" cy="16" r="2" />
-        <animate attributeName="opacity" from="0" to="1" begin="1.5s" dur="0.4s" fill="freeze" />
+      {/* Brand revealed behind laser */}
+      <g clipPath={`url(#${revealId})`}>
+        <g className={`ll-brand-${play}`}>
+          <g transform="translate(48, 34)">
+            <circle cx="16" cy="16" r="15" fill="none" stroke="#FFFFFF" strokeWidth="1.75" />
+            <path
+              d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5"
+              fill="none"
+              stroke="#E87722"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+            />
+            <circle cx="16" cy="16" r="2" fill="#E87722" />
+          </g>
+          <text
+            x="96"
+            y="62"
+            style={{ fontFamily: "Outfit, system-ui, sans-serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
+            fill="#FFFFFF"
+          >
+            Spry
+            <tspan fill="#FFFFFF" opacity={0.55}>
+              MD
+            </tspan>
+          </text>
+          <line className={`ll-underline-${play}`} x1="96" y1="74" x2="248" y2="74" />
+        </g>
       </g>
-
-      <text className="ll-word" x="96" y="62">
-        Spry
-        <tspan className="ll-md">MD</tspan>
-      </text>
-      <line className="ll-underline" x1="96" y1="74" x2="248" y2="74" />
     </svg>
   );
 }
@@ -204,7 +235,11 @@ export default function LaserLogo({ play, onComplete, className }: LaserLogoProp
 
   return (
     <div className={className} style={containerStyle} data-laser-play={play}>
-      {reducedMotion ? <StaticDarkLogo /> : <LaserLogoSvg play={play} />}
+      {reducedMotion ? (
+        <StaticDarkLogo />
+      ) : (
+        <LaserLogoSvg key={play} play={play} />
+      )}
     </div>
   );
 }

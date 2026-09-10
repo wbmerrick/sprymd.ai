@@ -3,85 +3,97 @@
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&amp;display=swap');
       .ll-bg { fill: #000000; }
-      .ll-mark-ring { fill: none; stroke: #FFFFFF; stroke-width: 1.75; opacity: 0; animation: ll-fade-in 0.55s ease-out 1.55s forwards; }
-      .ll-mark-path { fill: none; stroke: #E87722; stroke-width: 1.75; stroke-linecap: round; stroke-dasharray: 28; stroke-dashoffset: 28; animation: ll-draw 0.9s ease-out 1.7s forwards; }
-      .ll-mark-dot { fill: #E87722; opacity: 0; animation: ll-fade-in 0.35s ease-out 2.35s forwards; }
-      .ll-word { font-family: Outfit, system-ui, sans-serif; font-weight: 600; font-size: 42px; letter-spacing: -0.03em; fill: #FFFFFF; opacity: 0; animation: ll-fade-up 0.7s ease-out 2.55s forwards; }
-      .ll-md { fill: #FFFFFF; opacity: 0; animation: ll-fade-up 0.7s ease-out 2.75s forwards; }
-      .ll-beam {
-        stroke: #E87722;
-        stroke-width: 2;
+      .ll-brand {
+        opacity: 0;
+        animation: ll-brand-in 0.85s ease-out 1.85s forwards;
+      }
+      .ll-beam-core {
+        stroke: url(#ll-beam-grad);
+        stroke-width: 3;
         stroke-linecap: round;
         filter: url(#ll-glow);
         opacity: 0;
-        animation: ll-beam-sweep 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+        stroke-dasharray: 16 420;
+        animation: ll-beam-run 1.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
       }
-      .ll-scan {
-        fill: url(#ll-scan-grad);
+      .ll-beam-halo {
+        stroke: #E87722;
+        stroke-width: 10;
+        stroke-linecap: round;
         opacity: 0;
-        animation: ll-scan-pass 1.2s ease-in-out 0.35s forwards;
+        filter: url(#ll-glow);
+        stroke-dasharray: 24 420;
+        animation: ll-beam-run 1.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
+      }
+      .ll-hotspot {
+        fill: #FFB068;
+        opacity: 0;
+        filter: url(#ll-glow);
+        animation: ll-hotspot 1.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
       }
       .ll-underline {
         stroke: #E87722;
-        stroke-width: 2;
+        stroke-width: 2.5;
         stroke-linecap: round;
-        opacity: 0;
-        animation: ll-fade-in 0.45s ease-out 3.2s forwards;
+        stroke-dasharray: 160;
+        stroke-dashoffset: 160;
+        animation: ll-underline 0.55s ease-out 2.7s forwards;
       }
-      @keyframes ll-fade-in {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      @keyframes ll-fade-up {
-        from { opacity: 0; transform: translateY(6px); }
+      @keyframes ll-brand-in {
+        from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
       }
-      @keyframes ll-draw {
+      @keyframes ll-beam-run {
+        0% { opacity: 0; stroke-dashoffset: 0; }
+        8% { opacity: 1; }
+        78% { opacity: 1; stroke-dashoffset: -400; }
+        100% { opacity: 0; stroke-dashoffset: -420; }
+      }
+      @keyframes ll-hotspot {
+        0% { opacity: 0; transform: translateX(20px); }
+        10% { opacity: 1; }
+        78% { opacity: 1; transform: translateX(372px); }
+        100% { opacity: 0; transform: translateX(380px); }
+      }
+      @keyframes ll-underline {
         to { stroke-dashoffset: 0; }
       }
-      @keyframes ll-beam-sweep {
-        0% { opacity: 0; stroke-dasharray: 0 420; }
-        12% { opacity: 1; }
-        70% { opacity: 1; stroke-dasharray: 420 0; }
-        100% { opacity: 0; stroke-dasharray: 420 0; }
-      }
-      @keyframes ll-scan-pass {
-        0% { opacity: 0; transform: translateX(-40px); }
-        20% { opacity: 0.55; }
-        80% { opacity: 0.35; }
-        100% { opacity: 0; transform: translateX(360px); }
-      }
     </style>
-    <filter id="ll-glow" x="-40%" y="-200%" width="180%" height="500%">
-      <feGaussianBlur stdDeviation="2.5" result="b"/>
+    <filter id="ll-glow" x="-50%" y="-250%" width="200%" height="600%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
       <feMerge>
         <feMergeNode in="b"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <linearGradient id="ll-scan-grad" x1="0" y1="0" x2="1" y2="0">
+    <linearGradient id="ll-beam-grad" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#E87722" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#E87722" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#E87722" stop-opacity="0"/>
+      <stop offset="35%" stop-color="#FF9A4A" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#E87722" stop-opacity="0.2"/>
     </linearGradient>
+    <clipPath id="ll-reveal">
+      <rect x="0" y="0" width="0" height="100">
+        <animate attributeName="width" from="0" to="400" begin="0.2s" dur="1.5s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+      </rect>
+    </clipPath>
   </defs>
 
-  <rect class="ll-bg" width="400" height="100" rx="0"/>
+  <rect class="ll-bg" width="400" height="100"/>
+  <line class="ll-beam-halo" x1="20" y1="50" x2="380" y2="50"/>
+  <line class="ll-beam-core" x1="20" y1="50" x2="380" y2="50"/>
+  <circle class="ll-hotspot" cx="0" cy="50" r="5"/>
 
-  <!-- laser beam -->
-  <line class="ll-beam" x1="20" y1="50" x2="380" y2="50"/>
-  <rect class="ll-scan" x="0" y="18" width="48" height="64"/>
-
-  <!-- mark -->
-  <g transform="translate(48, 34)">
-    <circle class="ll-mark-ring" cx="16" cy="16" r="15"/>
-    <path class="ll-mark-path" d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5"/>
-    <circle class="ll-mark-dot" cx="16" cy="16" r="2"/>
-    <!-- SMIL belt-and-suspenders for reduced environments that ignore CSS on remount -->
-    <animate attributeName="opacity" from="0" to="1" begin="1.5s" dur="0.4s" fill="freeze"/>
+  <g clip-path="url(#ll-reveal)">
+    <g class="ll-brand">
+      <g transform="translate(48, 34)">
+        <circle cx="16" cy="16" r="15" fill="none" stroke="#FFFFFF" stroke-width="1.75"/>
+        <path d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5" fill="none" stroke="#E87722" stroke-width="1.75" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="2" fill="#E87722"/>
+      </g>
+      <text x="96" y="62" font-family="Outfit, system-ui, sans-serif" font-weight="600" font-size="42" letter-spacing="-0.03em" fill="#FFFFFF">
+        Spry<tspan fill="#FFFFFF" opacity="0.55">MD</tspan>
+      </text>
+      <line class="ll-underline" x1="96" y1="74" x2="248" y2="74"/>
+    </g>
   </g>
-
-  <!-- wordmark -->
-  <text class="ll-word" x="96" y="62">Spry<tspan class="ll-md" fill="#FFFFFF" opacity="0.55">MD</tspan></text>
-  <line class="ll-underline" x1="96" y1="74" x2="248" y2="74"/>
 </svg>
