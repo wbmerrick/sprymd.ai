@@ -26,6 +26,9 @@ import {
   syncWearableDevice,
   toggleCareAutoship,
   unlockWearableDevice,
+  connectWearableDevice,
+  registerCustomWearable,
+  saveDashboardLayout,
   updateCareProfile,
   updateVitalsProfile,
   upsertBodyGoal,
@@ -262,6 +265,34 @@ export function useDashboardData() {
     [email, refresh],
   );
 
+
+  const connectDevice = useCallback(
+    (kind: WearableKind) => {
+      if (!email) return;
+      connectWearableDevice(email, kind);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const registerCustomDevice = useCallback(
+    (input: { brand: string; name: string; metrics?: string[] }) => {
+      if (!email) return;
+      registerCustomWearable(email, input);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const updateDashboardLayout = useCallback(
+    (patch: Partial<import("@/types/dashboard").DashboardLayoutConfig>) => {
+      if (!email) return;
+      saveDashboardLayout(email, patch);
+      refresh();
+    },
+    [email, refresh],
+  );
+
   return {
     ...data,
     notifications,
@@ -282,6 +313,9 @@ export function useDashboardData() {
     removeBodyGoal,
     unlockDevice,
     toggleDeviceEnabled,
+    connectDevice,
+    registerCustomDevice,
+    saveDashboardLayout: updateDashboardLayout,
     ready,
     isAuthenticated: !!email,
     email,

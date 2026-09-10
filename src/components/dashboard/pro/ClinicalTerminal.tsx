@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
 import type {
   BodyGoal,
+  BodyGoalMetric,
   BodyProfile,
+  DashboardLayoutConfig,
   Shipment,
   Treatment,
   WearableDevice,
   WearableKind,
   WearableReading,
   WearableSyncMode,
-  BodyGoalMetric,
 } from "@/types/dashboard";
 import { VitalTicker } from "./VitalTicker";
 import { BiometricChart } from "./BiometricChart";
@@ -18,21 +19,9 @@ import { ReadingsLadder } from "./ReadingsLadder";
 import { BodyMetricsPanel } from "./BodyMetricsPanel";
 import { CurrentManagement } from "@/components/dashboard/CurrentManagement";
 import { UpcomingShipments } from "@/components/dashboard/UpcomingShipments";
+import { ConnectDevicesPanel } from "./ConnectDevicesPanel";
+import { CustomizeDashboardPanel, widgetsForLayout } from "./CustomizeDashboardPanel";
 import { cn } from "@/lib/utils";
-
-type Preset = "clinical_terminal" | "care_simple" | "device_ops";
-
-const PRESET_KEY = "sprymd_dashboard_preset_v1";
-
-function loadPreset(): Preset {
-  try {
-    const v = localStorage.getItem(PRESET_KEY);
-    if (v === "care_simple" || v === "device_ops" || v === "clinical_terminal") return v;
-  } catch {
-    /* ignore */
-  }
-  return "care_simple";
-}
 
 export function ClinicalTerminal({
   wearableDevices,
@@ -41,12 +30,16 @@ export function ClinicalTerminal({
   bodyGoals,
   activeTreatments,
   shipments,
+  dashboardLayout,
   setWearableSyncMode,
   syncWearable,
   saveWearableReading,
   importWearableFile,
   updateBody,
   saveBodyGoal,
+  connectDevice,
+  registerCustomDevice,
+  saveDashboardLayout,
 }: {
   wearableDevices: WearableDevice[];
   wearableReadings: WearableReading[];
@@ -54,6 +47,7 @@ export function ClinicalTerminal({
   bodyGoals: BodyGoal[];
   activeTreatments: Treatment[];
   shipments: Shipment[];
+  dashboardLayout?: DashboardLayoutConfig;
   setWearableSyncMode: (id: WearableKind, mode: WearableSyncMode) => void;
   syncWearable: (id: WearableKind) => void;
   saveWearableReading: (input: {
@@ -75,28 +69,23 @@ export function ClinicalTerminal({
     unit: string;
     deviceId?: WearableKind;
   }) => void;
+  connectDevice: (id: WearableKind) => void;
+  registerCustomDevice: (input: { brand: string; name: string; metrics?: string[] }) => void;
+  saveDashboardLayout: (patch: Partial<DashboardLayoutConfig>) => void;
 }) {
-  const [preset, setPreset] = useState<Preset>(() => loadPreset());
   const [selectedDevice, setSelectedDevice] = useState<WearableKind | null>(null);
   const [selectedMetric, setSelectedMetric] = useState("hr");
+  const [panel, setPanel] = useState<"none" | "connect" | "customize">("none");
+
+  const layout = dashboardLayout;
+  const widgets = useMemo(() => widgetsForLayout(layout), [layout]);
 
   const live = useMemo(
     () => wearableDevices.some((d) => d.owned && (d.syncMode === "continuous" || d.status === "monitoring")),
     [wearableDevices],
   );
 
-  const changePreset = (p: Preset) => {
-    setPreset(p);
-    try {
-      localStorage.setItem(PRESET_KEY, p);
-    } catch {
-      /* ignore */
-    }
-  };
-
-  const showFull = preset === "clinical_terminal";
-  const showDeviceOps = preset === "device_ops" || showFull;
-  const showCare = preset === "care_simple" || showFull;
+  const ownedCount = wearableDevices.filter((d) => d.owned).length;
 
   return (
     <div className="space-y-3">
@@ -106,48 +95,84 @@ export function ClinicalTerminal({
           <h1 className="text-2xl font-semibold text-white md:text-3xl" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Your care at a glance
           </h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            {ownedCount} device{ownedCount === 1 ? "" : "s"} connected · layout saved to your account
+          </p>
         </div>
-        <div className="flex gap-1 rounded-md border border-white/10 p-0.5">
-          {(
-            [
-              ["clinical_terminal", "Full"],
-              ["care_simple", "Care"],
-              ["device_ops", "Devices"],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => changePreset(id)}
-              className={cn(
-                "rounded px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider",
-                preset === id ? "bg-white text-black" : "text-zinc-500 hover:text-zinc-200",
-              )}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setPanel((p) => (p === "connect" ? "none" : "connect"))}
+            className={cn(
+              "rounded-md border px-3 py-1.5 text-xs font-semibold",
+              panel === "connect"
+                ? "border-[#E87722] bg-[#E87722] text-white"
+                : "border-white/15 text-zinc-200 hover:border-[#E87722]/50",
+            )}
+          >
+            Connect devices
+          </button>
+          <button
+            type="button"
+            onClick={() => setPanel((p) => (p === "customize" ? "none" : "customize"))}
+            className={cn(
+              "rounded-md border px-3 py-1.5 text-xs font-semibold",
+              panel === "customize"
+                ? "border-[#E87722] bg-[#E87722] text-white"
+                : "border-white/15 text-zinc-200 hover:border-[#E87722]/50",
+            )}
+          >
+            Customize
+          </button>
         </div>
       </div>
 
-      <VitalTicker readings={wearableReadings} bodyProfile={bodyProfile} live={live} />
+      {panel === "connect" ? (
+        <ConnectDevicesPanel
+          devices={wearableDevices}
+          onConnect={(id) => {
+            connectDevice(id);
+            setSelectedDevice(id);
+          }}
+          onRegisterCustom={(input) => {
+            registerCustomDevice(input);
+          }}
+          onClose={() => setPanel("none")}
+        />
+      ) : null}
 
-      {showDeviceOps || showCare ? (
+      {panel === "customize" && layout ? (
+        <CustomizeDashboardPanel
+          layout={layout}
+          onChange={saveDashboardLayout}
+          onClose={() => setPanel("none")}
+        />
+      ) : null}
+
+      {widgets.has("ticker") ? (
+        <VitalTicker readings={wearableReadings} bodyProfile={bodyProfile} live={live} />
+      ) : null}
+
+      {widgets.has("chart") || widgets.has("devices") || widgets.has("actions") ? (
         <div
           className={cn(
             "grid gap-3",
-            preset === "care_simple"
-              ? "grid-cols-1 lg:grid-cols-[1.4fr_1fr]"
-              : "grid-cols-1 lg:grid-cols-[1.4fr_0.9fr_0.9fr]",
+            widgets.has("chart") && widgets.has("devices") && widgets.has("actions")
+              ? "grid-cols-1 lg:grid-cols-[1.4fr_0.9fr_0.9fr]"
+              : widgets.has("chart") && (widgets.has("devices") || widgets.has("actions"))
+                ? "grid-cols-1 lg:grid-cols-[1.4fr_1fr]"
+                : "grid-cols-1",
           )}
         >
-          <BiometricChart
-            readings={wearableReadings}
-            selectedMetric={selectedMetric}
-            onSelectMetric={setSelectedMetric}
-            selectedDevice={selectedDevice}
-          />
-          {preset !== "care_simple" ? (
+          {widgets.has("chart") ? (
+            <BiometricChart
+              readings={wearableReadings}
+              selectedMetric={selectedMetric}
+              onSelectMetric={setSelectedMetric}
+              selectedDevice={selectedDevice}
+            />
+          ) : null}
+          {widgets.has("devices") ? (
             <SignalsWatchlist
               devices={wearableDevices}
               readings={wearableReadings}
@@ -155,46 +180,53 @@ export function ClinicalTerminal({
               onSelect={setSelectedDevice}
             />
           ) : null}
-          <ActionDock
-            devices={wearableDevices}
-            selectedId={selectedDevice}
-            onSelectDevice={setSelectedDevice}
-            setWearableSyncMode={setWearableSyncMode}
-            syncWearable={syncWearable}
-            saveWearableReading={saveWearableReading}
-            importWearableFile={importWearableFile}
-            saveBodyGoal={saveBodyGoal}
-          />
+          {widgets.has("actions") ? (
+            <ActionDock
+              devices={wearableDevices}
+              selectedId={selectedDevice}
+              onSelectDevice={setSelectedDevice}
+              setWearableSyncMode={setWearableSyncMode}
+              syncWearable={syncWearable}
+              saveWearableReading={saveWearableReading}
+              importWearableFile={importWearableFile}
+              saveBodyGoal={saveBodyGoal}
+            />
+          ) : null}
         </div>
       ) : null}
 
-      <div
-        className={cn(
-          "grid gap-3",
-          preset === "device_ops"
-            ? "grid-cols-1 lg:grid-cols-2"
-            : "grid-cols-1 lg:grid-cols-[0.9fr_0.9fr_1.2fr]",
-        )}
-      >
-        {(showFull || preset === "device_ops") && (
-          <BodyMetricsPanel bodyProfile={bodyProfile} bodyGoals={bodyGoals} onUpdateBody={updateBody} />
-        )}
-        {(showFull || preset === "device_ops") && <ReadingsLadder readings={wearableReadings} />}
-        {showCare && (
-          <div className="space-y-3">
-            <div className="rounded-lg border border-white/10 bg-[#0B0B0C]/90 p-3">
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Your care plans</p>
-              <CurrentManagement treatments={activeTreatments} />
+      {widgets.has("body") || widgets.has("readings") || widgets.has("care") || widgets.has("shipments") ? (
+        <div
+          className={cn(
+            "grid gap-3",
+            [widgets.has("body"), widgets.has("readings"), widgets.has("care") || widgets.has("shipments")].filter(Boolean)
+              .length >= 3
+              ? "grid-cols-1 lg:grid-cols-[0.9fr_0.9fr_1.2fr]"
+              : "grid-cols-1 lg:grid-cols-2",
+          )}
+        >
+          {widgets.has("body") ? (
+            <BodyMetricsPanel bodyProfile={bodyProfile} bodyGoals={bodyGoals} onUpdateBody={updateBody} />
+          ) : null}
+          {widgets.has("readings") ? <ReadingsLadder readings={wearableReadings} /> : null}
+          {widgets.has("care") || widgets.has("shipments") ? (
+            <div className="space-y-3">
+              {widgets.has("care") ? (
+                <div className="rounded-lg border border-white/10 bg-[#0B0B0C]/90 p-3">
+                  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Your care plans</p>
+                  <CurrentManagement treatments={activeTreatments} />
+                </div>
+              ) : null}
+              {widgets.has("shipments") ? (
+                <div className="rounded-lg border border-white/10 bg-[#0B0B0C]/90 p-3">
+                  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Shipments on the way</p>
+                  <UpcomingShipments shipments={shipments} />
+                </div>
+              ) : null}
             </div>
-            {preset !== "device_ops" ? (
-              <div className="rounded-lg border border-white/10 bg-[#0B0B0C]/90 p-3">
-                <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">Shipments on the way</p>
-                <UpcomingShipments shipments={shipments} />
-              </div>
-            ) : null}
-          </div>
-        )}
-      </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

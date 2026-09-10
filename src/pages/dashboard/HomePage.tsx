@@ -20,6 +20,10 @@ export default function DashboardHomePage() {
     importWearableFile,
     updateBody,
     saveBodyGoal,
+    dashboardLayout,
+    connectDevice,
+    registerCustomDevice,
+    saveDashboardLayout,
   } = useDashboard();
 
   return (
@@ -37,6 +41,10 @@ export default function DashboardHomePage() {
         importWearableFile={importWearableFile}
         updateBody={updateBody}
         saveBodyGoal={saveBodyGoal}
+        dashboardLayout={dashboardLayout}
+        connectDevice={connectDevice}
+        registerCustomDevice={registerCustomDevice}
+        saveDashboardLayout={saveDashboardLayout}
       />
       <NotificationsFeed
         items={notifications}
