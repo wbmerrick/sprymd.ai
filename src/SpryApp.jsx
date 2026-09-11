@@ -1667,6 +1667,9 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   );
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Quick Refills — Empower medication database query for this patient
+// ─────────────────────────────────────────────────────────────────────────────
 const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   const [filter, setFilter] = useState("All");
   const [loaded, setLoaded] = useState(false);
