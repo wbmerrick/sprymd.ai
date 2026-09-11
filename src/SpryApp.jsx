@@ -87,8 +87,8 @@ const FontInjector = () => (
     body {
       font-family: ${fonts.body}; letter-spacing: -0.005em;
       background-image:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.10), transparent 55%),
-        linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.55)),
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.12), transparent 55%),
+        linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)),
         url("/brand/sprymd-alpine-atmosphere.webp");
       background-size: auto, auto, cover;
       background-position: center, center, center 46%;
