@@ -839,7 +839,7 @@ const Landing = ({ go }) => (
         className="absolute inset-0 pointer-events-none"
         style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.04) 100%)" }}
       />
-      <div className="absolute inset-0 pointer-events-none opacity-14">
+      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
@@ -1160,7 +1160,7 @@ const Landing = ({ go }) => (
 
     {/* Close */}
     <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: "transparent" }}>
-      <div className="absolute inset-0 pointer-events-none opacity-28">
+      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.28 }}>
         <SignalField density={28} interactive={false} />
       </div>
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.48) 74%)" }} />
