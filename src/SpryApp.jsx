@@ -1437,9 +1437,39 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sign in / Sign up — per-customer account gate
-// ─────────────────────────────────────────────────────────────────────────────
+const AUTH_THEME_KEY = "sprymd_auth_theme";
+
+const authThemes = {
+  dark: {
+    bg: "#000000",
+    surface: "#0C0C0C",
+    ink: "#FFFFFF",
+    inkSoft: "#D6D6D6",
+    muted: "#8F8F8F",
+    line: "#2A2A2A",
+    lineSoft: "#1A1A1A",
+    inputBg: "#0C0C0C",
+    errorBg: "rgba(226,85,85,0.12)",
+    errorBorder: "rgba(226,85,85,0.35)",
+    noticeBg: "rgba(232,119,34,0.16)",
+    noticeBorder: "#B85510",
+  },
+  light: {
+    bg: "#F2F2F0",
+    surface: "#FFFFFF",
+    ink: "#111111",
+    inkSoft: "#3D3D3D",
+    muted: "#6B6B6B",
+    line: "#DCDCD8",
+    lineSoft: "#E8E8E4",
+    inputBg: "#FFFFFF",
+    errorBg: "rgba(226,85,85,0.08)",
+    errorBorder: "rgba(226,85,85,0.28)",
+    noticeBg: "rgba(232,119,34,0.10)",
+    noticeBorder: "#E87722",
+  },
+};
+
 const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
@@ -1450,10 +1480,27 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [playCount, setPlayCount] = useState(1);
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem(AUTH_THEME_KEY) === "light" ? "light" : "dark";
+    } catch {
+      return "dark";
+    }
+  });
   const animResolveRef = useRef(null);
+  const T = authThemes[theme];
+  const isLight = theme === "light";
 
   const canSubmit = email.includes("@") && password.length >= 8 &&
     (mode === "signin" || (name.trim().length > 0 && dob.length >= 8));
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      try { localStorage.setItem(AUTH_THEME_KEY, next); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   const handleLaserComplete = () => {
     if (animResolveRef.current) {
@@ -1503,24 +1550,65 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
     }
   };
 
+  const themedInput = {
+    ...inputStyle,
+    background: T.inputBg,
+    border: `1px solid ${T.line}`,
+    color: T.ink,
+  };
+
+  const iconBtn = {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    border: `1px solid ${T.line}`,
+    background: isLight ? T.surface : "transparent",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
   return (
-    <div className="anim-fadeIn min-h-screen flex flex-col">
-      <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home"><Logo /></button>
-        <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60" aria-label="Close">
-          <X size={20} color={C.ink} strokeWidth={1.5} />
+    <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: T.bg, color: T.ink, transition: "background 0.25s ease, color 0.25s ease" }}>
+      <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${T.lineSoft}` }}>
+        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home">
+          <Logo color={T.ink} />
         </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="focus-ring hover:opacity-80 transition-opacity"
+            style={iconBtn}
+            aria-label={isLight ? "Switch to dark background" : "Switch to light background"}
+            title={isLight ? "Dark" : "Light"}
+          >
+            {isLight ? <Moon size={16} color={T.ink} strokeWidth={1.75} /> : <Sun size={16} color={T.ink} strokeWidth={1.75} />}
+          </button>
+          <button onClick={() => go("landing")} className="focus-ring hover:opacity-80 transition-opacity" style={iconBtn} aria-label="Close">
+            <X size={16} color={T.ink} strokeWidth={1.75} />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-16">
-        <div className="w-full max-w-[380px] anim-fadeUp">
-          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-9" />
+      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-14">
+        <div
+          className="w-full max-w-[400px] anim-fadeUp"
+          style={{
+            background: T.surface,
+            border: `1px solid ${T.line}`,
+            borderRadius: 12,
+            padding: "24px 22px 28px",
+            boxShadow: isLight ? "0 12px 40px rgba(0,0,0,0.06)" : "none",
+          }}
+        >
+          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-7" />
 
-          <div className="mb-8">
+          <div className="mb-6">
             <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
               {mode === "signin" ? "Sign in" : "Create account"}
             </p>
-            <p style={{ fontSize: 15, color: C.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 15, color: T.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
               {mode === "signin"
                 ? "Open your care plan, prescriptions, and orders."
                 : "One email. Your care plan stays private to you."}
@@ -1530,31 +1618,35 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (
               <>
-                <Field label="Full legal name">
-                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
-                </Field>
-                <Field label="Date of birth">
-                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
-                </Field>
+                <div>
+                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Full legal name</label>
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
+                </div>
+                <div>
+                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Date of birth</label>
+                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
+                </div>
               </>
             )}
-            <Field label="Email">
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" disabled={loading} />
-            </Field>
-            <Field label="Password">
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
-            </Field>
+            <div>
+              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={themedInput} autoComplete="email" disabled={loading} />
+            </div>
+            <div>
+              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={themedInput} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
+            </div>
 
             {error && (
-              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(226,85,85,0.12)", border: `1px solid rgba(226,85,85,0.35)` }}>
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: T.errorBg, border: `1px solid ${T.errorBorder}` }}>
                 <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{error}</span>
+                <span style={{ fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>{error}</span>
               </div>
             )}
             {notice && (
-              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: C.signalDim, border: `1px solid ${C.accentDeep}` }}>
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: T.noticeBg, border: `1px solid ${T.noticeBorder}` }}>
                 <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{notice}</span>
+                <span style={{ fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>{notice}</span>
               </div>
             )}
 
@@ -1564,14 +1656,14 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             </Btn>
 
             <div className="flex items-center gap-2 justify-center pt-1">
-              <Lock size={11} color={C.muted} />
-              <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
+              <Lock size={11} color={T.muted} />
+              <span className="mono" style={{ fontSize: 10, color: T.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
             </div>
           </form>
 
-          <div className="text-center mt-7 pt-6" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+          <div className="text-center mt-7 pt-6" style={{ borderTop: `1px solid ${T.lineSoft}` }}>
             <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
-              className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }} disabled={loading}>
+              className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: T.inkSoft }} disabled={loading}>
               {mode === "signin"
                 ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
                 : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
