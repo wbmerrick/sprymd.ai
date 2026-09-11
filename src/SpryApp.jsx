@@ -1504,7 +1504,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   };
 
   return (
-    <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
+    <div className="anim-fadeIn min-h-screen flex flex-col">
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home"><Logo /></button>
         <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60" aria-label="Close">
@@ -1512,11 +1512,11 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
         </button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-14">
-        <div className="w-full max-w-[400px] anim-fadeUp">
-          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-8" />
+      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-16">
+        <div className="w-full max-w-[380px] anim-fadeUp">
+          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-9" />
 
-          <div className="mb-7">
+          <div className="mb-8">
             <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
               {mode === "signin" ? "Sign in" : "Create account"}
             </p>
