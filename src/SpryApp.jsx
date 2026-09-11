@@ -91,7 +91,7 @@ const FontInjector = () => (
         linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)),
         url("/brand/sprymd-alpine-atmosphere.webp");
       background-size: auto, auto, cover;
-      background-position: center, center, center 46%;
+      background-position: center, center, center 58%;
       background-attachment: fixed;
       background-repeat: no-repeat;
     }
@@ -834,10 +834,10 @@ const Landing = ({ go }) => (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
 
-    <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent" }}>
+    <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.18) 46%, rgba(0,0,0,0.06) 100%)" }}
+        style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.04) 100%)" }}
       />
       <div className="absolute inset-0 pointer-events-none opacity-14">
         <SignalField density={28} interactive={false} />
