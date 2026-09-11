@@ -66,6 +66,18 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
   }
+  @keyframes earthDrift {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(0, -1.2%, 0) scale(1.025); }
+  }
+  .earth-distant {
+    animation: earthDrift 42s ease-in-out infinite;
+    will-change: transform;
+    object-fit: cover;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .earth-distant { animation: none !important; }
+  }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
   }

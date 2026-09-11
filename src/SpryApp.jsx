@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
+import AlpineAtmosphere from "./components/brand/AlpineAtmosphere";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -87,8 +88,12 @@ const FontInjector = () => (
       font-family: ${fonts.body}; letter-spacing: -0.005em;
       background-image:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.10), transparent 55%),
-        radial-gradient(ellipse 50% 35% at 100% 0%, rgba(20,20,20,0.55), transparent 50%);
+        linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.55)),
+        url("/brand/sprymd-alpine-atmosphere.webp");
+      background-size: auto, auto, cover;
+      background-position: center, center, center 32%;
       background-attachment: fixed;
+      background-repeat: no-repeat;
     }
     .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.02em; }
     .mono { font-family: ${fonts.body}; font-weight: 600; letter-spacing: 0.04em; }
@@ -631,14 +636,20 @@ const TN_DELIVERY = {
   full: "Complete your visit by 2:00 p.m. Central Time on an eligible weekday (Monday–Thursday) and, once your prescription is approved and filled, qualifying Tennessee orders ship for next-business-day delivery. Availability varies by medication, location, pharmacy, weather, and carrier service.",
 };
 
-const DeliveryBar = ({ onClick }) => {
+const DeliveryBar = ({ onClick, glass = false }) => {
   const Tag = onClick ? "button" : "div";
   return (
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
-      style={{ background: C.paper, borderBottom: `1px solid ${C.line}`, color: C.ink, cursor: onClick ? "pointer" : "default" }}
+      style={{
+        background: glass ? "rgba(0,0,0,0.38)" : C.paper,
+        borderBottom: `1px solid ${C.line}`,
+        color: C.ink,
+        cursor: onClick ? "pointer" : "default",
+        backdropFilter: glass ? "blur(10px)" : undefined,
+      }}
     >
       <span className="inline-flex items-center gap-2">
         <Truck size={14} color={C.accent} strokeWidth={2} />
@@ -688,7 +699,7 @@ const DeliveryDetailsCard = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 // Header
 // ─────────────────────────────────────────────────────────────────────────────
-const Header = ({ go, cartCount, dark, user }) => {
+const Header = ({ go, cartCount, dark, user, glass = false }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const fg = dark ? C.paper : C.ink;
   const navItems = [
@@ -705,7 +716,11 @@ const Header = ({ go, cartCount, dark, user }) => {
   };
   return (
     <header className="relative w-full px-6 md:px-12 py-5"
-      style={{ borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}` }}>
+      style={{
+        borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}`,
+        background: glass ? "rgba(0,0,0,0.28)" : undefined,
+        backdropFilter: glass ? "blur(12px)" : undefined,
+      }}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
@@ -819,8 +834,8 @@ const Landing = ({ go }) => (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
 
-    <section className="grain relative z-10 overflow-hidden" style={{ background: C.bg }}>
-      <div className="absolute inset-0 pointer-events-none opacity-50">
+    <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent" }}>
+      <div className="absolute inset-0 pointer-events-none opacity-22">
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
@@ -1140,11 +1155,11 @@ const Landing = ({ go }) => (
     </section>
 
     {/* Close */}
-    <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="absolute inset-0 pointer-events-none opacity-70">
+    <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: "transparent" }}>
+      <div className="absolute inset-0 pointer-events-none opacity-28">
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.92) 70%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.72) 70%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
           Spry<span style={{ color: C.accent }}>MD</span>
@@ -3216,10 +3231,17 @@ export default function App() {
   }
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
+    <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
+      {view === "landing" ? <AlpineAtmosphere variant="hero" locked /> : null}
 
-      {view === "landing" && (<><DeliveryBar onClick={() => go("how")} /><Header go={go} cartCount={cartCount} user={user} /><Landing go={go} /></>)}
+      {view === "landing" && (
+        <div className="relative z-10">
+          <DeliveryBar onClick={() => go("how")} glass />
+          <Header go={go} cartCount={cartCount} user={user} glass />
+          <Landing go={go} />
+        </div>
+      )}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
       {view === "intake" && <Intake conditionId={params.condition} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}

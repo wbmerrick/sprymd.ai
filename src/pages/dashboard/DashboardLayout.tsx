@@ -2,6 +2,7 @@ import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { WearableToolbar } from "@/components/dashboard/WearableToolbar";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import AlpineAtmosphere from "@/components/brand/AlpineAtmosphere";
 import { createContext, useContext } from "react";
 import type { UseDashboardDataReturn } from "@/hooks/useDashboardData";
 
@@ -38,14 +39,7 @@ export default function DashboardLayout() {
         className="relative min-h-screen overflow-hidden bg-[#050505] text-zinc-100"
         style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
       >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          aria-hidden="true"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 40% at 50% -10%, rgba(232,119,34,0.08), transparent 55%)",
-          }}
-        />
+        <AlpineAtmosphere variant="dashboard" />
         <div className="relative z-10">
           <DashboardNav user={data.user} unreadCount={data.unreadCount} />
           <main className="mx-auto max-w-[1440px] px-3 py-6 pb-28 md:px-5 md:py-8 md:pb-32">
