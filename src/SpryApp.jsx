@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
-  Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
+  Heart, Pill, Wind, Activity, Moon, Sun, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
   Watch, Menu,
 } from "lucide-react";
@@ -1503,103 +1503,80 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
     }
   };
 
-  const cardStyle = {
-    background: C.bgAlt,
-    border: `1px solid ${C.line}`,
-    borderRadius: 12,
-    padding: "28px 24px",
-  };
-
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded"><Logo /></button>
-        <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60">
+        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home"><Logo /></button>
+        <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60" aria-label="Close">
           <X size={20} color={C.ink} strokeWidth={1.5} />
         </button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-stretch">
-          <div className="hidden md:block rounded-3xl overflow-hidden relative instrument-panel min-h-[480px]">
-            <SignalField density={40} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,5,5,0.15) 0%, rgba(5,5,5,0.85) 100%)" }} />
-            <ScanFrame className="absolute inset-5" label="Secure sign-in" />
-            <div className="absolute left-7 right-7 bottom-7 z-10">
-              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.accent, textTransform: "uppercase" }}>Your account</p>
-              <p style={{ fontSize: 20, lineHeight: 1.3, color: C.ink, marginTop: 10 }}>
-                Sign in to open your health dashboard — care plans, goals, devices, refills, and orders.
-              </p>
-            </div>
-          </div>
-          <div className="w-full max-w-md md:max-w-none md:px-2">
-          <div className="anim-fadeUp" style={cardStyle}>
-            <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-6" />
+      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-14">
+        <div className="w-full max-w-[400px] anim-fadeUp">
+          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-8" />
 
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
-              {mode === "signin" ? "Welcome back" : "Create account"}
-            </span>
-            <h1 className="display" style={{ fontSize: "clamp(28px, 4.5vw, 40px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 12 }}>
-              {mode === "signin" ? <>Sign in to your <Mark>account</Mark>.</> : <>Create your <Mark>SpryMD</Mark> account.</>}
-            </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 28, lineHeight: 1.55 }}>
-              {mode === "signin"
-                ? "Each login opens only your medical record, prescriptions, and order history."
-                : "One email, one account. Your care plan and pharmacy history stay private to you."}
+          <div className="mb-7">
+            <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
+              {mode === "signin" ? "Sign in" : "Create account"}
             </p>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {mode === "signup" && (
-                <>
-                  <Field label="Full legal name">
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
-                  </Field>
-                  <Field label="Date of birth">
-                    <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
-                  </Field>
-                </>
-              )}
-              <Field label="Email">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" disabled={loading} />
-              </Field>
-              <Field label="Password">
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
-              </Field>
-
-              {error && (
-                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(226,85,85,0.12)", border: `1px solid rgba(226,85,85,0.35)` }}>
-                  <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{error}</span>
-                </div>
-              )}
-              {notice && (
-                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: C.signalDim, border: `1px solid ${C.accentDeep}` }}>
-                  <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{notice}</span>
-                </div>
-              )}
-
-              <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
-                {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                         : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
-              </Btn>
-
-              <div className="flex items-center gap-2 justify-center pt-2">
-                <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
-              </div>
-            </form>
-
-            <div className="text-center mt-8 pt-8" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
-                className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }} disabled={loading}>
-                {mode === "signin"
-                  ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
-                  : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
-              </button>
-            </div>
+            <p style={{ fontSize: 15, color: C.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
+              {mode === "signin"
+                ? "Open your care plan, prescriptions, and orders."
+                : "One email. Your care plan stays private to you."}
+            </p>
           </div>
-        </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === "signup" && (
+              <>
+                <Field label="Full legal name">
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
+                </Field>
+                <Field label="Date of birth">
+                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
+                </Field>
+              </>
+            )}
+            <Field label="Email">
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" disabled={loading} />
+            </Field>
+            <Field label="Password">
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
+            </Field>
+
+            {error && (
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(226,85,85,0.12)", border: `1px solid rgba(226,85,85,0.35)` }}>
+                <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{error}</span>
+              </div>
+            )}
+            {notice && (
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: C.signalDim, border: `1px solid ${C.accentDeep}` }}>
+                <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{notice}</span>
+              </div>
+            )}
+
+            <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
+              {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
+                       : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
+            </Btn>
+
+            <div className="flex items-center gap-2 justify-center pt-1">
+              <Lock size={11} color={C.muted} />
+              <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
+            </div>
+          </form>
+
+          <div className="text-center mt-7 pt-6" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+            <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
+              className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }} disabled={loading}>
+              {mode === "signin"
+                ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
+                : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
+            </button>
+          </div>
         </div>
       </div>
     </div>
