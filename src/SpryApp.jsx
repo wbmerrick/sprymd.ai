@@ -1437,12 +1437,14 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
   );
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Sign in / Sign up — per-customer account gate
+// ─────────────────────────────────────────────────────────────────────────────
 const AUTH_THEME_KEY = "sprymd_auth_theme";
 
 const authThemes = {
   dark: {
-    bg: "#000000",
-    surface: "#0C0C0C",
+    bg: "transparent",
     ink: "#FFFFFF",
     inkSoft: "#D6D6D6",
     muted: "#8F8F8F",
@@ -1455,13 +1457,12 @@ const authThemes = {
     noticeBorder: "#B85510",
   },
   light: {
-    bg: "#F2F2F0",
-    surface: "#FFFFFF",
+    bg: "#E8EAED",
     ink: "#111111",
-    inkSoft: "#3D3D3D",
-    muted: "#6B6B6B",
-    line: "#DCDCD8",
-    lineSoft: "#E8E8E4",
+    inkSoft: "#3A3A3A",
+    muted: "#6A6A6A",
+    line: "#C8CCD2",
+    lineSoft: "#D5D8DD",
     inputBg: "#FFFFFF",
     errorBg: "rgba(226,85,85,0.08)",
     errorBorder: "rgba(226,85,85,0.28)",
@@ -1560,9 +1561,9 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const iconBtn = {
     width: 36,
     height: 36,
-    borderRadius: 999,
+    borderRadius: 8,
     border: `1px solid ${T.line}`,
-    background: isLight ? T.surface : "transparent",
+    background: isLight ? "#FFFFFF" : "transparent",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1591,20 +1592,11 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-14">
-        <div
-          className="w-full max-w-[400px] anim-fadeUp"
-          style={{
-            background: T.surface,
-            border: `1px solid ${T.line}`,
-            borderRadius: 12,
-            padding: "24px 22px 28px",
-            boxShadow: isLight ? "0 12px 40px rgba(0,0,0,0.06)" : "none",
-          }}
-        >
-          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-7" />
+      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-16">
+        <div className="w-full max-w-[380px] anim-fadeUp">
+          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-9" />
 
-          <div className="mb-6">
+          <div className="mb-8">
             <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
               {mode === "signin" ? "Sign in" : "Create account"}
             </p>
@@ -1675,9 +1667,6 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Quick Refills — Empower medication database query for this patient
-// ─────────────────────────────────────────────────────────────────────────────
 const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   const [filter, setFilter] = useState("All");
   const [loaded, setLoaded] = useState(false);
