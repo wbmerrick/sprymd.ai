@@ -103,7 +103,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: true,
     priceUsd: 119,
     tier: "sleep",
-    connector: "file_import",
+    connector: "resmed_myair",
   }),
   entry({
     id: "sleep_tracker",
@@ -116,7 +116,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: true,
     priceUsd: 149,
     tier: "sleep",
-    connector: "file_import",
+    connector: "philips_healthsuite",
   }),
 
   // ── Recovery / rings & bands ───────────────────────────────────────────────
@@ -159,7 +159,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 349,
     tier: "recovery",
-    connector: "file_import",
+    connector: "ultrahuman_cloud",
   }),
   entry({
     id: "circular_ring",
@@ -172,7 +172,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 299,
     tier: "recovery",
-    connector: "file_import",
+    connector: "circular_cloud",
   }),
 
   // ── Watches ────────────────────────────────────────────────────────────────
@@ -306,7 +306,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 599,
     tier: "fitness",
-    connector: "file_import",
+    connector: "polar_accesslink",
   }),
   entry({
     id: "coros_watch",
@@ -319,7 +319,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 229,
     tier: "fitness",
-    connector: "file_import",
+    connector: "coros_cloud",
   }),
   entry({
     id: "amazfit_band",
@@ -332,7 +332,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 49,
     tier: "fitness",
-    connector: "file_import",
+    connector: "zepp_cloud",
   }),
   entry({
     id: "xiaomi_band",
@@ -345,7 +345,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 39,
     tier: "fitness",
-    connector: "file_import",
+    connector: "zepp_cloud",
   }),
 
   // ── Metabolic / CGM ────────────────────────────────────────────────────────
@@ -374,7 +374,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 189,
     tier: "metabolic",
-    connector: "file_import",
+    connector: "libre_view",
   }),
   entry({
     id: "levels_cgm",
@@ -387,7 +387,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 199,
     tier: "metabolic",
-    connector: "file_import",
+    connector: "levels_api",
   }),
 
   // ── Clinical BP / cardio alternatives ──────────────────────────────────────
@@ -415,7 +415,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 189,
     tier: "clinical",
-    connector: "file_import",
+    connector: "omron_connect",
   }),
   entry({
     id: "withings_bodyscan",
@@ -443,7 +443,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 2299,
     tier: "sleep",
-    connector: "file_import",
+    connector: "eight_sleep",
   }),
   entry({
     id: "sleep_number",
@@ -456,7 +456,7 @@ export const WEARABLE_CATALOG: CatalogEntry[] = [
     owned: false,
     priceUsd: 3999,
     tier: "sleep",
-    connector: "file_import",
+    connector: "sleep_number",
   }),
   entry({
     id: "withings_sleep",

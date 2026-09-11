@@ -12,6 +12,7 @@ import type {
   WearableReading,
   WearableSyncMode,
 } from "@/types/dashboard";
+import { connectorNeedsOauth, startOemOAuth } from "@/connectors";
 import {
   buildDashboardForEmail,
   clearCareNotifications,
@@ -24,6 +25,7 @@ import {
   setWearableEnabled,
   setWearableSyncMode,
   syncWearableDevice,
+  syncWearableDeviceFromCloud,
   toggleCareAutoship,
   unlockWearableDevice,
   connectWearableDevice,
@@ -175,9 +177,9 @@ export function useDashboardData() {
   );
 
   const syncWearable = useCallback(
-    (deviceId: WearableKind) => {
+    async (deviceId: WearableKind) => {
       if (!email) return;
-      syncWearableDevice(email, deviceId);
+      await syncWearableDeviceFromCloud(email, deviceId);
       refresh();
     },
     [email, refresh],
@@ -267,12 +269,24 @@ export function useDashboardData() {
 
 
   const connectDevice = useCallback(
-    (kind: WearableKind) => {
+    async (kind: WearableKind) => {
       if (!email) return;
+      const device =
+        data.wearableDevices.find((d) => d.id === kind) ||
+        (await import("@/data/wearables")).WEARABLE_CATALOG.find((d) => d.id === kind);
       connectWearableDevice(email, kind);
       refresh();
+      if (device && connectorNeedsOauth(device.connector)) {
+        await startOemOAuth({
+          email,
+          deviceId: kind,
+          connector: device.connector,
+          returnTo: "/dashboard?oem=connected",
+        });
+        return;
+      }
     },
-    [email, refresh],
+    [email, refresh, data.wearableDevices],
   );
 
   const registerCustomDevice = useCallback(

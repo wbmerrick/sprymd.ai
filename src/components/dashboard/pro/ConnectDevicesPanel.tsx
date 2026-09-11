@@ -48,7 +48,7 @@ export function ConnectDevicesPanel({
             Sync any wearable
           </h2>
           <p className="mt-1 max-w-xl text-sm text-zinc-400">
-            Pick a device from the catalog, or add any brand and upload its CSV/JSON export. Live stream works once connected.
+            Connect any OEM cloud with OAuth (Fitbit, Oura, WHOOP, Garmin, Dexcom, Withings, and more). Custom brands use generic OEM OAuth or file import.
           </p>
         </div>
         <button type="button" onClick={onClose} className="rounded px-2 py-1 text-xs text-zinc-400 hover:text-white">
@@ -108,7 +108,7 @@ export function ConnectDevicesPanel({
                   {d.brand} {d.name}
                 </p>
                 <p className="truncate font-mono text-[10px] uppercase tracking-wider text-zinc-500">
-                  {d.connector?.replace(/_/g, " ") || "file import"} · {d.metrics.slice(0, 2).join(" · ")}
+                  {d.connector?.replace(/_/g, " ") || "file import"}{d.connector && d.connector !== "native_sim" && d.connector !== "file_import" ? " · OAuth" : ""} · {d.metrics.slice(0, 2).join(" · ")}
                 </p>
               </div>
               {connected ? <Check className="h-4 w-4 text-[#E87722]" /> : <Plus className="h-4 w-4 text-zinc-500" />}

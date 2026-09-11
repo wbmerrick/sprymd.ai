@@ -101,8 +101,33 @@ export type WearableConnector =
   | "fitbit"
   | "dexcom"
   | "withings"
+  | "polar_accesslink"
+  | "coros_cloud"
+  | "zepp_cloud"
+  | "ultrahuman_cloud"
+  | "circular_cloud"
+  | "resmed_myair"
+  | "philips_healthsuite"
+  | "eight_sleep"
+  | "sleep_number"
+  | "libre_view"
+  | "levels_api"
+  | "omron_connect"
+  | "masimo_cloud"
   | "generic_api"
   | "custom";
+
+/** Persisted OEM OAuth link metadata (tokens live in the vault). */
+export interface WearableOAuthLink {
+  providerId: string;
+  connector: WearableConnector;
+  deviceId: WearableKind;
+  status: "connected" | "expired" | "revoked" | "error";
+  sandbox: boolean;
+  connectedAt: string;
+  lastSyncAt?: string;
+  externalUserId?: string;
+}
 
 export interface WearableDevice {
   id: WearableKind;
