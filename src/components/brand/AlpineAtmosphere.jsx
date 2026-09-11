@@ -2,28 +2,32 @@ import imgAlpineAtmosphere from "../../assets/sprymd-alpine-atmosphere.webp";
 
 const VARIANTS = {
   site: {
-    imgOpacity: 0.62,
+    imgOpacity: 1,
     overlay:
-      "linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.58) 42%, rgba(0,0,0,0.86) 100%), radial-gradient(ellipse 70% 45% at 72% 18%, rgba(232,119,34,0.16), transparent 52%)",
+      "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.12) 38%, rgba(0,0,0,0.40) 100%), radial-gradient(ellipse 60% 42% at 68% 20%, rgba(232,119,34,0.18), transparent 56%)",
     fixed: true,
+    objectPosition: "center 46%",
   },
   hero: {
-    imgOpacity: 0.92,
+    imgOpacity: 1,
     overlay:
-      "linear-gradient(105deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.46) 48%, rgba(0,0,0,0.58) 100%), radial-gradient(ellipse 55% 40% at 70% 22%, rgba(232,119,34,0.18), transparent 58%)",
+      "linear-gradient(105deg, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.22) 48%, rgba(0,0,0,0.18) 100%), radial-gradient(ellipse 55% 40% at 70% 22%, rgba(232,119,34,0.16), transparent 58%)",
     fixed: false,
+    objectPosition: "center 46%",
   },
   close: {
-    imgOpacity: 0.55,
+    imgOpacity: 0.85,
     overlay:
-      "radial-gradient(ellipse at center, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.86) 72%)",
+      "radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.55) 72%)",
     fixed: false,
+    objectPosition: "center 46%",
   },
   dashboard: {
-    imgOpacity: 0.26,
+    imgOpacity: 0.42,
     overlay:
-      "linear-gradient(180deg, rgba(5,5,5,0.66) 0%, rgba(5,5,5,0.90) 100%), radial-gradient(ellipse 70% 40% at 50% -10%, rgba(232,119,34,0.10), transparent 55%)",
+      "linear-gradient(180deg, rgba(5,5,5,0.42) 0%, rgba(5,5,5,0.72) 100%), radial-gradient(ellipse 70% 40% at 50% -10%, rgba(232,119,34,0.12), transparent 55%)",
     fixed: false,
+    objectPosition: "center 46%",
   },
 };
 
@@ -45,7 +49,7 @@ export default function AlpineAtmosphere({ variant = "site", className = "", loc
         src={imgAlpineAtmosphere}
         alt=""
         className="earth-distant absolute inset-0 h-full w-full"
-        style={{ opacity: spec.imgOpacity, objectPosition: "center 32%" }}
+        style={{ opacity: spec.imgOpacity, objectPosition: spec.objectPosition || "center 46%" }}
       />
       <div className="absolute inset-0" style={{ background: spec.overlay }} />
     </div>

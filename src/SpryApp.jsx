@@ -91,7 +91,7 @@ const FontInjector = () => (
         linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.55)),
         url("/brand/sprymd-alpine-atmosphere.webp");
       background-size: auto, auto, cover;
-      background-position: center, center, center 32%;
+      background-position: center, center, center 46%;
       background-attachment: fixed;
       background-repeat: no-repeat;
     }
@@ -835,7 +835,11 @@ const Landing = ({ go }) => (
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
 
     <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent" }}>
-      <div className="absolute inset-0 pointer-events-none opacity-22">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.18) 46%, rgba(0,0,0,0.06) 100%)" }}
+      />
+      <div className="absolute inset-0 pointer-events-none opacity-14">
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
@@ -1159,7 +1163,7 @@ const Landing = ({ go }) => (
       <div className="absolute inset-0 pointer-events-none opacity-28">
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.72) 70%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.48) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
           Spry<span style={{ color: C.accent }}>MD</span>
@@ -3233,7 +3237,7 @@ export default function App() {
   return (
     <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
-      {view === "landing" ? <AlpineAtmosphere variant="hero" locked /> : null}
+      {view === "landing" ? <AlpineAtmosphere variant="site" locked /> : null}
 
       {view === "landing" && (
         <div className="relative z-10">
