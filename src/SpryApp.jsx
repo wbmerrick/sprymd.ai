@@ -3,13 +3,12 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
-  Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
+  Heart, Pill, Wind, Activity, Moon, Sun, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
   Watch, Menu,
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
-import AlpineAtmosphere from "./components/brand/AlpineAtmosphere";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -87,13 +86,9 @@ const FontInjector = () => (
     body {
       font-family: ${fonts.body}; letter-spacing: -0.005em;
       background-image:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.12), transparent 55%),
-        linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)),
-        url("/brand/sprymd-alpine-atmosphere.webp");
-      background-size: auto, auto, cover;
-      background-position: center, center, center 58%;
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.10), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 100% 0%, rgba(20,20,20,0.55), transparent 50%);
       background-attachment: fixed;
-      background-repeat: no-repeat;
     }
     .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.02em; }
     .mono { font-family: ${fonts.body}; font-weight: 600; letter-spacing: 0.04em; }
@@ -636,20 +631,14 @@ const TN_DELIVERY = {
   full: "Complete your visit by 2:00 p.m. Central Time on an eligible weekday (Monday–Thursday) and, once your prescription is approved and filled, qualifying Tennessee orders ship for next-business-day delivery. Availability varies by medication, location, pharmacy, weather, and carrier service.",
 };
 
-const DeliveryBar = ({ onClick, glass = false }) => {
+const DeliveryBar = ({ onClick }) => {
   const Tag = onClick ? "button" : "div";
   return (
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
-      style={{
-        background: glass ? "rgba(0,0,0,0.38)" : C.paper,
-        borderBottom: `1px solid ${C.line}`,
-        color: C.ink,
-        cursor: onClick ? "pointer" : "default",
-        backdropFilter: glass ? "blur(10px)" : undefined,
-      }}
+      style={{ background: C.paper, borderBottom: `1px solid ${C.line}`, color: C.ink, cursor: onClick ? "pointer" : "default" }}
     >
       <span className="inline-flex items-center gap-2">
         <Truck size={14} color={C.accent} strokeWidth={2} />
@@ -699,7 +688,7 @@ const DeliveryDetailsCard = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 // Header
 // ─────────────────────────────────────────────────────────────────────────────
-const Header = ({ go, cartCount, dark, user, glass = false }) => {
+const Header = ({ go, cartCount, dark, user }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const fg = dark ? C.paper : C.ink;
   const navItems = [
@@ -716,11 +705,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
   };
   return (
     <header className="relative w-full px-6 md:px-12 py-5"
-      style={{
-        borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}`,
-        background: glass ? "rgba(0,0,0,0.28)" : undefined,
-        backdropFilter: glass ? "blur(12px)" : undefined,
-      }}>
+      style={{ borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}` }}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
@@ -834,12 +819,8 @@ const Landing = ({ go }) => (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
 
-    <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.04) 100%)" }}
-      />
-      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
+    <section className="grain relative z-10 overflow-hidden" style={{ background: C.bg }}>
+      <div className="absolute inset-0 pointer-events-none opacity-50">
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
@@ -1159,11 +1140,11 @@ const Landing = ({ go }) => (
     </section>
 
     {/* Close */}
-    <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: "transparent" }}>
-      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.28 }}>
+    <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: C.bg }}>
+      <div className="absolute inset-0 pointer-events-none opacity-70">
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.48) 74%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.92) 70%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
           Spry<span style={{ color: C.accent }}>MD</span>
@@ -1459,6 +1440,37 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Sign in / Sign up — per-customer account gate
 // ─────────────────────────────────────────────────────────────────────────────
+const AUTH_THEME_KEY = "sprymd_auth_theme";
+
+const authThemes = {
+  dark: {
+    bg: "transparent",
+    ink: "#FFFFFF",
+    inkSoft: "#D6D6D6",
+    muted: "#8F8F8F",
+    line: "#2A2A2A",
+    lineSoft: "#1A1A1A",
+    inputBg: "#0C0C0C",
+    errorBg: "rgba(226,85,85,0.12)",
+    errorBorder: "rgba(226,85,85,0.35)",
+    noticeBg: "rgba(232,119,34,0.16)",
+    noticeBorder: "#B85510",
+  },
+  light: {
+    bg: "#E8EAED",
+    ink: "#111111",
+    inkSoft: "#3A3A3A",
+    muted: "#6A6A6A",
+    line: "#C8CCD2",
+    lineSoft: "#D5D8DD",
+    inputBg: "#FFFFFF",
+    errorBg: "rgba(226,85,85,0.08)",
+    errorBorder: "rgba(226,85,85,0.28)",
+    noticeBg: "rgba(232,119,34,0.10)",
+    noticeBorder: "#E87722",
+  },
+};
+
 const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
@@ -1469,10 +1481,32 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [playCount, setPlayCount] = useState(1);
+  const [theme, setTheme] = useState(() => {
+    try {
+      const stored = localStorage.getItem(AUTH_THEME_KEY);
+      if (stored === "light" || stored === "dark") return stored;
+    } catch { /* ignore */ }
+    try {
+      if (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches) {
+        return "light";
+      }
+    } catch { /* ignore */ }
+    return "dark";
+  });
   const animResolveRef = useRef(null);
+  const T = authThemes[theme];
+  const isLight = theme === "light";
 
   const canSubmit = email.includes("@") && password.length >= 8 &&
     (mode === "signin" || (name.trim().length > 0 && dob.length >= 8));
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      try { localStorage.setItem(AUTH_THEME_KEY, next); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   const handleLaserComplete = () => {
     if (animResolveRef.current) {
@@ -1522,103 +1556,116 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
     }
   };
 
-  const cardStyle = {
-    background: C.bgAlt,
-    border: `1px solid ${C.line}`,
-    borderRadius: 12,
-    padding: "28px 24px",
+  const themedInput = {
+    ...inputStyle,
+    background: T.inputBg,
+    border: `1px solid ${T.line}`,
+    color: T.ink,
+  };
+
+  const iconBtn = {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    border: `1px solid ${T.line}`,
+    background: isLight ? "#FFFFFF" : "transparent",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
   };
 
   return (
-    <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
-      <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded"><Logo /></button>
-        <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60">
-          <X size={20} color={C.ink} strokeWidth={1.5} />
+    <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: T.bg, color: T.ink, transition: "background 0.25s ease, color 0.25s ease" }}>
+      <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${T.lineSoft}` }}>
+        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home">
+          <Logo color={T.ink} />
         </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="focus-ring hover:opacity-80 transition-opacity"
+            style={iconBtn}
+            aria-label={isLight ? "Switch to dark background" : "Switch to light background"}
+            title={isLight ? "Dark" : "Light"}
+          >
+            {isLight ? <Moon size={16} color={T.ink} strokeWidth={1.75} /> : <Sun size={16} color={T.ink} strokeWidth={1.75} />}
+          </button>
+          <button onClick={() => go("landing")} className="focus-ring hover:opacity-80 transition-opacity" style={iconBtn} aria-label="Close">
+            <X size={16} color={T.ink} strokeWidth={1.75} />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-stretch">
-          <div className="hidden md:block rounded-3xl overflow-hidden relative instrument-panel min-h-[480px]">
-            <SignalField density={40} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,5,5,0.15) 0%, rgba(5,5,5,0.85) 100%)" }} />
-            <ScanFrame className="absolute inset-5" label="Secure sign-in" />
-            <div className="absolute left-7 right-7 bottom-7 z-10">
-              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.accent, textTransform: "uppercase" }}>Your account</p>
-              <p style={{ fontSize: 20, lineHeight: 1.3, color: C.ink, marginTop: 10 }}>
-                Sign in to open your health dashboard — care plans, goals, devices, refills, and orders.
-              </p>
-            </div>
-          </div>
-          <div className="w-full max-w-md md:max-w-none md:px-2">
-          <div className="anim-fadeUp" style={cardStyle}>
-            <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-6" />
+      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-16">
+        <div className="w-full max-w-[380px] anim-fadeUp">
+          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-9" />
 
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
-              {mode === "signin" ? "Welcome back" : "Create account"}
-            </span>
-            <h1 className="display" style={{ fontSize: "clamp(28px, 4.5vw, 40px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 12 }}>
-              {mode === "signin" ? <>Sign in to your <Mark>account</Mark>.</> : <>Create your <Mark>SpryMD</Mark> account.</>}
-            </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 28, lineHeight: 1.55 }}>
-              {mode === "signin"
-                ? "Each login opens only your medical record, prescriptions, and order history."
-                : "One email, one account. Your care plan and pharmacy history stay private to you."}
+          <div className="mb-8">
+            <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
+              {mode === "signin" ? "Sign in" : "Create account"}
             </p>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {mode === "signup" && (
-                <>
-                  <Field label="Full legal name">
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
-                  </Field>
-                  <Field label="Date of birth">
-                    <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} disabled={loading} />
-                  </Field>
-                </>
-              )}
-              <Field label="Email">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" disabled={loading} />
-              </Field>
-              <Field label="Password">
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
-              </Field>
-
-              {error && (
-                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(226,85,85,0.12)", border: `1px solid rgba(226,85,85,0.35)` }}>
-                  <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{error}</span>
-                </div>
-              )}
-              {notice && (
-                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: C.signalDim, border: `1px solid ${C.accentDeep}` }}>
-                  <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{notice}</span>
-                </div>
-              )}
-
-              <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
-                {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                         : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
-              </Btn>
-
-              <div className="flex items-center gap-2 justify-center pt-2">
-                <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
-              </div>
-            </form>
-
-            <div className="text-center mt-8 pt-8" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
-                className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }} disabled={loading}>
-                {mode === "signin"
-                  ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
-                  : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
-              </button>
-            </div>
+            <p style={{ fontSize: 15, color: T.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
+              {mode === "signin"
+                ? "Open your care plan, prescriptions, and orders."
+                : "One email. Your care plan stays private to you."}
+            </p>
           </div>
-        </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === "signup" && (
+              <>
+                <div>
+                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Full legal name</label>
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
+                </div>
+                <div>
+                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Date of birth</label>
+                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
+                </div>
+              </>
+            )}
+            <div>
+              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={themedInput} autoComplete="email" disabled={loading} />
+            </div>
+            <div>
+              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={themedInput} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
+            </div>
+
+            {error && (
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: T.errorBg, border: `1px solid ${T.errorBorder}` }}>
+                <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>{error}</span>
+              </div>
+            )}
+            {notice && (
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: T.noticeBg, border: `1px solid ${T.noticeBorder}` }}>
+                <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>{notice}</span>
+              </div>
+            )}
+
+            <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
+              {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
+                       : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
+            </Btn>
+
+            <div className="flex items-center gap-2 justify-center pt-1">
+              <Lock size={11} color={T.muted} />
+              <span className="mono" style={{ fontSize: 10, color: T.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
+            </div>
+          </form>
+
+          <div className="text-center mt-7 pt-6" style={{ borderTop: `1px solid ${T.lineSoft}` }}>
+            <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
+              className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: T.inkSoft }} disabled={loading}>
+              {mode === "signin"
+                ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
+                : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -3235,17 +3282,10 @@ export default function App() {
   }
 
   return (
-    <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
+    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
-      {view === "landing" ? <AlpineAtmosphere variant="site" locked /> : null}
 
-      {view === "landing" && (
-        <div className="relative z-10">
-          <DeliveryBar onClick={() => go("how")} glass />
-          <Header go={go} cartCount={cartCount} user={user} glass />
-          <Landing go={go} />
-        </div>
-      )}
+      {view === "landing" && (<><DeliveryBar onClick={() => go("how")} /><Header go={go} cartCount={cartCount} user={user} /><Landing go={go} /></>)}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
       {view === "intake" && <Intake conditionId={params.condition} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}

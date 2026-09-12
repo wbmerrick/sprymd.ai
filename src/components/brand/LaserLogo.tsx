@@ -14,7 +14,7 @@ const containerStyle: CSSProperties = {
   aspectRatio: "4 / 1",
   overflow: "hidden",
   lineHeight: 0,
-  background: "#000000",
+  background: "transparent",
 };
 
 function usePrefersReducedMotion(): boolean {
