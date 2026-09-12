@@ -1598,7 +1598,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-16">
-        <div className="w-full max-w-[380px] anim-fadeUp">
+        <div className="w-full anim-fadeUp" style={{ maxWidth: 380 }}>
           <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-9" />
 
           <div className="mb-8">
