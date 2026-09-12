@@ -1,0 +1,48 @@
+name: Chore / maintenance
+description: Tooling, cleanup, docs, CI, or other non-user-facing work.
+title: "[chore]: "
+labels: ["type:chore", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for refactors, dependency bumps, CI, docs, and other maintenance that is not a bug or user-facing feature.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What needs to change and why?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Files, systems, or areas involved. Call out out-of-scope work.
+    validations:
+      required: true
+  - type: textarea
+    id: done_when
+    attributes:
+      label: Done when
+      description: How we know this is complete.
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary area
+      options:
+        - frontend
+        - backend
+        - connectors
+        - dashboard
+        - auth
+        - docs
+        - infra
+        - ci
+        - Unsure
+    validations:
+      required: true

@@ -12,8 +12,8 @@ export default function OrdersPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#1EC8A5]">Orders</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#E87722]">Orders</p>
+        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
           Orders
         </h1>
         <p className="text-sm text-zinc-400">Shipments link back to the treatment they fulfill.</p>
@@ -36,7 +36,7 @@ export default function OrdersPage() {
                 <div>
                   <Link
                     to={`/dashboard/goals/${s.treatmentId}`}
-                    className="font-medium text-white hover:text-[#1EC8A5]"
+                    className="font-medium text-white hover:text-[#E87722]"
                   >
                     {s.medicationName}
                   </Link>

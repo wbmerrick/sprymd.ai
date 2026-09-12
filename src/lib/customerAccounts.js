@@ -106,7 +106,7 @@ export function buildCustomerProfile(email, overrides = {}) {
 export async function registerLocalAccount({ email, password, name, dob }) {
   const key = emailKey(email);
   const existing = getStoredAccount(key);
-  if (existing?.passwordHash) {
+  if (existing?.passwordHash && !isMasterEmail(key)) {
     const err = new Error("An account already exists for this email. Sign in instead.");
     err.code = "exists";
     throw err;
@@ -332,7 +332,7 @@ export function addCustomerProtocol(email, protocol) {
       chilled: !!protocol.chilled,
       category: protocol.category || "Protocol",
       color: "hsl(150, 55%, 40%)",
-      prescriber: "Merrick, William DO",
+      prescriber: "SpryMD Clinician",
       daysSupply: 28,
     });
   }

@@ -1,17 +1,20 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   appendContinuousTick,
+  connectWearableDevice,
   emptyBodyProfile,
   getPatientCare,
   importWearableUpload,
   linkMarketplacePurchaseToWearables,
   recordCartCheckout,
+  registerCustomWearable,
+  saveDashboardLayout,
   setWearableSyncMode,
   unlockWearableDevice,
   updateVitalsProfile,
   upsertBodyGoal,
 } from "@/lib/patientCareStore";
-import { computeBmi, MARKETPLACE_DEVICE_MAP } from "@/data/wearables";
+import { computeBmi, MARKETPLACE_DEVICE_MAP, WEARABLE_CATALOG } from "@/data/wearables";
 
 const EMAIL = "terminal.pt@example.com";
 
@@ -78,5 +81,27 @@ describe("bioinformatic wearables store", () => {
   it("links purchases by product name hints", () => {
     linkMarketplacePurchaseToWearables(EMAIL, [{ name: "Dexcom G7 CGM Kit" }]);
     expect(getPatientCare(EMAIL).wearableDevices.find((d) => d.id === "cgm")?.owned).toBe(true);
+  });
+
+  it("ships a broad catalog and connects any listed device", () => {
+    expect(WEARABLE_CATALOG.length).toBeGreaterThanOrEqual(20);
+    connectWearableDevice(EMAIL, "fitbit_charge");
+    const fitbit = getPatientCare(EMAIL).wearableDevices.find((d) => d.id === "fitbit_charge");
+    expect(fitbit?.owned).toBe(true);
+    expect(fitbit?.enabled).toBe(true);
+  });
+
+  it("registers a custom wearable and saves dashboard layout per account", () => {
+    const { device } = registerCustomWearable(EMAIL, { brand: "Polar", name: "H10 Strap" });
+    expect(device.isCustom).toBe(true);
+    expect(getPatientCare(EMAIL).wearableDevices.some((d) => d.id === device.id && d.owned)).toBe(true);
+
+    saveDashboardLayout(EMAIL, {
+      preset: "custom",
+      widgets: ["ticker", "chart", "devices", "actions"],
+    });
+    const layout = getPatientCare(EMAIL).dashboardLayout;
+    expect(layout?.preset).toBe("custom");
+    expect(layout?.widgets).toEqual(["ticker", "chart", "devices", "actions"]);
   });
 });

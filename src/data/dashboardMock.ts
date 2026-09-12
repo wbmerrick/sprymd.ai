@@ -171,7 +171,7 @@ export const mockDashboardData: DashboardData = {
       id: "ntf_3",
       icon: "message",
       title: "Clinician replied",
-      description: "Dr. Merrick answered your question about titration timing.",
+      description: "A clinician answered your question about titration timing.",
       timestamp: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
       dismissed: false,
     },

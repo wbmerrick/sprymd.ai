@@ -20,7 +20,7 @@ We are not a pill mill. When telehealth is not the right setting, we decline. Wh
 
 SpryMD protocols are supervised by licensed physicians with training in internal medicine and performance health.
 
-**William Merrick, DO** — Board-certified in osteopathic internal medicine. Licensed in Tennessee. 10+ years of clinical experience across inpatient, outpatient, and telehealth settings.
+Cases are reviewed by licensed clinicians. We do not publish individual physician biographies or credential lists on this site.
 
 Additional clinicians may join the network as the platform expands. Every physician on SpryMD meets the same credentialing and supervision standards.
 

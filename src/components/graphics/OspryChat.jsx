@@ -3,50 +3,54 @@ import { createPortal } from "react-dom";
 import { ArrowRight, MessageCircle, Minus, Send, X } from "lucide-react";
 
 const STARTERS = [
-  "Which protocol fits me?",
+  "Which care plan fits me?",
   "How does Spry work?",
-  "Can Spry be my PCP?",
+  "Can Spry be my doctor?",
 ];
 
 function replyFor(input) {
   const q = input.toLowerCase();
-  if (q.includes("pcp") || q.includes("primary")) {
-    return "Yes — Spry Primary Care keeps one clinician on your chart for wellness, labs, messaging, and referrals. Membership starts at $49/mo. Tap Make Spry my PCP below the fold, or Begin protocol and choose Primary Care.";
+  if (q.includes("pcp") || q.includes("primary") || q.includes("doctor")) {
+    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Start your confidential visit and choose Your doctor.";
   }
   if (q.includes("how") || q.includes("work") || q.includes("system")) {
-    return "Three steps: baseline intake (≈5 min) → licensed clinician review within 24h → compounded fulfillment + ongoing titration from your dashboard. No waiting room. Cancel anytime.";
+    return "Three steps: choose care → a licensed clinician reviews your case → treatment ships when approved and filled. Eligible Tennessee orders can move next business day after the 2:00 p.m. CT weekday cutoff. No waiting room.";
   }
-  if (q.includes("protocol") || q.includes("fit") || q.includes("start") || q.includes("treat")) {
-    return "Pick the domain you want to instrument — Metabolic, Hormonal, Cognitive, Recovery, Performance, or Primary Care. Every plan is preference-aware and signed by a board-certified clinician.";
+  if (q.includes("protocol") || q.includes("fit") || q.includes("start") || q.includes("treat") || q.includes("plan")) {
+    return "Pick the area you want help with — weight, hormones, focus, sleep, performance, or your main doctor. Every plan is built around you and signed by a licensed doctor.";
   }
   if (q.includes("price") || q.includes("cost") || q.includes("how much")) {
-    return "Protocols start from $25–$149/mo depending on the domain. GLP-1 metabolic plans are clinician-titrated; PCP membership from $49/mo. Shipping is included on compounded Rx when prescribed.";
+    return "Care plans start from $25–$149/mo depending on what you need. Weight-loss plans are adjusted by a doctor; main-doctor membership starts at $49/mo. Shipping is included when medicine is prescribed.";
   }
   if (q.includes("refill")) {
-    return "Sign in to your account for Quick Refills — active prescriptions only, tied to your chart. New therapy starts with a protocol intake.";
+    return "Sign in for Quick Refills — only for medicine you already have. New care starts with a short form.";
   }
-  return "I'm iSpry — SpryMD's care agent. Ask about protocols, how the system works, pricing, PCP membership, or refills. For clinical decisions, a licensed clinician still signs every protocol.";
+  return "I'm iSpry — SpryMD's care helper. Ask about care plans, how Spry works, pricing, your doctor, or refills. For medical decisions, a licensed doctor still signs every plan.";
 }
 
 /**
  * iSpry chat — hero panel; docks to a bottom-right chat bar once the page scrolls.
  */
-export default function ISpryChat({ onAction, onDockChange }) {
+export default function ISpryChat({ onAction, onDockChange, forceDocked = false }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "I'm iSpry, your SpryMD care agent. Ask about protocols, PCP membership, or how the system works.",
+      text: "I'm iSpry, your SpryMD care helper. Ask about care plans, your doctor, or how Spry works.",
     },
   ]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
-  const [docked, setDocked] = useState(false);
+  const [docked, setDocked] = useState(forceDocked);
   const [expanded, setExpanded] = useState(false);
   const scrollerRef = useRef(null);
   const inputRef = useRef(null);
   const wasDocked = useRef(false);
 
   useEffect(() => {
+    if (forceDocked) {
+      setDocked(true);
+      return undefined;
+    }
     const onScroll = () => {
       const next = window.scrollY > 48;
       setDocked((prev) => (prev === next ? prev : next));
@@ -54,7 +58,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [forceDocked]);
 
   useEffect(() => {
     if (docked && !wasDocked.current) setExpanded(false);
@@ -113,7 +117,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
     <div
       className={docked ? "ospry-chat" : "ospry-chat spry-rise w-full max-w-md md:max-w-none"}
       style={shellStyle}
-      aria-label="Chat with iSpry, SpryMD AI care agent"
+      aria-label="Chat with iSpry, SpryMD care helper"
     >
       <div
         aria-hidden="true"
@@ -121,7 +125,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
-          background: "radial-gradient(ellipse at 90% 0%, rgba(30,200,165,0.08), transparent 45%)",
+          background: "radial-gradient(ellipse at 90% 0%, rgba(232,119,34,0.08), transparent 45%)",
           zIndex: 0,
         }}
       />
@@ -145,16 +149,16 @@ export default function ISpryChat({ onAction, onDockChange }) {
               width: 8,
               height: 8,
               borderRadius: 99,
-              background: "#1EC8A5",
-              boxShadow: "0 0 0 3px rgba(30,200,165,0.15)",
+              background: "#E87722",
+              boxShadow: "0 0 0 3px rgba(232,119,34,0.15)",
             }}
           />
           <div>
             <div className="display" style={{ fontSize: docked ? 15 : 16, fontWeight: 600, color: "#FAFAFA", letterSpacing: "-0.02em" }}>
               iSpry
             </div>
-            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(30,200,165,0.85)", textTransform: "uppercase" }}>
-              AI care agent · online
+            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(232,119,34,0.85)", textTransform: "uppercase" }}>
+              Chat helper · online
             </div>
           </div>
         </div>
@@ -234,15 +238,15 @@ export default function ISpryChat({ onAction, onDockChange }) {
                 alignSelf: mine ? "flex-end" : "flex-start",
                 maxWidth: "92%",
                 padding: "10px 12px",
-                background: mine ? "rgba(30,200,165,0.12)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${mine ? "rgba(30,200,165,0.35)" : "#1F1F22"}`,
+                background: mine ? "rgba(232,119,34,0.12)" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${mine ? "rgba(232,119,34,0.35)" : "#1F1F22"}`,
                 color: mine ? "#FAFAFA" : "#C8C8C8",
                 fontSize: 14,
                 lineHeight: 1.45,
               }}
             >
               {!mine && (
-                <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#1EC8A5", marginBottom: 6, textTransform: "uppercase" }}>
+                <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#E87722", marginBottom: 6, textTransform: "uppercase" }}>
                   iSpry
                 </div>
               )}
@@ -368,7 +372,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
               padding: "10px 12px",
               background: "transparent",
               border: "1px solid #1F1F22",
-              color: "#1EC8A5",
+              color: "#E87722",
               fontSize: 12,
               letterSpacing: "0.06em",
               textTransform: "uppercase",
@@ -376,7 +380,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
               fontFamily: "var(--font-mono), ui-monospace, monospace",
             }}
           >
-            Begin a protocol <ArrowRight size={14} />
+            Start your confidential visit <ArrowRight size={14} />
           </button>
         </div>
       )}
@@ -413,9 +417,9 @@ export default function ISpryChat({ onAction, onDockChange }) {
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "rgba(30,200,165,0.15)",
-          border: "1px solid rgba(30,200,165,0.35)",
-          color: "#1EC8A5",
+          background: "rgba(232,119,34,0.15)",
+          border: "1px solid rgba(232,119,34,0.35)",
+          color: "#E87722",
           flexShrink: 0,
         }}
       >
@@ -425,7 +429,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
         <span className="display" style={{ display: "block", fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em" }}>
           iSpry
         </span>
-        <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(30,200,165,0.9)", textTransform: "uppercase" }}>
+        <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(232,119,34,0.9)", textTransform: "uppercase" }}>
           Ask anything
         </span>
       </span>
@@ -435,7 +439,7 @@ export default function ISpryChat({ onAction, onDockChange }) {
           width: 8,
           height: 8,
           borderRadius: 99,
-          background: "#1EC8A5",
+          background: "#E87722",
           flexShrink: 0,
         }}
       />

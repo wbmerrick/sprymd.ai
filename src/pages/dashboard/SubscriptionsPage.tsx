@@ -9,12 +9,12 @@ export default function SubscriptionsPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#1EC8A5]">Orders</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#E87722]">Orders</p>
+        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
           Subscriptions
         </h1>
         <p className="text-sm text-zinc-400">
-          Billing for each protocol — linked to Current management via treatment.
+          Billing for each care plan — linked to your treatments.
         </p>
       </header>
 
@@ -30,8 +30,8 @@ export default function SubscriptionsPage() {
                 <div>
                   <Link
                     to={`/dashboard/goals/${sub.treatmentId}`}
-                    className="text-lg font-medium text-white hover:text-[#1EC8A5]"
-                    style={{ fontFamily: "'Syne', sans-serif" }}
+                    className="text-lg font-medium text-white hover:text-[#E87722]"
+                    style={{ fontFamily: "'Outfit', sans-serif" }}
                   >
                     {tx?.medicationName || "Treatment"}
                   </Link>
@@ -51,7 +51,7 @@ export default function SubscriptionsPage() {
                     checked={sub.autoshipEnabled}
                     onCheckedChange={(checked) => toggleAutoship(sub.id, checked)}
                     aria-label={`Autoship for ${tx?.medicationName || "treatment"}`}
-                    className="data-[state=checked]:bg-[#1EC8A5] data-[state=unchecked]:bg-zinc-600"
+                    className="data-[state=checked]:bg-[#E87722] data-[state=unchecked]:bg-zinc-600"
                   />
                 </div>
               </div>

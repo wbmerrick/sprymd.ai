@@ -8,14 +8,14 @@ function bandClass(r: WearableReading): string {
   if (m.includes("blood") && r.value >= 140) return "text-rose-300";
   if (m.includes("glucose") && (r.value < 70 || r.value > 180)) return "text-rose-300";
   if (m.includes("ahi") && r.value > 5) return "text-rose-300";
-  return "text-[#1EC8A5]";
+  return "text-[#E87722]";
 }
 
 export function ReadingsLadder({ readings }: { readings: WearableReading[] }) {
   const rows = readings.slice(0, 24);
 
   return (
-    <ProPanel title="Readings ladder" eyebrow="Order book · feed" dense className="min-h-[220px]">
+    <ProPanel title="Recent readings" eyebrow="Newest first" dense className="min-h-[220px]">
       {rows.length === 0 ? (
         <p className="px-1 py-6 text-center text-xs text-zinc-500">No readings yet — upload or stream a device.</p>
       ) : (
@@ -25,7 +25,7 @@ export function ReadingsLadder({ readings }: { readings: WearableReading[] }) {
               key={r.id}
               className={cn(
                 "grid grid-cols-[1fr_auto_auto] items-center gap-2 px-1 py-1.5",
-                i === 0 && "bg-[#1EC8A5]/08 transition-colors duration-700",
+                i === 0 && "bg-[#E87722]/08 transition-colors duration-700",
               )}
             >
               <div className="min-w-0">

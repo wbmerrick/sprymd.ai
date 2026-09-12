@@ -12,6 +12,7 @@ import type {
   WearableReading,
   WearableSyncMode,
 } from "@/types/dashboard";
+import { connectorNeedsOauth, startOemOAuth } from "@/connectors";
 import {
   buildDashboardForEmail,
   clearCareNotifications,
@@ -24,8 +25,12 @@ import {
   setWearableEnabled,
   setWearableSyncMode,
   syncWearableDevice,
+  syncWearableDeviceFromCloud,
   toggleCareAutoship,
   unlockWearableDevice,
+  connectWearableDevice,
+  registerCustomWearable,
+  saveDashboardLayout,
   updateCareProfile,
   updateVitalsProfile,
   upsertBodyGoal,
@@ -172,9 +177,9 @@ export function useDashboardData() {
   );
 
   const syncWearable = useCallback(
-    (deviceId: WearableKind) => {
+    async (deviceId: WearableKind) => {
       if (!email) return;
-      syncWearableDevice(email, deviceId);
+      await syncWearableDeviceFromCloud(email, deviceId);
       refresh();
     },
     [email, refresh],
@@ -262,6 +267,46 @@ export function useDashboardData() {
     [email, refresh],
   );
 
+
+  const connectDevice = useCallback(
+    async (kind: WearableKind) => {
+      if (!email) return;
+      const device =
+        data.wearableDevices.find((d) => d.id === kind) ||
+        (await import("@/data/wearables")).WEARABLE_CATALOG.find((d) => d.id === kind);
+      connectWearableDevice(email, kind);
+      refresh();
+      if (device && connectorNeedsOauth(device.connector)) {
+        await startOemOAuth({
+          email,
+          deviceId: kind,
+          connector: device.connector,
+          returnTo: "/dashboard?oem=connected",
+        });
+        return;
+      }
+    },
+    [email, refresh, data.wearableDevices],
+  );
+
+  const registerCustomDevice = useCallback(
+    (input: { brand: string; name: string; metrics?: string[] }) => {
+      if (!email) return;
+      registerCustomWearable(email, input);
+      refresh();
+    },
+    [email, refresh],
+  );
+
+  const updateDashboardLayout = useCallback(
+    (patch: Partial<import("@/types/dashboard").DashboardLayoutConfig>) => {
+      if (!email) return;
+      saveDashboardLayout(email, patch);
+      refresh();
+    },
+    [email, refresh],
+  );
+
   return {
     ...data,
     notifications,
@@ -282,6 +327,9 @@ export function useDashboardData() {
     removeBodyGoal,
     unlockDevice,
     toggleDeviceEnabled,
+    connectDevice,
+    registerCustomDevice,
+    saveDashboardLayout: updateDashboardLayout,
     ready,
     isAuthenticated: !!email,
     email,

@@ -24,7 +24,7 @@ SpryMD Inc. is a clinician-supervised telehealth platform delivering performance
 - **Category:** Performance-health telehealth / men's health infrastructure
 - **Model:** Clinician-supervised protocols — assess → interpret → optimize
 - **Fulfillment:** Compounded medications via Empower Pharmacy; discreet shipping
-- **Clinical lead:** William Merrick, DO — board-certified osteopathic internal medicine, licensed in Tennessee, 10+ years clinical experience
+- **Clinical model:** Licensed clinicians review every case before treatment is authorized
 - **Positioning:** Elite performance medicine — not a pill mill; declines when inappropriate; not emergency care
 - **Tagline:** Operate at your ceiling / Modern medicine, made for men
 

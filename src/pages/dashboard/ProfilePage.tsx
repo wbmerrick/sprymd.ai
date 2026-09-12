@@ -41,8 +41,8 @@ export default function ProfilePage() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#1EC8A5]">Account</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#E87722]">Account</p>
+        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
           {user.name}
         </h1>
         <p className="text-sm text-zinc-400">{user.email}</p>
@@ -59,9 +59,9 @@ export default function ProfilePage() {
             <li key={s.label}>
               <Link
                 to={s.to}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-5 text-center transition hover:border-[#1EC8A5]/40"
+                className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-5 text-center transition hover:border-[#E87722]/40"
               >
-                <s.icon className="h-5 w-5 text-[#1EC8A5]" aria-hidden />
+                <s.icon className="h-5 w-5 text-[#E87722]" aria-hidden />
                 <span className="text-xs font-medium text-zinc-200">{s.label}</span>
               </Link>
             </li>

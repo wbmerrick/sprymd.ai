@@ -15,6 +15,7 @@ import type {
   WearableKind,
   WearableReading,
   WearableSyncMode,
+  WearableOAuthLink,
 } from "@/types/dashboard";
 import {
   addCustomerOrder,
@@ -25,7 +26,19 @@ import {
   updateCustomerProfile,
   upsertStoredAccount,
 } from "@/lib/customerAccounts";
-import { defaultWearableDevices, MARKETPLACE_DEVICE_MAP, mergeWearableCatalog } from "@/data/wearables";
+import {
+  buildCustomWearable,
+  defaultWearableDevices,
+  MARKETPLACE_DEVICE_MAP,
+  mergeWearableCatalog,
+  metricDefaults,
+  WEARABLE_CATALOG,
+} from "@/data/wearables";
+import {
+  DEFAULT_DASHBOARD_WIDGETS,
+  type DashboardLayoutConfig,
+  type DashboardWidgetId,
+} from "@/types/dashboard";
 import { publishVitalsEvent } from "@/lib/vitalsBus";
 import { isMasterEmail } from "@/lib/masterAccount";
 
@@ -69,6 +82,8 @@ export interface PatientCareRecord {
   wearableReadings: WearableReading[];
   bodyProfile: BodyProfile;
   bodyGoals: BodyGoal[];
+  dashboardLayout?: DashboardLayoutConfig;
+  oauthLinks?: WearableOAuthLink[];
   updatedAt: string;
 }
 
@@ -109,9 +124,12 @@ function emptyCare(email: string): PatientCareRecord {
     wearableReadings: [],
     bodyProfile: emptyBodyProfile(),
     bodyGoals: [],
+    dashboardLayout: defaultDashboardLayout(),
+    oauthLinks: [],
     updatedAt: new Date().toISOString(),
   };
 }
+
 
 /** Unlock full device rack + seed body profile for master accounts. */
 export function bootstrapMasterCare(email: string): PatientCareRecord {
@@ -289,6 +307,7 @@ export function buildDashboardForEmail(email: string): DashboardData | null {
     wearableReadings: care.wearableReadings || [],
     bodyProfile: care.bodyProfile || emptyBodyProfile(),
     bodyGoals: care.bodyGoals || [],
+    dashboardLayout: care.dashboardLayout || defaultDashboardLayout(),
   };
 }
 
@@ -705,6 +724,83 @@ function formatReadingValue(r: Pick<WearableReading, "value" | "unit" | "seconda
   return primary;
 }
 
+
+export function defaultDashboardLayout(): DashboardLayoutConfig {
+  return {
+    preset: "care_simple",
+    widgets: [...DEFAULT_DASHBOARD_WIDGETS],
+    pinnedDeviceIds: [],
+    selectedMetrics: ["hr", "spo2", "weight", "glucose", "sleep_score"],
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export function saveDashboardLayout(email: string, patch: Partial<DashboardLayoutConfig>) {
+  const care = getPatientCare(email);
+  const prev = care.dashboardLayout || defaultDashboardLayout();
+  care.dashboardLayout = {
+    ...prev,
+    ...patch,
+    widgets: patch.widgets ? [...patch.widgets] : prev.widgets,
+    pinnedDeviceIds: patch.pinnedDeviceIds ? [...patch.pinnedDeviceIds] : prev.pinnedDeviceIds,
+    selectedMetrics: patch.selectedMetrics ? [...patch.selectedMetrics] : prev.selectedMetrics,
+    updatedAt: new Date().toISOString(),
+  };
+  return saveCare(care);
+}
+
+/** Unlock a catalog device and mark it ready to sync. */
+export function connectWearableDevice(email: string, kind: WearableKind) {
+  const care = getPatientCare(email);
+  care.wearableDevices = mergeWearableCatalog(care.wearableDevices);
+  const exists = care.wearableDevices.some((d) => d.id === kind);
+  if (!exists) {
+    const catalog = WEARABLE_CATALOG.find((d) => d.id === kind);
+    if (!catalog) throw new Error("Unknown wearable. Use Add any device for custom gear.");
+    care.wearableDevices.push({
+      ...catalog,
+      syncMode: "manual",
+      status: "paired",
+      lastSyncedAt: null,
+      enabled: true,
+      owned: true,
+    });
+  } else {
+    care.wearableDevices = care.wearableDevices.map((d) =>
+      d.id === kind
+        ? { ...d, owned: true, enabled: true, status: d.status === "disconnected" ? "paired" : d.status }
+        : d,
+    );
+  }
+  const device = care.wearableDevices.find((d) => d.id === kind)!;
+  pushNotification(care, {
+    icon: "activity",
+    title: `${device.brand} ${device.name} connected`,
+    description: "Sync, upload a file, or turn on live stream to see readings on your dashboard.",
+  });
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: kind, at: new Date().toISOString() });
+  return saved;
+}
+
+/** Register any brand/model so patients can sync gear not yet in the stock catalog. */
+export function registerCustomWearable(
+  email: string,
+  input: { brand: string; name: string; metrics?: string[] },
+) {
+  const care = getPatientCare(email);
+  const device = buildCustomWearable(input);
+  care.wearableDevices = [...mergeWearableCatalog(care.wearableDevices), device];
+  pushNotification(care, {
+    icon: "activity",
+    title: `${device.brand} ${device.name} added`,
+    description: "Upload CSV/JSON exports from the maker's app, or log readings manually.",
+  });
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: device.id, at: new Date().toISOString() });
+  return { care: saved, device };
+}
+
 function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
   const now = new Date().toISOString();
   const base = {
@@ -735,15 +831,27 @@ function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
       return { ...base, metric: "Heart rate", value: 60 + Math.round(Math.random() * 28), unit: "bpm", secondaryValue: 40 + Math.round(Math.random() * 30), secondaryUnit: "ms" };
     case "cgm":
       return { ...base, metric: "Glucose", value: 90 + Math.round(Math.random() * 50), unit: "mg/dL" };
-    default:
-      return { ...base, metric: "Reading", value: 0, unit: "" };
+    default: {
+      const d = metricDefaults(deviceId);
+      const primary = 50 + Math.round(Math.random() * 50);
+      const secondary =
+        d.secondaryMetric != null ? 20 + Math.round(Math.random() * 40) : undefined;
+      return {
+        ...base,
+        metric: d.metric,
+        value: primary,
+        unit: d.unit,
+        secondaryValue: secondary,
+        secondaryUnit: secondary != null ? d.secondaryUnit : undefined,
+      };
+    }
   }
 }
 
 function applyReadingToBodyProfile(care: PatientCareRecord, reading: Pick<WearableReading, "deviceId" | "metric" | "value" | "unit">) {
   if (!care.bodyProfile) care.bodyProfile = emptyBodyProfile();
   const metric = reading.metric.toLowerCase();
-  if (reading.deviceId === "smart_scale" && (metric.includes("weight") || reading.unit === "lb")) {
+  if (metric.includes("weight") || (reading.unit === "lb" && /scale|weight/i.test(reading.deviceId))) {
     care.bodyProfile.weightLb = reading.value;
     care.bodyProfile.updatedAt = new Date().toISOString();
   }
@@ -783,7 +891,7 @@ export function unlockWearableDevice(email: string, kind: WearableKind) {
     pushNotification(care, {
       icon: "activity",
       title: `${device.brand} ${device.name} unlocked`,
-      description: "Device is ready to sync, upload, or stream on your clinical terminal.",
+      description: "Device is ready to sync, upload, or stream on your dashboard.",
     });
   }
   const saved = saveCare(care);
@@ -1041,3 +1149,73 @@ function normalizeFromValues(
     recordedAt: recordedAt && !Number.isNaN(Date.parse(recordedAt)) ? new Date(recordedAt).toISOString() : new Date().toISOString(),
   };
 }
+
+
+/** Persist OEM OAuth link metadata on the care record (tokens stay in the vault). */
+export function markWearableOAuthLinked(
+  email: string,
+  link: WearableOAuthLink,
+) {
+  const care = getPatientCare(email);
+  const links = [...(care.oauthLinks || [])].filter((l) => l.deviceId !== link.deviceId);
+  links.push(link);
+  care.oauthLinks = links;
+  care.wearableDevices = (care.wearableDevices || []).map((d) =>
+    d.id === link.deviceId
+      ? { ...d, owned: true, enabled: true, status: d.status === "disconnected" ? "paired" : d.status, syncMode: d.syncMode === "manual" ? "sync" : d.syncMode }
+      : d,
+  );
+  pushNotification(care, {
+    icon: "activity",
+    title: `${link.providerId} cloud linked`,
+    description: link.sandbox
+      ? "Sandbox OAuth complete. Sync pulls OEM-shaped cloud readings into your dashboard."
+      : "Live OEM OAuth complete. Sync pulls from the vendor cloud API.",
+  });
+  const saved = saveCare(care);
+  publishVitalsEvent({ type: "device", deviceId: link.deviceId, at: new Date().toISOString() });
+  return saved;
+}
+
+/** Sync via OEM cloud when linked; otherwise fall back to local simulator. */
+export async function syncWearableDeviceFromCloud(email: string, deviceId: WearableKind) {
+  const { hasOemCloudLink, syncOemCloud } = await import("@/connectors");
+  if (!hasOemCloudLink(email, deviceId)) {
+    return syncWearableDevice(email, deviceId);
+  }
+  const care = getPatientCare(email);
+  const device = (care.wearableDevices || []).find((d) => d.id === deviceId);
+  if (!device) return care;
+
+  care.wearableDevices = (care.wearableDevices || []).map((d) =>
+    d.id === deviceId
+      ? { ...d, status: "syncing", lastSyncedAt: new Date().toISOString(), syncMode: d.syncMode === "manual" ? "sync" : d.syncMode }
+      : d,
+  );
+  saveCare(care);
+
+  const { readings, liveApi, providerName } = await syncOemCloud(email, deviceId);
+  const next = getPatientCare(email);
+  next.wearableReadings = [...readings, ...(next.wearableReadings || [])].slice(0, READINGS_CAP);
+  next.wearableDevices = (next.wearableDevices || []).map((d) =>
+    d.id === deviceId
+      ? { ...d, status: d.syncMode === "continuous" ? "monitoring" : "paired", lastSyncedAt: new Date().toISOString() }
+      : d,
+  );
+  next.oauthLinks = (next.oauthLinks || []).map((l) =>
+    l.deviceId === deviceId ? { ...l, lastSyncAt: new Date().toISOString(), status: "connected" } : l,
+  );
+  for (const r of readings) applyReadingToBodyProfile(next, r);
+  const sample = readings[0];
+  pushNotification(next, {
+    icon: "activity",
+    title: `${providerName} cloud sync`,
+    description: sample
+      ? `${sample.metric}: ${formatReadingValue(sample)} · ${liveApi ? "live OEM API" : "sandbox cloud"}`
+      : "No new readings.",
+  });
+  const saved = saveCare(next);
+  if (sample) publishVitalsEvent({ type: "reading", deviceId, readingId: sample.id, at: sample.recordedAt });
+  return saved;
+}
+

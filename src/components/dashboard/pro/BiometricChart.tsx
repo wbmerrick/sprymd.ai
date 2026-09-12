@@ -12,13 +12,13 @@ import type { WearableKind, WearableReading } from "@/types/dashboard";
 import { ProPanel } from "./ProPanel";
 
 const METRIC_TABS: { id: string; label: string; match: RegExp; kinds?: WearableKind[] }[] = [
-  { id: "hr", label: "HR", match: /heart rate|^hr$|pulse/i },
-  { id: "spo2", label: "SpO₂", match: /spo/i },
-  { id: "wt", label: "WT", match: /weight/i },
+  { id: "hr", label: "Heart", match: /heart rate|^hr$|pulse/i },
+  { id: "spo2", label: "Oxygen", match: /spo/i },
+  { id: "wt", label: "Weight", match: /weight/i },
   { id: "bp", label: "BP", match: /blood pressure/i },
-  { id: "sleep", label: "SLEEP", match: /sleep score/i },
-  { id: "hrv", label: "HRV", match: /hrv/i },
-  { id: "glucose", label: "CGM", match: /glucose/i },
+  { id: "sleep", label: "Sleep", match: /sleep score/i },
+  { id: "hrv", label: "Recovery", match: /hrv/i },
+  { id: "glucose", label: "Sugar", match: /glucose/i },
 ];
 
 export function BiometricChart({
@@ -50,8 +50,8 @@ export function BiometricChart({
 
   return (
     <ProPanel
-      title="Biometric chart"
-      eyebrow="Market · vitals"
+      title="Your body readings"
+      eyebrow="Live chart"
       action={
         <div className="flex flex-wrap justify-end gap-1">
           {METRIC_TABS.map((m) => (
@@ -61,7 +61,7 @@ export function BiometricChart({
               onClick={() => onSelectMetric(m.id)}
               className={
                 selectedMetric === m.id
-                  ? "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider bg-[#1EC8A5]/20 text-[#1EC8A5]"
+                  ? "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider bg-[#E87722]/20 text-[#E87722]"
                   : "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-zinc-500 hover:text-zinc-200"
               }
             >
@@ -75,7 +75,7 @@ export function BiometricChart({
       {series.length < 2 ? (
         <div className="flex h-[220px] items-center justify-center text-center">
           <p className="max-w-xs text-sm text-zinc-500">
-            Sync, upload, or enable continuous monitoring to populate the {tab.label} series.
+            Sync a device, upload a file, or turn on live stream to see your {tab.label} numbers.
           </p>
         </div>
       ) : (
@@ -84,8 +84,8 @@ export function BiometricChart({
             <AreaChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="vitalFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1EC8A5" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#1EC8A5" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#E87722" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#E87722" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
@@ -100,7 +100,7 @@ export function BiometricChart({
                 }}
                 labelStyle={{ color: "#a1a1aa" }}
               />
-              <Area type="monotone" dataKey="v" stroke="#1EC8A5" fill="url(#vitalFill)" strokeWidth={1.75} isAnimationActive animationDuration={400} />
+              <Area type="monotone" dataKey="v" stroke="#E87722" fill="url(#vitalFill)" strokeWidth={1.75} isAnimationActive animationDuration={400} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

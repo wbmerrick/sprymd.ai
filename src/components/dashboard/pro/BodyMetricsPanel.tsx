@@ -77,7 +77,7 @@ export function BodyMetricsPanel({
   };
 
   return (
-    <ProPanel title="Body metrics" eyebrow="Balances" dense className="min-h-[220px]">
+    <ProPanel title="Height & weight" eyebrow="Your body" dense className="min-h-[220px]">
       <div className="grid grid-cols-3 gap-2 text-center">
         <MetricStat
           label="Height"
@@ -103,7 +103,7 @@ export function BodyMetricsPanel({
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-[#1EC8A5] transition-all duration-700"
+              className="h-full rounded-full bg-[#E87722] transition-all duration-700"
               style={{ width: `${progress ?? 12}%` }}
             />
           </div>
@@ -132,7 +132,7 @@ export function BodyMetricsPanel({
       <button
         type="button"
         onClick={save}
-        className="mt-2 w-full rounded-md border border-white/15 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:border-[#1EC8A5]/40 hover:text-[#1EC8A5]"
+        className="mt-2 w-full rounded-md border border-white/15 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:border-[#E87722]/40 hover:text-[#E87722]"
       >
         Update body size
       </button>

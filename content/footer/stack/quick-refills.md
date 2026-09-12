@@ -13,7 +13,7 @@ marketplaceFilter: null
 
 Quick Refills is for patients with active prescriptions already on file at Empower Pharmacy. Sign in, select what you need, and we transmit the refill to Empower the same day. No phone trees. No fax.
 
-Your dashboard pulls live from the Empower medication database — strength, sig, refills remaining, and prescriber on every line. Dr. William Merrick, DO signs every script in your history. Your record at gethealthy.com updates automatically after payment.
+Your dashboard pulls live from the Empower medication database — strength, sig, refills remaining, and prescriber on every line. A licensed SpryMD clinician signs every script in your history. Your record at gethealthy.com updates automatically after payment.
 
 Temperature-sensitive compounds — including GLP-1 therapies — ship overnight in chilled packaging. Everything else ships standard. Discreet packaging on every order.
 
@@ -46,7 +46,7 @@ Prices reflect your current strength and days supply. Refill eligibility shown p
 ## Why Spry
 
 - **Empower-compounded** — Same pharmacy, same formulations, every refill.
-- **Clinician continuity** — Merrick, William DO on every active script.
+- **Clinician continuity** — The same licensed care team on every active script.
 - **Zero friction** — Dashboard reordering. No new intake unless your protocol changes.
 
 ## Notes

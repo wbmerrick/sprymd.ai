@@ -19,7 +19,7 @@ export default function TreatmentDetailPage() {
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold text-white">Treatment not found</h1>
-        <Link to="/dashboard/goals" className="text-[#1EC8A5] hover:underline">
+        <Link to="/dashboard/goals" className="text-[#E87722] hover:underline">
           Back to goals
         </Link>
       </div>
@@ -46,7 +46,7 @@ export default function TreatmentDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{tx.category}</p>
-            <h1 className="mt-1 text-3xl font-semibold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+            <h1 className="mt-1 text-3xl font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
               {tx.medicationName}
             </h1>
             <p className="mt-2 text-sm text-zinc-400">{tx.dosage}</p>
@@ -60,7 +60,7 @@ export default function TreatmentDetailPage() {
               key={a.label}
               type="button"
               onClick={a.onClick}
-              className="rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white transition hover:border-[#1EC8A5]/50 hover:bg-[#1EC8A5]/10"
+              className="rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white transition hover:border-[#E87722]/50 hover:bg-[#E87722]/10"
             >
               {a.label}
             </button>
@@ -103,19 +103,19 @@ export default function TreatmentDetailPage() {
         </h2>
         <Accordion type="multiple" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-white">
           <AccordionItem value="dosing" className="border-white/10">
-            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#1EC8A5]">Dosing instructions</AccordionTrigger>
+            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#E87722]">Dosing instructions</AccordionTrigger>
             <AccordionContent className="text-zinc-400">{tx.dosingInstructions}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="storage" className="border-white/10">
-            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#1EC8A5]">Storage</AccordionTrigger>
+            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#E87722]">Storage</AccordionTrigger>
             <AccordionContent className="text-zinc-400">{tx.storage}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="how" className="border-white/10">
-            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#1EC8A5]">How it works</AccordionTrigger>
+            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#E87722]">How it works</AccordionTrigger>
             <AccordionContent className="text-zinc-400">{tx.howItWorks}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="sides" className="border-white/10">
-            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#1EC8A5]">Side effects</AccordionTrigger>
+            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#E87722]">Side effects</AccordionTrigger>
             <AccordionContent>
               <ul className="space-y-3">
                 {(tx.sideEffects || []).map((s) => (
@@ -129,11 +129,11 @@ export default function TreatmentDetailPage() {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="trouble" className="border-white/10">
-            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#1EC8A5]">Troubleshooting</AccordionTrigger>
+            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#E87722]">Troubleshooting</AccordionTrigger>
             <AccordionContent className="text-zinc-400">{tx.troubleshooting}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="warnings" className="border-white/10">
-            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#1EC8A5]">Warnings & interactions</AccordionTrigger>
+            <AccordionTrigger className="text-left text-white hover:no-underline hover:text-[#E87722]">Warnings & interactions</AccordionTrigger>
             <AccordionContent className="text-zinc-400">{tx.warnings}</AccordionContent>
           </AccordionItem>
         </Accordion>

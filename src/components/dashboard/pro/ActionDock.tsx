@@ -5,6 +5,7 @@ import type { BodyGoalMetric, WearableDevice, WearableKind, WearableSyncMode } f
 import { metricDefaults } from "@/data/wearables";
 import { ProPanel } from "./ProPanel";
 import { cn } from "@/lib/utils";
+import { FEATURES } from "@/config/features";
 
 type Tab = "reading" | "upload" | "goal" | "buy";
 
@@ -88,14 +89,14 @@ export function ActionDock({
   ];
 
   return (
-    <ProPanel title="Action dock" eyebrow="Order form" dense className="min-h-[280px]">
+    <ProPanel title="Quick actions" eyebrow="Log · upload · goals" dense className="min-h-[280px]">
       <div className="mb-2 flex gap-1">
         {(
           [
             ["reading", "Reading"],
             ["upload", "Upload"],
             ["goal", "Goal"],
-            ["buy", "Buy"],
+            ...(FEATURES.enableShop ? ([["buy", "Buy"]] as const) : []),
           ] as const
         ).map(([id, label]) => (
           <button
@@ -112,14 +113,14 @@ export function ActionDock({
         ))}
       </div>
 
-      {tab === "buy" ? (
+      {FEATURES.enableShop && tab === "buy" ? (
         <div className="space-y-3 p-1">
           <p className="text-xs text-zinc-400">
-            Unlock top bioinformatic wearables — Oura, Whoop, Apple Watch, Garmin, Dexcom — and stream them into this terminal.
+            Add fitness devices — Oura, Whoop, Apple Watch, Garmin, Dexcom — and see their readings here.
           </p>
           <Link
             to="/?view=marketplace&filter=Devices"
-            className="inline-flex w-full items-center justify-center rounded-md bg-[#1EC8A5] px-3 py-2 text-sm font-semibold text-[#04120e]"
+            className="inline-flex w-full items-center justify-center rounded-md bg-[#E87722] px-3 py-2 text-sm font-semibold text-white"
           >
             Open device marketplace
           </Link>
@@ -127,7 +128,11 @@ export function ActionDock({
       ) : null}
 
       {tab !== "buy" && !selected ? (
-        <p className="p-2 text-xs text-zinc-500">Buy a device to start logging vitals.</p>
+        <p className="p-2 text-xs text-zinc-500">
+          {FEATURES.enableShop
+            ? "Buy a device to start logging your health numbers."
+            : "Connect a device to start logging your health numbers."}
+        </p>
       ) : null}
 
       {tab !== "buy" && selected ? (
@@ -157,7 +162,7 @@ export function ActionDock({
                 className={cn(
                   "flex-1 rounded-md border px-1 py-1.5 font-mono text-[10px] uppercase tracking-wider",
                   selected.syncMode === m.id
-                    ? "border-[#1EC8A5]/50 bg-[#1EC8A5]/15 text-[#1EC8A5]"
+                    ? "border-[#E87722]/50 bg-[#E87722]/15 text-[#E87722]"
                     : "border-white/10 text-zinc-400 hover:border-white/20",
                 )}
               >
@@ -223,7 +228,7 @@ export function ActionDock({
                       setNote("");
                     }, "Reading saved")
                   }
-                  className="flex-1 rounded-md bg-[#1EC8A5] px-3 py-2 text-sm font-semibold text-[#04120e]"
+                  className="flex-1 rounded-md bg-[#E87722] px-3 py-2 text-sm font-semibold text-white"
                 >
                   Save reading
                 </button>
@@ -242,7 +247,7 @@ export function ActionDock({
 
           {tab === "upload" ? (
             <div className="space-y-2">
-              <p className="text-xs text-zinc-500">CSV/TSV/JSON with value columns. Streams into the ladder instantly.</p>
+              <p className="text-xs text-zinc-500">Upload a CSV or JSON file from your device app. New numbers show up right away.</p>
               <input
                 ref={fileRef}
                 type="file"
@@ -265,7 +270,7 @@ export function ActionDock({
                 <Upload className="h-4 w-4" /> Upload data file
               </button>
               {selected.syncMode === "continuous" ? (
-                <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#1EC8A5]">
+                <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#E87722]">
                   <Radio className="h-3 w-3" /> Stream active
                 </p>
               ) : null}
@@ -303,7 +308,7 @@ export function ActionDock({
                     setGoalTarget("");
                   }, "Goal saved")
                 }
-                className="w-full rounded-md bg-[#1EC8A5] px-3 py-2 text-sm font-semibold text-[#04120e]"
+                className="w-full rounded-md bg-[#E87722] px-3 py-2 text-sm font-semibold text-white"
               >
                 Set goal
               </button>
@@ -312,7 +317,7 @@ export function ActionDock({
         </div>
       ) : null}
 
-      {notice ? <p className="mt-2 text-xs text-[#1EC8A5]">{notice}</p> : null}
+      {notice ? <p className="mt-2 text-xs text-[#E87722]">{notice}</p> : null}
       {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
     </ProPanel>
   );

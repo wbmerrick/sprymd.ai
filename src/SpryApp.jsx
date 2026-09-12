@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
-  Heart, Pill, Wind, Activity, Moon, Zap, RefreshCw, User, Clock, FileText,
+  Heart, Pill, Wind, Activity, Moon, Sun, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
-  Watch,
+  Watch, Menu,
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
+import LaserLogo from "./components/brand/LaserLogo";
+import AlpineAtmosphere from "./components/brand/AlpineAtmosphere";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -23,7 +25,7 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
-import imgEarthSpace from "./assets/earth-from-space.webp";
+import imgLifestyleHero from "./assets/tn-lifestyle-hero.png";
 import {
   signInCustomer,
   signUpCustomer,
@@ -31,48 +33,52 @@ import {
   restoreCustomerSession,
   updateCustomerProfile,
 } from "./lib/customerAccounts";
+import { FEATURES } from "./config/features";
 import {
   recordSubscriptionCheckout,
   recordCartCheckout,
   recordRefillCheckout,
   ensureAccountShell,
 } from "./lib/patientCareStore";
-import { SignalField, OrbitRings, ScanFrame, TelemetryStrip, HexMesh, GridHorizon, ISpryChat } from "./components/graphics";
+import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
 // ─────────────────────────────────────────────────────────────────────────────
+// Brand tokens — APN-inspired: black, white, warm orange (#E87722)
+// ─────────────────────────────────────────────────────────────────────────────
 const C = {
-  bg: "#050505",
-  bgAlt: "#0B0B0C",
-  paper: "#121214",
-  ink: "#FAFAFA",
-  inkSoft: "#C8C8C8",
-  muted: "#8A8A8E",
-  primary: "#FAFAFA",
-  primaryDark: "#D4D4D4",
-  accent: "#1EC8A5",           // signal — instrumentation only
-  accentSoft: "rgba(30, 200, 165, 0.72)",
-  accentDeep: "#0E8F74",
-  signalDim: "rgba(30, 200, 165, 0.14)",
-  line: "#1F1F22",
-  lineSoft: "#161618",
+  bg: "#000000",
+  bgAlt: "#0C0C0C",
+  paper: "#141414",
+  ink: "#FFFFFF",
+  inkSoft: "#D6D6D6",
+  muted: "#8F8F8F",
+  primary: "#E87722",
+  primaryDark: "#CF6514",
+  accent: "#E87722",
+  accentSoft: "rgba(232, 119, 34, 0.78)",
+  accentDeep: "#B85510",
+  signalDim: "rgba(232, 119, 34, 0.16)",
+  navy: "#003399",
+  line: "#2A2A2A",
+  lineSoft: "#1A1A1A",
   ok: "#2FBF7A",
   warn: "#E6A23C",
   destructive: "#E25555",
 };
 
 const fonts = {
-  display: "'Syne', 'Arial Narrow', sans-serif",
+  display: "'Outfit', 'Helvetica Neue', sans-serif",
   body: "'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-  mono: "'JetBrains Mono', ui-monospace, monospace",
+  mono: "'DM Sans', 'Helvetica Neue', sans-serif",
 };
 
 const FontInjector = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@400;500;600;700;800&display=swap');
     :root {
-      --font-mono: ${fonts.mono};
+      --font-mono: ${fonts.body};
       --spry-accent: ${C.accent};
       --spry-bg: ${C.bg};
       --spry-ink: ${C.ink};
@@ -82,12 +88,16 @@ const FontInjector = () => (
     body {
       font-family: ${fonts.body}; letter-spacing: -0.005em;
       background-image:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30,200,165,0.06), transparent 55%),
-        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(18,28,36,0.5), transparent 50%);
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.12), transparent 55%),
+        linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)),
+        url("/brand/sprymd-alpine-atmosphere.webp");
+      background-size: auto, auto, cover;
+      background-position: center, center, center 58%;
       background-attachment: fixed;
+      background-repeat: no-repeat;
     }
-    .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.03em; }
-    .mono { font-family: ${fonts.mono}; }
+    .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.02em; }
+    .mono { font-family: ${fonts.body}; font-weight: 600; letter-spacing: 0.04em; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
@@ -166,7 +176,7 @@ const FontInjector = () => (
     }
     .instrument-panel::before {
       content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse at 80% 20%, rgba(30,200,165,0.08), transparent 50%);
+      background: radial-gradient(ellipse at 80% 20%, rgba(232,119,34,0.10), transparent 50%);
     }
     @media (prefers-reduced-motion: reduce) {
       .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant {
@@ -196,10 +206,10 @@ const FontInjector = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 const conditions = {
   weightloss: {
-    id: "weightloss", name: "Metabolic",
-    tagline: "GLP-1 protocols. Titrated. Cold-chain.",
-    description: "Tirzepatide and semaglutide protocols, compounded by Empower Pharmacy. Clinician-titrated. Ships overnight in temperature-controlled packaging.",
-    icon: Scale, accent: "#1EC8A5", fromPrice: "149",
+    id: "weightloss", name: "Weight loss",
+    tagline: "Lose weight with a real doctor watching your plan.",
+    description: "Safe weight-loss medicine chosen for you. A doctor checks your answers, then we ship care to your door.",
+    icon: Scale, accent: "#E87722", fromPrice: "149",
     treatments: [
       { id: "tirz-mid", name: "Tirzepatide Injection", sub: "5–10 mg / weekly · titrated", price: 279, chilled: true,
         note: "Dual GIP/GLP-1 agonism. The strongest agent we offer — direct alternative to compounded Mounjaro/Zepbound.",
@@ -218,10 +228,10 @@ const conditions = {
     ],
   },
   ed: {
-    id: "ed", name: "Vitality",
-    tagline: "PDE5 protocols. Daily or on-demand.",
-    description: "Sildenafil and tadalafil in tablet, daily-dose, and oral-dissolve formulations. Compounded combinations available for patients who don't respond to standard PDE5 monotherapy.",
-    icon: Flame, accent: "#1EC8A5", fromPrice: "49",
+    id: "ed", name: "Men's sexual health",
+    tagline: "Feel confident again — daily or when you need it.",
+    description: "Simple treatments for erectile health. Private questions. A doctor reviews your case before anything ships.",
+    icon: Flame, accent: "#E87722", fromPrice: "49",
     treatments: [
       { id: "sild-prn", name: "Sildenafil 50mg PRN", sub: "10 doses / month · as needed", price: 69, chilled: false,
         note: "The standard. Onset 30–60 min. Most cost-effective entry.", compareAt: 89, comparePeer: "Hims" },
@@ -239,10 +249,10 @@ const conditions = {
     ],
   },
   hairloss: {
-    id: "hairloss", name: "Hair Loss",
-    tagline: "Stop the shed. Restore the line.",
-    description: "Finasteride, dutasteride, and minoxidil in oral and compounded topical formulations — solo or stacked.",
-    icon: Sparkles, accent: "#1EC8A5", fromPrice: "25",
+    id: "hairloss", name: "Hair loss",
+    tagline: "Slow hair loss and help hair grow back.",
+    description: "Proven hair treatments. Pick what fits you. A doctor makes sure it is safe for you.",
+    icon: Sparkles, accent: "#E87722", fromPrice: "25",
     treatments: [
       { id: "fin", name: "Finasteride 1mg Oral", sub: "30 tablets / month", price: 25, chilled: false,
         note: "DHT blockade. The gold-standard first-line treatment.", compareAt: 32, comparePeer: "Hims" },
@@ -257,10 +267,10 @@ const conditions = {
     ],
   },
   skincare: {
-    id: "skincare", name: "Skin",
-    tagline: "Compounded retinoids. Targeted complexes.",
-    description: "Tretinoin formulations and prescription acne, melasma, and rosacea protocols — compounded with adjuvants for tolerability.",
-    icon: Leaf, accent: "#1EC8A5", fromPrice: "59",
+    id: "skincare", name: "Skin care",
+    tagline: "Clearer, healthier-looking skin.",
+    description: "Doctor-guided skin treatments for aging, acne, and tone — made for your goals.",
+    icon: Leaf, accent: "#E87722", fromPrice: "59",
     treatments: [
       { id: "tret-mild", name: "Tretinoin TAAN Mild", sub: "Tret 0.03% / Azelaic 4% / Niacinamide 4% · 30 g", price: 59, chilled: false,
         note: "Compounded for tolerability. Three-active complex for texture, tone, and brightening.", badge: "Best for first-timers" },
@@ -275,10 +285,10 @@ const conditions = {
     ],
   },
   lowt: {
-    id: "lowt", name: "Hormonal",
-    tagline: "Labs. TRT protocols. Energy restored.",
-    description: "Clinician-supervised testosterone replacement and fertility-preserving alternatives. Baseline labs required. Ongoing monitoring included.",
-    icon: Droplets, accent: "#1EC8A5", fromPrice: "99",
+    id: "lowt", name: "Low energy & hormones",
+    tagline: "Get your energy and drive back.",
+    description: "Care for low testosterone and low energy. Labs when needed. A doctor guides every step.",
+    icon: Droplets, accent: "#E87722", fromPrice: "99",
     treatments: [
       { id: "t-cyp", name: "Testosterone Cypionate", sub: "100–200 mg / weekly · injectable", price: 149, chilled: false,
         note: "Gold-standard TRT. Clinician-titrated weekly injections with scheduled follow-up labs.", badge: "Most prescribed", compareAt: 199, comparePeer: "Hims" },
@@ -293,10 +303,10 @@ const conditions = {
     ],
   },
   mentalhealth: {
-    id: "mentalhealth", name: "Cognitive",
-    tagline: "Anxiety & depression. Discreet. Monitored.",
-    description: "SSRI, SNRI, and atypical antidepressant protocols with clinician check-ins. Private intake, no waiting room, continuous follow-up.",
-    icon: Brain, accent: "#1EC8A5", fromPrice: "35",
+    id: "mentalhealth", name: "Mood & focus",
+    tagline: "Feel calmer. Think clearer.",
+    description: "Private help for anxiety, depression, and stress. A doctor checks in and stays with you.",
+    icon: Brain, accent: "#E87722", fromPrice: "35",
     treatments: [
       { id: "sertraline", name: "Sertraline", sub: "25–100 mg / daily · SSRI", price: 39, chilled: false,
         note: "First-line for depression and anxiety. Broad evidence base, flexible titration.", badge: "Most prescribed", compareAt: 55, comparePeer: "Hims" },
@@ -311,10 +321,10 @@ const conditions = {
     ],
   },
   pcp: {
-    id: "pcp", name: "Primary Care",
-    tagline: "Your dedicated Spry clinician.",
-    description: "A dedicated SpryMD clinician as your primary care physician — annual wellness, labs, chronic care, referrals, and same-day messaging.",
-    icon: UserCheck, accent: "#1EC8A5", fromPrice: "49",
+    id: "pcp", name: "Your doctor",
+    tagline: "A doctor you can message any day.",
+    description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
+    icon: UserCheck, accent: "#E87722", fromPrice: "49",
     treatments: [
       { id: "pcp-core", name: "Spry Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
         note: "Your dedicated SpryMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
@@ -337,27 +347,27 @@ const mockRxHistory = [
   { rxId: "EMP-294817", name: "Tirzepatide Injection", strength: "8 mg/2 mL · grapeseed oil",
     sig: "Inject 0.25 mL (10 units) subQ once weekly", lastFilled: "Mar 14, 2026", refills: 5, refillsUsed: 1,
     price: 279, chilled: true, category: "Weight Loss", icon: Scale, color: "hsl(150, 55%, 40%)",
-    prescriber: "Merrick, William DO", daysSupply: 28 },
+    prescriber: "SpryMD Clinician", daysSupply: 28 },
   { rxId: "EMP-294112", name: "Tadalafil ODT", strength: "6 mg · oral dissolve",
     sig: "Dissolve one tablet under tongue daily", lastFilled: "Apr 02, 2026", refills: 11, refillsUsed: 0,
     price: 99, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
   { rxId: "EMP-291003", name: "Hair Restore MFK Topical", strength: "Minoxidil 5% / Fin 0.3% / Ketoconazole 2% · 60 mL",
     sig: "Apply 1 mL to scalp twice daily", lastFilled: "Feb 28, 2026", refills: 5, refillsUsed: 2,
     price: 89, chilled: false, category: "Hair Loss", icon: Sparkles, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 60 },
+    prescriber: "SpryMD Clinician", daysSupply: 60 },
   { rxId: "EMP-289445", name: "Tretinoin TAAN Mild Cream", strength: "Tret 0.03% / Azelaic 4% / Niac 4% · 30 g",
     sig: "Apply pea-sized amount nightly", lastFilled: "Mar 22, 2026", refills: 11, refillsUsed: 1,
     price: 59, chilled: false, category: "Dermatology", icon: Leaf, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
   { rxId: "EMP-285332", name: "Sildenafil 50mg", strength: "50 mg · 10 tablets",
     sig: "Take one tablet 30–60 min before activity", lastFilled: "Apr 18, 2026", refills: 5, refillsUsed: 0,
     price: 69, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
   { rxId: "EMP-281109", name: "Methylene Blue Capsule", strength: "10 mg · cognition / mitochondrial support",
     sig: "Take one capsule each morning", lastFilled: "Mar 30, 2026", refills: 2, refillsUsed: 1,
     price: 79, chilled: false, category: "Longevity", icon: Zap, color: "hsl(150, 55%, 40%)",
-    prescriber: "Merrick, William DO", daysSupply: 30 },
+    prescriber: "SpryMD Clinician", daysSupply: 30 },
 ];
 
 const rxIconFor = (rx) => {
@@ -419,16 +429,16 @@ const products = [
     desc: "Unscented, alcohol-free wipes safe for daily mask and tubing cleaning. 110 count." },
   { id: "p8", name: "Smart Blood Pressure Monitor", brand: "Omron", cat: "Devices", price: 89, compareAt: 119, hsa: true, badge: "FDA-cleared", rating: 4.8, reviews: 1450,
     icon: Heart, image: imgBpMonitor, color: "hsl(150, 55%, 40%)",
-    benefit: "Clinical accuracy at home",
-    desc: "Bluetooth-enabled, FDA-cleared Omron monitor. Syncs readings for clinician review." },
+    benefit: "Accurate readings at home",
+    desc: "Bluetooth Omron monitor. Sends readings to your care team." },
   { id: "p9", name: "Pulse Oximeter · Fingertip", brand: "Masimo", cat: "Devices", price: 42, compareAt: 59, hsa: true, badge: null, rating: 4.7, reviews: 803,
     icon: Activity, image: imgPulseOximeter, color: "hsl(150, 55%, 40%)",
-    benefit: "Hospital-grade SpO₂ on demand",
-    desc: "Masimo fingertip accuracy for SpO2 and pulse rate. Compact, travel-ready." },
+    benefit: "Check oxygen anytime",
+    desc: "Masimo fingertip accuracy for oxygen and pulse. Compact, travel-ready." },
   { id: "p10", name: "Smart Body Composition Scale", brand: "Withings", cat: "Devices", price: 99, compareAt: 129, hsa: false, badge: "GLP-1 companion", rating: 4.8, reviews: 992,
     icon: Scale, image: imgSmartScale, color: "hsl(220, 60%, 20%)",
     benefit: "Track fat, muscle, and progress",
-    desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit — perfect alongside GLP-1 therapy." },
+    desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit — great with weight-loss care." },
   { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Spry Essentials", cat: "Sleep", price: 16, compareAt: 22, hsa: true, badge: null, rating: 4.6, reviews: 1544,
     icon: Moon, image: imgMelatonin, color: "hsl(220, 60%, 20%)",
     benefit: "Fall asleep. Stay asleep.",
@@ -437,26 +447,26 @@ const products = [
     icon: Leaf, image: imgLTheanine, color: "hsl(150, 55%, 40%)",
     benefit: "Calm without sedation",
     desc: "Smooth focus for high-stress days. Pairs cleanly with coffee — no crash, no fog." },
-  { id: "p13", name: "Oura Ring 4", brand: "Oura", cat: "Devices", price: 349, compareAt: 399, hsa: false, badge: "Bioinformatic", rating: 4.7, reviews: 2104,
+  { id: "p13", name: "Oura Ring 4", brand: "Oura", cat: "Devices", price: 349, compareAt: 399, hsa: false, badge: "Top pick", rating: 4.7, reviews: 2104,
     icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
-    benefit: "HRV, sleep, and recovery on your finger",
-    desc: "Clinical-grade nightly biometrics. Unlocks realtime Oura signals on your SpryMD patient terminal. Membership sold separately." },
+    benefit: "Sleep and recovery on your finger",
+    desc: "Nightly body readings. Unlocks live Oura numbers on your SpryMD dashboard. Membership sold separately." },
   { id: "p14", name: "Whoop 5.0 Membership", brand: "Whoop", cat: "Devices", price: 239, compareAt: 269, hsa: false, badge: "Strain + recovery", rating: 4.6, reviews: 1588,
     icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
-    benefit: "24/7 strain, recovery, and sleep coaching",
-    desc: "Annual membership hardware kit. Streams recovery and strain into your clinical terminal watchlist." },
+    benefit: "All-day strain, recovery, and sleep coaching",
+    desc: "Yearly kit. Streams recovery and strain into your device list on the dashboard." },
   { id: "p15", name: "Apple Watch Series", brand: "Apple", cat: "Devices", price: 429, compareAt: 499, hsa: false, badge: "Top wearable", rating: 4.8, reviews: 5402,
     icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
-    benefit: "HR, SpO₂, and activity that clinicians recognize",
-    desc: "GPS model. Sync or stream heart rate and SpO₂ into SpryMD for protocol review." },
+    benefit: "Heart, oxygen, and activity your doctor knows",
+    desc: "GPS model. Sync or stream heart rate and oxygen into SpryMD for your care plan." },
   { id: "p16", name: "Garmin Venu 3", brand: "Garmin", cat: "Devices", price: 449, compareAt: 499, hsa: false, badge: null, rating: 4.7, reviews: 976,
     icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
-    benefit: "Training load with clinical-grade HR",
-    desc: "AMOLED sports watch. Unlocks Garmin vitals panels on the patient desk." },
-  { id: "p17", name: "Dexcom G7 CGM Kit", brand: "Dexcom", cat: "Devices", price: 199, compareAt: 249, hsa: true, badge: "Metabolic", rating: 4.8, reviews: 3210,
+    benefit: "Training load with accurate heart rate",
+    desc: "Bright sports watch. Unlocks Garmin health panels on your dashboard." },
+  { id: "p17", name: "Dexcom G7 CGM Kit", brand: "Dexcom", cat: "Devices", price: 199, compareAt: 249, hsa: true, badge: "Blood sugar", rating: 4.8, reviews: 3210,
     icon: Droplets, image: imgPulseOximeter, color: "hsl(150, 55%, 40%)",
-    benefit: "Glucose on the ticker, every few minutes",
-    desc: "Sensor starter kit for continuous glucose. Rx pathway may apply — streams to your terminal when unlocked." },
+    benefit: "Blood sugar updates every few minutes",
+    desc: "Sensor starter kit for continuous glucose. A prescription may be needed — streams to your dashboard when unlocked." },
 ];
 
 const productCategories = ["All", "Supplements", "Sleep Apnea", "Devices", "Sleep"];
@@ -521,7 +531,7 @@ const intakes = {
     { key: "age", type: "single", title: "What's your age range?", options: ["18–29", "30–39", "40–49", "50–59", "60–69", "70+"] },
     { key: "fertility", type: "single", title: "Is preserving fertility important right now?", options: ["Yes — planning children", "Maybe in the next few years", "No — not a concern"] },
     { key: "prostate", type: "multi", title: "Do any of these apply?", sub: "Required safety screening for testosterone therapy.",
-      options: ["History of prostate cancer", "Active untreated sleep apnea", "Hematocrit above 54%", "Breast cancer history", "None of the above"],
+      options: ["History of prostate cancer", "Active untreated sleep apnea", "Hematocrit above 54%", "Breast cancer history", "I'm not sure I want a full endocrine panel ran to check all of my hormone levels and any other tests that may be relevant to how my hormone functions.", "None of the above"],
       disqualify: ["History of prostate cancer", "Breast cancer history", "Hematocrit above 54%"] },
     { key: "preference", type: "single", title: "How would you prefer to treat?", options: ["Weekly injection — most effective", "Daily oral — no needles", "Topical cream", "Not sure — recommend for me"] },
   ],
@@ -553,23 +563,23 @@ const intakes = {
 const Btn = ({ children, onClick, variant = "primary", size = "md", className = "", disabled, type, icon: Icon }) => {
   const sizes = { sm: { padding: "8px 16px", fontSize: 13 }, md: { padding: "14px 22px", fontSize: 14 }, lg: { padding: "18px 32px", fontSize: 15 } };
   const variants = {
-    primary: { background: C.primary, color: C.paper, border: `1px solid ${C.primary}` },
+    primary: { background: C.accent, color: "#FFFFFF", border: `1px solid ${C.accent}` },
     secondary: { background: "transparent", color: C.ink, border: `1px solid ${C.line}` },
-    accent: { background: C.accent, color: "#04120e", border: `1px solid ${C.accent}` },
+    accent: { background: C.accent, color: "#FFFFFF", border: `1px solid ${C.accent}` },
     ghost: { background: "transparent", color: C.ink, border: `1px solid transparent` },
-    dark: { background: C.ink, color: C.paper, border: `1px solid ${C.ink}` },
+    dark: { background: C.ink, color: C.bg, border: `1px solid ${C.ink}` },
   };
   return (
     <button type={type} onClick={onClick} disabled={disabled}
       className={`focus-ring inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 ${className}`}
-      style={{ ...sizes[size], ...variants[variant], borderRadius: 999, opacity: disabled ? 0.4 : 1, cursor: disabled ? "not-allowed" : "pointer", letterSpacing: "0.01em" }}
+      style={{ ...sizes[size], ...variants[variant], borderRadius: 8, opacity: disabled ? 0.4 : 1, cursor: disabled ? "not-allowed" : "pointer", letterSpacing: "0.01em" }}
       onMouseEnter={(e) => {
         if (disabled) return;
-        if (variant === "primary") e.currentTarget.style.background = C.primaryDark;
+        if (variant === "primary") e.currentTarget.style.background = C.accentDeep;
         if (variant === "secondary") e.currentTarget.style.background = C.bgAlt;
         if (variant === "accent") e.currentTarget.style.background = C.accentDeep;
         if (variant === "ghost") e.currentTarget.style.background = C.bgAlt;
-        if (variant === "dark") e.currentTarget.style.background = "#000";
+        if (variant === "dark") e.currentTarget.style.background = "#E8E8E8";
       }}
       onMouseLeave={(e) => { e.currentTarget.style.background = variants[variant].background; }}>
       {children}
@@ -619,55 +629,180 @@ const Row = ({ label, value }) => (
   </div>
 );
 
+const TN_DELIVERY = {
+  cutoff: "2:00 p.m. Central Time",
+  eligibleDays: "Monday–Thursday",
+  title: "Tennessee Next-Day Delivery",
+  heroShort: "Eligible Tennessee orders: next-business-day delivery.",
+  full: "Complete your visit by 2:00 p.m. Central Time on an eligible weekday (Monday–Thursday) and, once your prescription is approved and filled, qualifying Tennessee orders ship for next-business-day delivery. Availability varies by medication, location, pharmacy, weather, and carrier service.",
+};
+
+const DeliveryBar = ({ onClick, glass = false }) => {
+  const Tag = onClick ? "button" : "div";
+  return (
+    <Tag
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
+      className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
+      style={{
+        background: glass ? "rgba(0,0,0,0.38)" : C.paper,
+        borderBottom: `1px solid ${C.line}`,
+        color: C.ink,
+        cursor: onClick ? "pointer" : "default",
+        backdropFilter: glass ? "blur(10px)" : undefined,
+      }}
+    >
+      <span className="inline-flex items-center gap-2">
+        <Truck size={14} color={C.accent} strokeWidth={2} />
+        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
+          {TN_DELIVERY.title}
+        </span>
+      </span>
+      <span style={{ fontSize: 12, color: C.inkSoft }}>
+        After clinician approval, for eligible orders
+      </span>
+    </Tag>
+  );
+};
+
+const DeliveryHeroNote = () => (
+  <div className="inline-flex items-start gap-2" style={{ maxWidth: 280 }}>
+    <Truck size={16} color={C.accent} strokeWidth={2} className="flex-shrink-0" style={{ marginTop: 2 }} />
+    <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.4 }}>{TN_DELIVERY.heroShort}</span>
+  </div>
+);
+
+const DeliveryDetailsCard = () => (
+  <div id="tn-delivery" className="rounded-2xl p-5 md:p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+    <div className="flex items-center gap-2 mb-3">
+      <Truck size={16} color={C.accent} strokeWidth={2} />
+      <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
+        {TN_DELIVERY.title}
+      </span>
+    </div>
+    <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.6 }}>{TN_DELIVERY.full}</p>
+    <ul className="mt-4 space-y-2">
+      {[
+        `Visit completed by ${TN_DELIVERY.cutoff} on ${TN_DELIVERY.eligibleDays}`,
+        "Prescription approved and filled by the pharmacy",
+        "Tennessee shipping address on an eligible medication",
+        "Carrier, weather, and controlled-substance rules can change timing",
+      ].map((item) => (
+        <li key={item} className="flex items-start gap-2">
+          <Check size={14} color={C.accent} strokeWidth={2} className="flex-shrink-0" style={{ marginTop: 3 }} />
+          <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{item}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Header
 // ─────────────────────────────────────────────────────────────────────────────
-const Header = ({ go, cartCount, dark, user }) => {
+const Header = ({ go, cartCount, dark, user, glass = false }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
   const fg = dark ? C.paper : C.ink;
   const navItems = [
-    { label: "Protocols", view: "landing-conditions" },
+    { label: "How it works", view: "how" },
+    { label: "Care options", view: "landing-conditions" },
+    ...(FEATURES.enableShop ? [{ label: "Shop", view: "marketplace" }] : []),
     { label: "Refills", view: "refills" },
-    { label: "Stack", view: "marketplace" },
-    { label: "System", view: "how" },
     ...(user ? [{ label: "Dashboard", view: "dashboard" }] : []),
   ];
+  const goNav = (view) => {
+    setMenuOpen(false);
+    if (view === "signin") go("signin", { returnTo: "dashboard" });
+    else go(view);
+  };
   return (
-    <header className="w-full px-6 md:px-12 py-5 flex items-center justify-between"
-      style={{ borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.1)" : C.lineSoft}` }}>
-      <button onClick={() => go("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
-      <nav className="hidden md:flex items-center gap-8">
-        {navItems.map((item) => (
-          <button key={item.label} onClick={() => go(item.view)}
-            className="focus-ring rounded text-sm transition-opacity hover:opacity-60"
+    <header className="relative w-full px-6 md:px-12 py-5"
+      style={{
+        borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}`,
+        background: glass ? "rgba(0,0,0,0.28)" : undefined,
+        backdropFilter: glass ? "blur(12px)" : undefined,
+      }}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="focus-ring md:hidden rounded p-2"
+            style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt, color: fg }}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+          >
+            {menuOpen ? <X size={18} strokeWidth={1.75} /> : <Menu size={18} strokeWidth={1.75} />}
+          </button>
+          <button onClick={() => goNav("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
+        </div>
+        <nav className="hidden md:flex items-center gap-8">
+          {navItems.map((item) => (
+            <button key={item.label} onClick={() => goNav(item.view)}
+              className="focus-ring rounded text-sm transition-opacity hover:opacity-60"
+              style={{
+                color: item.view === "dashboard" ? C.accent : fg,
+                fontWeight: item.view === "dashboard" ? 600 : 500,
+              }}>{item.label}</button>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => goNav(user ? "dashboard" : "signin")}
+            className="focus-ring inline-flex items-center gap-2 rounded-lg px-3 py-2 transition-colors"
             style={{
-              color: item.view === "dashboard" ? C.accent : fg,
-              fontWeight: item.view === "dashboard" ? 600 : 500,
-            }}>{item.label}</button>
-        ))}
-      </nav>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => go(user ? "dashboard" : "signin", user ? {} : { returnTo: "dashboard" })}
-          className="focus-ring inline-flex items-center gap-2 rounded-full px-3 py-2 transition-colors"
-          style={{
-            background: user ? C.accent : (dark ? "rgba(255,255,255,0.08)" : C.bgAlt),
-            color: user ? "#04120e" : fg,
-          }}
-          aria-label={user ? "Open patient dashboard" : "Sign in to dashboard"}>
-          <User size={18} strokeWidth={1.75} color={user ? "#04120e" : fg} />
-          <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 600, color: user ? "#04120e" : fg }}>
-            {user ? "Dashboard" : "Sign in"}
-          </span>
-        </button>
-        <button onClick={() => go("marketplace")} className="focus-ring relative rounded-full p-2 transition-colors"
-          style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}>
-          <ShoppingBag size={18} strokeWidth={1.75} color={fg} />
-          {cartCount > 0 && (
-            <span className="mono absolute -top-1 -right-1 flex items-center justify-center"
-              style={{ background: C.accent, color: "#fff", fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
-          )}
-        </button>
+              background: user ? C.accent : (dark ? "rgba(255,255,255,0.08)" : C.bgAlt),
+              color: user ? "#FFFFFF" : fg,
+            }}
+            aria-label={user ? "Open patient dashboard" : "Sign in to dashboard"}>
+            <User size={18} strokeWidth={1.75} color={user ? "#FFFFFF" : fg} />
+            <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 600, color: user ? "#FFFFFF" : fg }}>
+              {user ? "Dashboard" : "Sign in"}
+            </span>
+          </button>
+          {FEATURES.enableShop ? (
+            <button onClick={() => goNav("marketplace")} className="focus-ring relative rounded-lg p-2 transition-colors"
+              style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}
+              aria-label="Open shop">
+              <ShoppingBag size={18} strokeWidth={1.75} color={fg} />
+              {cartCount > 0 && (
+                <span className="mono absolute -top-1 -right-1 flex items-center justify-center"
+                  style={{ background: C.accent, color: "#fff", fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
+              )}
+            </button>
+          ) : null}
+        </div>
       </div>
+      {menuOpen ? (
+        <nav
+          id="mobile-nav"
+          className="md:hidden mt-4 flex flex-col gap-1 rounded-lg p-2"
+          style={{ background: dark ? "rgba(255,255,255,0.06)" : C.paper, border: `1px solid ${C.line}` }}
+        >
+          {navItems.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => goNav(item.view)}
+              className="focus-ring rounded-md px-3 py-3 text-left text-sm font-medium"
+              style={{ color: item.view === "dashboard" ? C.accent : fg }}
+            >
+              {item.label}
+            </button>
+          ))}
+          {!user ? (
+            <button
+              type="button"
+              onClick={() => goNav("signin")}
+              className="focus-ring rounded-md px-3 py-3 text-left text-sm font-semibold"
+              style={{ color: C.accent }}
+            >
+              Sign in
+            </button>
+          ) : null}
+        </nav>
+      ) : null}
     </header>
   );
 };
@@ -699,208 +834,219 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
-const Landing = ({ go }) => {
-  const [chatDocked, setChatDocked] = useState(false);
-
-  return (
+const Landing = ({ go }) => (
   <div className="anim-fadeIn relative">
-    {/* ISS orbital Earth — fixed center of viewport, far background */}
-    <div
-      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
-      aria-hidden="true"
-    >
-      <img
-        src={imgEarthSpace}
-        alt=""
-        className="earth-distant select-none"
-        style={{
-          width: "min(110vw, 1400px)",
-          height: "min(72vh, 780px)",
-          opacity: 0.55,
-          filter: "saturate(1.05) brightness(0.88) contrast(1.12)",
-          maskImage:
-            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 72% 58% at 50% 52%, rgba(0,0,0,1) 18%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0.35) 62%, transparent 78%)",
-        }}
-      />
-      {/* Soft space vignette so the curved limb reads like a station window view */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 55% 48% at 50% 50%, transparent 0%, rgba(5,5,5,0.25) 55%, rgba(5,5,5,0.72) 100%)",
-        }}
-      />
-    </div>
+    <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
 
-    {/* Hero — full-bleed signal field, brand-first, content-height */}
-    <section className="grain relative z-10 overflow-hidden" style={{ background: "transparent", minHeight: chatDocked ? undefined : "min(100svh, 820px)" }}>
-      <div className="absolute inset-0 pointer-events-none">
-        <SignalField density={40} />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(105deg, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.18) 36%, rgba(5,5,5,0.04) 50%, rgba(5,5,5,0.22) 64%, rgba(5,5,5,0.7) 100%), linear-gradient(180deg, rgba(5,5,5,0.28) 0%, transparent 45%, rgba(5,5,5,0.9) 100%)",
-          }}
-        />
-      </div>
+    <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
-        className="relative z-10 max-w-7xl mx-auto px-6 md:px-12"
-        style={{ minHeight: chatDocked ? undefined : "inherit", paddingTop: "clamp(110px, 16vh, 160px)", paddingBottom: "clamp(72px, 10vh, 110px)" }}
-      >
-        <div className={`grid gap-8 md:gap-10 lg:gap-14 items-center ${chatDocked ? "" : "md:grid-cols-2"}`}>
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.04) 100%)" }}
+      />
+      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
+        <SignalField density={28} interactive={false} />
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
+        <div className="grid gap-10 lg:gap-14 items-center md:grid-cols-2">
           <div className="flex flex-col justify-center">
-            <div className="spry-rise display" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700, color: C.ink, letterSpacing: "-0.03em", marginBottom: 10 }}>
-              Spry<span style={{ color: C.accent, fontWeight: 600 }}>MD</span>
-            </div>
             <p
-              className="spry-rise mono"
+              className="spry-rise"
               style={{
-                animationDelay: "0.04s",
-                fontSize: 11,
-                letterSpacing: "0.14em",
+                fontSize: 13,
+                letterSpacing: "0.1em",
                 color: C.accent,
                 textTransform: "uppercase",
-                marginBottom: 18,
+                fontWeight: 700,
+                marginBottom: 16,
               }}
             >
-              Keeping you spry — youthful, active, alive
+              Modern medicine, made for men
             </p>
             <h1
               className="spry-rise display"
               style={{
-                animationDelay: "0.08s",
-                fontSize: "clamp(42px, 7.2vw, 88px)",
-                lineHeight: 0.96,
+                animationDelay: "0.06s",
+                fontSize: "clamp(40px, 6.4vw, 72px)",
+                lineHeight: 0.98,
                 fontWeight: 700,
                 color: C.ink,
-                maxWidth: chatDocked ? 900 : 560,
-                marginBottom: 22,
+                maxWidth: 620,
+                marginBottom: 20,
               }}
             >
-              Operate at your <span className="signal-underline">ceiling</span>.
+              Men’s telehealth, built for <span className="signal-underline">Tennessee</span>.
             </h1>
             <p
               className="spry-rise"
               style={{
-                animationDelay: "0.16s",
+                animationDelay: "0.12s",
                 fontSize: "clamp(16px, 2vw, 19px)",
-                lineHeight: 1.5,
+                lineHeight: 1.55,
                 color: C.inkSoft,
-                maxWidth: 440,
-                marginBottom: 34,
+                maxWidth: 480,
+                marginBottom: 28,
               }}
             >
-              Precision protocols for people who treat health like infrastructure — clinician-supervised, continuously monitored, discreetly delivered.
+              Licensed doctors. Private visits. Treatment that ships to your door when it’s clinically appropriate.
             </p>
-            <div className="spry-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "0.24s" }}>
-              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
-              <Btn onClick={() => go("how")} size="lg" variant="secondary">How it works</Btn>
-              <Btn onClick={() => go("dashboard")} size="lg" variant="ghost">Open dashboard</Btn>
+            <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
+              <DeliveryHeroNote />
+            </div>
+            <div className="spry-rise flex flex-wrap gap-x-5 gap-y-2 mt-6" style={{ animationDelay: "0.28s" }}>
+              {["Licensed clinical care", "Private & discreet", "No waiting rooms"].map((item) => (
+                <div key={item} className="inline-flex items-center gap-2">
+                  <Check size={14} color={C.accent} strokeWidth={2.25} />
+                  <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{item}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div
-            className="relative flex items-stretch justify-center md:justify-end"
-            style={chatDocked ? { position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" } : undefined}
-          >
-            <ISpryChat onAction={() => go("landing-conditions")} onDockChange={setChatDocked} />
+          <div className="relative overflow-hidden rounded-3xl" style={{ border: `1px solid ${C.line}`, height: "min(520px, 78vw)" }}>
+            <img
+              src={imgLifestyleHero}
+              alt="A man on a Tennessee porch at golden hour — confident, at home, not in a clinic"
+              className="absolute inset-0 w-full h-full object-cover ken-burns"
+              style={{ objectPosition: "center 28%" }}
+            />
+            <div className="absolute inset-x-0 bottom-0 p-5 md:p-6" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.88) 55%)" }}>
+              <p style={{ fontSize: 15, color: "#fff", lineHeight: 1.45, maxWidth: 420 }}>
+                “I started after work in Nashville. A real doctor reviewed my case — no waiting room.”
+              </p>
+              <p className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.accent, marginTop: 8, fontWeight: 700 }}>
+                Marcus · Nashville, TN
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="hero-rail relative z-10 px-6 md:px-12 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 overflow-hidden">
-          <span className="mono shrink-0 breath-glow" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
-            ● LIVE
-          </span>
-          <TelemetryStrip className="flex-1 min-w-0" />
         </div>
       </div>
     </section>
 
-    {/* Brand definition */}
-    <section className="relative z-10 px-6 md:px-12 py-16 md:py-20" style={{ background: "rgba(5,5,5,0.88)", borderBottom: `1px solid ${C.line}` }}>
-      <div className="max-w-3xl mx-auto text-center">
-        <p className="display" style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 600, color: C.ink, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
-          We specialize in keeping you <span style={{ color: C.accent }}>Spry</span>.
-        </p>
-        <div className="mx-auto mt-8 max-w-xl text-left" style={{ borderTop: `1px solid ${C.line}`, paddingTop: 22 }}>
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
-            <span className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink }}>spry</span>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: "uppercase" }}>/ sprī /</span>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.muted, textTransform: "uppercase" }}>adjective</span>
+    <section id="how" className="px-6 md:px-12 py-14 md:py-16" style={{ background: C.bgAlt, borderTop: `1px solid ${C.line}` }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div>
+            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>How it works</span>
+            <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, marginTop: 10, color: C.ink, fontWeight: 650 }}>
+              Choose care → clinician review → treatment shipped.
+            </h2>
           </div>
-          <p style={{ fontSize: 17, lineHeight: 1.55, color: C.inkSoft }}>
-            Active, lively, and youthful in body and mind — the kind of health that keeps you sharp, strong, and ready for what’s next.
-          </p>
-          <p style={{ fontSize: 14, lineHeight: 1.55, color: C.muted, marginTop: 12 }}>
-            At SpryMD, that isn’t a mood. It’s the outcome we engineer with clinician-supervised protocols.
+          <p style={{ fontSize: 15, color: C.inkSoft, maxWidth: 320, lineHeight: 1.5 }}>
+            Three steps. No waiting room. A licensed clinician still has to approve every prescription.
           </p>
         </div>
-      </div>
-    </section>
-
-    {/* System */}
-    <section id="how" className="px-6 md:px-12 py-16 md:py-24 relative overflow-hidden" style={{ background: C.bgAlt }}>
-      <div className="absolute inset-0 opacity-40 pointer-events-none" aria-hidden="true">
-        <HexMesh />
-      </div>
-      <div className="max-w-7xl mx-auto relative z-10">
-        <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>The system</span>
-        <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600, maxWidth: 720 }}>
-          A closed loop for peak output.
-        </h2>
-        <div className="hairline-in mt-5" style={{ height: 1, maxWidth: 120, background: C.accent, opacity: 0.7 }} />
-        <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 18, maxWidth: 520, lineHeight: 1.55 }}>
-          Assess. Interpret. Optimize. Every protocol is signed by a licensed clinician and tracked over time.
-        </p>
-        <div className="grid md:grid-cols-3 gap-0 mt-14" style={{ borderTop: `1px solid ${C.line}` }}>
-          {[{ n: "01", t: "Baseline assessment", d: "A clinically validated intake. Five minutes. No waiting room. No small talk." },
-            { n: "02", t: "Clinician interpretation", d: "A licensed provider reviews your case within 24 hours and writes the protocol." },
-            { n: "03", t: "Continuous optimization", d: "Compounded fulfillment, discreet shipping, and ongoing dose adjustments from your dashboard." }].map((s, i) => (
-            <div key={s.n} className="anim-fadeUp py-10 md:pr-10 relative" style={{ borderBottom: `1px solid ${C.line}`, borderRight: i < 2 ? `1px solid ${C.line}` : "none", animationDelay: `${i * 0.08}s` }}>
-              <div className="mono" style={{ fontSize: 12, letterSpacing: "0.16em", color: C.accent, marginBottom: 16 }}>{s.n}</div>
-              <h3 className="display" style={{ fontSize: 26, fontWeight: 600, marginBottom: 12, color: C.ink }}>{s.t}</h3>
-              <p style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft, maxWidth: 320 }}>{s.d}</p>
+        <div className="grid md:grid-cols-3 gap-3">
+          {[
+            { n: "01", t: "Choose care", d: "Pick a visit and answer a short, private intake." },
+            { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case before anything ships." },
+            { n: "03", t: "Treatment shipped", d: "If approved and filled, qualifying Tennessee orders can move next business day." },
+          ].map((s) => (
+            <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
+              <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
+              <h3 className="display" style={{ fontSize: 22, fontWeight: 600, marginTop: 10, color: C.ink }}>{s.t}</h3>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: C.inkSoft, marginTop: 8 }}>{s.d}</p>
             </div>
           ))}
+        </div>
+        <div className="mt-6">
+          <DeliveryDetailsCard />
+        </div>
+      </div>
+    </section>
+
+    <section className="px-6 md:px-12 py-14 md:py-20" style={{ background: C.bg }}>
+      <div className="max-w-7xl mx-auto">
+        <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Social proof</span>
+        <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, marginTop: 10, marginBottom: 28, color: C.ink, fontWeight: 650 }}>
+          Built here. Reviewed by a real physician.
+        </h2>
+        <div className="grid md:grid-cols-3 gap-3 mb-6">
+          {[
+            { q: "Private, straightforward, and a doctor actually reviewed my case. That’s what I wanted.", a: "Daniel · Knoxville, TN" },
+            { q: "Finished the visit after work. No waiting room, no awkward small talk.", a: "Marcus · Nashville, TN" },
+            { q: "Packaging was discreet and messaging the care team was easy. Felt local, not like a national mill.", a: "James · Memphis, TN" },
+          ].map((r) => (
+            <div key={r.a} className="p-5 md:p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <div className="flex gap-1 mb-3">
+                {[0, 1, 2, 3, 4].map((i) => <Star key={i} size={13} color={C.accent} fill={C.accent} />)}
+              </div>
+              <p style={{ fontSize: 15, color: C.ink, lineHeight: 1.5 }}>“{r.q}”</p>
+              <p className="mono" style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: C.muted, marginTop: 14, fontWeight: 600 }}>{r.a}</p>
+            </div>
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          <div className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                <Stethoscope size={20} color={C.accent} />
+              </div>
+              <div>
+                <div className="display" style={{ fontSize: 20, fontWeight: 600, color: C.ink }}>Licensed clinical care</div>
+                <div style={{ fontSize: 13, color: C.inkSoft }}>A licensed clinician reviews every case before treatment ships</div>
+              </div>
+            </div>
+            <div className="space-y-2 mb-5">
+              {["Independent medical review on every visit", "Treatment only when clinically appropriate", "Private telehealth — no waiting rooms"].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <Check size={14} color={C.accent} />
+                  <span style={{ fontSize: 14, color: C.inkSoft }}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <Btn onClick={() => go("page", { slug: "clinicians" })} size="md" variant="secondary" icon={ArrowRight}>How we practice</Btn>
+          </div>
+          <div className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                <MapPin size={20} color={C.accent} />
+              </div>
+              <div>
+                <div className="display" style={{ fontSize: 20, fontWeight: 600, color: C.ink }}>Tennessee service area</div>
+                <div style={{ fontSize: 13, color: C.inkSoft }}>We currently care for patients located in Tennessee</div>
+              </div>
+            </div>
+            <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 18 }}>
+              Questions about your visit, shipping, or account? Email <strong style={{ color: C.ink }}>support@sprymd.ai</strong> — we aim to reply within one business day. For emergencies, call 911.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Btn onClick={() => go("page", { slug: "contact" })} size="md" icon={ArrowRight}>Contact support</Btn>
+              <Btn onClick={() => go("page", { slug: "about" })} size="md" variant="ghost">About SpryMD</Btn>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     {/* Signal domains */}
     <section className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="absolute right-[-8%] top-[10%] pointer-events-none opacity-50 hidden md:block" aria-hidden="true">
-        <OrbitRings size={520} />
-      </div>
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
           <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Signal</span>
-            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600 }}>
-              Signal over symptoms.
+            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>What we help with</span>
+            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
+              Care for real life goals.
             </h2>
           </div>
-          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 15, lineHeight: 1.55 }}>
-            Domains we instrument continuously — so decisions replace guesswork.
+          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 16, lineHeight: 1.55 }}>
+            Pick the area that matters most. We keep the plan clear and follow up with you.
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-px" style={{ background: C.line, border: `1px solid ${C.line}` }}>
-          {[{ t: "Metabolic", d: "GLP-1, composition, glucose trajectory", c: "01" },
-            { t: "Hormonal", d: "Testosterone, titration, fertility path", c: "02" },
-            { t: "Cognitive", d: "Focus, mood, anxiety protocols", c: "03" },
-            { t: "Recovery", d: "Sleep architecture, apnea gear", c: "04" },
-            { t: "Performance", d: "ED, vitality, training support", c: "05" },
-            { t: "Primary care", d: "Your Spry clinician as PCP", c: "06" }].map((d) => (
+          {[{ t: "Weight", d: "Lose weight safely with doctor support", c: "01" },
+            { t: "Energy", d: "Feel stronger and less run-down", c: "02" },
+            { t: "Mood", d: "Feel calmer and more focused", c: "03" },
+            { t: "Sleep", d: "Rest better and wake up ready", c: "04" },
+            { t: "Men's care", d: "Sexual health and confidence", c: "05" },
+            { t: "Everyday care", d: "A doctor for checkups and questions", c: "06" }].map((d) => (
             <div key={d.t} className="p-6 md:p-8 group relative transition-colors" style={{ background: C.bg }}>
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ background: "radial-gradient(ellipse at top left, rgba(30,200,165,0.07), transparent 60%)" }} />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ background: "radial-gradient(ellipse at top left, rgba(232,119,34,0.10), transparent 60%)" }} />
               <div className="flex items-center justify-between mb-10 relative">
-                <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: "uppercase" }}>{d.t}</div>
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>{d.c}</span>
+                <div style={{ fontSize: 13, letterSpacing: "0.08em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>{d.t}</div>
+                <span style={{ fontSize: 12, color: C.muted, letterSpacing: "0.08em", fontWeight: 600 }}>{d.c}</span>
               </div>
-              <div className="relative" style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.45 }}>{d.d}</div>
+              <div className="relative" style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.45 }}>{d.d}</div>
             </div>
           ))}
         </div>
@@ -912,13 +1058,13 @@ const Landing = ({ go }) => {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
           <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Protocols</span>
-            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600 }}>
-              Choose your <Mark>focus</Mark>.
+            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Care options</span>
+            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
+              Choose what you want help with.
             </h2>
           </div>
-          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 15, lineHeight: 1.55 }}>
-            Each protocol is evidence-based, preference-aware, and reviewed by a board-certified clinician within 24 hours.
+          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 16, lineHeight: 1.55 }}>
+            Every plan is checked by a licensed doctor before anything is sent to you.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-3 md:gap-4">
@@ -931,53 +1077,50 @@ const Landing = ({ go }) => {
 
     {/* PCP */}
     <section id="pcp" className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none opacity-60" aria-hidden="true">
+      <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none opacity-45" aria-hidden="true">
         <GridHorizon className="w-full h-full" />
       </div>
       <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center relative z-10">
         <div className="md:col-span-6">
-          <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Primary care</span>
-          <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 56px)", lineHeight: 1.02, marginTop: 14, color: C.ink, fontWeight: 600 }}>
-            Want Spry to be your <Mark>PCP</Mark>?
+          <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Your doctor</span>
+          <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
+            Want a doctor you can reach anytime?
           </h2>
-          <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 18, lineHeight: 1.55, maxWidth: 480 }}>
-            One clinician who knows your chart. Annual wellness, labs, chronic care, referrals, and same-day messaging — on the same account as your protocols.
+          <p style={{ fontSize: 17, color: C.inkSoft, marginTop: 18, lineHeight: 1.55, maxWidth: 480 }}>
+            Get checkups, lab reviews, everyday care, and quick messages — all in one place with the same doctor who knows your story.
           </p>
           <div className="mt-8 space-y-3">
-            {["Dedicated clinician continuity", "Annual wellness + lab review", "Unlimited secure messaging", "Referrals and renewals"].map((item) => (
+            {["One doctor who knows you", "Yearly checkup and lab review", "Message when you need help", "Help finding specialists"].map((item) => (
               <div key={item} className="flex items-center gap-3">
                 <Check size={16} strokeWidth={2} color={C.accent} />
-                <span style={{ fontSize: 15, color: C.inkSoft }}>{item}</span>
+                <span style={{ fontSize: 16, color: C.inkSoft }}>{item}</span>
               </div>
             ))}
           </div>
           <div className="flex flex-wrap gap-3 mt-10">
-            <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Make Spry my PCP</Btn>
-            <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">View protocols</Btn>
+            <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Get my doctor</Btn>
+            <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">See care options</Btn>
           </div>
         </div>
         <div className="md:col-span-6">
           <div className="instrument-panel rounded-2xl overflow-hidden">
             <div className="relative h-52 overflow-hidden flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center justify-center opacity-80">
-                <OrbitRings size={280} />
-              </div>
-              <ScanFrame className="absolute inset-4" label="PCP // LINKED" />
+              <ScanFrame className="absolute inset-4" label="Doctor linked" />
               <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
-                <div className="rounded-full flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                <div className="rounded-lg flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
                   <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
                 </div>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Licensed clinician care</span>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Doctor care online</span>
               </div>
             </div>
             <div className="p-7 md:p-8 relative z-10">
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Membership from</div>
+              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
               <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
                 $49<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
               </div>
               <div className="mt-6 space-y-4">
                 {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
-                  { t: "PCP + Annual Labs", d: "$99/mo · full panel included", tag: "Best value" },
+                  { t: "Doctor + yearly labs", d: "$99/mo · full blood work included", tag: "Best value" },
                   { t: "Household", d: "$129/mo · two adults", tag: null }].map((tier) => (
                   <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
                     <div>
@@ -996,57 +1139,60 @@ const Landing = ({ go }) => {
       </div>
     </section>
 
-    {/* Marketplace */}
-    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
-          <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(5,5,5,0.94) 0%, rgba(5,5,5,0.55) 55%, rgba(5,5,5,0.25) 100%)" }} />
-          <div className="absolute inset-0 opacity-30 pointer-events-none"><HexMesh /></div>
-          <ScanFrame className="absolute inset-3 md:inset-5" label="STACK // READY" />
-          <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Stack</span>
-            <h2 className="display" style={{ fontSize: "clamp(30px, 4.5vw, 48px)", lineHeight: 1, marginTop: 12, color: C.ink, fontWeight: 600, maxWidth: 520 }}>
-              Clinician-curated. <Mark>Ready to ship</Mark>.
-            </h2>
-            <div className="mt-6">
-              <Btn onClick={() => go("marketplace")} icon={ArrowRight}>Shop the stack</Btn>
+    {FEATURES.enableShop ? (
+      <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
+            <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.25) 100%)" }} />
+            <ScanFrame className="absolute inset-3 md:inset-5" label="Shop ready" />
+            <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
+              <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Shop</span>
+              <h2 className="display" style={{ fontSize: "clamp(30px, 4.5vw, 48px)", lineHeight: 1.05, marginTop: 12, color: C.ink, fontWeight: 650, maxWidth: 520 }}>
+                Healthy extras, <Mark>ready to ship</Mark>.
+              </h2>
+              <div className="mt-6">
+                <Btn onClick={() => go("marketplace")} icon={ArrowRight}>Browse the shop</Btn>
+              </div>
             </div>
           </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {products.filter((p) => p.badge).slice(0, 4).map((p) => <MiniProduct key={p.id} p={p} onClick={() => go("marketplace")} />)}
+          </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {products.filter((p) => p.badge).slice(0, 4).map((p) => <MiniProduct key={p.id} p={p} onClick={() => go("marketplace")} />)}
-        </div>
-      </div>
-    </section>
+      </section>
+    ) : null}
 
     {/* Close */}
-    <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="absolute inset-0 pointer-events-none opacity-70">
+    <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: "transparent" }}>
+      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.28 }}>
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.92) 70%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.48) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 600, marginBottom: 24 }}>
+        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
           Spry<span style={{ color: C.accent }}>MD</span>
         </div>
-        <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 1.08, fontWeight: 600, color: C.ink }}>
-          A licensed clinician signs every protocol — and stays reachable.
+        <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 52px)", lineHeight: 1.12, fontWeight: 650, color: C.ink }}>
+          A real doctor is with you every step.
         </h2>
-        <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 20, maxWidth: 480, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
-          No vending-machine medicine. Infrastructure for people who refuse average.
+        <p style={{ fontSize: 17, color: C.inkSoft, marginTop: 20, maxWidth: 480, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
+          Clear plans. Private care. Help that fits your life — not a waiting room.
         </p>
         <div className="flex flex-wrap justify-center gap-3 mt-10">
-          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Begin protocol</Btn>
-          <Btn onClick={() => go("marketplace")} size="lg" variant="secondary">Browse the stack</Btn>
+          <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
+          {FEATURES.enableShop ? (
+            <Btn onClick={() => go("marketplace")} size="lg" variant="secondary">Browse the shop</Btn>
+          ) : (
+            <Btn onClick={() => go("refills")} size="lg" variant="secondary">Quick refills</Btn>
+          )}
         </div>
       </div>
     </section>
 
     <Footer go={go} />
   </div>
-  );
-};
+);
 
 const ConditionCard = ({ condition, onClick, delay }) => {
   const [hover, setHover] = useState(false);
@@ -1106,9 +1252,14 @@ const MiniProduct = ({ p, onClick }) => {
 };
 
 const footerColumns = [
-  { h: "Protocols", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
-  { h: "Stack", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
-  { h: "Company", l: ["About", "Clinicians", "Press", "Contact"] },
+  { h: "Care plans", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+  {
+    h: FEATURES.enableShop ? "Shop" : "Pharmacy",
+    l: FEATURES.enableShop
+      ? ["Quick Refills", "Supplements", "Devices", "Sleep"]
+      : ["Quick Refills"],
+  },
+  { h: "Company", l: ["About", "Doctors", "Press", "Contact"] },
 ];
 
 const Footer = ({ go }) => (
@@ -1117,7 +1268,7 @@ const Footer = ({ go }) => (
       <div>
         <Logo />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
-          Performance medicine infrastructure. Licensed clinicians. Compounded by Empower Pharmacy. Not a substitute for emergency care.
+          Modern medicine, made for men. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
         </p>
       </div>
       {footerColumns.map((col) => (
@@ -1170,7 +1321,8 @@ const RichText = ({ text }) => {
 
 const FooterPage = ({ slug, go, cartCount, user }) => {
   const page = footerPages[slug];
-  if (!page) {
+  const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+  if (!page || (!FEATURES.enableShop && shopStackSlugs.has(slug))) {
     return (
       <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
         <Header go={go} cartCount={cartCount} user={user} />
@@ -1189,6 +1341,10 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
       return;
     }
     if (page.ctaTarget === "marketplace") {
+      if (!FEATURES.enableShop) {
+        go("landing");
+        return;
+      }
       go("marketplace", { filter: page.marketplaceFilter && page.marketplaceFilter !== "null" ? page.marketplaceFilter : "All" });
       return;
     }
@@ -1322,6 +1478,37 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Sign in / Sign up — per-customer account gate
 // ─────────────────────────────────────────────────────────────────────────────
+const AUTH_THEME_KEY = "sprymd_auth_theme";
+
+const authThemes = {
+  dark: {
+    bg: "transparent",
+    ink: "#FFFFFF",
+    inkSoft: "#D6D6D6",
+    muted: "#8F8F8F",
+    line: "#2A2A2A",
+    lineSoft: "#1A1A1A",
+    inputBg: "#0C0C0C",
+    errorBg: "rgba(226,85,85,0.12)",
+    errorBorder: "rgba(226,85,85,0.35)",
+    noticeBg: "rgba(232,119,34,0.16)",
+    noticeBorder: "#B85510",
+  },
+  light: {
+    bg: "#E8EAED",
+    ink: "#111111",
+    inkSoft: "#3A3A3A",
+    muted: "#6A6A6A",
+    line: "#C8CCD2",
+    lineSoft: "#D5D8DD",
+    inputBg: "#FFFFFF",
+    errorBg: "rgba(226,85,85,0.08)",
+    errorBorder: "rgba(226,85,85,0.28)",
+    noticeBg: "rgba(232,119,34,0.10)",
+    noticeBorder: "#E87722",
+  },
+};
+
 const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
@@ -1331,124 +1518,187 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [playCount, setPlayCount] = useState(1);
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem(AUTH_THEME_KEY) === "light" ? "light" : "dark";
+    } catch {
+      return "dark";
+    }
+  });
+  const animResolveRef = useRef(null);
+  const T = authThemes[theme];
+  const isLight = theme === "light";
 
   const canSubmit = email.includes("@") && password.length >= 8 &&
     (mode === "signin" || (name.trim().length > 0 && dob.length >= 8));
 
-  const submit = async () => {
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      try { localStorage.setItem(AUTH_THEME_KEY, next); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
+  const handleLaserComplete = () => {
+    if (animResolveRef.current) {
+      animResolveRef.current();
+      animResolveRef.current = null;
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!canSubmit || loading) return;
     setLoading(true);
     setError("");
     setNotice("");
+    setPlayCount((c) => c + 1);
+
+    let resolveAnim = () => {};
+    const animationDonePromise = new Promise((resolve) => {
+      resolveAnim = resolve;
+      animResolveRef.current = resolve;
+    });
+    const animSafety = window.setTimeout(() => resolveAnim(), 4100);
+
+    const authPromise =
+      mode === "signup"
+        ? signUpCustomer({ email, password, name, dob })
+        : signInCustomer({ email, password });
+
     try {
+      const [result] = await Promise.all([authPromise, animationDonePromise]);
       if (mode === "signup") {
-        const { profile, needsEmailConfirm } = await signUpCustomer({ email, password, name, dob });
-        onAuthSuccess(hydrateUser(profile));
-        if (needsEmailConfirm) {
+        onAuthSuccess(hydrateUser(result.profile));
+        if (result.needsEmailConfirm) {
           setNotice("Account created. Check your email to confirm — you can keep using your account now.");
         }
-        go(returnTo || "dashboard", { justLoggedIn: true });
       } else {
-        const { profile } = await signInCustomer({ email, password });
-        onAuthSuccess(hydrateUser(profile));
-        go(returnTo || "dashboard", { justLoggedIn: true });
+        onAuthSuccess(hydrateUser(result.profile));
       }
-    } catch (e) {
-      setError(e?.message || "Unable to authenticate. Try again.");
-    } finally {
+      go(returnTo || "dashboard", { justLoggedIn: true });
+    } catch (err) {
+      resolveAnim();
+      setError(err?.message || "Unable to authenticate. Try again.");
       setLoading(false);
+    } finally {
+      window.clearTimeout(animSafety);
+      animResolveRef.current = null;
     }
   };
 
+  const themedInput = {
+    ...inputStyle,
+    background: T.inputBg,
+    border: `1px solid ${T.line}`,
+    color: T.ink,
+  };
+
+  const iconBtn = {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    border: `1px solid ${T.line}`,
+    background: isLight ? "#FFFFFF" : "transparent",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
   return (
-    <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
-      <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded"><Logo /></button>
-        <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60">
-          <X size={20} color={C.ink} strokeWidth={1.5} />
+    <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: T.bg, color: T.ink, transition: "background 0.25s ease, color 0.25s ease" }}>
+      <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${T.lineSoft}` }}>
+        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home">
+          <Logo color={T.ink} />
         </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="focus-ring hover:opacity-80 transition-opacity"
+            style={iconBtn}
+            aria-label={isLight ? "Switch to dark background" : "Switch to light background"}
+            title={isLight ? "Dark" : "Light"}
+          >
+            {isLight ? <Moon size={16} color={T.ink} strokeWidth={1.75} /> : <Sun size={16} color={T.ink} strokeWidth={1.75} />}
+          </button>
+          <button onClick={() => go("landing")} className="focus-ring hover:opacity-80 transition-opacity" style={iconBtn} aria-label="Close">
+            <X size={16} color={T.ink} strokeWidth={1.75} />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-stretch">
-          <div className="hidden md:block rounded-3xl overflow-hidden relative instrument-panel min-h-[480px]">
-            <SignalField density={40} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,5,5,0.15) 0%, rgba(5,5,5,0.85) 100%)" }} />
-            <ScanFrame className="absolute inset-5" label="AUTH // SECURE" />
-            <div className="absolute left-7 right-7 bottom-7 z-10">
-              <div className="mb-6 opacity-80"><OrbitRings size={160} /></div>
-              <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.accent, textTransform: "uppercase" }}>Your account</p>
-              <p style={{ fontSize: 20, lineHeight: 1.3, color: C.ink, marginTop: 10 }}>
-                Sign in to open your patient dashboard — clinical terminal, wearables, goals, refills, and orders.
-              </p>
-            </div>
-          </div>
-          <div className="w-full max-w-md md:max-w-none md:px-2">
-          <div className="anim-fadeUp">
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
-              {mode === "signin" ? "Welcome back" : "Create account"}
-            </span>
-            <h1 className="display" style={{ fontSize: "clamp(36px, 5vw, 52px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 12 }}>
-              {mode === "signin" ? <>Sign in to your <Mark>dashboard</Mark>.</> : <>Create your <Mark>SpryMD</Mark> account.</>}
-            </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55 }}>
-              {mode === "signin"
-                ? "Each login opens only your medical record, prescriptions, and order history."
-                : "One email, one account. Your care plan and pharmacy history stay private to you."}
+      <div className="flex-1 flex items-center justify-center px-6 py-10 md:py-16">
+        <div className="w-full max-w-[380px] anim-fadeUp">
+          <LaserLogo play={playCount} onComplete={handleLaserComplete} className="mb-9" />
+
+          <div className="mb-8">
+            <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
+              {mode === "signin" ? "Sign in" : "Create account"}
             </p>
-
-            <div className="space-y-4">
-              {mode === "signup" && (
-                <>
-                  <Field label="Full legal name">
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="William B Merrick" className="focus-ring w-full p-4" style={inputStyle} />
-                  </Field>
-                  <Field label="Date of birth">
-                    <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={inputStyle} />
-                  </Field>
-                </>
-              )}
-              <Field label="Email">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} autoComplete="email" />
-              </Field>
-              <Field label="Password">
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={inputStyle} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
-              </Field>
-
-              {error && (
-                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(226,85,85,0.12)", border: `1px solid rgba(226,85,85,0.35)` }}>
-                  <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{error}</span>
-                </div>
-              )}
-              {notice && (
-                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: C.signalDim, border: `1px solid ${C.accentDeep}` }}>
-                  <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{notice}</span>
-                </div>
-              )}
-
-              <Btn onClick={submit} disabled={!canSubmit || loading} size="lg" className="w-full">
-                {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                         : <>{mode === "signin" ? "Sign in to dashboard" : "Create account & open dashboard"}</>}
-              </Btn>
-
-              <div className="flex items-center gap-2 justify-center pt-2">
-                <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
-              </div>
-            </div>
-
-            <div className="text-center mt-8 pt-8" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
-                className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }}>
-                {mode === "signin"
-                  ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
-                  : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
-              </button>
-            </div>
+            <p style={{ fontSize: 15, color: T.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
+              {mode === "signin"
+                ? "Open your care plan, prescriptions, and orders."
+                : "One email. Your care plan stays private to you."}
+            </p>
           </div>
-        </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === "signup" && (
+              <>
+                <div>
+                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Full legal name</label>
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
+                </div>
+                <div>
+                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Date of birth</label>
+                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
+                </div>
+              </>
+            )}
+            <div>
+              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={themedInput} autoComplete="email" disabled={loading} />
+            </div>
+            <div>
+              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={themedInput} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
+            </div>
+
+            {error && (
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: T.errorBg, border: `1px solid ${T.errorBorder}` }}>
+                <AlertCircle size={16} color={C.destructive} style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>{error}</span>
+              </div>
+            )}
+            {notice && (
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: T.noticeBg, border: `1px solid ${T.noticeBorder}` }}>
+                <Check size={16} color={C.accent} style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>{notice}</span>
+              </div>
+            )}
+
+            <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
+              {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
+                       : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
+            </Btn>
+
+            <div className="flex items-center gap-2 justify-center pt-1">
+              <Lock size={11} color={T.muted} />
+              <span className="mono" style={{ fontSize: 10, color: T.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
+            </div>
+          </form>
+
+          <div className="text-center mt-7 pt-6" style={{ borderTop: `1px solid ${T.lineSoft}` }}>
+            <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
+              className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: T.inkSoft }} disabled={loading}>
+              {mode === "signin"
+                ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
+                : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1511,7 +1761,7 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
           </div>
           <div className="mt-6 flex items-center gap-3 flex-wrap">
             <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} active Rx</Tag>
-            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: Merrick, William DO</Tag>
+            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: SpryMD Clinician</Tag>
             <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />gethealthy.com synced</Tag>
           </div>
         </div>
@@ -1666,6 +1916,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <Logo />
         <button onClick={() => go("refills")} className="focus-ring rounded-full p-1 hover:opacity-60">
@@ -1688,7 +1939,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
               <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 12, fontWeight: 500 }}>Shipping</label>
               <div className="grid grid-cols-2 gap-3">
                 {[{ id: "standard", label: "2nd Day Express", days: hasChilled ? "1–2 days · refrigerated" : "1–2 days", price: hasChilled ? 20 : 15 },
-                  { id: "overnight", label: "Overnight", days: hasChilled ? "Next day · refrigerated" : "Next day", price: hasChilled ? 41 : 33 }].map((s) => (
+                  { id: "overnight", label: "Eligible TN next-business-day", days: hasChilled ? "After fill · refrigerated" : "After approval and fill", price: hasChilled ? 41 : 33 }].map((s) => (
                   <button key={s.id} onClick={() => setShipping(s.id)}
                     className="focus-ring text-left p-4 rounded-xl transition-all"
                     style={{ background: shipping === s.id ? C.primary : C.paper, color: shipping === s.id ? C.paper : C.ink,
@@ -1698,6 +1949,9 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
                     <div className="display" style={{ fontSize: 18, fontWeight: 500, marginTop: 8 }}>${s.price}</div>
                   </button>
                 ))}
+              </div>
+              <div className="mt-4">
+                <DeliveryDetailsCard />
               </div>
             </div>
 
@@ -1928,7 +2182,7 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
 
   const tabs = [
     { id: "overview", label: "Overview" },
-    { id: "protocols", label: "Protocols" },
+    { id: "protocols", label: "Care plans" },
     { id: "orders", label: "Orders" },
     { id: "profile", label: "Profile" },
   ];
@@ -1975,9 +2229,11 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
             <div className="space-y-6 anim-fadeUp">
               <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  { i: RefreshCw, t: "Quick Refills", d: rxs.length ? `${rxs.length} active prescription${rxs.length === 1 ? "" : "s"}` : "No Rx yet — start a protocol", action: () => go(rxs.length ? "refills" : "landing-conditions"), accent: true },
-                  { i: Stethoscope, t: "Start a protocol", d: "Metabolic, hormones, mental health, PCP", action: () => go("landing-conditions") },
-                  { i: ShoppingBag, t: "Shop the stack", d: "Supplements & devices", action: () => go("marketplace") },
+                  { i: RefreshCw, t: "Quick Refills", d: rxs.length ? `${rxs.length} active prescription${rxs.length === 1 ? "" : "s"}` : "No medicine yet — start a care plan", action: () => go(rxs.length ? "refills" : "landing-conditions"), accent: true },
+                  { i: Stethoscope, t: "Start a care plan", d: "Weight, hormones, mental health, your doctor", action: () => go("landing-conditions") },
+                  ...(FEATURES.enableShop
+                    ? [{ i: ShoppingBag, t: "Browse the shop", d: "Supplements & devices", action: () => go("marketplace") }]
+                    : []),
                 ].map((card) => (
                   <button key={card.t} onClick={card.action}
                     className="focus-ring text-left p-6 rounded-2xl transition-all hover:-translate-y-0.5"
@@ -1995,9 +2251,9 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
                 {rxs.length === 0 ? (
                   <div className="py-6">
                     <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 16 }}>
-                      This account is empty until you start care. Begin a protocol and your prescriptions will appear here — only for you.
+                      This account is empty until you start care. Begin a care plan and your prescriptions will appear here — only for you.
                     </p>
-                    <Btn onClick={() => go("landing-conditions")} size="md" icon={ArrowRight}>Browse protocols</Btn>
+                    <Btn onClick={() => go("landing-conditions")} size="md" icon={ArrowRight}>Browse care plans</Btn>
                   </div>
                 ) : (
                   <>
@@ -2030,10 +2286,10 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
 
           {tab === "protocols" && (
             <div className="anim-fadeUp rounded-2xl p-6" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Your protocols</h3>
+              <h3 className="display" style={{ fontSize: 18, fontWeight: 500, color: C.ink, marginBottom: 16 }}>Your care plans</h3>
               {protocols.length === 0 ? (
                 <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55 }}>
-                  No protocols on this account yet.{" "}
+                  No care plans on this account yet.{" "}
                   <button onClick={() => go("landing-conditions")} className="focus-ring" style={{ color: C.accent, textDecoration: "underline" }}>Start one</button>.
                 </p>
               ) : (
@@ -2241,8 +2497,8 @@ const Intake = ({ conditionId, go }) => {
                     className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
                     style={{ background: checked ? C.primary : C.paper, color: checked ? C.paper : C.ink,
                       border: `1px solid ${checked ? C.primary : C.line}`, borderRadius: 12, fontSize: 15, fontWeight: 500 }}>
-                    <span>{opt}</span>
-                    <div className="flex items-center justify-center"
+                    <span style={{ flex: 1, paddingRight: 16, lineHeight: 1.45 }}>{opt}</span>
+                    <div className="flex items-center justify-center flex-shrink-0"
                       style={{ width: 22, height: 22, border: `1.5px solid ${checked ? C.paper : C.line}`,
                         background: checked ? C.paper : "transparent", borderRadius: 6 }}>
                       {checked && <Check size={12} strokeWidth={3} color={C.primary} />}
@@ -2347,6 +2603,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <Logo /><Tag>Plan ready</Tag>
       </div>
@@ -2359,7 +2616,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
               Your <Mark>{condition.name.toLowerCase()}</Mark><br />treatment plan.
             </h1>
             <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 16, maxWidth: 600, lineHeight: 1.5 }}>
-              Based on your answers, you're a strong candidate for the protocol below. A licensed clinician will review your case before any prescription is issued.
+              Based on your answers, you're a good fit for the care plan below. A licensed doctor will review your case before any prescription is issued.
             </p>
           </div>
           <div className="anim-fadeUp rounded-3xl overflow-hidden mb-8 relative" style={{ border: `1px solid ${C.line}` }}>
@@ -2445,9 +2702,13 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
             </div>
           </div>
 
-          <div className="mt-12 grid md:grid-cols-3 gap-4">
+          <div className="mt-12 mb-8">
+            <DeliveryDetailsCard />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
             {[{ i: ShieldCheck, t: "Clinician-reviewed", d: "Every prescription is signed by a licensed provider in your state." },
-              { i: Truck, t: "Discreet shipping", d: "Plain packaging. Free, every refill, on every plan." },
+              { i: Truck, t: "Eligible TN delivery", d: TN_DELIVERY.heroShort },
               { i: Stethoscope, t: "Ongoing support", d: "Message your care team anytime through the app." }].map((b) => (
               <div key={b.t} className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
                 <b.i size={20} color={C.primary} strokeWidth={1.5} />
@@ -2697,6 +2958,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
+      <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <Logo />
         <button onClick={() => go(isSubscription ? "plan" : "marketplace")} className="focus-ring rounded-full p-1 hover:opacity-60">
@@ -2798,6 +3060,9 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
                 <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
               </div>
               {isSubscription && <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4, marginTop: 8 }}>Then ${plan.price}/mo after clinician approval. Cancel anytime in your account.</p>}
+              <div className="mt-6">
+                <DeliveryDetailsCard />
+              </div>
             </div>
           </div>
         </div>
@@ -2875,8 +3140,12 @@ export default function App() {
     }
     const deepView = qs.get("view");
     if (deepView === "marketplace") {
-      setParams({ filter: qs.get("filter") || "All" });
-      setView("marketplace");
+      if (FEATURES.enableShop) {
+        setParams({ filter: qs.get("filter") || "All" });
+        setView("marketplace");
+      } else {
+        setView("landing");
+      }
       window.history.replaceState({}, "", "/");
     }
   }, [authReady]);
@@ -2916,9 +3185,35 @@ export default function App() {
     }
     if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
-    if (target === "page") { setParams({ slug: p.slug }); setView("page"); window.scrollTo(0, 0); return; }
-    if (target === "marketplace") { setParams({ filter: p.filter || "All" }); setView("marketplace"); window.scrollTo(0, 0); return; }
+    if (target === "page") {
+      const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+      if (!FEATURES.enableShop && shopStackSlugs.has(p.slug)) {
+        setView("landing");
+        window.scrollTo(0, 0);
+        return;
+      }
+      setParams({ slug: p.slug });
+      setView("page");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "marketplace") {
+      if (!FEATURES.enableShop) {
+        setView("landing");
+        window.scrollTo(0, 0);
+        return;
+      }
+      setParams({ filter: p.filter || "All" });
+      setView("marketplace");
+      window.scrollTo(0, 0);
+      return;
+    }
     if (target === "checkout-cart") {
+      if (!FEATURES.enableShop) {
+        setView("landing");
+        window.scrollTo(0, 0);
+        return;
+      }
       if (!user) {
         requireAuth("checkout", { mode: "cart" });
         return;
@@ -3052,15 +3347,22 @@ export default function App() {
   }
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
+    <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
+      {view === "landing" ? <AlpineAtmosphere variant="site" locked /> : null}
 
-      {view === "landing" && (<><Header go={go} cartCount={cartCount} user={user} /><Landing go={go} /></>)}
+      {view === "landing" && (
+        <div className="relative z-10">
+          <DeliveryBar onClick={() => go("how")} glass />
+          <Header go={go} cartCount={cartCount} user={user} glass />
+          <Landing go={go} />
+        </div>
+      )}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
       {view === "intake" && <Intake conditionId={params.condition} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
-      {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
-      {view === "checkout" && (
+      {FEATURES.enableShop && view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
+      {view === "checkout" && !(params.mode === "cart" && !FEATURES.enableShop) && (
         <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go} user={user}
           onComplete={completeCheckout} />
       )}

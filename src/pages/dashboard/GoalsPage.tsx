@@ -24,19 +24,19 @@ export default function GoalsPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#1EC8A5]">Care</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#E87722]">Care</p>
+        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
           Goals
         </h1>
         <p className="text-sm text-zinc-400">
-          Body targets and treatment protocols — progress feeds the clinical terminal in realtime.
+          Body targets and care plans linked to your SpryMD account.
         </p>
       </header>
 
       <section className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
         <div className="mb-3 flex items-center gap-2">
-          <Target className="h-4 w-4 text-[#1EC8A5]" />
-          <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <Target className="h-4 w-4 text-[#E87722]" />
+          <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Body goals
           </h2>
         </div>
@@ -45,7 +45,7 @@ export default function GoalsPage() {
           {bodyProfile?.weightLb != null ? `${bodyProfile.weightLb} lb` : "—"} · BMI {bmi ?? "—"}
         </p>
         {(bodyGoals || []).length === 0 ? (
-          <p className="text-sm text-zinc-500">No body goals yet. Set one from the Action dock on Home.</p>
+          <p className="text-sm text-zinc-500">No body goals yet. Update height and weight from Profile.</p>
         ) : (
           <ul className="divide-y divide-white/5">
             {bodyGoals.map((g) => (
