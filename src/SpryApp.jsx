@@ -1000,9 +1000,9 @@ const Landing = ({ go }) => (
               src={brandPlates.tn.src}
               alt=""
               className="absolute inset-0 w-full h-full"
-              style={{ objectFit: "cover", opacity: 0.22, objectPosition: "center 35%" }}
+              style={{ objectFit: "cover", opacity: 0.45, objectPosition: "center 35%" }}
             />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(20,20,20,0.35), rgba(20,20,20,0.82))" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(20,20,20,0.15), rgba(20,20,20,0.62))" }} />
             <div className="flex items-center gap-3 mb-4 relative">
               <div className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, background: C.signalDim, border: `1px solid ${C.line}` }}>
                 <MapPin size={20} color={C.accent} />
