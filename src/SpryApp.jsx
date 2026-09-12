@@ -33,6 +33,7 @@ import {
   restoreCustomerSession,
   updateCustomerProfile,
 } from "./lib/customerAccounts";
+import { FEATURES } from "./config/features";
 import {
   recordSubscriptionCheckout,
   recordCartCheckout,
@@ -705,7 +706,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
   const navItems = [
     { label: "How it works", view: "how" },
     { label: "Care options", view: "landing-conditions" },
-    { label: "Shop", view: "marketplace" },
+    ...(FEATURES.enableShop ? [{ label: "Shop", view: "marketplace" }] : []),
     { label: "Refills", view: "refills" },
     ...(user ? [{ label: "Dashboard", view: "dashboard" }] : []),
   ];
@@ -760,14 +761,17 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
               {user ? "Dashboard" : "Sign in"}
             </span>
           </button>
-          <button onClick={() => goNav("marketplace")} className="focus-ring relative rounded-lg p-2 transition-colors"
-            style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}>
-            <ShoppingBag size={18} strokeWidth={1.75} color={fg} />
-            {cartCount > 0 && (
-              <span className="mono absolute -top-1 -right-1 flex items-center justify-center"
-                style={{ background: C.accent, color: "#fff", fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
-            )}
-          </button>
+          {FEATURES.enableShop ? (
+            <button onClick={() => goNav("marketplace")} className="focus-ring relative rounded-lg p-2 transition-colors"
+              style={{ background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt }}
+              aria-label="Open shop">
+              <ShoppingBag size={18} strokeWidth={1.75} color={fg} />
+              {cartCount > 0 && (
+                <span className="mono absolute -top-1 -right-1 flex items-center justify-center"
+                  style={{ background: C.accent, color: "#fff", fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
+              )}
+            </button>
+          ) : null}
         </div>
       </div>
       {menuOpen ? (
@@ -1135,28 +1139,29 @@ const Landing = ({ go }) => (
       </div>
     </section>
 
-    {/* Marketplace */}
-    <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
-          <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.25) 100%)" }} />
-          <ScanFrame className="absolute inset-3 md:inset-5" label="Shop ready" />
-          <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
-            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Shop</span>
-            <h2 className="display" style={{ fontSize: "clamp(30px, 4.5vw, 48px)", lineHeight: 1.05, marginTop: 12, color: C.ink, fontWeight: 650, maxWidth: 520 }}>
-              Healthy extras, <Mark>ready to ship</Mark>.
-            </h2>
-            <div className="mt-6">
-              <Btn onClick={() => go("marketplace")} icon={ArrowRight}>Browse the shop</Btn>
+    {FEATURES.enableShop ? (
+      <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
+            <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.25) 100%)" }} />
+            <ScanFrame className="absolute inset-3 md:inset-5" label="Shop ready" />
+            <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
+              <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Shop</span>
+              <h2 className="display" style={{ fontSize: "clamp(30px, 4.5vw, 48px)", lineHeight: 1.05, marginTop: 12, color: C.ink, fontWeight: 650, maxWidth: 520 }}>
+                Healthy extras, <Mark>ready to ship</Mark>.
+              </h2>
+              <div className="mt-6">
+                <Btn onClick={() => go("marketplace")} icon={ArrowRight}>Browse the shop</Btn>
+              </div>
             </div>
           </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {products.filter((p) => p.badge).slice(0, 4).map((p) => <MiniProduct key={p.id} p={p} onClick={() => go("marketplace")} />)}
+          </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {products.filter((p) => p.badge).slice(0, 4).map((p) => <MiniProduct key={p.id} p={p} onClick={() => go("marketplace")} />)}
-        </div>
-      </div>
-    </section>
+      </section>
+    ) : null}
 
     {/* Close */}
     <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: "transparent" }}>
@@ -1176,7 +1181,11 @@ const Landing = ({ go }) => (
         </p>
         <div className="flex flex-wrap justify-center gap-3 mt-10">
           <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
-          <Btn onClick={() => go("marketplace")} size="lg" variant="secondary">Browse the shop</Btn>
+          {FEATURES.enableShop ? (
+            <Btn onClick={() => go("marketplace")} size="lg" variant="secondary">Browse the shop</Btn>
+          ) : (
+            <Btn onClick={() => go("refills")} size="lg" variant="secondary">Quick refills</Btn>
+          )}
         </div>
       </div>
     </section>
@@ -1244,7 +1253,12 @@ const MiniProduct = ({ p, onClick }) => {
 
 const footerColumns = [
   { h: "Care plans", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
-  { h: "Shop", l: ["Quick Refills", "Supplements", "Devices", "Sleep"] },
+  {
+    h: FEATURES.enableShop ? "Shop" : "Pharmacy",
+    l: FEATURES.enableShop
+      ? ["Quick Refills", "Supplements", "Devices", "Sleep"]
+      : ["Quick Refills"],
+  },
   { h: "Company", l: ["About", "Doctors", "Press", "Contact"] },
 ];
 
@@ -1307,7 +1321,8 @@ const RichText = ({ text }) => {
 
 const FooterPage = ({ slug, go, cartCount, user }) => {
   const page = footerPages[slug];
-  if (!page) {
+  const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+  if (!page || (!FEATURES.enableShop && shopStackSlugs.has(slug))) {
     return (
       <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
         <Header go={go} cartCount={cartCount} user={user} />
@@ -1326,6 +1341,10 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
       return;
     }
     if (page.ctaTarget === "marketplace") {
+      if (!FEATURES.enableShop) {
+        go("landing");
+        return;
+      }
       go("marketplace", { filter: page.marketplaceFilter && page.marketplaceFilter !== "null" ? page.marketplaceFilter : "All" });
       return;
     }
@@ -2151,7 +2170,9 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
                 {[
                   { i: RefreshCw, t: "Quick Refills", d: rxs.length ? `${rxs.length} active prescription${rxs.length === 1 ? "" : "s"}` : "No medicine yet — start a care plan", action: () => go(rxs.length ? "refills" : "landing-conditions"), accent: true },
                   { i: Stethoscope, t: "Start a care plan", d: "Weight, hormones, mental health, your doctor", action: () => go("landing-conditions") },
-                  { i: ShoppingBag, t: "Browse the shop", d: "Supplements & devices", action: () => go("marketplace") },
+                  ...(FEATURES.enableShop
+                    ? [{ i: ShoppingBag, t: "Browse the shop", d: "Supplements & devices", action: () => go("marketplace") }]
+                    : []),
                 ].map((card) => (
                   <button key={card.t} onClick={card.action}
                     className="focus-ring text-left p-6 rounded-2xl transition-all hover:-translate-y-0.5"
@@ -3058,8 +3079,12 @@ export default function App() {
     }
     const deepView = qs.get("view");
     if (deepView === "marketplace") {
-      setParams({ filter: qs.get("filter") || "All" });
-      setView("marketplace");
+      if (FEATURES.enableShop) {
+        setParams({ filter: qs.get("filter") || "All" });
+        setView("marketplace");
+      } else {
+        setView("landing");
+      }
       window.history.replaceState({}, "", "/");
     }
   }, [authReady]);
@@ -3099,9 +3124,35 @@ export default function App() {
     }
     if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
-    if (target === "page") { setParams({ slug: p.slug }); setView("page"); window.scrollTo(0, 0); return; }
-    if (target === "marketplace") { setParams({ filter: p.filter || "All" }); setView("marketplace"); window.scrollTo(0, 0); return; }
+    if (target === "page") {
+      const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+      if (!FEATURES.enableShop && shopStackSlugs.has(p.slug)) {
+        setView("landing");
+        window.scrollTo(0, 0);
+        return;
+      }
+      setParams({ slug: p.slug });
+      setView("page");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "marketplace") {
+      if (!FEATURES.enableShop) {
+        setView("landing");
+        window.scrollTo(0, 0);
+        return;
+      }
+      setParams({ filter: p.filter || "All" });
+      setView("marketplace");
+      window.scrollTo(0, 0);
+      return;
+    }
     if (target === "checkout-cart") {
+      if (!FEATURES.enableShop) {
+        setView("landing");
+        window.scrollTo(0, 0);
+        return;
+      }
       if (!user) {
         requireAuth("checkout", { mode: "cart" });
         return;
@@ -3249,8 +3300,8 @@ export default function App() {
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
       {view === "intake" && <Intake conditionId={params.condition} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
-      {view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
-      {view === "checkout" && (
+      {FEATURES.enableShop && view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
+      {view === "checkout" && !(params.mode === "cart" && !FEATURES.enableShop) && (
         <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go} user={user}
           onComplete={completeCheckout} />
       )}

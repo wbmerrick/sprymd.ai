@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +21,7 @@ import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
 import OAuthAuthorizePage from "@/pages/oauth/AuthorizePage";
 import OAuthCallbackPage from "@/pages/oauth/CallbackPage";
+import { FEATURES } from "@/config/features";
 
 const queryClient = new QueryClient();
 
@@ -47,8 +48,17 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
-          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+          {FEATURES.enableDeviceDashboard ? (
+            <>
+              <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
+              <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+            </>
+          ) : (
+            <>
+              <Route path="/oauth/authorize" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/oauth/callback" element={<Navigate to="/dashboard" replace />} />
+            </>
+          )}
           <Route path="*" element={<SpryApp />} />
         </Routes>
       </BrowserRouter>

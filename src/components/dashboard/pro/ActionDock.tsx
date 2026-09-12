@@ -5,6 +5,7 @@ import type { BodyGoalMetric, WearableDevice, WearableKind, WearableSyncMode } f
 import { metricDefaults } from "@/data/wearables";
 import { ProPanel } from "./ProPanel";
 import { cn } from "@/lib/utils";
+import { FEATURES } from "@/config/features";
 
 type Tab = "reading" | "upload" | "goal" | "buy";
 
@@ -95,7 +96,7 @@ export function ActionDock({
             ["reading", "Reading"],
             ["upload", "Upload"],
             ["goal", "Goal"],
-            ["buy", "Buy"],
+            ...(FEATURES.enableShop ? ([["buy", "Buy"]] as const) : []),
           ] as const
         ).map(([id, label]) => (
           <button
@@ -112,7 +113,7 @@ export function ActionDock({
         ))}
       </div>
 
-      {tab === "buy" ? (
+      {FEATURES.enableShop && tab === "buy" ? (
         <div className="space-y-3 p-1">
           <p className="text-xs text-zinc-400">
             Add fitness devices — Oura, Whoop, Apple Watch, Garmin, Dexcom — and see their readings here.
@@ -127,7 +128,11 @@ export function ActionDock({
       ) : null}
 
       {tab !== "buy" && !selected ? (
-        <p className="p-2 text-xs text-zinc-500">Buy a device to start logging your health numbers.</p>
+        <p className="p-2 text-xs text-zinc-500">
+          {FEATURES.enableShop
+            ? "Buy a device to start logging your health numbers."
+            : "Connect a device to start logging your health numbers."}
+        </p>
       ) : null}
 
       {tab !== "buy" && selected ? (

@@ -29,7 +29,7 @@ export default function GoalsPage() {
           Goals
         </h1>
         <p className="text-sm text-zinc-400">
-          Body targets and care plans — progress updates your dashboard live.
+          Body targets and care plans linked to your SpryMD account.
         </p>
       </header>
 
@@ -45,7 +45,7 @@ export default function GoalsPage() {
           {bodyProfile?.weightLb != null ? `${bodyProfile.weightLb} lb` : "—"} · BMI {bmi ?? "—"}
         </p>
         {(bodyGoals || []).length === 0 ? (
-          <p className="text-sm text-zinc-500">No body goals yet. Set one from Quick actions on Home.</p>
+          <p className="text-sm text-zinc-500">No body goals yet. Update height and weight from Profile.</p>
         ) : (
           <ul className="divide-y divide-white/5">
             {bodyGoals.map((g) => (
