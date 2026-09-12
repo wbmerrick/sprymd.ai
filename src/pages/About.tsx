@@ -3,8 +3,14 @@ import { GraduationCap, ClipboardCheck, Building, Stethoscope, Lock, Pill } from
 import AnimatedSection from "@/components/AnimatedSection";
 
 const AboutHero = () => (
-  <section className="bg-navy py-24 px-4 text-center">
-    <div className="section-container">
+  <section className="relative overflow-hidden py-24 px-4 text-center">
+    <img
+      src="/brand/sprymd-care-dawn.webp"
+      alt=""
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+    <div className="absolute inset-0 bg-black/60" />
+    <div className="section-container relative z-10">
       <AnimatedSection>
         <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
         <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men.</p>

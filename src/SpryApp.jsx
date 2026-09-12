@@ -10,6 +10,8 @@ import {
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
 import AlpineAtmosphere from "./components/brand/AlpineAtmosphere";
+import BrandAtmosphere from "./components/brand/BrandAtmosphere";
+import { brandPlates } from "./assets/brand/catalog";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -993,8 +995,15 @@ const Landing = ({ go }) => (
             </div>
             <Btn onClick={() => go("page", { slug: "clinicians" })} size="md" variant="secondary" icon={ArrowRight}>How we practice</Btn>
           </div>
-          <div className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-            <div className="flex items-center gap-3 mb-4">
+          <div className="p-6 rounded-2xl relative overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+            <img
+              src={brandPlates.tn.src}
+              alt=""
+              className="absolute inset-0 w-full h-full"
+              style={{ objectFit: "cover", opacity: 0.22, objectPosition: "center 35%" }}
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(20,20,20,0.35), rgba(20,20,20,0.82))" }} />
+            <div className="flex items-center gap-3 mb-4 relative">
               <div className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, background: C.signalDim, border: `1px solid ${C.line}` }}>
                 <MapPin size={20} color={C.accent} />
               </div>
@@ -1003,10 +1012,10 @@ const Landing = ({ go }) => (
                 <div style={{ fontSize: 13, color: C.inkSoft }}>We currently care for patients located in Tennessee</div>
               </div>
             </div>
-            <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 18 }}>
+            <p className="relative" style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 18 }}>
               Questions about your visit, shipping, or account? Email <strong style={{ color: C.ink }}>support@sprymd.ai</strong> — we aim to reply within one business day. For emergencies, call 911.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 relative">
               <Btn onClick={() => go("page", { slug: "contact" })} size="md" icon={ArrowRight}>Contact support</Btn>
               <Btn onClick={() => go("page", { slug: "about" })} size="md" variant="ghost">About SpryMD</Btn>
             </div>
@@ -1073,7 +1082,8 @@ const Landing = ({ go }) => (
 
     {/* PCP */}
     <section id="pcp" className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none opacity-45" aria-hidden="true">
+      <BrandAtmosphere plate="care" variant="wash" />
+      <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none" aria-hidden="true" style={{ opacity: 0.45 }}>
         <GridHorizon className="w-full h-full" />
       </div>
       <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center relative z-10">
@@ -1139,8 +1149,7 @@ const Landing = ({ go }) => (
     <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
       <div className="max-w-7xl mx-auto">
         <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
-          <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.25) 100%)" }} />
+          <BrandAtmosphere plate="shop" variant="banner" />
           <ScanFrame className="absolute inset-3 md:inset-5" label="Shop ready" />
           <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
             <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Shop</span>
@@ -1541,8 +1550,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-stretch">
           <div className="hidden md:block rounded-3xl overflow-hidden relative instrument-panel min-h-[480px]">
-            <SignalField density={40} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,5,5,0.15) 0%, rgba(5,5,5,0.85) 100%)" }} />
+            <BrandAtmosphere plate="care" variant="panel" />
             <ScanFrame className="absolute inset-5" label="Secure sign-in" />
             <div className="absolute left-7 right-7 bottom-7 z-10">
               <p className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.accent, textTransform: "uppercase" }}>Your account</p>
@@ -2666,7 +2674,7 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user, ini
       <section className="px-6 md:px-12 pt-12 md:pt-16 pb-8" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <div className="max-w-7xl mx-auto">
           <div className="relative rounded-[28px] overflow-hidden mb-10" style={{ border: `1px solid ${C.line}` }}>
-            <img src={imgMarketplaceHero} alt="Spry shop" className="w-full h-[180px] md:h-[260px] object-cover" />
+            <img src={brandPlates.shop.src} alt="" className="w-full h-[180px] md:h-[260px] object-cover" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%)" }} />
             <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
               <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Marketplace</span>
@@ -2994,7 +3002,7 @@ const Success = ({ mode, plan, consult, go }) => (
   <div className="anim-fadeIn min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: C.bg }}>
     <div className="anim-fadeUp max-w-xl">
       <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
-        <img src={imgMarketplaceHero} alt="SpryMD care complete" className="w-full h-40 object-cover" />
+        <img src={brandPlates.care.src} alt="" className="w-full h-40 object-cover" />
       </div>
       <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
         <Check size={32} color={C.paper} strokeWidth={2} />
