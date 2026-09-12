@@ -3,6 +3,7 @@ import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { WearableToolbar } from "@/components/dashboard/WearableToolbar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import AlpineAtmosphere from "@/components/brand/AlpineAtmosphere";
+import { FEATURES } from "@/config/features";
 import { createContext, useContext } from "react";
 import type { UseDashboardDataReturn } from "@/hooks/useDashboardData";
 
@@ -42,10 +43,16 @@ export default function DashboardLayout() {
         <AlpineAtmosphere variant="dashboard" />
         <div className="relative z-10">
           <DashboardNav user={data.user} unreadCount={data.unreadCount} />
-          <main className="mx-auto max-w-[1440px] px-3 py-6 pb-28 md:px-5 md:py-8 md:pb-32">
+          <main
+            className={
+              FEATURES.enableDeviceDashboard
+                ? "mx-auto max-w-[1440px] px-3 py-6 pb-28 md:px-5 md:py-8 md:pb-32"
+                : "mx-auto max-w-[1440px] px-3 py-6 md:px-5 md:py-8"
+            }
+          >
             <Outlet />
           </main>
-          <WearableToolbar />
+          {FEATURES.enableDeviceDashboard ? <WearableToolbar /> : null}
         </div>
       </div>
     </DashboardContext.Provider>
