@@ -5,6 +5,9 @@ import imgCareDawn from "./sprymd-care-dawn.webp";
 import imgShopDusk from "./sprymd-shop-dusk.webp";
 import imgMarkField from "./sprymd-mark-field.webp";
 import imgTnRidge from "./sprymd-tn-ridge.webp";
+import imgHawaiiMark from "./sprymd-hawaii-mark.webp";
+import imgHawaiiLagoon from "./sprymd-hawaii-lagoon.webp";
+import imgHawaiiPortrait from "./sprymd-hawaii-portrait.webp";
 
 /**
  * SpryMD brand photography kit — Grok-graded plates for future surfaces.
@@ -60,6 +63,27 @@ export const brandPlates = {
     publicPath: "/brand/sprymd-tn-ridge.webp",
     ratio: "16:9",
     use: "Tennessee service-area and delivery storytelling",
+  },
+  hawaii: {
+    id: "hawaii",
+    src: imgHawaiiMark,
+    publicPath: "/brand/sprymd-hawaii-mark.webp",
+    ratio: "1:1",
+    use: "Paradise mark field — Hawaiian remake of the peak-and-reflection emblem",
+  },
+  hawaiiWide: {
+    id: "hawaiiWide",
+    src: imgHawaiiLagoon,
+    publicPath: "/brand/sprymd-hawaii-lagoon.webp",
+    ratio: "16:9",
+    use: "Close CTA and widescreen paradise atmosphere",
+  },
+  hawaiiPortrait: {
+    id: "hawaiiPortrait",
+    src: imgHawaiiPortrait,
+    publicPath: "/brand/sprymd-hawaii-portrait.webp",
+    ratio: "9:16",
+    use: "Mobile stories and splash — Hawaiian peak-and-lagoon",
   },
 };
 

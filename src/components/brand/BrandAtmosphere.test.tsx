@@ -10,4 +10,10 @@ describe("BrandAtmosphere", () => {
     expect(root).toBeTruthy();
     expect(img?.getAttribute("src") || "").toMatch(/sprymd-care-dawn/);
   });
+
+  it("renders the Hawaiian paradise plate", () => {
+    const { container } = render(<BrandAtmosphere plate="hawaiiWide" variant="panel" />);
+    expect(container.querySelector("[data-brand-plate='hawaiiWide']")).toBeTruthy();
+    expect(container.querySelector("img")?.getAttribute("src") || "").toMatch(/sprymd-hawaii-lagoon/);
+  });
 });
