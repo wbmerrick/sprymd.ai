@@ -3,6 +3,7 @@ import type { WearableDevice, WearableKind, WearableReading } from "@/types/dash
 import { WEARABLE_IMAGES } from "@/data/wearables";
 import { cn } from "@/lib/utils";
 import { ProPanel } from "./ProPanel";
+import { FEATURES } from "@/config/features";
 
 function lastFor(deviceId: WearableKind, readings: WearableReading[]) {
   return readings.find((r) => r.deviceId === deviceId);
@@ -28,12 +29,14 @@ export function SignalsWatchlist({
       eyebrow="Connected gear"
       dense
       action={
-        <Link
-          to="/?view=marketplace&filter=Devices"
-          className="font-mono text-[10px] uppercase tracking-wider text-[#E87722] hover:underline"
-        >
-          + Buy
-        </Link>
+        FEATURES.enableShop ? (
+          <Link
+            to="/?view=marketplace&filter=Devices"
+            className="font-mono text-[10px] uppercase tracking-wider text-[#E87722] hover:underline"
+          >
+            + Buy
+          </Link>
+        ) : undefined
       }
       className="min-h-[280px]"
     >
@@ -72,7 +75,7 @@ export function SignalsWatchlist({
           );
         })}
       </ul>
-      {locked.length > 0 ? (
+      {FEATURES.enableShop && locked.length > 0 ? (
         <div className="mt-3 border-t border-white/5 pt-2">
           <p className="mb-1 px-2 font-mono text-[10px] uppercase tracking-wider text-zinc-600">Locked</p>
           <ul className="space-y-0.5">
