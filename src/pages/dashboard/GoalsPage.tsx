@@ -29,7 +29,7 @@ export default function GoalsPage() {
           Goals
         </h1>
         <p className="text-sm text-zinc-400">
-          Body targets and care plans linked to your SpryMD account.
+          Body targets and care plans linked to your PeakMD account.
         </p>
       </header>
 

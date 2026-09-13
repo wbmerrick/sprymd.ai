@@ -40,7 +40,7 @@ export default function OAuthAuthorizePage() {
           Connect {provider?.displayName || providerId}
         </h1>
         <p className="mt-2 text-sm text-zinc-400">
-          SpryMD requests access to sync vitals from your {provider?.displayName || "device"} cloud
+          PeakMD requests access to sync vitals from your {provider?.displayName || "device"} cloud
           {email ? ` (${email})` : ""}.{device ? ` Device: ${device}.` : ""}
         </p>
         <ul className="mt-4 space-y-1 font-mono text-[11px] text-zinc-500">
@@ -72,7 +72,7 @@ export default function OAuthAuthorizePage() {
           </button>
         </div>
         <p className="mt-4 text-[11px] text-zinc-600">
-          Without live OEM client credentials, SpryMD uses a secure sandbox OAuth flow that mirrors production. Set
+          Without live OEM client credentials, PeakMD uses a secure sandbox OAuth flow that mirrors production. Set
           VITE_*_CLIENT_ID secrets to authorize against real OEM clouds.
         </p>
       </div>

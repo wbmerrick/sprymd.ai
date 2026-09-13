@@ -42,19 +42,27 @@ function StaticDarkLogo() {
       viewBox="0 0 400 100"
       width="100%"
       role="img"
-      aria-label="SpryMD"
+      aria-label="PeakMD"
     >
       <rect width="400" height="100" fill="#000000" />
       <g transform="translate(48, 34)">
-        <circle cx="16" cy="16" r="15" fill="none" stroke="#FFFFFF" strokeWidth="1.75" />
+        <circle cx="17" cy="9" r="3.5" fill="#E87722" opacity="0.7" />
         <path
-          d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5"
+          d="M3 28 L10 17 L14 21 L17 7 L20 21 L24 17 L29 28 Z"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        <path
+          d="M14.5 11 L17 7 L19.5 11"
           fill="none"
           stroke="#E87722"
           strokeWidth="1.75"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <circle cx="16" cy="16" r="2" fill="#E87722" />
       </g>
       <text
         x="96"
@@ -62,7 +70,7 @@ function StaticDarkLogo() {
         style={{ fontFamily: "Outfit, system-ui, sans-serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
         fill="#FFFFFF"
       >
-        Spry
+        Peak
         <tspan fill="#FFFFFF" opacity={0.55}>
           MD
         </tspan>
@@ -96,7 +104,7 @@ function LaserLogoSvg({ play }: { play: number }) {
       viewBox="0 0 400 100"
       width="100%"
       role="img"
-      aria-label="SpryMD"
+      aria-label="PeakMD"
     >
       <defs>
         <style>{`
@@ -184,15 +192,25 @@ function LaserLogoSvg({ play }: { play: number }) {
       <g clipPath={`url(#${revealId})`}>
         <g className={`ll-brand-${play}`}>
           <g transform="translate(48, 34)">
-            <circle cx="16" cy="16" r="15" fill="none" stroke="#FFFFFF" strokeWidth="1.75" />
+            <circle cx="17" cy="9" r="3.5" fill="#E87722" opacity="0.7">
+              <animate attributeName="opacity" values="0.7;0.35;0.7" dur="2.5s" repeatCount="indefinite" />
+            </circle>
             <path
-              d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5"
+              d="M3 28 L10 17 L14 21 L17 7 L20 21 L24 17 L29 28 Z"
+              fill="none"
+              stroke="#FFFFFF"
+              strokeWidth="1.75"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            <path
+              d="M14.5 11 L17 7 L19.5 11"
               fill="none"
               stroke="#E87722"
               strokeWidth="1.75"
               strokeLinecap="round"
+              strokeLinejoin="round"
             />
-            <circle cx="16" cy="16" r="2" fill="#E87722" />
           </g>
           <text
             x="96"
@@ -200,7 +218,7 @@ function LaserLogoSvg({ play }: { play: number }) {
             style={{ fontFamily: "Outfit, system-ui, sans-serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
             fill="#FFFFFF"
           >
-            Spry
+            Peak
             <tspan fill="#FFFFFF" opacity={0.55}>
               MD
             </tspan>

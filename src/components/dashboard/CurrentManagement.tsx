@@ -29,7 +29,7 @@ export function CurrentManagement({ treatments }: CurrentManagementProps) {
 
       {sorted.length === 0 ? (
         <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-8 text-sm text-zinc-500">
-          No active treatments yet. Start a care plan from the SpryMD home page.
+          No active treatments yet. Start a care plan from the PeakMD home page.
         </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">

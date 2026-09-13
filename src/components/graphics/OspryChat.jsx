@@ -4,14 +4,14 @@ import { ArrowRight, MessageCircle, Minus, Send, X } from "lucide-react";
 
 const STARTERS = [
   "Which care plan fits me?",
-  "How does Spry work?",
-  "Can Spry be my doctor?",
+  "How does Peak work?",
+  "Can Peak be my doctor?",
 ];
 
 function replyFor(input) {
   const q = input.toLowerCase();
   if (q.includes("pcp") || q.includes("primary") || q.includes("doctor")) {
-    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Start your confidential visit and choose Your doctor.";
+    return "Yes — you can make PeakMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Start your confidential visit and choose Your doctor.";
   }
   if (q.includes("how") || q.includes("work") || q.includes("system")) {
     return "Three steps: choose care → a licensed clinician reviews your case → treatment ships when approved and filled. Eligible Tennessee orders can move next business day after the 2:00 p.m. CT weekday cutoff. No waiting room.";
@@ -25,17 +25,17 @@ function replyFor(input) {
   if (q.includes("refill")) {
     return "Sign in for Quick Refills — only for medicine you already have. New care starts with a short form.";
   }
-  return "I'm iSpry — SpryMD's care helper. Ask about care plans, how Spry works, pricing, your doctor, or refills. For medical decisions, a licensed doctor still signs every plan.";
+  return "I'm iPeak — PeakMD's care helper. Ask about care plans, how Peak works, pricing, your doctor, or refills. For medical decisions, a licensed doctor still signs every plan.";
 }
 
 /**
- * iSpry chat — hero panel; docks to a bottom-right chat bar once the page scrolls.
+ * iPeak chat — hero panel; docks to a bottom-right chat bar once the page scrolls.
  */
 export default function ISpryChat({ onAction, onDockChange, forceDocked = false }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "I'm iSpry, your SpryMD care helper. Ask about care plans, your doctor, or how Spry works.",
+      text: "I'm iPeak, your PeakMD care helper. Ask about care plans, your doctor, or how Peak works.",
     },
   ]);
   const [draft, setDraft] = useState("");
@@ -117,7 +117,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
     <div
       className={docked ? "ospry-chat" : "ospry-chat spry-rise w-full max-w-md md:max-w-none"}
       style={shellStyle}
-      aria-label="Chat with iSpry, SpryMD care helper"
+      aria-label="Chat with iPeak, PeakMD care helper"
     >
       <div
         aria-hidden="true"
@@ -155,7 +155,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
           />
           <div>
             <div className="display" style={{ fontSize: docked ? 15 : 16, fontWeight: 600, color: "#FAFAFA", letterSpacing: "-0.02em" }}>
-              iSpry
+              iPeak
             </div>
             <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(232,119,34,0.85)", textTransform: "uppercase" }}>
               Chat helper · online
@@ -173,7 +173,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
               <button
                 type="button"
                 className="focus-ring"
-                aria-label="Minimize iSpry"
+                aria-label="Minimize iPeak"
                 onClick={() => setExpanded(false)}
                 style={{
                   display: "inline-flex",
@@ -193,7 +193,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
               <button
                 type="button"
                 className="focus-ring"
-                aria-label="Close iSpry panel"
+                aria-label="Close iPeak panel"
                 onClick={() => setExpanded(false)}
                 style={{
                   display: "inline-flex",
@@ -247,7 +247,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
             >
               {!mine && (
                 <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#E87722", marginBottom: 6, textTransform: "uppercase" }}>
-                  iSpry
+                  iPeak
                 </div>
               )}
               {msg.text}
@@ -266,7 +266,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
               padding: "6px 2px",
             }}
           >
-            iSpry is typing…
+            iPeak is typing…
           </div>
         )}
       </div>
@@ -323,10 +323,10 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
           ref={inputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Ask iSpry anything…"
+          placeholder="Ask iPeak anything…"
           className="focus-ring"
           disabled={busy}
-          aria-label="Message iSpry"
+          aria-label="Message iPeak"
           style={{
             flex: 1,
             background: "#0B0B0C",
@@ -392,7 +392,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
       type="button"
       className="focus-ring"
       onClick={() => setExpanded(true)}
-      aria-label="Open iSpry chat"
+      aria-label="Open iPeak chat"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -427,7 +427,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
       </span>
       <span style={{ textAlign: "left", minWidth: 0 }}>
         <span className="display" style={{ display: "block", fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em" }}>
-          iSpry
+          iPeak
         </span>
         <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(232,119,34,0.9)", textTransform: "uppercase" }}>
           Ask anything

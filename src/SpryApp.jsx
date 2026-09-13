@@ -90,7 +90,7 @@ const FontInjector = () => (
       background-image:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.12), transparent 55%),
         linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)),
-        url("/brand/sprymd-alpine-atmosphere.webp");
+        url("/brand/peakmd-mountain-peak.png");
       background-size: auto, auto, cover;
       background-position: center, center, center 58%;
       background-attachment: fixed;
@@ -202,7 +202,7 @@ const FontInjector = () => (
 //  • Sildenafil ODT 60 mg × 10 = $23.90 + $15 = $39 → $99 retail = 61%
 //  • Tadalafil ODT 6 mg × 30 = $57.00 + $15 = $72 → $99 retail = 27%
 //  • Hair Restore MFK 60 mL = $56.84 + $15 = $72 → $89 retail (60-day = $44.50/mo equiv)
-// Hims tirzepatide $299 → $499/mo, Ro Body $499/mo. SpryMD beats both.
+// Hims tirzepatide $299 → $499/mo, Ro Body $499/mo. PeakMD beats both.
 // ─────────────────────────────────────────────────────────────────────────────
 const conditions = {
   weightloss: {
@@ -323,11 +323,11 @@ const conditions = {
   pcp: {
     id: "pcp", name: "Your doctor",
     tagline: "A doctor you can message any day.",
-    description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
+    description: "Make PeakMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
     icon: UserCheck, accent: "#E87722", fromPrice: "49",
     treatments: [
-      { id: "pcp-core", name: "Spry Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
-        note: "Your dedicated SpryMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
+      { id: "pcp-core", name: "Peak Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
+        note: "Your dedicated PeakMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
       { id: "pcp-labs", name: "PCP + Annual Labs", sub: "Membership + comprehensive metabolic panel", price: 99, chilled: false,
         note: "Everything in Primary Care plus annual labs drawn and reviewed — lipids, A1C, CBC, hormone panel as indicated.", badge: "Best value" },
       { id: "pcp-essentials", name: "PCP Essentials", sub: "Messaging + as-needed visits · lighter plan", price: 49, chilled: false,
@@ -347,27 +347,27 @@ const mockRxHistory = [
   { rxId: "EMP-294817", name: "Tirzepatide Injection", strength: "8 mg/2 mL · grapeseed oil",
     sig: "Inject 0.25 mL (10 units) subQ once weekly", lastFilled: "Mar 14, 2026", refills: 5, refillsUsed: 1,
     price: 279, chilled: true, category: "Weight Loss", icon: Scale, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 28 },
+    prescriber: "PeakMD Clinician", daysSupply: 28 },
   { rxId: "EMP-294112", name: "Tadalafil ODT", strength: "6 mg · oral dissolve",
     sig: "Dissolve one tablet under tongue daily", lastFilled: "Apr 02, 2026", refills: 11, refillsUsed: 0,
     price: 99, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
+    prescriber: "PeakMD Clinician", daysSupply: 30 },
   { rxId: "EMP-291003", name: "Hair Restore MFK Topical", strength: "Minoxidil 5% / Fin 0.3% / Ketoconazole 2% · 60 mL",
     sig: "Apply 1 mL to scalp twice daily", lastFilled: "Feb 28, 2026", refills: 5, refillsUsed: 2,
     price: 89, chilled: false, category: "Hair Loss", icon: Sparkles, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 60 },
+    prescriber: "PeakMD Clinician", daysSupply: 60 },
   { rxId: "EMP-289445", name: "Tretinoin TAAN Mild Cream", strength: "Tret 0.03% / Azelaic 4% / Niac 4% · 30 g",
     sig: "Apply pea-sized amount nightly", lastFilled: "Mar 22, 2026", refills: 11, refillsUsed: 1,
     price: 59, chilled: false, category: "Dermatology", icon: Leaf, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
+    prescriber: "PeakMD Clinician", daysSupply: 30 },
   { rxId: "EMP-285332", name: "Sildenafil 50mg", strength: "50 mg · 10 tablets",
     sig: "Take one tablet 30–60 min before activity", lastFilled: "Apr 18, 2026", refills: 5, refillsUsed: 0,
     price: 69, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
+    prescriber: "PeakMD Clinician", daysSupply: 30 },
   { rxId: "EMP-281109", name: "Methylene Blue Capsule", strength: "10 mg · cognition / mitochondrial support",
     sig: "Take one capsule each morning", lastFilled: "Mar 30, 2026", refills: 2, refillsUsed: 1,
     price: 79, chilled: false, category: "Longevity", icon: Zap, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
+    prescriber: "PeakMD Clinician", daysSupply: 30 },
 ];
 
 const rxIconFor = (rx) => {
@@ -399,19 +399,19 @@ const hydrateUser = (profile) => {
 // Marketplace — benefit-led catalog with photography
 // ─────────────────────────────────────────────────────────────────────────────
 const products = [
-  { id: "p1", name: "Daily Multivitamin Complex", brand: "Spry Essentials", cat: "Supplements", price: 32, compareAt: 44, hsa: true, badge: "Bestseller", rating: 4.9, reviews: 1284,
+  { id: "p1", name: "Daily Multivitamin Complex", brand: "Peak Essentials", cat: "Supplements", price: 32, compareAt: 44, hsa: true, badge: "Bestseller", rating: 4.9, reviews: 1284,
     icon: Pill, image: imgMultivitamin, color: "hsl(150, 55%, 40%)",
     benefit: "Fill the gaps your diet misses",
     desc: "Methylated B-vitamins, vitamin D3/K2, and chelated minerals — one capsule that covers the fundamentals. 30-day supply." },
-  { id: "p2", name: "Omega-3 EPA/DHA · 2000mg", brand: "Spry Essentials", cat: "Supplements", price: 28, compareAt: 39, hsa: true, badge: "Clinician pick", rating: 4.8, reviews: 942,
+  { id: "p2", name: "Omega-3 EPA/DHA · 2000mg", brand: "Peak Essentials", cat: "Supplements", price: 28, compareAt: 39, hsa: true, badge: "Clinician pick", rating: 4.8, reviews: 942,
     icon: Pill, image: imgOmega3, color: "hsl(220, 60%, 20%)",
     benefit: "Heart, brain, and joint support",
     desc: "Triglyceride-form fish oil, IFOS-certified for purity. High-potency 2000mg. 60 softgels." },
-  { id: "p3", name: "Magnesium Glycinate · 400mg", brand: "Spry Essentials", cat: "Supplements", price: 22, compareAt: 29, hsa: true, badge: null, rating: 4.9, reviews: 2103,
+  { id: "p3", name: "Magnesium Glycinate · 400mg", brand: "Peak Essentials", cat: "Supplements", price: 22, compareAt: 29, hsa: true, badge: null, rating: 4.9, reviews: 2103,
     icon: Moon, image: imgMagnesium, color: "hsl(220, 60%, 20%)",
     benefit: "Sleep deeper. Recover faster.",
     desc: "Highly bioavailable glycinate form — the one clinicians prefer for sleep, recovery, and stress. No GI upset." },
-  { id: "p4", name: "Creatine Monohydrate · Micronized", brand: "Spry Performance", cat: "Supplements", price: 26, compareAt: 36, hsa: false, badge: "Top rated", rating: 4.9, reviews: 876,
+  { id: "p4", name: "Creatine Monohydrate · Micronized", brand: "Peak Performance", cat: "Supplements", price: 26, compareAt: 36, hsa: false, badge: "Top rated", rating: 4.9, reviews: 876,
     icon: Activity, image: imgCreatine, color: "hsl(220, 60%, 20%)",
     benefit: "Strength, power, cognitive edge",
     desc: "Creapure-grade micronized creatine. Unflavored, mixes clean. 90 servings." },
@@ -423,7 +423,7 @@ const products = [
     icon: Wind, image: imgFullFaceMask, color: "hsl(220, 60%, 20%)",
     benefit: "Full seal without the bulk",
     desc: "Under-the-nose design with full-face seal for mouth breathers. Freedom to move all night." },
-  { id: "p7", name: "CPAP Cleaning Wipes · 110 ct", brand: "Spry Care", cat: "Sleep Apnea", price: 18, compareAt: 24, hsa: true, badge: null, rating: 4.8, reviews: 667,
+  { id: "p7", name: "CPAP Cleaning Wipes · 110 ct", brand: "Peak Care", cat: "Sleep Apnea", price: 18, compareAt: 24, hsa: true, badge: null, rating: 4.8, reviews: 667,
     icon: Wind, image: imgCpapWipes, color: "hsl(220, 60%, 20%)",
     benefit: "Clean mask. Cleaner sleep.",
     desc: "Unscented, alcohol-free wipes safe for daily mask and tubing cleaning. 110 count." },
@@ -439,18 +439,18 @@ const products = [
     icon: Scale, image: imgSmartScale, color: "hsl(220, 60%, 20%)",
     benefit: "Track fat, muscle, and progress",
     desc: "Body fat %, muscle mass, BMI. Syncs to Apple Health & Google Fit — great with weight-loss care." },
-  { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Spry Essentials", cat: "Sleep", price: 16, compareAt: 22, hsa: true, badge: null, rating: 4.6, reviews: 1544,
+  { id: "p11", name: "Melatonin · 5mg Time-Release", brand: "Peak Essentials", cat: "Sleep", price: 16, compareAt: 22, hsa: true, badge: null, rating: 4.6, reviews: 1544,
     icon: Moon, image: imgMelatonin, color: "hsl(220, 60%, 20%)",
     benefit: "Fall asleep. Stay asleep.",
     desc: "Time-release formula for sustained overnight support without morning grogginess." },
-  { id: "p12", name: "L-Theanine · 200mg", brand: "Spry Essentials", cat: "Sleep", price: 19, compareAt: 26, hsa: false, badge: "Calm focus", rating: 4.8, reviews: 718,
+  { id: "p12", name: "L-Theanine · 200mg", brand: "Peak Essentials", cat: "Sleep", price: 19, compareAt: 26, hsa: false, badge: "Calm focus", rating: 4.8, reviews: 718,
     icon: Leaf, image: imgLTheanine, color: "hsl(150, 55%, 40%)",
     benefit: "Calm without sedation",
     desc: "Smooth focus for high-stress days. Pairs cleanly with coffee — no crash, no fog." },
   { id: "p13", name: "Oura Ring 4", brand: "Oura", cat: "Devices", price: 349, compareAt: 399, hsa: false, badge: "Top pick", rating: 4.7, reviews: 2104,
     icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
     benefit: "Sleep and recovery on your finger",
-    desc: "Nightly body readings. Unlocks live Oura numbers on your SpryMD dashboard. Membership sold separately." },
+    desc: "Nightly body readings. Unlocks live Oura numbers on your PeakMD dashboard. Membership sold separately." },
   { id: "p14", name: "Whoop 5.0 Membership", brand: "Whoop", cat: "Devices", price: 239, compareAt: 269, hsa: false, badge: "Strain + recovery", rating: 4.6, reviews: 1588,
     icon: Activity, image: imgMarketplaceHero, color: "hsl(150, 55%, 40%)",
     benefit: "All-day strain, recovery, and sleep coaching",
@@ -458,7 +458,7 @@ const products = [
   { id: "p15", name: "Apple Watch Series", brand: "Apple", cat: "Devices", price: 429, compareAt: 499, hsa: false, badge: "Top wearable", rating: 4.8, reviews: 5402,
     icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
     benefit: "Heart, oxygen, and activity your doctor knows",
-    desc: "GPS model. Sync or stream heart rate and oxygen into SpryMD for your care plan." },
+    desc: "GPS model. Sync or stream heart rate and oxygen into PeakMD for your care plan." },
   { id: "p16", name: "Garmin Venu 3", brand: "Garmin", cat: "Devices", price: 449, compareAt: 499, hsa: false, badge: null, rating: 4.7, reviews: 976,
     icon: Watch, image: imgMarketplaceHero, color: "hsl(220, 60%, 20%)",
     benefit: "Training load with accurate heart rate",
@@ -603,12 +603,14 @@ const Tag = ({ children, color, fg }) => (
 const Logo = ({ color = C.ink, size = 22 }) => (
   <div className="flex items-center gap-2.5">
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="15" stroke={color} strokeWidth="1.5" />
-      <path d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2" fill={C.accent} />
+      <circle cx="17" cy="9" r="3.5" fill={C.accent} opacity="0.7">
+        <animate attributeName="opacity" values="0.7;0.35;0.7" dur="2.5s" repeatCount="indefinite" />
+      </circle>
+      <path d="M3 28 L10 17 L14 21 L17 7 L20 21 L24 17 L29 28 Z" fill="none" stroke={color} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M14.5 11 L17 7 L19.5 11" fill="none" stroke={C.accent} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
     <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
+      Peak<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
     </span>
   </div>
 );
@@ -1008,11 +1010,11 @@ const Landing = ({ go }) => (
               </div>
             </div>
             <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55, marginBottom: 18 }}>
-              Questions about your visit, shipping, or account? Email <strong style={{ color: C.ink }}>support@sprymd.ai</strong> — we aim to reply within one business day. For emergencies, call 911.
+              Questions about your visit, shipping, or account? Email <strong style={{ color: C.ink }}>support@peakmd.ai</strong> — we aim to reply within one business day. For emergencies, call 911.
             </p>
             <div className="flex flex-wrap gap-3">
               <Btn onClick={() => go("page", { slug: "contact" })} size="md" icon={ArrowRight}>Contact support</Btn>
-              <Btn onClick={() => go("page", { slug: "about" })} size="md" variant="ghost">About SpryMD</Btn>
+              <Btn onClick={() => go("page", { slug: "about" })} size="md" variant="ghost">About PeakMD</Btn>
             </div>
           </div>
         </div>
@@ -1119,7 +1121,7 @@ const Landing = ({ go }) => (
                 $49<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
               </div>
               <div className="mt-6 space-y-4">
-                {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
+                {[{ t: "Peak Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
                   { t: "Doctor + yearly labs", d: "$99/mo · full blood work included", tag: "Best value" },
                   { t: "Household", d: "$129/mo · two adults", tag: null }].map((tier) => (
                   <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
@@ -1143,7 +1145,7 @@ const Landing = ({ go }) => (
       <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
         <div className="max-w-7xl mx-auto">
           <div className="relative overflow-hidden mb-12" style={{ border: `1px solid ${C.line}`, minHeight: 260 }}>
-            <img src={imgMarketplaceHero} alt="Spry marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
+            <img src={imgMarketplaceHero} alt="Peak marketplace" className="absolute inset-0 w-full h-full object-cover ken-burns" style={{ opacity: 0.55 }} />
             <div className="absolute inset-0" style={{ background: "linear-gradient(100deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.25) 100%)" }} />
             <ScanFrame className="absolute inset-3 md:inset-5" label="Shop ready" />
             <div className="relative z-10 flex flex-col justify-end p-8 md:p-12" style={{ minHeight: 260 }}>
@@ -1171,7 +1173,7 @@ const Landing = ({ go }) => (
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.48) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
-          Spry<span style={{ color: C.accent }}>MD</span>
+          Peak<span style={{ color: C.accent }}>MD</span>
         </div>
         <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 52px)", lineHeight: 1.12, fontWeight: 650, color: C.ink }}>
           A real doctor is with you every step.
@@ -1268,7 +1270,7 @@ const Footer = ({ go }) => (
       <div>
         <Logo />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
-          Modern medicine, made for men. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
+          Modern medicine, made for men. Licensed telehealth for patients in Tennessee. Support: support@peakmd.ai. Not for emergencies.
         </p>
       </div>
       {footerColumns.map((col) => (
@@ -1294,12 +1296,12 @@ const Footer = ({ go }) => (
       ))}
     </div>
     <div className="max-w-7xl mx-auto mt-12 pt-8 flex justify-between items-center flex-wrap gap-3" style={{ borderTop: `1px solid ${C.line}` }}>
-      <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 SPRYMD INC.</span>
+      <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 PEAKMD INC.</span>
       <div className="flex flex-wrap gap-4">
         {[{ label: "Terms", href: "/terms" }, { label: "Privacy", href: "/privacy" }, { label: "NPP", href: "/npp" }, { label: "FAQ", href: "/faq" }].map((l) => (
           <a key={l.href} href={l.href} className="mono" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</a>
         ))}
-        <span className="mono" style={{ fontSize: 11, color: C.muted }}>SPRYMD.AI</span>
+        <span className="mono" style={{ fontSize: 11, color: C.muted }}>PEAKMD.AI</span>
       </div>
     </div>
   </footer>
@@ -1374,7 +1376,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
         <div className="max-w-3xl mx-auto">
           <button type="button" onClick={() => go("landing")} className="focus-ring mono mb-8 transition-opacity hover:opacity-60"
             style={{ fontSize: 11, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", background: "transparent", border: "none", padding: 0 }}>
-            ← SpryMD
+            ← PeakMD
           </button>
           <div className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase", marginBottom: 14 }}>
             {page.eyebrow}
@@ -1449,7 +1451,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
                 className="space-y-4"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  alert("Thanks — this demo form does not send yet. Email support@sprymd.ai.");
+                  alert("Thanks — this demo form does not send yet. Email support@peakmd.ai.");
                 }}
               >
                 {[
@@ -1695,7 +1697,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
               className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: T.inkSoft }} disabled={loading}>
               {mode === "signin"
-                ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
+                ? <>New to PeakMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
                 : <>Already a member? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Sign in</span></>}
             </button>
           </div>
@@ -1761,7 +1763,7 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
           </div>
           <div className="mt-6 flex items-center gap-3 flex-wrap">
             <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} active Rx</Tag>
-            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: SpryMD Clinician</Tag>
+            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: PeakMD Clinician</Tag>
             <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />gethealthy.com synced</Tag>
           </div>
         </div>
@@ -2062,7 +2064,7 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const total = refillCart.reduce((s, i) => s + i.price, 0);
 
   const steps = [
-    { title: "Refill request recorded", sub: "Saved to your SpryMD account · pending clinician confirmation", icon: Lock },
+    { title: "Refill request recorded", sub: "Saved to your PeakMD account · pending clinician confirmation", icon: Lock },
     { title: "Chart flagged for review", sub: "A clinician will confirm appropriateness before pharmacy release", icon: FileText },
     { title: "Queued for fulfillment", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} will release after approval`, icon: Send },
   ];
@@ -2552,7 +2554,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
             </div>
             <h2 className="display" style={{ fontSize: 36, fontWeight: 400, color: C.ink, marginBottom: 16 }}>We need to talk first.</h2>
             <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, marginBottom: 24 }}>
-              Based on your answer regarding <strong>{disqualified}</strong>, this medication isn't appropriate to prescribe through an asynchronous visit. A SpryMD clinician would like to speak with you directly.
+              Based on your answer regarding <strong>{disqualified}</strong>, this medication isn't appropriate to prescribe through an asynchronous visit. A PeakMD clinician would like to speak with you directly.
             </p>
             <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, marginBottom: 32 }}>
               We'll route your case for a synchronous consult — no charge until we determine whether treatment is safe and appropriate.
@@ -2748,7 +2750,7 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user, ini
       <section className="px-6 md:px-12 pt-12 md:pt-16 pb-8" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <div className="max-w-7xl mx-auto">
           <div className="relative rounded-[28px] overflow-hidden mb-10" style={{ border: `1px solid ${C.line}` }}>
-            <img src={imgMarketplaceHero} alt="Spry shop" className="w-full h-[180px] md:h-[260px] object-cover" />
+            <img src={imgMarketplaceHero} alt="Peak shop" className="w-full h-[180px] md:h-[260px] object-cover" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%)" }} />
             <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
               <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Marketplace</span>
@@ -2756,7 +2758,7 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user, ini
                 The <Mark>shop</Mark>.
               </h1>
               <p style={{ fontSize: 15, color: "rgba(255,255,255,0.72)", maxWidth: 480, lineHeight: 1.55, marginTop: 12 }}>
-                Branded Spry essentials, sleep apnea gear, and clinician-curated devices. Free shipping over $50.
+                Branded Peak essentials, sleep apnea gear, and clinician-curated devices. Free shipping over $50.
               </p>
             </div>
           </div>
@@ -2976,7 +2978,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
             <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 28, lineHeight: 1.55, maxWidth: 480 }}>
               {isSubscription
                 ? "Your case goes to clinician review before any prescription ships. Card authorization is held until approval."
-                : "Your order is saved to your SpryMD account. Authorization is held until fulfillment is confirmed."}
+                : "Your order is saved to your PeakMD account. Authorization is held until fulfillment is confirmed."}
             </p>
 
             <div className="space-y-6">
@@ -3076,7 +3078,7 @@ const Success = ({ mode, plan, consult, go }) => (
   <div className="anim-fadeIn min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: C.bg }}>
     <div className="anim-fadeUp max-w-xl">
       <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
-        <img src={imgMarketplaceHero} alt="SpryMD care complete" className="w-full h-40 object-cover" />
+        <img src={imgMarketplaceHero} alt="PeakMD care complete" className="w-full h-40 object-cover" />
       </div>
       <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
         <Check size={32} color={C.paper} strokeWidth={2} />

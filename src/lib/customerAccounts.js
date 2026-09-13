@@ -332,7 +332,7 @@ export function addCustomerProtocol(email, protocol) {
       chilled: !!protocol.chilled,
       category: protocol.category || "Protocol",
       color: "hsl(150, 55%, 40%)",
-      prescriber: "SpryMD Clinician",
+      prescriber: "PeakMD Clinician",
       daysSupply: 28,
     });
   }

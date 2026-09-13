@@ -145,7 +145,7 @@ export interface WearableDevice {
   marketplaceProductId?: string;
   priceUsd?: number;
   tier?: "clinical" | "recovery" | "metabolic" | "sleep" | "fitness" | "custom";
-  /** How this device ingests data into SpryMD */
+  /** How this device ingests data into PeakMD */
   connector?: WearableConnector;
   /** True when the patient added a device that is not in the stock catalog */
   isCustom?: boolean;

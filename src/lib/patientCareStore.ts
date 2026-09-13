@@ -269,7 +269,7 @@ function protocolToTreatment(p: Record<string, unknown>, idx: number): Treatment
     category: String(p.category || "Protocol"),
     dosingInstructions: "Your clinician will confirm exact dosing after chart review.",
     storage: "Follow the label on your shipment.",
-    howItWorks: "This protocol was started from your SpryMD intake and is tied to your account.",
+    howItWorks: "This protocol was started from your PeakMD intake and is tied to your account.",
     sideEffects: [],
     troubleshooting: "Message Support from your account if you miss a dose or have questions.",
     warnings: "Do not share medication. Seek urgent care for severe allergic symptoms.",
@@ -370,7 +370,7 @@ export function recordSubscriptionCheckout(input: {
     id: treatmentId,
     medicationName: input.plan.name,
     dosage: input.plan.sub || "Clinician-titrated",
-    goal: input.goal || `Start ${input.conditionName || "care"} with SpryMD`,
+    goal: input.goal || `Start ${input.conditionName || "care"} with PeakMD`,
     startDate: now.toISOString().slice(0, 10),
     refillThroughDate: through.toISOString().slice(0, 10),
     status: "pending",
@@ -417,7 +417,7 @@ export function recordSubscriptionCheckout(input: {
   care.messages.unshift({
     id: `msg_${Date.now()}`,
     subject: `Intake received · ${input.plan.name}`,
-    preview: "A SpryMD clinician will review your case before any prescription is issued.",
+    preview: "A PeakMD clinician will review your case before any prescription is issued.",
     updatedAt: now.toISOString(),
     status: "no_action",
   });

@@ -16,7 +16,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Mental health treatment should not require sitting in a waiting room or explaining yourself to a stranger every month. SpryMD cognitive protocols deliver SSRI and atypical antidepressant treatment with clinician oversight, private intake, and structured follow-up."
+            "text": "Mental health treatment should not require sitting in a waiting room or explaining yourself to a stranger every month. PeakMD cognitive protocols deliver SSRI and atypical antidepressant treatment with clinician oversight, private intake, and structured follow-up."
           },
           {
             "type": "p",
@@ -87,7 +87,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "We screen for bipolar disorder, active suicidal ideation with plan or intent, substance use disorders requiring higher-level care, and medication interactions. Treatment is declined when asynchronous telehealth is not clinically appropriate — including acute psychiatric crises. SpryMD is not emergency care. If you are in crisis, call 988 (Suicide & Crisis Lifeline) or 911 immediately."
+            "text": "We screen for bipolar disorder, active suicidal ideation with plan or intent, substance use disorders requiring higher-level care, and medication interactions. Treatment is declined when asynchronous telehealth is not clinically appropriate — including acute psychiatric crises. PeakMD is not emergency care. If you are in crisis, call 988 (Suicide & Crisis Lifeline) or 911 immediately."
           }
         ]
       }
@@ -110,7 +110,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Erectile dysfunction is common, treatable, and rarely something you need to navigate alone in a waiting room. SpryMD offers sildenafil and tadalafil in on-demand, daily, and oral-dissolve formulations — compounded by Empower Pharmacy and prescribed only after clinician review."
+            "text": "Erectile dysfunction is common, treatable, and rarely something you need to navigate alone in a waiting room. PeakMD offers sildenafil and tadalafil in on-demand, daily, and oral-dissolve formulations — compounded by Empower Pharmacy and prescribed only after clinician review."
           },
           {
             "type": "p",
@@ -182,7 +182,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "We screen for cardiovascular disease, nitrate or riociguat use, severe hepatic impairment, and other contraindications to PDE5 inhibitors. Treatment is declined when the risk profile is unfavorable. SpryMD is not emergency care — call 911 for chest pain, sudden vision or hearing loss, priapism lasting more than four hours, or any acute medical emergency."
+            "text": "We screen for cardiovascular disease, nitrate or riociguat use, severe hepatic impairment, and other contraindications to PDE5 inhibitors. Treatment is declined when the risk profile is unfavorable. PeakMD is not emergency care — call 911 for chest pain, sudden vision or hearing loss, priapism lasting more than four hours, or any acute medical emergency."
           }
         ]
       }
@@ -205,7 +205,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Androgenetic hair loss is progressive — and treatable when you intervene early with the right agents. SpryMD hair protocols combine DHT blockade, vasodilation, and compounded topicals formulated by Empower Pharmacy for patients who want oral simplicity or localized application."
+            "text": "Androgenetic hair loss is progressive — and treatable when you intervene early with the right agents. PeakMD hair protocols combine DHT blockade, vasodilation, and compounded topicals formulated by Empower Pharmacy for patients who want oral simplicity or localized application."
           },
           {
             "type": "p",
@@ -276,7 +276,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "We screen for liver disease, pregnancy exposure risk (finasteride is teratogenic — partners must not handle crushed tablets if pregnant), and contraindications to minoxidil or topical agents. Treatment is declined when the risk profile is unfavorable. SpryMD is not emergency care — call 911 for signs of allergic reaction, chest pain, or any acute medical emergency."
+            "text": "We screen for liver disease, pregnancy exposure risk (finasteride is teratogenic — partners must not handle crushed tablets if pregnant), and contraindications to minoxidil or topical agents. Treatment is declined when the risk profile is unfavorable. PeakMD is not emergency care — call 911 for signs of allergic reaction, chest pain, or any acute medical emergency."
           }
         ]
       }
@@ -299,7 +299,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Low testosterone is a lab-confirmed diagnosis, not a marketing funnel. SpryMD hormonal protocols require baseline labs, clinician interpretation, and scheduled follow-up — because exogenous testosterone and fertility-preserving alternatives both demand monitoring."
+            "text": "Low testosterone is a lab-confirmed diagnosis, not a marketing funnel. PeakMD hormonal protocols require baseline labs, clinician interpretation, and scheduled follow-up — because exogenous testosterone and fertility-preserving alternatives both demand monitoring."
           },
           {
             "type": "p",
@@ -313,7 +313,7 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "Men with symptomatic low testosterone confirmed by lab work (or ready to complete baseline labs through SpryMD)",
+              "Men with symptomatic low testosterone confirmed by lab work (or ready to complete baseline labs through PeakMD)",
               "Patients seeking injectable TRT, transdermal cream, or oral enclomiphene",
               "Men who want fertility-preserving alternatives to exogenous testosterone",
               "Anyone who needs structured monitoring — not a one-time prescription without follow-up"
@@ -370,7 +370,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Baseline and follow-up labs are required. We screen for prostate disease, polycythemia risk, untreated sleep apnea, and contraindications to hormone therapy. Treatment is declined when labs or clinical findings do not support therapy, or when monitoring cannot be maintained. SpryMD is not emergency care — call 911 for chest pain, shortness of breath, sudden severe headache, or any acute medical emergency."
+            "text": "Baseline and follow-up labs are required. We screen for prostate disease, polycythemia risk, untreated sleep apnea, and contraindications to hormone therapy. Treatment is declined when labs or clinical findings do not support therapy, or when monitoring cannot be maintained. PeakMD is not emergency care — call 911 for chest pain, shortness of breath, sudden severe headache, or any acute medical emergency."
           }
         ]
       }
@@ -382,7 +382,7 @@ export const footerPages = {
     "title": "Primary Care Protocol",
     "navLabel": "Primary Care",
     "eyebrow": "PROTOCOLS",
-    "tagline": "Your dedicated Spry clinician.",
+    "tagline": "Your dedicated Peak clinician.",
     "fromPrice": "49",
     "ctaLabel": "Begin protocol",
     "ctaTarget": "intake",
@@ -393,7 +393,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Performance medicine needs a primary care foundation. SpryMD Primary Care puts a dedicated licensed clinician on your account — the same provider who can oversee your protocols, order labs, manage chronic conditions, and coordinate referrals when specialist care is required."
+            "text": "Performance medicine needs a primary care foundation. PeakMD Primary Care puts a dedicated licensed clinician on your account — the same provider who can oversee your protocols, order labs, manage chronic conditions, and coordinate referrals when specialist care is required."
           },
           {
             "type": "p",
@@ -408,7 +408,7 @@ export const footerPages = {
             "type": "ul",
             "items": [
               "Men who want a dedicated PCP without the traditional office visit model",
-              "Patients already on SpryMD protocols who need coordinated, longitudinal care",
+              "Patients already on PeakMD protocols who need coordinated, longitudinal care",
               "Those who need annual wellness visits, lab review, or chronic condition management",
               "Households seeking shared clinician continuity for up to two adults"
             ]
@@ -421,7 +421,7 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "Dedicated SpryMD clinician assigned to your account",
+              "Dedicated PeakMD clinician assigned to your account",
               "Annual wellness visit and ongoing chronic care management",
               "Unlimited secure messaging with same-day response targets",
               "Lab ordering and interpretation (with PCP + Annual Labs tier)",
@@ -450,7 +450,7 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "**Spry Primary Care** — Full PCP membership with annual wellness, chronic care management, referrals, and unlimited secure messaging.",
+              "**Peak Primary Care** — Full PCP membership with annual wellness, chronic care management, referrals, and unlimited secure messaging.",
               "**PCP + Annual Labs** — Primary Care membership plus comprehensive annual labs — lipids, A1C, CBC, and hormone panel as indicated.",
               "**PCP Essentials** — Lighter plan with messaging and as-needed visits. For patients who already have specialists.",
               "**Household Primary Care** — Shared membership for up to two adults. Same clinician continuity for you and a partner."
@@ -463,7 +463,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Primary care through SpryMD covers routine and chronic needs — not emergency or acute hospital-level care. We decline membership when a patient's needs exceed what telehealth PCP can safely provide. SpryMD is not emergency care — call 911 for chest pain, difficulty breathing, stroke symptoms, severe injury, or any acute medical emergency."
+            "text": "Primary care through PeakMD covers routine and chronic needs — not emergency or acute hospital-level care. We decline membership when a patient's needs exceed what telehealth PCP can safely provide. PeakMD is not emergency care — call 911 for chest pain, difficulty breathing, stroke symptoms, severe injury, or any acute medical emergency."
           }
         ]
       }
@@ -486,7 +486,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Prescription skincare works when the active ingredients are at therapeutic concentrations and compounded for tolerability. SpryMD skin protocols use tretinoin-based complexes, acne gels, and anti-aging formulations — all compounded by Empower Pharmacy with adjuvants that reduce irritation without diluting efficacy."
+            "text": "Prescription skincare works when the active ingredients are at therapeutic concentrations and compounded for tolerability. PeakMD skin protocols use tretinoin-based complexes, acne gels, and anti-aging formulations — all compounded by Empower Pharmacy with adjuvants that reduce irritation without diluting efficacy."
           },
           {
             "type": "p",
@@ -557,7 +557,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "We screen for pregnancy, eczema flares, active skin infections, and contraindications to topical antibiotics or retinoids. Treatment is declined when in-person dermatologic evaluation is more appropriate. SpryMD is not emergency care — call 911 for signs of severe allergic reaction, angioedema, or any acute medical emergency."
+            "text": "We screen for pregnancy, eczema flares, active skin infections, and contraindications to topical antibiotics or retinoids. Treatment is declined when in-person dermatologic evaluation is more appropriate. PeakMD is not emergency care — call 911 for signs of severe allergic reaction, angioedema, or any acute medical emergency."
           }
         ]
       }
@@ -580,7 +580,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Metabolic weight loss is not a willpower problem — it is a signaling problem. SpryMD GLP-1 protocols use tirzepatide and semaglutide, compounded by Empower Pharmacy and titrated by a licensed clinician to your response, not a one-size dose chart."
+            "text": "Metabolic weight loss is not a willpower problem — it is a signaling problem. PeakMD GLP-1 protocols use tirzepatide and semaglutide, compounded by Empower Pharmacy and titrated by a licensed clinician to your response, not a one-size dose chart."
           },
           {
             "type": "p",
@@ -652,7 +652,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Every patient is screened for contraindications including personal or family history of medullary thyroid carcinoma, MEN2, pancreatitis, and pregnancy. We decline treatment when GLP-1 therapy is not clinically appropriate. SpryMD is not emergency care — seek immediate help or call 911 for severe abdominal pain, persistent vomiting, signs of allergic reaction, or any acute medical emergency."
+            "text": "Every patient is screened for contraindications including personal or family history of medullary thyroid carcinoma, MEN2, pancreatitis, and pregnancy. We decline treatment when GLP-1 therapy is not clinically appropriate. PeakMD is not emergency care — seek immediate help or call 911 for severe abdominal pain, persistent vomiting, signs of allergic reaction, or any acute medical emergency."
           }
         ]
       }
@@ -674,7 +674,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Home data only matters if it's accurate. The Spry device stack pairs FDA-cleared blood pressure monitoring, hospital-grade pulse oximetry, and clinical body composition tracking — the metrics your clinician actually reads."
+            "text": "Home data only matters if it's accurate. The Peak device stack pairs FDA-cleared blood pressure monitoring, hospital-grade pulse oximetry, and clinical body composition tracking — the metrics your clinician actually reads."
           },
           {
             "type": "p",
@@ -721,13 +721,13 @@ export const footerPages = {
             "items": [
               "**Select** — Choose the device that matches your monitoring needs. All ship ready to pair.",
               "**Pair & measure** — Connect via Bluetooth to your phone. Take readings on your schedule.",
-              "**Track** — Data flows to your health app. Share trends with your Spry clinician during follow-up."
+              "**Track** — Data flows to your health app. Share trends with your Peak clinician during follow-up."
             ]
           }
         ]
       },
       {
-        "title": "Why Spry",
+        "title": "Why Peak",
         "blocks": [
           {
             "type": "ul",
@@ -770,7 +770,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "Your dashboard pulls live from the Empower medication database — strength, sig, refills remaining, and prescriber on every line. A licensed SpryMD clinician signs every script in your history. Your record at gethealthy.com updates automatically after payment."
+            "text": "Your dashboard pulls live from the Empower medication database — strength, sig, refills remaining, and prescriber on every line. A licensed PeakMD clinician signs every script in your history. Your record at gethealthy.com updates automatically after payment."
           },
           {
             "type": "p",
@@ -784,7 +784,7 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "Spry patients with active Empower Pharmacy prescriptions",
+              "Peak patients with active Empower Pharmacy prescriptions",
               "Members running low on refills who want same-day processing",
               "Anyone on chilled compounds who needs reliable cold-chain delivery",
               "Patients who want refill history and prescriber continuity in one place"
@@ -818,7 +818,7 @@ export const footerPages = {
           {
             "type": "ol",
             "items": [
-              "**Sign in** — Authenticate to your Spry dashboard. Active Empower prescriptions load automatically.",
+              "**Sign in** — Authenticate to your Peak dashboard. Active Empower prescriptions load automatically.",
               "**Select & pay** — Add refills to cart. We e-prescribe to Empower and charge at checkout.",
               "**Ship** — Same-day transmission. Chilled orders go overnight. Tracking hits your inbox."
             ]
@@ -826,7 +826,7 @@ export const footerPages = {
         ]
       },
       {
-        "title": "Why Spry",
+        "title": "Why Peak",
         "blocks": [
           {
             "type": "ul",
@@ -865,7 +865,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Sleep is infrastructure. The Spry sleep stack starts with targeted supplements — time-release melatonin and L-theanine for onset and calm — without the grogginess of high-dose sedatives."
+            "text": "Sleep is infrastructure. The Peak sleep stack starts with targeted supplements — time-release melatonin and L-theanine for onset and calm — without the grogginess of high-dose sedatives."
           },
           {
             "type": "p",
@@ -901,8 +901,8 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "**Melatonin · 5mg Time-Release** (Spry Essentials) — $16; sustained overnight release, no morning hangover",
-              "**L-Theanine · 200mg** (Spry Essentials) — $19; calm focus for wind-down — pairs clean with evening routines"
+              "**Melatonin · 5mg Time-Release** (Peak Essentials) — $16; sustained overnight release, no morning hangover",
+              "**L-Theanine · 200mg** (Peak Essentials) — $19; calm focus for wind-down — pairs clean with evening routines"
             ]
           },
           {
@@ -914,7 +914,7 @@ export const footerPages = {
             "items": [
               "**ResMed AirFit P10 — Nasal Pillow** — $119; quietest mask class, 3 pillow sizes + headgear",
               "**Philips DreamWear Full Face** — $149; under-the-nose full-face seal for mouth breathers",
-              "**CPAP Cleaning Wipes · 110 ct** (Spry Care) — $18; alcohol-free, daily mask and tubing care"
+              "**CPAP Cleaning Wipes · 110 ct** (Peak Care) — $18; alcohol-free, daily mask and tubing care"
             ]
           }
         ]
@@ -933,7 +933,7 @@ export const footerPages = {
         ]
       },
       {
-        "title": "Why Spry",
+        "title": "Why Peak",
         "blocks": [
           {
             "type": "ul",
@@ -972,11 +972,11 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "The Spry supplement line covers what most protocols miss: methylated vitamins, clinical-grade omega-3s, bioavailable minerals, and performance compounds backed by evidence — not trend cycles."
+            "text": "The Peak supplement line covers what most protocols miss: methylated vitamins, clinical-grade omega-3s, bioavailable minerals, and performance compounds backed by evidence — not trend cycles."
           },
           {
             "type": "p",
-            "text": "Spry Essentials handles daily foundations. Spry Performance covers training and recovery. Every SKU is third-party tested, clearly labeled, and priced without retail markup theater."
+            "text": "Peak Essentials handles daily foundations. Peak Performance covers training and recovery. Every SKU is third-party tested, clearly labeled, and priced without retail markup theater."
           },
           {
             "type": "p",
@@ -1004,10 +1004,10 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "**Daily Multivitamin Complex** (Spry Essentials) — $32; methylated B-vitamins, D3/K2, chelated minerals",
-              "**Omega-3 EPA/DHA · 2000mg** (Spry Essentials) — $28; triglyceride-form, IFOS-certified",
-              "**Magnesium Glycinate · 400mg** (Spry Essentials) — $22; sleep, recovery, stress — clinician-preferred form",
-              "**Creatine Monohydrate · Micronized** (Spry Performance) — $26; Creapure-grade, 90 servings"
+              "**Daily Multivitamin Complex** (Peak Essentials) — $32; methylated B-vitamins, D3/K2, chelated minerals",
+              "**Omega-3 EPA/DHA · 2000mg** (Peak Essentials) — $28; triglyceride-form, IFOS-certified",
+              "**Magnesium Glycinate · 400mg** (Peak Essentials) — $22; sleep, recovery, stress — clinician-preferred form",
+              "**Creatine Monohydrate · Micronized** (Peak Performance) — $26; Creapure-grade, 90 servings"
             ]
           }
         ]
@@ -1026,14 +1026,14 @@ export const footerPages = {
         ]
       },
       {
-        "title": "Why Spry",
+        "title": "Why Peak",
         "blocks": [
           {
             "type": "ul",
             "items": [
               "**Form matters** — Glycinate magnesium, methylated B-vitamins, triglyceride omega-3s. Not the cheapest inputs.",
               "**No noise** — Four products that cover 90% of what clinicians actually recommend.",
-              "**Protocol-aware** — Selected to pair cleanly with Spry treatment plans, not compete with them."
+              "**Protocol-aware** — Selected to pair cleanly with Peak treatment plans, not compete with them."
             ]
           }
         ]
@@ -1043,7 +1043,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Dietary supplements are not intended to diagnose, treat, cure, or prevent disease. Consult your clinician before starting any new supplement, especially if you take prescription medications. HSA/FSA eligibility applies to most Spry Essentials SKUs; Creatine is not HSA-eligible. Free shipping on orders over $50."
+            "text": "Dietary supplements are not intended to diagnose, treat, cure, or prevent disease. Consult your clinician before starting any new supplement, especially if you take prescription medications. HSA/FSA eligibility applies to most Peak Essentials SKUs; Creatine is not HSA-eligible. Free shipping on orders over $50."
           }
         ]
       }
@@ -1052,7 +1052,7 @@ export const footerPages = {
   },
   "about": {
     "slug": "about",
-    "title": "About SpryMD",
+    "title": "About PeakMD",
     "navLabel": "About",
     "eyebrow": "COMPANY",
     "tagline": "Performance medicine infrastructure for men who refuse to coast.",
@@ -1064,7 +1064,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "SpryMD is a clinician-supervised telehealth platform built for men who want more from medicine than a waiting room and a prescription pad. We connect assessment, interpretation, and optimization into one closed loop — so every protocol is grounded in data, reviewed by a licensed physician, and adjusted as your body responds."
+            "text": "PeakMD is a clinician-supervised telehealth platform built for men who want more from medicine than a waiting room and a prescription pad. We connect assessment, interpretation, and optimization into one closed loop — so every protocol is grounded in data, reviewed by a licensed physician, and adjusted as your body responds."
           },
           {
             "type": "p",
@@ -1090,7 +1090,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Every SpryMD protocol follows the same architecture:"
+            "text": "Every PeakMD protocol follows the same architecture:"
           },
           {
             "type": "ul",
@@ -1125,7 +1125,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Performance medicine should feel modern, direct, and honest. SpryMD exists to give men a system that matches their ambition — rigorous underneath, effortless on the surface."
+            "text": "Performance medicine should feel modern, direct, and honest. PeakMD exists to give men a system that matches their ambition — rigorous underneath, effortless on the surface."
           }
         ]
       }
@@ -1146,7 +1146,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "SpryMD is a clinician-led platform. Protocols are not generated by algorithms and dispensed without oversight — they are authorized, supervised, and adjusted by licensed physicians who exercise independent medical judgment on every case."
+            "text": "PeakMD is a clinician-led platform. Protocols are not generated by algorithms and dispensed without oversight — they are authorized, supervised, and adjusted by licensed physicians who exercise independent medical judgment on every case."
           },
           {
             "type": "p",
@@ -1163,7 +1163,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "SpryMD protocols are supervised by licensed physicians with training in internal medicine and performance health."
+            "text": "PeakMD protocols are supervised by licensed physicians with training in internal medicine and performance health."
           },
           {
             "type": "p",
@@ -1171,7 +1171,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "Additional clinicians may join the network as the platform expands. Every physician on SpryMD meets the same credentialing and supervision standards."
+            "text": "Additional clinicians may join the network as the platform expands. Every physician on PeakMD meets the same credentialing and supervision standards."
           }
         ]
       },
@@ -1196,7 +1196,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "SpryMD operates an asynchronous clinical review model:"
+            "text": "PeakMD operates an asynchronous clinical review model:"
           },
           {
             "type": "p",
@@ -1204,7 +1204,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**Typical clinician review turnaround: within ~24 hours** of completed intake and lab results. Urgent or emergency concerns are directed to appropriate in-person or emergency care — SpryMD is not an emergency service."
+            "text": "**Typical clinician review turnaround: within ~24 hours** of completed intake and lab results. Urgent or emergency concerns are directed to appropriate in-person or emergency care — PeakMD is not an emergency service."
           }
         ]
       },
@@ -1213,7 +1213,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Compounded medications are fulfilled through **Empower Pharmacy**, a licensed compounding pharmacy. Prescriptions are written by SpryMD clinicians and dispensed under standard pharmacy regulations."
+            "text": "Compounded medications are fulfilled through **Empower Pharmacy**, a licensed compounding pharmacy. Prescriptions are written by PeakMD clinicians and dispensed under standard pharmacy regulations."
           }
         ]
       }
@@ -1234,7 +1234,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Questions about your protocol, account, privacy, or press? Use the channels below. SpryMD is a telehealth platform — we are not an emergency service. If you are experiencing a medical emergency, call 911 or go to your nearest emergency room."
+            "text": "Questions about your protocol, account, privacy, or press? Use the channels below. PeakMD is a telehealth platform — we are not an emergency service. If you are experiencing a medical emergency, call 911 or go to your nearest emergency room."
           },
           {
             "type": "p",
@@ -1251,7 +1251,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**Email:** support@sprymd.ai"
+            "text": "**Email:** support@peakmd.ai"
           },
           {
             "type": "p",
@@ -1263,7 +1263,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**Email:** privacy@sprymd.ai"
+            "text": "**Email:** privacy@peakmd.ai"
           },
           {
             "type": "p",
@@ -1275,7 +1275,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**Email:** press@sprymd.ai"
+            "text": "**Email:** press@peakmd.ai"
           },
           {
             "type": "p",
@@ -1291,7 +1291,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "SpryMD Inc. Attn: Privacy Officer [Street Address] [City], TN [ZIP] United States"
+            "text": "PeakMD Inc. Attn: Privacy Officer [Street Address] [City], TN [ZIP] United States"
           }
         ]
       },
@@ -1343,7 +1343,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "SpryMD is building performance medicine infrastructure for men — clinician-supervised telehealth protocols for hormone optimization, metabolic health, recovery, and longevity. We are not a pill mill. We are a closed-loop system: assess, interpret, optimize."
+            "text": "PeakMD is building performance medicine infrastructure for men — clinician-supervised telehealth protocols for hormone optimization, metabolic health, recovery, and longevity. We are not a pill mill. We are a closed-loop system: assess, interpret, optimize."
           },
           {
             "type": "p",
@@ -1356,7 +1356,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "SpryMD Inc. is a clinician-supervised telehealth platform delivering performance medicine for men. The company connects structured assessment, physician review, and protocol optimization into a single closed loop — with discreet fulfillment through licensed pharmacy partners and continuous monitoring over time. SpryMD is headquartered in the United States and operates under the tagline: *Modern medicine, made for men.*"
+            "text": "PeakMD Inc. is a clinician-supervised telehealth platform delivering performance medicine for men. The company connects structured assessment, physician review, and protocol optimization into a single closed loop — with discreet fulfillment through licensed pharmacy partners and continuous monitoring over time. PeakMD is headquartered in the United States and operates under the tagline: *Modern medicine, made for men.*"
           }
         ]
       },
@@ -1366,7 +1366,7 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "**Company:** SpryMD Inc. (SpryMD.ai)",
+              "**Company:** PeakMD Inc. (PeakMD.ai)",
               "**Category:** Performance-health telehealth / men's health infrastructure",
               "**Model:** Clinician-supervised protocols — assess → interpret → optimize",
               "**Fulfillment:** Compounded medications via Empower Pharmacy; discreet shipping",
@@ -1382,7 +1382,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Logo and favicon files are available for approved media use. Request assets by emailing **press@sprymd.ai** — include your outlet, intended use, and deadline."
+            "text": "Logo and favicon files are available for approved media use. Request assets by emailing **press@peakmd.ai** — include your outlet, intended use, and deadline."
           },
           {
             "type": "p",
@@ -1395,7 +1395,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "**Email:** press@sprymd.ai"
+            "text": "**Email:** press@peakmd.ai"
           },
           {
             "type": "p",

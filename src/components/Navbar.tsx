@@ -26,7 +26,7 @@ const Navbar = () => {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-navy/90 backdrop-blur-md" : "bg-navy"}`}>
       <div className="section-container flex items-center justify-between h-16 px-4 md:px-8">
-        <Link to="/" className="font-display text-primary-foreground font-semibold text-2xl">SpryMD.AI
+        <Link to="/" className="font-display text-primary-foreground font-semibold text-2xl">PeakMD.AI
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

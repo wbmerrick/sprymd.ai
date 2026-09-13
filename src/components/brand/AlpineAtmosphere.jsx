@@ -1,4 +1,4 @@
-import imgAlpineAtmosphere from "../../assets/sprymd-alpine-atmosphere.webp";
+import imgAlpineAtmosphere from "../../assets/peakmd-mountain-peak.png";
 
 const VARIANTS = {
   site: {
@@ -32,7 +32,7 @@ const VARIANTS = {
 };
 
 /**
- * SpryMD alpine lake atmosphere — Grok-customized brand photography
+ * PeakMD mountain peak atmosphere — golden hour alpine photography
  * (coral alpenglow, navy water) used as a cinematic backdrop.
  */
 export default function AlpineAtmosphere({ variant = "site", className = "", locked }) {

@@ -321,7 +321,7 @@ export const OEM_PROVIDERS: Record<OemProviderId, OemProviderConfig> = {
   },
   native_sim: {
     id: "native_sim",
-    displayName: "SpryMD direct",
+    displayName: "PeakMD direct",
     connector: "native_sim",
     authMode: "sim",
     envPrefix: "NATIVE_SIM",

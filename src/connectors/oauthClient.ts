@@ -27,7 +27,7 @@ function tokenApiUrl() {
   return `${origin()}/api/oauth/token`;
 }
 
-/** Start OEM OAuth — live vendor when client id is set, otherwise SpryMD sandbox consent. */
+/** Start OEM OAuth — live vendor when client id is set, otherwise PeakMD sandbox consent. */
 export async function startOemOAuth(input: {
   email: string;
   deviceId: WearableKind;

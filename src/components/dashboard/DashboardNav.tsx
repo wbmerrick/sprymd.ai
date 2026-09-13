@@ -64,7 +64,7 @@ export function DashboardNav({ user, unreadCount }: DashboardNavProps) {
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-3 py-3 md:px-5">
         <div className="flex min-w-0 items-center gap-6">
           <Link to="/" className="shrink-0 font-semibold tracking-tight text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
-            Spry<span className="text-[#1EC8A5]">MD</span>
+            Peak<span className="text-[#1EC8A5]">MD</span>
           </Link>
           <nav aria-label="Patient account" className="hidden items-center gap-6 md:flex">
             {NAV_GROUPS.map((group) => (

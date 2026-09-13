@@ -23,7 +23,7 @@ function CareHome() {
           Your care at a glance
         </h1>
         <p className="text-sm text-zinc-500">
-          Treatments, shipments, and updates for your SpryMD account.
+          Treatments, shipments, and updates for your PeakMD account.
         </p>
       </header>
       <CurrentManagement treatments={activeTreatments} />

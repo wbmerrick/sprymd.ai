@@ -257,7 +257,7 @@ const Quiz = () => {
               <span className="font-display text-foreground text-5xl font-bold">$75</span>
               <span className="font-body text-muted-foreground text-xl">/month</span>
             </div>
-            <a href="https://buy.stripe.com/28EfZjb5i0mEa679id7Zu00" className="btn-primary-lg w-full text-center block">Complete My SpryMD Visit — $75 →</a>
+            <a href="https://buy.stripe.com/28EfZjb5i0mEa679id7Zu00" className="btn-primary-lg w-full text-center block">Complete My PeakMD Visit — $75 →</a>
             <p className="font-body text-muted-foreground text-xs mt-4">Discreet billing · Cancel anytime · HIPAA-secure</p>
           </div>
         );

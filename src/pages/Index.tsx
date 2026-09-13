@@ -17,7 +17,7 @@ const HeroSection = () =>
       </AnimatedSection>
       <AnimatedSection delay={0.1}>
         <h1 className="text-primary-foreground text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8 font-serif whitespace-pre-line">
-          Become SPRY -{"\n\n\n"}Our Board Certified Physician's{"\n\n\n"}Help You Achieve{"\n\n\n"}Optimum You.{"\n\n\n"}Think Fast.{"\n\n\n"}Achieve Weight Loss Goal.{"\n\n\n"}Perform in bed.{"\n\n\n"} ED Treatment.{"\n"}Online.{"\n"}In 24 Hours.
+          Become PEAK -{"\n\n\n"}Our Board Certified Physician's{"\n\n\n"}Help You Achieve{"\n\n\n"}Optimum You.{"\n\n\n"}Think Fast.{"\n\n\n"}Achieve Weight Loss Goal.{"\n\n\n"}Perform in bed.{"\n\n\n"} ED Treatment.{"\n"}Online.{"\n"}In 24 Hours.
         </h1>
       </AnimatedSection>
       <AnimatedSection delay={0.2}>
@@ -137,7 +137,7 @@ const WhyChooseUs = () => {
           <h2 className="font-display text-primary-foreground text-3xl md:text-[42px] font-bold leading-tight mb-6">
             Not a Staffing Agency. A Real Doctor Who Cares.
           </h2>
-          <p className="font-body text-primary-foreground/70 text-lg max-w-[600px] mx-auto mb-4">At SPRYMD.AI, you're not filling out a form that gets routed to whoever is available. A board-certified physician personally reviews every case — every prescription, every follow-up.
+          <p className="font-body text-primary-foreground/70 text-lg max-w-[600px] mx-auto mb-4">At PEAKMD.AI, you're not filling out a form that gets routed to whoever is available. A board-certified physician personally reviews every case — every prescription, every follow-up.
 
           </p>
           <p className="font-body text-primary-foreground/70 text-lg max-w-[600px] mx-auto mb-12">

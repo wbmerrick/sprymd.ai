@@ -6,7 +6,7 @@ const AboutHero = () => (
   <section className="bg-navy py-24 px-4 text-center">
     <div className="section-container">
       <AnimatedSection>
-        <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
+        <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About PeakMD</h1>
         <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men.</p>
       </AnimatedSection>
     </div>
@@ -42,7 +42,7 @@ const DoctorBio = () => (
           <h2 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">Care without the waiting room</h2>
           <p className="font-body text-primary font-medium mb-6">Clinician-reviewed telehealth · Tennessee</p>
           <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
-            <p>SpryMD is a telehealth practice for men who want clear, private care — without sitting in a waiting room or explaining themselves in public.</p>
+            <p>PeakMD is a telehealth practice for men who want clear, private care — without sitting in a waiting room or explaining themselves in public.</p>
             <p>This platform exists to remove the usual barriers: scheduling weeks out, awkward in-person visits, and care that feels like a mill. A licensed clinician reviews every case. Treatment ships only when it is clinically appropriate.</p>
             <p>We currently care for patients located in Tennessee. Discretion matters. Every visit gets the same attention you would expect in a clinic.</p>
           </div>

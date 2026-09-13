@@ -6,8 +6,8 @@ const Footer = () => {
       <div className="section-container">
         <div className="flex flex-col md:flex-row justify-between gap-8">
           <div>
-            <p className="font-display text-primary-foreground text-lg font-semibold mb-2">SpryMD.ai</p>
-            <p className="font-body text-primary-foreground/50 text-sm max-w-md">© 2026 SpryMD.ai. Telehealth services provided by licensed clinicians for patients in Tennessee.
+            <p className="font-display text-primary-foreground text-lg font-semibold mb-2">PeakMD.ai</p>
+            <p className="font-body text-primary-foreground/50 text-sm max-w-md">© 2026 PeakMD.ai. Telehealth services provided by licensed clinicians for patients in Tennessee.
 
             </p>
           </div>
