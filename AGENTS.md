@@ -29,3 +29,14 @@ in `.env` (`VITE_SUPABASE_*`) and point at a hosted project.
 - Routes are defined in `src/App.tsx` (react-router). Key pages live in `src/pages/`.
 - The core user flow is the multi-step medical intake quiz at `/quiz`
   (`src/pages/Quiz.tsx`), which ends on a treatment-plan screen with a Stripe checkout link.
+
+### Base44 dev environment
+- `docker-compose.base44.yml` runs the Vite dev server via `oven/bun:1`, bind-mounting
+  the repo at `/app` and mapping container port 8080 → host port 3000.
+- `bun install` runs at container start; deps live in an anonymous volume at
+  `/app/node_modules` so they don't clobber the bind mount.
+- Supabase credentials are committed in `.env` (`VITE_SUPABASE_*`) and loaded via
+  `env_file: ./.env` — no external secrets needed to boot.
+- `vite.config.ts` has `allowedHosts: true` so the preview proxy hostname is accepted.
+- The optional OAuth client IDs/secrets in `.env.example` are **not** required to boot;
+  supply them only if testing wearable OAuth flows.
