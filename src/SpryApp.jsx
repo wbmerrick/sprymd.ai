@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
-import AlpineAtmosphere from "./components/brand/AlpineAtmosphere";
 import BrandAtmosphere from "./components/brand/BrandAtmosphere";
 import { brandPlates } from "./assets/brand/catalog";
 
@@ -91,9 +90,9 @@ const FontInjector = () => (
       background-image:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.12), transparent 55%),
         linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)),
-        url("/brand/sprymd-alpine-atmosphere.webp");
+        url("/brand/sprymd-hawaii-lagoon.webp");
       background-size: auto, auto, cover;
-      background-position: center, center, center 58%;
+      background-position: center, center, center 42%;
       background-attachment: fixed;
       background-repeat: no-repeat;
     }
@@ -1169,10 +1168,10 @@ const Landing = ({ go }) => (
 
     {/* Close */}
     <section className="px-6 md:px-12 py-24 md:py-32 relative overflow-hidden" style={{ background: "transparent" }}>
-      <BrandAtmosphere plate="hawaiiWide" variant="panel" />
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.18 }}>
         <SignalField density={28} interactive={false} />
       </div>
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.42) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
           Spry<span style={{ color: C.accent }}>MD</span>
@@ -3245,7 +3244,7 @@ export default function App() {
   return (
     <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
-      {view === "landing" ? <AlpineAtmosphere variant="site" locked /> : null}
+      {view === "landing" ? <BrandAtmosphere plate="hawaiiWide" variant="site" locked objectPosition="center 42%" /> : null}
 
       {view === "landing" && (
         <div className="relative z-10">

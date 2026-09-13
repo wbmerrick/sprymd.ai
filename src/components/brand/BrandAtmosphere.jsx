@@ -47,11 +47,13 @@ export default function BrandAtmosphere({
   variant = "site",
   className = "",
   locked,
+  objectPosition,
 }) {
   const asset = brandPlates[plate] || brandPlates.alpine;
   const spec = VARIANTS[variant] || VARIANTS.site;
   const isFixed = locked ?? spec.fixed;
   const positionClass = isFixed ? "fixed" : "absolute";
+  const crop = objectPosition || spec.objectPosition;
 
   return (
     <div
@@ -63,7 +65,7 @@ export default function BrandAtmosphere({
         src={asset.src}
         alt=""
         className="earth-distant absolute inset-0 h-full w-full"
-        style={{ opacity: spec.imgOpacity, objectPosition: spec.objectPosition }}
+        style={{ opacity: spec.imgOpacity, objectPosition: crop }}
       />
       <div className="absolute inset-0" style={{ background: spec.overlay }} />
     </div>

@@ -76,7 +76,7 @@ export const brandPlates = {
     src: imgHawaiiLagoon,
     publicPath: "/brand/sprymd-hawaii-lagoon.webp",
     ratio: "16:9",
-    use: "Close CTA and widescreen paradise atmosphere",
+    use: "Site background, close CTA, and widescreen paradise atmosphere",
   },
   hawaiiPortrait: {
     id: "hawaiiPortrait",
