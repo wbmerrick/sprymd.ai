@@ -26,7 +26,6 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
-import imgLifestyleHero from "./assets/tn-lifestyle-hero.png";
 import {
   signInCustomer,
   signUpCustomer,
