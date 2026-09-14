@@ -209,7 +209,7 @@ const conditions = {
     id: "weightloss", name: "Weight loss",
     tagline: "Lose weight with a real doctor watching your plan.",
     description: "Safe weight-loss medicine chosen for you. A doctor checks your answers, then we ship care to your door.",
-    icon: Scale, accent: "#E87722", fromPrice: "149",
+    icon: Scale, accent: "#E87722", fromPrice: "200",
     treatments: [
       { id: "tirz-mid", name: "Tirzepatide Injection", sub: "5–10 mg / weekly · titrated", price: 279, chilled: true,
         note: "Dual GIP/GLP-1 agonism. The strongest agent we offer — direct alternative to compounded Mounjaro/Zepbound.",
@@ -252,7 +252,7 @@ const conditions = {
     id: "hairloss", name: "Hair loss",
     tagline: "Slow hair loss and help hair grow back.",
     description: "Proven hair treatments. Pick what fits you. A doctor makes sure it is safe for you.",
-    icon: Sparkles, accent: "#E87722", fromPrice: "25",
+    icon: Sparkles, accent: "#E87722", fromPrice: "40",
     treatments: [
       { id: "fin", name: "Finasteride 1mg Oral", sub: "30 tablets / month", price: 25, chilled: false,
         note: "DHT blockade. The gold-standard first-line treatment.", compareAt: 32, comparePeer: "Hims" },
@@ -270,7 +270,7 @@ const conditions = {
     id: "skincare", name: "Skin care",
     tagline: "Clearer, healthier-looking skin.",
     description: "Doctor-guided skin treatments for aging, acne, and tone — made for your goals.",
-    icon: Leaf, accent: "#E87722", fromPrice: "59",
+    icon: Leaf, accent: "#E87722", fromPrice: "100",
     treatments: [
       { id: "tret-mild", name: "Tretinoin TAAN Mild", sub: "Tret 0.03% / Azelaic 4% / Niacinamide 4% · 30 g", price: 59, chilled: false,
         note: "Compounded for tolerability. Three-active complex for texture, tone, and brightening.", badge: "Best for first-timers" },
