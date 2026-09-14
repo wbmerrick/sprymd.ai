@@ -8,6 +8,8 @@ import imgTnRidge from "./sprymd-tn-ridge.webp";
 import imgHawaiiMark from "./sprymd-hawaii-mark.webp";
 import imgHawaiiLagoon from "./sprymd-hawaii-lagoon.webp";
 import imgHawaiiPortrait from "./sprymd-hawaii-portrait.webp";
+import imgHawaiiDawn from "./sprymd-hawaii-dawn.webp";
+import imgHawaiiDawnPortrait from "./sprymd-hawaii-dawn-portrait.webp";
 
 /**
  * SpryMD brand photography kit — Grok-graded plates for future surfaces.
@@ -76,7 +78,7 @@ export const brandPlates = {
     src: imgHawaiiLagoon,
     publicPath: "/brand/sprymd-hawaii-lagoon.webp",
     ratio: "16:9",
-    use: "Site background, close CTA, and widescreen paradise atmosphere",
+    use: "Dusk paradise still — catalog reuse for banners and close CTA",
   },
   hawaiiPortrait: {
     id: "hawaiiPortrait",
@@ -84,6 +86,20 @@ export const brandPlates = {
     publicPath: "/brand/sprymd-hawaii-portrait.webp",
     ratio: "9:16",
     use: "Mobile stories and splash — Hawaiian peak-and-lagoon",
+  },
+  hawaiiDawn: {
+    id: "hawaiiDawn",
+    src: imgHawaiiDawn,
+    publicPath: "/brand/sprymd-hawaii-dawn.webp",
+    ratio: "16:9",
+    use: "Site background — golden dawn peak with turquoise lagoon reflection",
+  },
+  hawaiiDawnPortrait: {
+    id: "hawaiiDawnPortrait",
+    src: imgHawaiiDawnPortrait,
+    publicPath: "/brand/sprymd-hawaii-dawn-portrait.webp",
+    ratio: "9:16",
+    use: "Mobile stories and splash — uploaded dawn peak-and-reflection still",
   },
 };
 

@@ -40,7 +40,7 @@ export default function DashboardLayout() {
         className="relative min-h-screen overflow-hidden bg-[#050505] text-zinc-100"
         style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
       >
-        <BrandAtmosphere plate="hawaiiWide" variant="wash" />
+        <BrandAtmosphere plate="hawaiiDawn" variant="wash" />
         <div className="relative z-10">
           <DashboardNav user={data.user} unreadCount={data.unreadCount} />
           <main

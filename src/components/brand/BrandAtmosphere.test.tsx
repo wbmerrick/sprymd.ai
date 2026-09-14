@@ -16,4 +16,10 @@ describe("BrandAtmosphere", () => {
     expect(container.querySelector("[data-brand-plate='hawaiiWide']")).toBeTruthy();
     expect(container.querySelector("img")?.getAttribute("src") || "").toMatch(/sprymd-hawaii-lagoon/);
   });
+
+  it("renders the dawn peak-and-lagoon site plate", () => {
+    const { container } = render(<BrandAtmosphere plate="hawaiiDawn" variant="site" />);
+    expect(container.querySelector("[data-brand-plate='hawaiiDawn']")).toBeTruthy();
+    expect(container.querySelector("img")?.getAttribute("src") || "").toMatch(/sprymd-hawaii-dawn/);
+  });
 });
