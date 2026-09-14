@@ -231,7 +231,7 @@ const conditions = {
     id: "ed", name: "Men's sexual health",
     tagline: "Feel confident again — daily or when you need it.",
     description: "Simple treatments for erectile health. Private questions. A doctor reviews your case before anything ships.",
-    icon: Flame, accent: "#E87722", fromPrice: "49",
+    icon: Flame, accent: "#E87722", fromPrice: "65",
     treatments: [
       { id: "sild-prn", name: "Sildenafil 50mg PRN", sub: "10 doses / month · as needed", price: 69, chilled: false,
         note: "The standard. Onset 30–60 min. Most cost-effective entry.", compareAt: 89, comparePeer: "Hims" },
