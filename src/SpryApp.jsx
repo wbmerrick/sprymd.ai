@@ -26,7 +26,6 @@ import imgSmartScale from "./assets/products/p10_smart_scale.webp";
 import imgMelatonin from "./assets/products/p11_melatonin.webp";
 import imgLTheanine from "./assets/products/p12_ltheanine.webp";
 import imgMarketplaceHero from "./assets/products/marketplace-hero.webp";
-import imgLifestyleHero from "./assets/tn-lifestyle-hero.png";
 import {
   signInCustomer,
   signUpCustomer,
@@ -904,20 +903,41 @@ const Landing = ({ go }) => (
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl" style={{ border: `1px solid ${C.line}`, height: "min(520px, 78vw)" }}>
-            <img
-              src={imgLifestyleHero}
-              alt="A man on a Tennessee porch at golden hour — confident, at home, not in a clinic"
-              className="absolute inset-0 w-full h-full object-cover ken-burns"
-              style={{ objectPosition: "center 28%" }}
-            />
-            <div className="absolute inset-x-0 bottom-0 p-5 md:p-6" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.88) 55%)" }}>
-              <p style={{ fontSize: 15, color: "#fff", lineHeight: 1.45, maxWidth: 420 }}>
-                “I started after work in Nashville. A real doctor reviewed my case — no waiting room.”
-              </p>
-              <p className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.accent, marginTop: 8, fontWeight: 700 }}>
-                Marcus · Nashville, TN
-              </p>
+          <div className="rounded-3xl p-5 md:p-6" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
+              Start your visit
+            </span>
+            <h2 className="display" style={{ fontSize: 22, fontWeight: 650, color: C.ink, marginTop: 8, marginBottom: 16 }}>
+              What can we help you with?
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {Object.values(conditions).map((cond) => {
+                const Icon = cond.icon;
+                return (
+                  <button
+                    key={cond.id}
+                    onClick={() => go("intake", { condition: cond.id })}
+                    className="text-left rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5"
+                    style={{ background: C.bg, border: `1px solid ${C.line}` }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 38, height: 38, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                        <Icon size={18} color={C.accent} />
+                      </div>
+                      <div className="min-w-0">
+                        <div style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{cond.name}</div>
+                        {cond.fromPrice && (
+                          <div style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo</div>
+                        )}
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45, marginTop: 10 }}>{cond.tagline}</p>
+                    <span className="inline-flex items-center gap-1.5 mt-3" style={{ fontSize: 12, fontWeight: 700, color: C.accent }}>
+                      Start intake <ArrowRight size={13} />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
