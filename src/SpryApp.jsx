@@ -847,6 +847,23 @@ const Landing = ({ go }) => (
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
+        <div
+          className="spry-rise display"
+          style={{
+            animationDelay: "0.02s",
+            fontSize: "clamp(46px, 7.2vw, 82px)",
+            lineHeight: 1.05,
+            fontWeight: 700,
+            color: C.ink,
+            textAlign: "center",
+            marginBottom: 40,
+          }}
+        >
+          SpryMD
+          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
+            Feel better. Stay stronger.
+          </div>
+        </div>
         <div className="grid gap-10 lg:gap-14 items-center md:grid-cols-2">
           <div className="flex flex-col justify-center">
             <p
