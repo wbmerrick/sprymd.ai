@@ -1191,16 +1191,13 @@ const Landing = ({ go }) => (
 
 const ConditionCard = ({ condition, onClick, delay }) => {
   const [hover, setHover] = useState(false);
-  const Icon = condition.icon;
+  
   return (
     <button onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       className="anim-fadeUp focus-ring text-left p-7 md:p-8 transition-all duration-300 group relative overflow-hidden"
       style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
       <div className="absolute inset-y-0 left-0 w-px transition-all" style={{ background: C.accent, opacity: hover ? 1 : 0, boxShadow: hover ? `0 0 24px ${C.accent}` : "none" }} />
-      <div className="flex items-start justify-between mb-8 relative">
-        <div className="p-2.5 rounded-full" style={{ background: hover ? C.signalDim : C.paper, color: C.accent, transition: "all 0.3s" }}>
-          <Icon size={20} strokeWidth={1.5} />
-        </div>
+      <div className="flex items-start justify-end mb-8 relative">
         <div style={{ transform: hover ? "translateX(4px)" : "none", transition: "transform 0.3s" }}>
           <ArrowRight size={18} color={hover ? C.accent : C.muted} strokeWidth={1.5} />
         </div>
