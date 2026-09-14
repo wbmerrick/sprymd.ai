@@ -4,9 +4,9 @@ const VARIANTS = {
   site: {
     imgOpacity: 1,
     overlay:
-      "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.12) 38%, rgba(0,0,0,0.40) 100%), radial-gradient(ellipse 60% 42% at 68% 20%, rgba(232,119,34,0.18), transparent 56%)",
+      "linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.04) 42%, rgba(0,0,0,0.22) 100%), radial-gradient(ellipse 60% 42% at 68% 20%, rgba(232,119,34,0.10), transparent 56%)",
     fixed: true,
-    objectPosition: "center 58%",
+    objectPosition: "center 40%",
   },
   hero: {
     imgOpacity: 1,

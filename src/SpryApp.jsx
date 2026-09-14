@@ -88,11 +88,11 @@ const FontInjector = () => (
     body {
       font-family: ${fonts.body}; letter-spacing: -0.005em;
       background-image:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.12), transparent 55%),
-        linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)),
-        url("/brand/sprymd-hawaii-lagoon.webp");
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.08), transparent 55%),
+        linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.18)),
+        url("/brand/sprymd-hawaii-dawn.webp");
       background-size: auto, auto, cover;
-      background-position: center, center, center 42%;
+      background-position: center, center, center 40%;
       background-attachment: fixed;
       background-repeat: no-repeat;
     }
@@ -3377,7 +3377,7 @@ export default function App() {
   return (
     <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
-      {view === "landing" ? <BrandAtmosphere plate="hawaiiWide" variant="site" locked objectPosition="center 42%" /> : null}
+      {view === "landing" ? <BrandAtmosphere plate="hawaiiDawn" variant="site" locked objectPosition="center 40%" /> : null}
 
       {view === "landing" && (
         <div className="relative z-10">
