@@ -861,7 +861,7 @@ const Landing = ({ go }) => (
         >
           SpryMD
           <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
-            Feel better. Stay stronger.
+            Feel better. Stay stronger. Live longer.
           </div>
         </div>
         <div className="grid gap-10 lg:gap-14 items-center md:grid-cols-2">
