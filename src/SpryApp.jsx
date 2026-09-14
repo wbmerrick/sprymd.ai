@@ -911,7 +911,7 @@ const Landing = ({ go }) => (
               What can we help you with?
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.values(conditions).filter((cond) => !["energy", "mood", "pcp"].includes(cond.id)).map((cond) => {
+              {Object.values(conditions).filter((cond) => !["lowt", "mentalhealth", "pcp"].includes(cond.id)).map((cond) => {
                 const Icon = cond.icon;
                 return (
                   <button
