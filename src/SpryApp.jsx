@@ -1112,7 +1112,7 @@ const Landing = ({ go }) => (
             <div className="p-7 md:p-8 relative z-10">
               <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
               <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
-                $49<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
+                $250<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
               </div>
               <div className="mt-6 space-y-4">
                 {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
