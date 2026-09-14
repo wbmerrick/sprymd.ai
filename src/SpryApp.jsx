@@ -1047,39 +1047,6 @@ const Landing = ({ go }) => (
       </div>
     </section>
 
-    {/* Signal domains */}
-    <section className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
-          <div>
-            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>What we help with</span>
-            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
-              Care for real life goals.
-            </h2>
-          </div>
-          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 16, lineHeight: 1.55 }}>
-            Pick the area that matters most. We keep the plan clear and follow up with you.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-px" style={{ background: C.line, border: `1px solid ${C.line}` }}>
-          {[{ t: "Weight", d: "Lose weight safely with doctor support", c: "01" },
-            { t: "Energy", d: "Feel stronger and less run-down", c: "02" },
-            { t: "Mood", d: "Feel calmer and more focused", c: "03" },
-            { t: "Sleep", d: "Rest better and wake up ready", c: "04" },
-            { t: "Men's care", d: "Sexual health and confidence", c: "05" },
-            { t: "Everyday care", d: "A doctor for checkups and questions", c: "06" }].map((d) => (
-            <div key={d.t} className="p-6 md:p-8 group relative transition-colors" style={{ background: C.bg }}>
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ background: "radial-gradient(ellipse at top left, rgba(232,119,34,0.10), transparent 60%)" }} />
-              <div className="flex items-center justify-between mb-10 relative">
-                <div style={{ fontSize: 13, letterSpacing: "0.08em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>{d.t}</div>
-                <span style={{ fontSize: 12, color: C.muted, letterSpacing: "0.08em", fontWeight: 600 }}>{d.c}</span>
-              </div>
-              <div className="relative" style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.45 }}>{d.d}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
 
     {/* Protocols */}
     <section id="landing-conditions" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
