@@ -862,24 +862,6 @@ const Landing = ({ go }) => (
             >
               Modern medicine, made for men
             </p>
-            <div
-              className="spry-rise display"
-              style={{
-                animationDelay: "0.04s",
-                fontSize: "clamp(46px, 7.2vw, 82px)",
-                lineHeight: 1.05,
-                fontWeight: 700,
-                color: C.ink,
-                maxWidth: 620,
-                textAlign: "center",
-                marginBottom: 20,
-              }}
-            >
-              SpryMD
-              <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
-                Feel better. Stay stronger.
-              </div>
-            </div>
             <h1
               className="spry-rise display"
               style={{
