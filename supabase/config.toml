@@ -1,1 +1,9 @@
+# Supabase project configuration.
+# Database schema lives in supabase/migrations/ — apply with `supabase db push`
+# or `supabase migration up`.
 project_id = "ytqjxmwhsfrboeycnhjo"
+
+# Stripe calls this endpoint directly; it authenticates via webhook signature,
+# not a Supabase JWT.
+[functions.stripe-webhook]
+verify_jwt = false

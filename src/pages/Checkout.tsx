@@ -1,9 +1,48 @@
-import { Link } from "react-router-dom";
-import { Check, Lock, Shield } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Check, Info, Loader2, Lock, Shield } from "lucide-react";
+import { z } from "zod";
 import AnimatedSection from "@/components/AnimatedSection";
 import MedicalDisclaimer from "@/components/MedicalDisclaimer";
+import type { ServiceLine } from "@/lib/encounters";
+import { isPaymentsLive, startCheckout } from "@/lib/payments";
+
+const emailSchema = z.string().trim().email("Please enter a valid email address.");
 
 const Checkout = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const serviceLine: ServiceLine = searchParams.get("service") === "weight" ? "weight" : "ed";
+
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const paymentsLive = isPaymentsLive(serviceLine);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    const parsed = emailSchema.safeParse(email);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Please enter a valid email address.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await startCheckout({ serviceLine, email: parsed.data });
+      if (result === "demo") {
+        navigate("/confirmed");
+      }
+      // "redirected" → the browser is navigating to Stripe; leave the spinner on.
+    } catch {
+      setError("We couldn't start checkout. Please try again in a moment.");
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-off-white py-24 px-4">
       <div className="section-container max-w-4xl">
@@ -51,28 +90,55 @@ const Checkout = () => {
             {/* Payment */}
             <div className="card-base">
               <h2 className="font-display text-foreground text-2xl font-bold mb-6">Secure Checkout</h2>
-              
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Email</label>
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-foreground focus:outline-none focus:border-primary transition-colors"
-                  />
+
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label htmlFor="checkout-email" className="font-body text-foreground text-sm font-medium mb-1 block">Email</label>
+                    <input
+                      id="checkout-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      autoComplete="email"
+                      disabled={loading}
+                      className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-foreground focus:outline-none focus:border-primary transition-colors disabled:opacity-60"
+                    />
+                  </div>
+
+                  {error && (
+                    <div role="alert" className="bg-destructive/10 border border-destructive rounded-xl p-3 font-body text-destructive text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  {!paymentsLive && (
+                    <div className="bg-muted rounded-xl p-4 flex items-start gap-2">
+                      <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                      <p className="font-body text-muted-foreground text-sm text-left">
+                        Demo mode — payments aren't configured, so you won't be charged.
+                        Continuing will simulate a completed payment.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="bg-muted rounded-xl p-6 text-center">
-                  <p className="font-body text-muted-foreground text-sm">
-                    Stripe Payment Element will mount here.<br />
-                    <span className="text-xs">Add your Stripe publishable key to enable payments.</span>
-                  </p>
-                </div>
-              </div>
-
-              <Link to="/confirmed" className="btn-primary w-full text-center">
-                Start My Visit — $75/month →
-              </Link>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary w-full text-center flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Redirecting to secure payment…
+                    </>
+                  ) : (
+                    <>Start My Visit — $75/month →</>
+                  )}
+                </button>
+              </form>
 
               <p className="font-body text-muted-foreground text-xs mt-4 text-center">
                 You will be charged $75 today. Your subscription renews monthly. Cancel anytime.

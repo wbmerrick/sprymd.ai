@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, MessageSquare, Pill, ClipboardList } from "lucide-react";
+import { ArrowRight, CreditCard, MessageSquare, Pill } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
 import EncounterStatus from "./EncounterStatus";
 import { usePatientAuth } from "@/hooks/usePatientAuth";
@@ -64,12 +64,12 @@ const PatientDashboard = () => {
 
       <AnimatedSection delay={0.15}>
         <div className="grid sm:grid-cols-3 gap-4">
-          {careState === "draft_intake" || careState === "paid" ? (
-            <Link to="/quiz" className="card-base card-hover group">
-              <ClipboardList className="w-8 h-8 text-primary mb-3" />
-              <h3 className="font-display text-foreground font-semibold mb-1">Complete intake</h3>
+          {careState === "draft_intake" ? (
+            <Link to="/checkout" className="card-base card-hover group">
+              <CreditCard className="w-8 h-8 text-primary mb-3" />
+              <h3 className="font-display text-foreground font-semibold mb-1">Finish checkout</h3>
               <p className="font-body text-muted-foreground text-sm mb-3">
-                Finish your health questionnaire (~5 min).
+                Your intake is saved — complete payment so a physician can review it.
               </p>
               <span className="link-accent text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                 Continue <ArrowRight className="w-4 h-4" />

@@ -32,7 +32,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 function initPlausible(domain: string): void {
   loadScript("sprymd-plausible", `https://plausible.io/js/script.js`);
   const script = document.getElementById("sprymd-plausible");
-  if (script) {
+  if (script instanceof HTMLScriptElement) {
     script.setAttribute("data-domain", domain);
     script.defer = true;
   }

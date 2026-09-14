@@ -4,8 +4,6 @@ import { GraduationCap, ClipboardCheck, Building, Stethoscope, Lock, Pill } from
 
 import AnimatedSection from "@/components/AnimatedSection";
 
-import doctorPhoto from "@/assets/doctor-photo.png";
-
 
 
 const AboutHero = () => (
@@ -44,10 +42,18 @@ const DoctorBio = () => (
 
         <AnimatedSection>
 
-          <div className="rounded-2xl shadow-lg overflow-hidden ring-1 ring-gray-light/50">
-
-            <img src={doctorPhoto} alt="Dr. Merrick — Board-Certified Physician" className="w-full h-auto object-contain" />
-
+          <div
+            className="rounded-2xl shadow-lg overflow-hidden ring-1 ring-gray-light/50 bg-gradient-to-br from-teal/10 via-card to-coral/10 flex flex-col items-center justify-center gap-4 py-20 px-8 text-center"
+            role="img"
+            aria-label="Dr. Merrick — Board-Certified Physician"
+          >
+            <div className="w-24 h-24 rounded-full bg-teal/15 flex items-center justify-center">
+              <Stethoscope className="w-12 h-12 text-teal" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-xl font-semibold text-foreground">Dr. Merrick</p>
+              <p className="text-muted-foreground">Board-Certified Physician</p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2 mt-6">
@@ -70,9 +76,9 @@ const DoctorBio = () => (
 
           <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
 
-            <p>Dr. Merrick is an internal medicine board-certified osteopathic physician with over 10 years of clinical experience in hospital medicine, outpatient care, and chronic disease management. He practices brings the same rigor of hospital-level medicine to every telehealth consultation.</p>
+            <p>Dr. Merrick is an internal medicine board-certified osteopathic physician with over 10 years of clinical experience in hospital medicine, outpatient care, and chronic disease management. His practice brings the same rigor of hospital-level medicine to every telehealth consultation.</p>
 
-            <p>He built this practice for a simple reason: millions of men suffer from and deal with ED in silence because they're embarrassed, too busy, or priced out of traditional care. That's not a medical problem — that's a system problem. This platform exists to remove every barrier between you and effective treatment.</p>
+            <p>He built this practice for a simple reason: millions of men deal with ED in silence because they're embarrassed, too busy, or priced out of traditional care. That's not a medical problem — that's a system problem. This platform exists to remove every barrier between you and effective treatment.</p>
 
             <p>Dr. Merrick lives and practices in rural Tennessee. He understands that not every patient has easy access to specialists or same-day appointments — and that discretion matters. Every case he reviews gets the same attention he'd give a patient in his clinic.</p>
 

@@ -1,11 +1,22 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { LayoutDashboard, MessageSquare, Pill, LogOut } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { usePatientAuth } from "@/hooks/usePatientAuth";
+import { flags } from "@/lib/flags";
 
-const navItems = [
+interface NavItem {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  end?: boolean;
+}
+
+const navItems: NavItem[] = [
   { to: "/portal", label: "My Care", icon: LayoutDashboard, end: true },
-  { to: "/portal/messages", label: "Messages", icon: MessageSquare },
-  { to: "/portal/refill", label: "Refill", icon: Pill },
+  ...(flags.messaging
+    ? [{ to: "/portal/messages", label: "Messages", icon: MessageSquare }]
+    : []),
+  ...(flags.refills ? [{ to: "/portal/refill", label: "Refill", icon: Pill }] : []),
 ];
 
 const PortalShell = () => {

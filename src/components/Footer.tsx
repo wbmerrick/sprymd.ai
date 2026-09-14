@@ -28,11 +28,15 @@ const Footer = () => {
 
             {[
 
+              { to: "/about", label: "About" },
+
               { to: "/terms", label: "Terms of Service" },
 
               { to: "/privacy", label: "Privacy Policy" },
 
               { to: "/npp", label: "Notice of Privacy Practices" },
+
+              { to: "/trust", label: "Trust Center" },
 
               { to: "/faq", label: "FAQ" },
 

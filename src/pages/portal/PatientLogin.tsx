@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Lock } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
 import { usePatientAuth } from "@/hooks/usePatientAuth";
@@ -12,7 +12,11 @@ const PatientLogin = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
-  const from = (location.state as { from?: string })?.from ?? "/portal";
+  const [searchParams] = useSearchParams();
+  const locationState = location.state as { from?: string; reason?: string } | null;
+  const from = locationState?.from ?? "/portal";
+  const signedOutForInactivity =
+    locationState?.reason === "inactivity" || searchParams.get("reason") === "inactivity";
 
   if (isLoading) {
     return (
@@ -72,6 +76,21 @@ const PatientLogin = () => {
               ? "Enter the email you used at checkout to access your care dashboard."
               : "We'll send a secure magic link to your email — no password needed."}
           </p>
+
+          {signedOutForInactivity && (
+            <p
+              className="font-body text-sm text-foreground bg-primary/10 rounded-xl px-4 py-3 mb-6"
+              role="status"
+            >
+              You were signed out due to inactivity. Please sign in again to continue.
+            </p>
+          )}
+
+          {isDemoMode && (
+            <p className="font-body text-xs text-muted-foreground bg-gray-light/40 rounded-xl px-4 py-2 mb-6">
+              Demo mode — no Supabase configured
+            </p>
+          )}
 
           {isDemoMode && hasSession && (
             <p className="font-body text-sm text-green bg-green/10 rounded-xl px-4 py-3 mb-6">
