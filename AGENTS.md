@@ -25,6 +25,18 @@ in `.env` (`VITE_SUPABASE_*`) and point at a hosted project.
 - Unit tests: `bun run test` (Vitest, jsdom). Test files: `src/**/*.{test,spec}.{ts,tsx}`.
 - E2E: Playwright is configured via `lovable-agent-playwright-config` (`playwright.config.ts`).
 
+### Base44 dev environment
+- `docker-compose.base44.yml` runs the Vite dev server via Bun (`oven/bun:1`), bind-mounting
+  the repo at `/app` and mapping host port 3000 → container port 8080.
+- `bun install` runs on every container start (fast, ~4s). Dependencies live in an anonymous
+  volume at `/app/node_modules`.
+- `vite.config.ts` has `allowedHosts: true` so the preview proxy's external hostname is accepted.
+- Supabase credentials (`VITE_SUPABASE_*`) are in the committed `.env` and loaded automatically by
+  Vite — no external secrets are required to boot. Optional wearable OAuth client secrets
+  (`*_CLIENT_SECRET` in `.env.example`) are server-only and not needed for the marketing/intake flow.
+- Start: `docker compose -f docker-compose.base44.yml up -d`
+- Verify: `curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/` → 200
+
 ### App structure / core flow
 - Routes are defined in `src/App.tsx` (react-router). Key pages live in `src/pages/`.
 - The core user flow is the multi-step medical intake quiz at `/quiz`

@@ -1,0 +1,13 @@
+services:
+  web:
+    image: oven/bun:1
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - "3000:8080"
+    command: sh -c "bun install && bun run dev"
+    environment:
+      # Vite 6.1+ appends this to allowedHosts; harmless on older Vite (config handles it)
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
