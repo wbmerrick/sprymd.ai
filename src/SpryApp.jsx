@@ -666,7 +666,7 @@ const DeliveryBar = ({ onClick, glass = false }) => {
 };
 
 const DeliveryHeroNote = () => (
-  <div className="inline-flex items-start gap-2" style={{ maxWidth: 280 }}>
+  <div className="inline-flex items-start gap-2" style={{ maxWidth: 480 }}>
     <Truck size={16} color={C.accent} strokeWidth={2} className="flex-shrink-0" style={{ marginTop: 2 }} />
     <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.4 }}>{TN_DELIVERY.heroShort}</span>
   </div>
@@ -904,14 +904,16 @@ const Landing = ({ go }) => (
                 marginBottom: 28,
               }}
             >
-              Licensed doctors. Private visits. Treatment that ships to your door when it’s clinically appropriate.
+              Licensed doctors. Private visits. Treatment that ships fast &amp; discreetly to your door when it’s clinically appropriate.
             </p>
-            <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
-              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
+            <div className="spry-rise" style={{ animationDelay: "0.16s", marginBottom: 16 }}>
               <DeliveryHeroNote />
             </div>
-            <div className="spry-rise flex flex-wrap gap-x-5 gap-y-2 mt-6" style={{ animationDelay: "0.28s" }}>
-              {["Licensed clinical care", "Private & discreet", "No waiting rooms"].map((item) => (
+            <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
+            </div>
+            <div className="spry-rise flex flex-wrap gap-y-2 mt-6" style={{ animationDelay: "0.28s", columnGap: 28 }}>
+              {["Licensed clinical care", "Fast & discreet", "No waiting rooms"].map((item) => (
                 <div key={item} className="inline-flex items-center gap-2">
                   <Check size={14} color={C.accent} strokeWidth={2.25} />
                   <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{item}</span>
