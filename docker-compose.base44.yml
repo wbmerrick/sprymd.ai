@@ -1,6 +1,6 @@
 services:
   web:
-    image: oven/bun:1.1
+    image: oven/bun:1.2
     working_dir: /app
     volumes:
       - ./:/app
