@@ -377,6 +377,188 @@ export const footerPages = {
     ],
     "group": "protocols"
   },
+  "sermorelin": {
+    "slug": "sermorelin",
+    "title": "Sermorelin Protocol",
+    "navLabel": "Sermorelin",
+    "eyebrow": "PROTOCOLS",
+    "tagline": "Peptide therapy for recovery, sleep, and lean mass.",
+    "fromPrice": "199",
+    "ctaLabel": "Begin protocol",
+    "ctaTarget": "intake",
+    "conditionId": "sermorelin",
+    "sections": [
+      {
+        "title": "Overview",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Sermorelin is a growth-hormone-releasing hormone (GHRH) analog. Instead of replacing growth hormone directly, it prompts your pituitary to produce more of its own — preserving the body's natural pulse and feedback loops."
+          },
+          {
+            "type": "p",
+            "text": "Patients use sermorelin for deeper sleep, faster recovery from training, improved body composition, and healthy aging. Every protocol is reviewed by a licensed clinician and compounded by Empower Pharmacy — nightly subcutaneous injection, shipped cold to your door."
+          }
+        ]
+      },
+      {
+        "title": "Who it's for",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Men noticing slower recovery, lighter sleep, or declining lean mass with age",
+              "Patients who want a physiologic alternative to direct HGH replacement",
+              "Athletes and high-output professionals optimizing recovery and sleep quality",
+              "Anyone seeking clinician-supervised peptide therapy — not gray-market vials"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "What you get",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Licensed clinician review of your goals, history, and screening answers",
+              "Protocol selection — standard nightly, sleep-focused blend, or high-dose titration",
+              "Compounded sermorelin from Empower Pharmacy, shipped cold and discreet",
+              "Dose titration and secure messaging with your care team",
+              "Cancel or pause anytime"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "How it works",
+        "blocks": [
+          {
+            "type": "ol",
+            "items": [
+              "**Assess** — Complete a short intake covering goals, age, medical history, and required safety screening.",
+              "**Clinician review** — A licensed provider confirms peptide therapy is appropriate and selects your starting protocol.",
+              "**Optimize** — Nightly subQ injection before bed. Adjust dose with your clinician as results and labs indicate."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Protocol options",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "**Sermorelin Injection** — 200–300 mcg nightly subQ. The standard protocol for recovery, sleep, and body composition.",
+              "**Sermorelin + Glycine** — Enhanced nightly blend supporting deeper sleep architecture and GH release.",
+              "**Sermorelin High-Dose** — 500 mcg nightly, clinician-titrated for patients who have plateaued on standard dosing."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Safety",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Sermorelin is not prescribed to patients with an active cancer diagnosis or a history of pituitary tumor. We screen for thyroid disorders and diabetes, which can affect response. Treatment is declined when history or findings do not support therapy. SpryMD is not emergency care — call 911 for any acute medical emergency."
+          }
+        ]
+      }
+    ],
+    "group": "protocols"
+  },
+  "nad-therapy": {
+    "slug": "nad-therapy",
+    "title": "NAD+ Protocol",
+    "navLabel": "NAD+ Therapy",
+    "eyebrow": "PROTOCOLS",
+    "tagline": "Cellular energy. Clearer focus. Healthy aging.",
+    "fromPrice": "149",
+    "ctaLabel": "Begin protocol",
+    "ctaTarget": "intake",
+    "conditionId": "nad",
+    "sections": [
+      {
+        "title": "Overview",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "NAD+ (nicotinamide adenine dinucleotide) is a coenzyme central to cellular energy production and DNA repair. Levels decline significantly with age — and with them, energy, focus, and recovery capacity."
+          },
+          {
+            "type": "p",
+            "text": "SpryMD offers direct NAD+ restoration by subcutaneous injection or daily nasal spray — far more bioavailable than oral supplements. A licensed clinician reviews your case and tailors dose and form before anything ships from Empower Pharmacy."
+          }
+        ]
+      },
+      {
+        "title": "Who it's for",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Men fighting persistent fatigue, brain fog, or afternoon energy crashes",
+              "Patients optimizing recovery, focus, and long-term healthspan",
+              "Those who tried oral NMN or NR supplements without noticeable effect",
+              "Anyone who wants clinic-grade NAD+ without IV-lounge pricing"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "What you get",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Licensed clinician review with required safety screening",
+              "Form and dose matched to your goals — injection or needle-free nasal spray",
+              "Compounded NAD+ from Empower Pharmacy, shipped discreetly (injections ship cold)",
+              "Secure messaging and dose adjustments with your care team",
+              "Cancel or pause anytime"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "How it works",
+        "blocks": [
+          {
+            "type": "ol",
+            "items": [
+              "**Assess** — Complete a short intake covering energy, focus, goals, and required safety screening.",
+              "**Clinician review** — A licensed provider confirms NAD+ therapy is appropriate and selects your form and dose.",
+              "**Recharge** — Injections 2–3× weekly or nasal spray daily. Most patients report steadier energy within 2–4 weeks."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Protocol options",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "**NAD+ Injection** — 100 mg subQ, 2–3× weekly. The most effective at-home format.",
+              "**NAD+ High-Dose Injection** — 200 mg subQ for deeper fatigue, heavy training loads, or longevity optimization.",
+              "**NAD+ Nasal Spray** — 300 mg/mL daily. Needle-free maintenance that travels well."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Safety",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "NAD+ therapy is not prescribed to patients with an active cancer diagnosis, severe kidney or liver disease, or those on dialysis. Rapid dosing can cause transient flushing or nausea — we titrate to comfort. SpryMD is not emergency care — call 911 for any acute medical emergency."
+          }
+        ]
+      }
+    ],
+    "group": "protocols"
+  },
   "primary-care": {
     "slug": "primary-care",
     "title": "Primary Care Protocol",
@@ -1413,6 +1595,8 @@ export const footerNavToSlug = {
   "ED": "ed",
   "Hair Loss": "hair-loss",
   "Low Testosterone": "low-testosterone",
+  "Sermorelin": "sermorelin",
+  "NAD+ Therapy": "nad-therapy",
   "Primary Care": "primary-care",
   "Skin": "skin",
   "Weight Loss": "weight-loss",

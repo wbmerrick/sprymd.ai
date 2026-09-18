@@ -5,7 +5,7 @@ import {
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
   Heart, Pill, Wind, Activity, Moon, Sun, Zap, RefreshCw, User, Clock, FileText,
   Send, Snowflake, Droplets, Brain, UserCheck, Star, LogOut, Package, MapPin,
-  Watch, Menu,
+  Watch, Menu, Dna,
 } from "lucide-react";
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
@@ -284,6 +284,36 @@ const conditions = {
         note: "Retinoid + Vitamin C in one stable compound — usually impossible OTC." },
     ],
   },
+  sermorelin: {
+    id: "sermorelin", name: "Sermorelin",
+    tagline: "Recover faster. Sleep deeper. Build lean muscle.",
+    description: "Peptide therapy that helps your body make more of its own growth hormone. A doctor reviews your goals and history before anything ships.",
+    icon: Dna, accent: "#E87722", fromPrice: "199",
+    treatments: [
+      { id: "serm-std", name: "Sermorelin Injection", sub: "200–300 mcg / nightly · subQ", price: 199, chilled: true,
+        note: "GHRH analog that prompts your pituitary's own growth-hormone pulse. Supports recovery, sleep quality, body composition, and energy.",
+        compareAt: 249, comparePeer: "Hone", badge: "Most prescribed" },
+      { id: "serm-gly", name: "Sermorelin + Glycine Injection", sub: "Enhanced nightly blend · subQ", price: 229, chilled: true,
+        note: "Sermorelin paired with glycine to support deeper sleep architecture and a stronger nighttime GH release.", badge: "Best for sleep" },
+      { id: "serm-hi", name: "Sermorelin High-Dose", sub: "500 mcg / nightly · titrated · subQ", price: 269, chilled: true,
+        note: "For patients who have plateaued on standard dosing. Clinician-titrated with scheduled follow-up." },
+    ],
+  },
+  nad: {
+    id: "nad", name: "NAD+ therapy", planLabel: "NAD+ therapy",
+    tagline: "Recharge your cells. Fight fatigue and brain fog.",
+    description: "NAD+ supports cellular energy, focus, and healthy aging. A doctor tailors the dose and form to you before anything ships.",
+    icon: Zap, accent: "#E87722", fromPrice: "149",
+    treatments: [
+      { id: "nad-inj", name: "NAD+ Injection", sub: "100 mg / 2–3× weekly · subQ", price: 249, chilled: true,
+        note: "Direct NAD+ restoration for energy metabolism, mental clarity, and cellular repair. The most effective at-home format.",
+        compareAt: 299, comparePeer: "AgelessRx", badge: "Most prescribed" },
+      { id: "nad-hi", name: "NAD+ High-Dose Injection", sub: "200 mg / 2–3× weekly · subQ", price: 349, chilled: true,
+        note: "Accelerated protocol for deeper fatigue, heavy training loads, or longevity optimization.", badge: "Maximum strength" },
+      { id: "nad-spray", name: "NAD+ Nasal Spray", sub: "300 mg/mL · daily", price: 149, chilled: false,
+        note: "Needle-free daily NAD+ support. Gentler intensity than injections and easy to travel with.", badge: "No-needle" },
+    ],
+  },
   lowt: {
     id: "lowt", name: "Low energy & hormones",
     tagline: "Get your energy and drive back.",
@@ -476,6 +506,8 @@ const conditionGraphics = {
   ed: imgMarketplaceHero,
   hairloss: imgMarketplaceHero,
   skincare: imgMarketplaceHero,
+  sermorelin: imgMarketplaceHero,
+  nad: imgMarketplaceHero,
   lowt: imgMarketplaceHero,
   mentalhealth: imgMarketplaceHero,
   pcp: imgMarketplaceHero,
@@ -523,6 +555,31 @@ const intakes = {
     { key: "routine", type: "single", title: "How would you describe your current routine?", options: ["Just soap and water", "Cleanser + moisturizer", "Already use actives (retinol, AHAs)", "Inconsistent"] },
     { key: "sensitivity", type: "single", title: "Have you used tretinoin or retinol before?", options: ["Yes — tolerated well", "Yes — irritated my skin", "No, never", "Not sure"] },
     { key: "sun", type: "single", title: "Daily sunscreen use?", options: ["Every day", "Most days", "Sometimes", "Rarely"] },
+  ],
+  sermorelin: [
+    { key: "goal", type: "multi", title: "What do you want sermorelin to help with?", sub: "Select all that apply.",
+      options: ["Faster recovery from training", "Deeper sleep", "Lean muscle / body composition", "Energy and vitality", "Healthy aging"] },
+    { key: "age", type: "single", title: "What's your age range?", options: ["18–29", "30–39", "40–49", "50–59", "60+"] },
+    { key: "screening", type: "multi", title: "Do any of these apply to you?", sub: "Required safety screening for growth-hormone peptide therapy.",
+      options: ["Active cancer diagnosis or treatment", "History of pituitary tumor or brain lesion", "Untreated thyroid disorder", "Type 2 diabetes", "None of the above"],
+      disqualify: ["Active cancer diagnosis or treatment", "History of pituitary tumor or brain lesion"] },
+    { key: "experience", type: "single", title: "Have you used peptide or growth hormone therapy before?",
+      options: ["Never", "Yes — sermorelin or similar peptides", "Yes — HGH", "Currently using something"] },
+    { key: "preference", type: "single", title: "Which protocol sounds right?",
+      options: ["Standard nightly protocol", "Sleep-focused blend", "Maximum strength", "Not sure — recommend for me"] },
+  ],
+  nad: [
+    { key: "goal", type: "multi", title: "What are you hoping NAD+ helps with?", sub: "Select all that apply.",
+      options: ["Low energy / fatigue", "Brain fog / focus", "Recovery and performance", "Healthy aging / longevity", "General wellness"] },
+    { key: "duration", type: "single", title: "How long have you felt this way?",
+      options: ["Less than 3 months", "3–12 months", "More than a year", "Just optimizing — no specific issue"] },
+    { key: "screening", type: "multi", title: "Do any of these apply to you?", sub: "Required safety screening for NAD+ therapy.",
+      options: ["Active cancer diagnosis or treatment", "Severe kidney or liver disease", "Currently on dialysis", "None of the above"],
+      disqualify: ["Active cancer diagnosis or treatment", "Severe kidney or liver disease", "Currently on dialysis"] },
+    { key: "experience", type: "single", title: "Have you tried NAD+ before?",
+      options: ["Never", "Oral supplements (NMN / NR)", "IV NAD+ at a clinic", "At-home injections"] },
+    { key: "preference", type: "single", title: "How would you prefer to take it?",
+      options: ["Injection — most effective", "Nasal spray — no needles", "Not sure — recommend for me"] },
   ],
   lowt: [
     { key: "symptoms", type: "multi", title: "Which symptoms are you experiencing?", sub: "Select all that apply.",
@@ -1263,7 +1320,7 @@ const MiniProduct = ({ p, onClick }) => {
 };
 
 const footerColumns = [
-  { h: "Care plans", l: ["Weight Loss", "ED", "Low Testosterone", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+  { h: "Care plans", l: ["Weight Loss", "ED", "Low Testosterone", "Sermorelin", "NAD+ Therapy", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
   {
     h: FEATURES.enableShop ? "Shop" : "Pharmacy",
     l: FEATURES.enableShop
@@ -2589,6 +2646,16 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
     else if (pref.includes("Fast-melt")) recommended = condition.treatments.find((t) => t.id === "sild-odt") || recommended;
     else if (pref.includes("As needed")) recommended = condition.treatments.find((t) => t.id === "sild-prn") || recommended;
   }
+  if (conditionId === "sermorelin" && pref) {
+    if (pref.includes("Sleep-focused")) recommended = condition.treatments.find((t) => t.id === "serm-gly") || recommended;
+    else if (pref.includes("Maximum")) recommended = condition.treatments.find((t) => t.id === "serm-hi") || recommended;
+    else if (pref.includes("Standard")) recommended = condition.treatments.find((t) => t.id === "serm-std") || recommended;
+    else if (answers?.goal?.includes?.("Deeper sleep")) recommended = condition.treatments.find((t) => t.id === "serm-gly") || recommended;
+  }
+  if (conditionId === "nad" && pref) {
+    if (pref.includes("Nasal spray")) recommended = condition.treatments.find((t) => t.id === "nad-spray") || recommended;
+    else if (pref.includes("Injection")) recommended = condition.treatments.find((t) => t.id === "nad-inj") || recommended;
+  }
   if (conditionId === "lowt" && pref) {
     if (pref.includes("injection") || pref.includes("Injection")) recommended = condition.treatments.find((t) => t.id === "t-cyp") || recommended;
     else if (pref.includes("oral") || pref.includes("Oral")) recommended = condition.treatments.find((t) => t.id === "enclo") || recommended;
@@ -2624,7 +2691,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
           <div className="anim-fadeUp mb-12">
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>Reviewed and ready</span>
             <h1 className="display" style={{ fontSize: "clamp(38px, 6vw, 72px)", lineHeight: 1, fontWeight: 400, color: C.ink, marginTop: 16 }}>
-              Your <Mark>{condition.name.toLowerCase()}</Mark><br />treatment plan.
+              Your <Mark>{condition.planLabel || condition.name.toLowerCase()}</Mark><br />treatment plan.
             </h1>
             <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 16, maxWidth: 600, lineHeight: 1.5 }}>
               Based on your answers, you're a good fit for the care plan below. A licensed doctor will review your case before any prescription is issued.
