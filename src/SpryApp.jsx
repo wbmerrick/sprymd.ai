@@ -973,7 +973,7 @@ const Landing = ({ go }) => (
             </h2>
           </div>
           <p style={{ fontSize: 15, color: C.inkSoft, maxWidth: 320, lineHeight: 1.5 }}>
-            Three steps. No waiting room. A licensed clinician still has to approve every prescription.
+            3 steps. No waiting room.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-3">
@@ -991,6 +991,93 @@ const Landing = ({ go }) => (
         </div>
         <div className="mt-6">
           <DeliveryDetailsCard />
+        </div>
+      </div>
+    </section>
+
+    {/* Protocols */}
+    <section id="landing-conditions" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
+          <div>
+            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Care options</span>
+            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
+              Choose what you want help with.
+            </h2>
+          </div>
+          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 16, lineHeight: 1.55 }}>
+            Every plan is checked by a licensed doctor before anything is sent to you.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-3 md:gap-4">
+          {Object.values(conditions).filter((cond) => cond.id !== "pcp").map((cond, i) => (
+            <ConditionCard key={cond.id} condition={cond} onClick={() => go("intake", { condition: cond.id })} delay={i * 0.06} />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* PCP */}
+    <section id="pcp" className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
+      <BrandAtmosphere plate="care" variant="wash" />
+      <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none" aria-hidden="true" style={{ opacity: 0.45 }}>
+        <GridHorizon className="w-full h-full" />
+      </div>
+      <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center relative z-10">
+        <div className="md:col-span-6">
+          <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Your doctor</span>
+          <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
+            Want a doctor you can reach anytime?
+          </h2>
+          <p style={{ fontSize: 17, color: C.inkSoft, marginTop: 18, lineHeight: 1.55, maxWidth: 480 }}>
+            Get checkups, lab reviews, everyday care, and quick messages — all in one place with the same doctor who knows your story.
+          </p>
+          <div className="mt-8 space-y-3">
+            {["One doctor who knows you", "Yearly checkup and lab review", "Message when you need help", "Help finding specialists"].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <Check size={16} strokeWidth={2} color={C.accent} />
+                <span style={{ fontSize: 16, color: C.inkSoft }}>{item}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-10">
+            <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Get my doctor</Btn>
+            <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">See care options</Btn>
+          </div>
+        </div>
+        <div className="md:col-span-6">
+          <div className="instrument-panel rounded-2xl overflow-hidden">
+            <div className="relative h-52 overflow-hidden flex items-center justify-center">
+              <ScanFrame className="absolute inset-4" label="Doctor linked" />
+              <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
+                <div className="rounded-lg flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                  <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
+                </div>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Doctor care online</span>
+              </div>
+            </div>
+            <div className="p-7 md:p-8 relative z-10">
+              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
+              <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
+                $250<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
+              </div>
+              <div className="mt-6 space-y-4">
+                {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
+                  { t: "Doctor + yearly labs", d: "$99/mo · full blood work included", tag: "Best value" },
+                  { t: "Household", d: "$129/mo · two adults", tag: null }].map((tier) => (
+                  <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{tier.t}</span>
+                        {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
+                      </div>
+                      <span style={{ fontSize: 13, color: C.inkSoft }}>{tier.d}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1066,93 +1153,6 @@ const Landing = ({ go }) => (
       </div>
     </section>
 
-
-    {/* Protocols */}
-    <section id="landing-conditions" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
-          <div>
-            <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Care options</span>
-            <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
-              Choose what you want help with.
-            </h2>
-          </div>
-          <p style={{ maxWidth: 360, color: C.inkSoft, fontSize: 16, lineHeight: 1.55 }}>
-            Every plan is checked by a licensed doctor before anything is sent to you.
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 gap-3 md:gap-4">
-          {Object.values(conditions).map((cond, i) => (
-            <ConditionCard key={cond.id} condition={cond} onClick={() => go("intake", { condition: cond.id })} delay={i * 0.06} />
-          ))}
-        </div>
-      </div>
-    </section>
-
-    {/* PCP */}
-    <section id="pcp" className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
-      <BrandAtmosphere plate="care" variant="wash" />
-      <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none" aria-hidden="true" style={{ opacity: 0.45 }}>
-        <GridHorizon className="w-full h-full" />
-      </div>
-      <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center relative z-10">
-        <div className="md:col-span-6">
-          <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Your doctor</span>
-          <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
-            Want a doctor you can reach anytime?
-          </h2>
-          <p style={{ fontSize: 17, color: C.inkSoft, marginTop: 18, lineHeight: 1.55, maxWidth: 480 }}>
-            Get checkups, lab reviews, everyday care, and quick messages — all in one place with the same doctor who knows your story.
-          </p>
-          <div className="mt-8 space-y-3">
-            {["One doctor who knows you", "Yearly checkup and lab review", "Message when you need help", "Help finding specialists"].map((item) => (
-              <div key={item} className="flex items-center gap-3">
-                <Check size={16} strokeWidth={2} color={C.accent} />
-                <span style={{ fontSize: 16, color: C.inkSoft }}>{item}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-3 mt-10">
-            <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Get my doctor</Btn>
-            <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">See care options</Btn>
-          </div>
-        </div>
-        <div className="md:col-span-6">
-          <div className="instrument-panel rounded-2xl overflow-hidden">
-            <div className="relative h-52 overflow-hidden flex items-center justify-center">
-              <ScanFrame className="absolute inset-4" label="Doctor linked" />
-              <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
-                <div className="rounded-lg flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
-                  <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
-                </div>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Doctor care online</span>
-              </div>
-            </div>
-            <div className="p-7 md:p-8 relative z-10">
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
-              <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
-                $250<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
-              </div>
-              <div className="mt-6 space-y-4">
-                {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
-                  { t: "Doctor + yearly labs", d: "$99/mo · full blood work included", tag: "Best value" },
-                  { t: "Household", d: "$129/mo · two adults", tag: null }].map((tier) => (
-                  <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{tier.t}</span>
-                        {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
-                      </div>
-                      <span style={{ fontSize: 13, color: C.inkSoft }}>{tier.d}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     {FEATURES.enableShop ? (
     <section className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
