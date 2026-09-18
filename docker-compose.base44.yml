@@ -1,0 +1,17 @@
+services:
+  web:
+    image: oven/bun:1
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:8080"
+    command: sh -c "bun install && bunx vite --host 0.0.0.0 --port 8080"
+    environment:
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://localhost:8080/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s

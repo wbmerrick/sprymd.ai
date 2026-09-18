@@ -1,5 +1,14 @@
 # AGENTS.md
 
+## Base44 dev environment
+
+- Run with `docker compose -f docker-compose.base44.yml up -d` — uses `oven/bun:1`,
+  bind-mounts the repo, runs `bun install` then `bunx vite --host 0.0.0.0 --port 8080`.
+- The web entry point is exposed on **host port 3000** (mapped to container 8080).
+- Supabase credentials are committed in `.env` (`VITE_SUPABASE_*`); no external secrets
+  are required to boot. Optional OEM OAuth client IDs/secrets (see `.env.example`) are
+  only needed for live wearable integrations — the app falls back to sandbox mode without them.
+
 ## Cursor Cloud specific instructions
 
 This is a Vite + React + TypeScript single-page app (a "SpryMD" telehealth/ED-treatment
