@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local machine config (may contain secrets) — shared .cursor/skills stays tracked
+.cursor/mcp.json
+
+# Playwright artifacts
+test-results/
