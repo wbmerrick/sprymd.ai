@@ -54,12 +54,10 @@ function StaticDarkLogo() {
           strokeLinecap="round"
         />
         <path
-          d="M4.69 27.31 27.31 4.69"
-          fill="none"
-          stroke="#E87722"
-          strokeWidth="2"
-          strokeLinecap="round"
+          d="M18.05 15.22C21.59 13.1 25.69 8.72 27.14 4.86C23.28 6.31 18.9 10.41 16.78 13.95ZM13.95 16.78C10.41 18.9 6.31 23.28 4.86 27.14C8.72 25.69 13.1 21.59 15.22 18.05Z"
+          fill="#E87722"
         />
+        <circle cx="16" cy="16" r="2.1" fill="#E87722" />
       </g>
       <text
         x="96"
@@ -197,12 +195,10 @@ function LaserLogoSvg({ play }: { play: number }) {
               strokeLinecap="round"
             />
             <path
-              d="M4.69 27.31 27.31 4.69"
-              fill="none"
-              stroke="#E87722"
-              strokeWidth="2"
-              strokeLinecap="round"
+              d="M18.05 15.22C21.59 13.1 25.69 8.72 27.14 4.86C23.28 6.31 18.9 10.41 16.78 13.95ZM13.95 16.78C10.41 18.9 6.31 23.28 4.86 27.14C8.72 25.69 13.1 21.59 15.22 18.05Z"
+              fill="#E87722"
             />
+            <circle cx="16" cy="16" r="2.1" fill="#E87722" />
           </g>
           <text
             x="96"
