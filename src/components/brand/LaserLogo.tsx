@@ -47,21 +47,28 @@ function StaticDarkLogo() {
       <rect width="400" height="100" fill="#000000" />
       <g transform="translate(48, 34)">
         <path
-          d="M22.75 4.31A13.5 13.5 0 0 0 4.31 22.75M9.25 27.69A13.5 13.5 0 0 0 27.69 9.25"
+          d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45"
           fill="none"
           stroke="#FFFFFF"
           strokeWidth="1.75"
           strokeLinecap="round"
         />
         <path
-          d="M18.05 15.22C21.59 13.1 25.69 8.72 27.14 4.86C23.28 6.31 18.9 10.41 16.78 13.95ZM13.95 16.78C10.41 18.9 6.31 23.28 4.86 27.14C8.72 25.69 13.1 21.59 15.22 18.05Z"
+          d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z"
           fill="#E87722"
           stroke="#000000"
           strokeWidth="1.2"
           strokeLinejoin="round"
           paintOrder="stroke"
         />
-        <circle cx="16" cy="16" r="2.1" fill="#E87722" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
+        <path
+          d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15"
+          fill="none"
+          stroke="#000000"
+          strokeWidth="0.4"
+          strokeLinecap="round"
+        />
+        <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill="#E87722" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
       </g>
       <text
         x="96"
@@ -192,21 +199,28 @@ function LaserLogoSvg({ play }: { play: number }) {
         <g className={`ll-brand-${play}`}>
           <g transform="translate(48, 34)">
             <path
-              d="M22.75 4.31A13.5 13.5 0 0 0 4.31 22.75M9.25 27.69A13.5 13.5 0 0 0 27.69 9.25"
+              d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45"
               fill="none"
               stroke="#FFFFFF"
               strokeWidth="1.75"
               strokeLinecap="round"
             />
             <path
-              d="M18.05 15.22C21.59 13.1 25.69 8.72 27.14 4.86C23.28 6.31 18.9 10.41 16.78 13.95ZM13.95 16.78C10.41 18.9 6.31 23.28 4.86 27.14C8.72 25.69 13.1 21.59 15.22 18.05Z"
+              d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z"
               fill="#E87722"
               stroke="#000000"
               strokeWidth="1.2"
               strokeLinejoin="round"
               paintOrder="stroke"
             />
-            <circle cx="16" cy="16" r="2.1" fill="#E87722" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
+            <path
+              d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15"
+              fill="none"
+              stroke="#000000"
+              strokeWidth="0.4"
+              strokeLinecap="round"
+            />
+            <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill="#E87722" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
           </g>
           <text
             x="96"

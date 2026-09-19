@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <rect width="32" height="32" rx="8" fill="#000"/>
-  <path d="M21.5 6.47A11 11 0 0 0 6.47 21.5M10.5 25.53A11 11 0 0 0 25.53 10.5" stroke="#fff" stroke-width="1.75" stroke-linecap="round"/>
-  <path d="M17.73 15.33C20.56 13.63 23.92 10.06 25.09 6.91C21.94 8.08 18.37 11.44 16.67 14.27ZM14.27 16.67C11.44 18.37 8.08 21.94 6.91 25.09C10.06 23.92 13.63 20.56 15.33 17.73Z" fill="#E87722" stroke="#000" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke"/>
-  <circle cx="16" cy="16" r="1.75" fill="#E87722" stroke="#000" stroke-width="1.2" paint-order="stroke"/>
+  <path d="M18.29 5.24A11 11 0 1 0 25.12 9.85" stroke="#fff" stroke-width="1.75" stroke-linecap="round"/>
+  <path d="M17.84 15.31C21.24 12.02 23.15 8.16 23.2 5.34C21.53 6.55 19.06 9.83 16.69 14.16ZM14.66 16.51C12.18 18.9 10.78 21.72 10.74 23.78C11.96 22.9 13.77 20.51 15.49 17.34Z" fill="#E87722" stroke="#000" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke"/>
+  <path d="M17.96 13.92Q20.15 10.93 22.46 6.9M14.57 17.52Q12.97 19.7 11.29 22.64" fill="none" stroke="#000" stroke-width="0.4" stroke-linecap="round"/>
+  <path d="M17.96 15.19 16.81 14.04 15.19 14.04 14.04 15.19 14.04 16.81 15.19 17.96 16.81 17.96 17.96 16.81Z" fill="#E87722" stroke="#000" stroke-width="1.2" paint-order="stroke"/>
 </svg>
