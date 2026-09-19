@@ -357,12 +357,15 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
         </button>
       </form>
 
-      {onAction && !docked && (
+      {onAction && (
         <div style={{ position: "relative", zIndex: 1, padding: "0 12px 12px" }}>
           <button
             type="button"
             className="focus-ring"
-            onClick={onAction}
+            onClick={() => {
+              setExpanded(false);
+              onAction();
+            }}
             style={{
               width: "100%",
               display: "inline-flex",

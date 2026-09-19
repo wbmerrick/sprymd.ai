@@ -123,8 +123,8 @@ const FontInjector = () => (
       100% { transform: translateY(140%); opacity: 0; }
     }
     @keyframes breathGlow {
-      0%, 100% { opacity: 0.35; }
-      50% { opacity: 0.7; }
+      0%, 100% { box-shadow: 0 0 0 3px rgba(232,119,34,0.14); }
+      50% { box-shadow: 0 0 0 3px rgba(232,119,34,0.22), 0 0 18px 4px rgba(232,119,34,0.38); }
     }
     @keyframes hairlineIn {
       from { opacity: 0; transform: scaleX(0.6); }
@@ -178,10 +178,65 @@ const FontInjector = () => (
       content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
       background: radial-gradient(ellipse at 80% 20%, rgba(232,119,34,0.10), transparent 50%);
     }
+    .breath-glow { animation: breathGlow 3.4s ease-in-out infinite; }
+    /* Button system — hover lift, orange glow, arrow nudge, real pressed state */
+    .spry-btn {
+      border-radius: 8px;
+      letter-spacing: 0.01em;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+        transform 0.18s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+    }
+    .spry-btn:not(:disabled) { cursor: pointer; }
+    .spry-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .spry-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .spry-btn:active:not(:disabled) { transform: translateY(0); transition-duration: 0.06s; }
+    .spry-btn-icon { display: inline-flex; transition: transform 0.2s ease; }
+    .spry-btn:hover:not(:disabled) .spry-btn-icon,
+    .spry-btn:focus-visible .spry-btn-icon { transform: translateX(3px); }
+    .spry-btn--primary, .spry-btn--accent { background: ${C.accent}; color: #FFFFFF; border: 1px solid ${C.accent}; }
+    .spry-btn--primary:hover:not(:disabled), .spry-btn--accent:hover:not(:disabled) {
+      background: ${C.primaryDark}; border-color: ${C.primaryDark};
+      box-shadow: 0 0 22px rgba(232,119,34,0.35), 0 12px 28px -16px rgba(232,119,34,0.6);
+    }
+    .spry-btn--primary:active:not(:disabled), .spry-btn--accent:active:not(:disabled) {
+      background: ${C.accentDeep}; border-color: ${C.accentDeep}; box-shadow: none;
+    }
+    .spry-btn--secondary { background: transparent; color: ${C.ink}; border: 1px solid ${C.line}; }
+    .spry-btn--secondary:hover:not(:disabled) { background: ${C.bgAlt}; border-color: #3A3A3A; }
+    .spry-btn--ghost { background: transparent; color: ${C.ink}; border: 1px solid transparent; }
+    .spry-btn--ghost:hover:not(:disabled) { background: ${C.bgAlt}; }
+    .spry-btn--dark { background: ${C.ink}; color: ${C.bg}; border: 1px solid ${C.ink}; }
+    .spry-btn--dark:hover:not(:disabled) { background: #E8E8E8; }
+    /* Condition tiles — hero services grid */
+    .spry-tile {
+      text-align: left;
+      border: 1px solid ${C.line};
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
+    }
+    .spry-tile:hover, .spry-tile:focus-visible {
+      transform: translateY(-2px);
+      border-color: ${C.accent};
+      box-shadow: 0 0 20px rgba(232,119,34,0.16);
+    }
+    .spry-tile-arrow { display: inline-flex; transition: transform 0.2s ease; }
+    .spry-tile:hover .spry-tile-arrow, .spry-tile:focus-visible .spry-tile-arrow { transform: translateX(3px); }
+    /* One-shot attention ping when a CTA hands off to the condition grid */
+    @keyframes attnPulse {
+      0% { box-shadow: 0 0 0 0 rgba(232,119,34,0.4); }
+      100% { box-shadow: 0 0 0 18px rgba(232,119,34,0); }
+    }
+    .spry-attn { animation: attnPulse 0.9s ease-out 2; border-radius: 20px; }
+    .spry-sticky-bar { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s; will-change: transform; }
+    .spry-desktop-only { display: none; }
+    @media (min-width: 768px) { .spry-desktop-only { display: inline-flex; } }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant, .spry-attn {
         animation: none !important;
       }
+      .spry-btn, .spry-btn-icon, .spry-tile, .spry-tile-arrow, .spry-sticky-bar { transition: none !important; }
+      .spry-btn:hover:not(:disabled), .spry-btn:active:not(:disabled), .spry-tile:hover, .spry-tile:focus-visible { transform: none !important; }
+      .spry-btn:hover:not(:disabled) .spry-btn-icon, .spry-btn:focus-visible .spry-btn-icon,
+      .spry-tile:hover .spry-tile-arrow, .spry-tile:focus-visible .spry-tile-arrow { transform: none !important; }
     }
     input:focus, button:focus, select:focus, textarea:focus { outline: none; }
     .focus-ring:focus-visible { box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
@@ -617,30 +672,14 @@ const intakes = {
 // ─────────────────────────────────────────────────────────────────────────────
 // Atoms
 // ─────────────────────────────────────────────────────────────────────────────
-const Btn = ({ children, onClick, variant = "primary", size = "md", className = "", disabled, type, icon: Icon }) => {
+const Btn = ({ children, onClick, variant = "primary", size = "md", className = "", disabled, type = "button", icon: Icon }) => {
   const sizes = { sm: { padding: "8px 16px", fontSize: 13 }, md: { padding: "14px 22px", fontSize: 14 }, lg: { padding: "18px 32px", fontSize: 15 } };
-  const variants = {
-    primary: { background: C.accent, color: "#FFFFFF", border: `1px solid ${C.accent}` },
-    secondary: { background: "transparent", color: C.ink, border: `1px solid ${C.line}` },
-    accent: { background: C.accent, color: "#FFFFFF", border: `1px solid ${C.accent}` },
-    ghost: { background: "transparent", color: C.ink, border: `1px solid transparent` },
-    dark: { background: C.ink, color: C.bg, border: `1px solid ${C.ink}` },
-  };
   return (
     <button type={type} onClick={onClick} disabled={disabled}
-      className={`focus-ring inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 ${className}`}
-      style={{ ...sizes[size], ...variants[variant], borderRadius: 8, opacity: disabled ? 0.4 : 1, cursor: disabled ? "not-allowed" : "pointer", letterSpacing: "0.01em" }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        if (variant === "primary") e.currentTarget.style.background = C.accentDeep;
-        if (variant === "secondary") e.currentTarget.style.background = C.bgAlt;
-        if (variant === "accent") e.currentTarget.style.background = C.accentDeep;
-        if (variant === "ghost") e.currentTarget.style.background = C.bgAlt;
-        if (variant === "dark") e.currentTarget.style.background = "#E8E8E8";
-      }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = variants[variant].background; }}>
+      className={`spry-btn spry-btn--${variant} focus-ring inline-flex items-center justify-center gap-2 font-medium ${className}`}
+      style={sizes[size]}>
       {children}
-      {Icon && <Icon size={16} strokeWidth={1.75} />}
+      {Icon && <span className="spry-btn-icon" aria-hidden="true"><Icon size={16} strokeWidth={1.75} /></span>}
     </button>
   );
 };
@@ -805,6 +844,9 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
           ))}
         </nav>
         <div className="flex items-center gap-3">
+          <span className="spry-desktop-only">
+            <Btn size="sm" onClick={() => goNav("landing-conditions")}>Start your visit</Btn>
+          </span>
           <button
             onClick={() => goNav(user ? "dashboard" : "signin")}
             className="focus-ring inline-flex items-center gap-2 rounded-lg px-3 py-2 transition-colors"
@@ -837,6 +879,14 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
           className="md:hidden mt-4 flex flex-col gap-1 rounded-lg p-2"
           style={{ background: dark ? "rgba(255,255,255,0.06)" : C.paper, border: `1px solid ${C.line}` }}
         >
+          <button
+            type="button"
+            onClick={() => goNav("landing-conditions")}
+            className="focus-ring rounded-md px-3 py-3 text-left text-sm font-semibold"
+            style={{ color: C.accent }}
+          >
+            Start your visit
+          </button>
           {navItems.map((item) => (
             <button
               key={item.label}
@@ -889,11 +939,53 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Sticky visit bar — persistent conversion CTA once the hero scrolls away
+// ─────────────────────────────────────────────────────────────────────────────
+const StickyVisitBar = ({ go }) => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 620);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <div
+      className="spry-sticky-bar"
+      aria-hidden={!show}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 60,
+        transform: show ? "translateY(0)" : "translateY(-110%)",
+        visibility: show ? "visible" : "hidden",
+        background: "rgba(0,0,0,0.72)",
+        backdropFilter: "blur(12px)",
+        borderBottom: `1px solid ${C.line}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between gap-3" style={{ paddingTop: 10, paddingBottom: 10 }}>
+        <Logo size={18} />
+        <div className="flex items-center gap-4">
+          <span className="spry-desktop-only" style={{ fontSize: 13, color: C.inkSoft }}>
+            Private visits, reviewed by licensed doctors.
+          </span>
+          <Btn size="sm" icon={ArrowRight} onClick={() => go("landing-conditions")}>Start your visit</Btn>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
 const Landing = ({ go }) => (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
+    <StickyVisitBar go={go} />
 
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
@@ -993,8 +1085,8 @@ const Landing = ({ go }) => (
                   <button
                     key={cond.id}
                     onClick={() => go("intake", { condition: cond.id })}
-                    className="text-left rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5"
-                    style={{ background: C.bg, border: `1px solid ${C.line}` }}
+                    className="spry-tile focus-ring text-left rounded-2xl p-4"
+                    style={{ background: C.bg }}
                   >
                     <div className="flex items-center gap-3">
                       <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 38, height: 38, background: C.signalDim, border: `1px solid ${C.line}` }}>
@@ -1008,8 +1100,8 @@ const Landing = ({ go }) => (
                       </div>
                     </div>
                     <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45, marginTop: 10 }}>{cond.tagline}</p>
-                    <span className="inline-flex items-center gap-1.5 mt-3" style={{ fontSize: 12, fontWeight: 700, color: C.accent }}>
-                      Start intake <ArrowRight size={13} />
+                    <span className="inline-flex items-center gap-1.5 mt-3" style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>
+                      Start intake <span className="spry-tile-arrow"><ArrowRight size={14} /></span>
                     </span>
                   </button>
                 );
@@ -1066,7 +1158,7 @@ const Landing = ({ go }) => (
             Every plan is checked by a licensed doctor before anything is sent to you.
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-3 md:gap-4">
+        <div data-conditions-grid className="grid md:grid-cols-2 gap-3 md:gap-4">
           {Object.values(conditions).filter((cond) => cond.id !== "pcp").map((cond, i) => (
             <ConditionCard key={cond.id} condition={cond} onClick={() => go("intake", { condition: cond.id })} delay={i * 0.06} />
           ))}
@@ -3242,7 +3334,22 @@ export default function App() {
   const go = (target, p = {}) => {
     if (target === "landing-conditions") {
       setView("landing");
-      setTimeout(() => { const el = document.getElementById("landing-conditions"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
+      setTimeout(() => {
+        const el = document.getElementById("landing-conditions");
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth" });
+        // Visible handoff: ping the grid and move focus to the first care option
+        const grid = el.querySelector("[data-conditions-grid]");
+        if (grid) {
+          window.setTimeout(() => {
+            grid.classList.remove("spry-attn");
+            void grid.offsetWidth; // restart the animation if re-triggered
+            grid.classList.add("spry-attn");
+          }, 350);
+        }
+        const firstCard = el.querySelector("button");
+        if (firstCard) window.setTimeout(() => firstCard.focus({ preventScroll: true }), 650);
+      }, 50);
       return;
     }
     if (target === "how") {
