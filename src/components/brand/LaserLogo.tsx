@@ -46,15 +46,20 @@ function StaticDarkLogo() {
     >
       <rect width="400" height="100" fill="#000000" />
       <g transform="translate(48, 34)">
-        <circle cx="16" cy="16" r="15" fill="none" stroke="#FFFFFF" strokeWidth="1.75" />
         <path
-          d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5"
+          d="M22.75 4.31A13.5 13.5 0 0 0 4.31 22.75M9.25 27.69A13.5 13.5 0 0 0 27.69 9.25"
           fill="none"
-          stroke="#E87722"
+          stroke="#FFFFFF"
           strokeWidth="1.75"
           strokeLinecap="round"
         />
-        <circle cx="16" cy="16" r="2" fill="#E87722" />
+        <path
+          d="M4.69 27.31 27.31 4.69"
+          fill="none"
+          stroke="#E87722"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
       </g>
       <text
         x="96"
@@ -184,15 +189,20 @@ function LaserLogoSvg({ play }: { play: number }) {
       <g clipPath={`url(#${revealId})`}>
         <g className={`ll-brand-${play}`}>
           <g transform="translate(48, 34)">
-            <circle cx="16" cy="16" r="15" fill="none" stroke="#FFFFFF" strokeWidth="1.75" />
             <path
-              d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5"
+              d="M22.75 4.31A13.5 13.5 0 0 0 4.31 22.75M9.25 27.69A13.5 13.5 0 0 0 27.69 9.25"
               fill="none"
-              stroke="#E87722"
+              stroke="#FFFFFF"
               strokeWidth="1.75"
               strokeLinecap="round"
             />
-            <circle cx="16" cy="16" r="2" fill="#E87722" />
+            <path
+              d="M4.69 27.31 27.31 4.69"
+              fill="none"
+              stroke="#E87722"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </g>
           <text
             x="96"

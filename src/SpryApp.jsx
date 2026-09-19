@@ -660,9 +660,8 @@ const Tag = ({ children, color, fg }) => (
 const Logo = ({ color = C.ink, size = 22 }) => (
   <div className="flex items-center gap-2.5">
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="15" stroke={color} strokeWidth="1.5" />
-      <path d="M10 20c0-3 2.5-5.5 5.5-5.5h1c3 0 5.5-2.5 5.5-5.5" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2" fill={C.accent} />
+      <path d="M22.75 4.31A13.5 13.5 0 0 0 4.31 22.75M9.25 27.69A13.5 13.5 0 0 0 27.69 9.25" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M4.69 27.31 27.31 4.69" stroke={C.accent} strokeWidth="1.75" strokeLinecap="round" />
     </svg>
     <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
       Spry<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
