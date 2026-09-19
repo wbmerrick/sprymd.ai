@@ -983,7 +983,49 @@ const StickyVisitBar = ({ go }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
-const Landing = ({ go }) => (
+const Landing = ({ go }) => {
+  // Hover-preview of the next page (intake) — fades in the longer you hover.
+  const [preview, setPreview] = useState(null); // { id, rect }
+  const [previewLive, setPreviewLive] = useState(false);
+  const [intakeOverlay, setIntakeOverlay] = useState(null); // condition id shown in front of landing
+  const previewHideTimer = useRef(null);
+
+  const canHoverPreview = () =>
+    typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover)").matches;
+
+  const clearPreviewTimer = () => {
+    if (previewHideTimer.current) { clearTimeout(previewHideTimer.current); previewHideTimer.current = null; }
+  };
+  const showPreview = (id, e) => {
+    if (!canHoverPreview()) return;
+    clearPreviewTimer();
+    setPreview({ id, rect: e.currentTarget.getBoundingClientRect() });
+    setPreviewLive(true);
+  };
+  const keepPreview = clearPreviewTimer;
+  const releasePreview = () => {
+    clearPreviewTimer();
+    previewHideTimer.current = setTimeout(() => {
+      setPreviewLive(false);
+      previewHideTimer.current = setTimeout(() => setPreview(null), 300);
+    }, 200);
+  };
+  useEffect(() => () => clearPreviewTimer(), []);
+
+  const openIntakeOverlay = () => {
+    if (!preview) return;
+    setIntakeOverlay(preview.id);
+    clearPreviewTimer();
+    setPreviewLive(false);
+    setPreview(null);
+  };
+  const overlayGo = (target, p = {}) => {
+    setIntakeOverlay(null);
+    if (target === "landing") return; // closing the overlay keeps you on this page
+    go(target, p);
+  };
+
+  return (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
     <StickyVisitBar go={go} />
@@ -1086,6 +1128,8 @@ const Landing = ({ go }) => (
                   <button
                     key={cond.id}
                     onClick={() => go("intake", { condition: cond.id })}
+                    onMouseEnter={(e) => showPreview(cond.id, e)}
+                    onMouseLeave={releasePreview}
                     className="spry-tile focus-ring text-left rounded-2xl p-4"
                     style={{ background: C.bg }}
                   >
@@ -1161,7 +1205,14 @@ const Landing = ({ go }) => (
         </div>
         <div data-conditions-grid className="grid md:grid-cols-2 gap-3 md:gap-4">
           {Object.values(conditions).filter((cond) => cond.id !== "pcp").map((cond, i) => (
-            <ConditionCard key={cond.id} condition={cond} onClick={() => go("intake", { condition: cond.id })} delay={i * 0.06} />
+            <ConditionCard
+              key={cond.id}
+              condition={cond}
+              onClick={() => go("intake", { condition: cond.id })}
+              delay={i * 0.06}
+              onHoverStart={(e) => showPreview(cond.id, e)}
+              onHoverEnd={releasePreview}
+            />
           ))}
         </div>
       </div>
@@ -1355,14 +1406,45 @@ const Landing = ({ go }) => (
     </section>
 
     <Footer go={go} />
-  </div>
-);
 
-const ConditionCard = ({ condition, onClick, delay }) => {
+    {preview && (
+      <IntakePreview
+        key={preview.id}
+        conditionId={preview.id}
+        anchorRect={preview.rect}
+        live={previewLive}
+        onKeep={keepPreview}
+        onRelease={releasePreview}
+        onOpen={openIntakeOverlay}
+      />
+    )}
+
+    {intakeOverlay && (
+      <div
+        className="fixed inset-0 anim-fadeIn"
+        style={{ zIndex: 98, background: "rgba(16,11,6,0.55)", backdropFilter: "blur(3px)" }}
+        onClick={() => setIntakeOverlay(null)}
+      >
+        <div
+          className="absolute overflow-y-auto overscroll-contain"
+          style={{ inset: "min(4vw, 36px)", borderRadius: 18, background: C.bg, boxShadow: "0 40px 100px rgba(0,0,0,0.45)", border: `1px solid ${C.line}` }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Intake key={intakeOverlay} conditionId={intakeOverlay} go={overlayGo} />
+        </div>
+      </div>
+    )}
+  </div>
+  );
+};
+
+const ConditionCard = ({ condition, onClick, delay, onHoverStart, onHoverEnd }) => {
   const [hover, setHover] = useState(false);
   
   return (
-    <button onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+    <button onClick={onClick}
+      onMouseEnter={(e) => { setHover(true); onHoverStart?.(e); }}
+      onMouseLeave={() => { setHover(false); onHoverEnd?.(); }}
       className="anim-fadeUp focus-ring text-left p-7 md:p-8 transition-all duration-300 group relative overflow-hidden"
       style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
       <div className="absolute inset-y-0 left-0 w-px transition-all" style={{ background: C.accent, opacity: hover ? 1 : 0, boxShadow: hover ? `0 0 24px ${C.accent}` : "none" }} />
@@ -1380,6 +1462,65 @@ const ConditionCard = ({ condition, onClick, delay }) => {
         </span>
       </div>
     </button>
+  );
+};
+
+// Floating preview of the next page (the treatment's intake questionnaire).
+// Opacity ramps up the longer you hover; mouse-out fades it away; clicking it
+// opens the real intake in front of the page you were hovering on.
+const IntakePreview = ({ conditionId, anchorRect, live, onKeep, onRelease, onOpen }) => {
+  const [ramp, setRamp] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setRamp(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const condition = conditions[conditionId];
+  const W = 380, H = 500, M = 16, BAR = 36;
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+  let left = anchorRect.right + M;
+  if (left + W > vw - M) left = anchorRect.left - M - W;
+  if (left < M) left = Math.min(Math.max(M, anchorRect.left + anchorRect.width / 2 - W / 2), Math.max(M, vw - M - W));
+  const top = Math.min(Math.max(M, anchorRect.top + anchorRect.height / 2 - H / 2), Math.max(M, vh - M - H));
+  const scale = W / 1280;
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Open ${condition.name} intake`}
+      onMouseEnter={onKeep}
+      onMouseLeave={onRelease}
+      onClick={onOpen}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
+      className="fixed cursor-pointer focus-ring"
+      style={{
+        left, top, width: W, height: H, zIndex: 95,
+        opacity: live && ramp ? 1 : 0,
+        transition: live ? "opacity 2.8s linear" : "opacity 0.25s ease",
+        borderRadius: 14, overflow: "hidden",
+        background: C.bg, border: `1px solid ${C.line}`,
+        boxShadow: "0 24px 64px rgba(24,16,8,0.3)",
+      }}
+    >
+      <div className="flex items-center justify-between px-3" style={{ height: BAR, background: C.bgAlt, borderBottom: `1px solid ${C.lineSoft}` }}>
+        <div className="flex items-center gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="rounded-full" style={{ width: 8, height: 8, background: C.line }} />
+          ))}
+        </div>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, fontWeight: 600 }}>
+          {condition.name} intake
+        </span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: C.accent }}>Click to open</span>
+      </div>
+      <div style={{ width: W, height: H - BAR, overflow: "hidden" }}>
+        <div aria-hidden="true" style={{ width: 1280, height: (H - BAR) / scale, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
+          <Intake key={conditionId} conditionId={conditionId} go={() => {}} />
+        </div>
+      </div>
+    </div>
   );
 };
 
