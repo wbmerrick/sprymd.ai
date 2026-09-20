@@ -15,7 +15,7 @@ const Confirmed = () => (
         <div className="w-16 h-16 rounded-full bg-green mx-auto flex items-center justify-center mb-6 animate-scale-check">
           <Check className="w-8 h-8 text-primary-foreground" />
         </div>
-        <h1 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">Payment Confirmed ✓</h1>
+        <h1 className="font-display text-navy text-3xl md:text-4xl font-bold mb-2">Payment Confirmed ✓</h1>
         <p className="font-body text-muted-foreground text-lg mb-8">Your consultation has been started.</p>
 
         <div className="bg-off-white rounded-xl border border-gray-light p-6 text-left space-y-4 mb-8">
@@ -32,7 +32,7 @@ const Confirmed = () => (
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-light flex-shrink-0" />
               )}
-              <span className={`font-body text-sm ${s.status === "pending" ? "text-muted-foreground" : "text-foreground font-medium"}`}>
+              <span className={`font-body text-sm ${s.status === "pending" ? "text-muted-foreground" : "text-navy font-medium"}`}>
                 {s.label}
               </span>
             </div>

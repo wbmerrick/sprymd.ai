@@ -14,10 +14,10 @@ export function UpcomingShipments({ shipments }: UpcomingShipmentsProps) {
   return (
     <section aria-labelledby="shipments-heading" className="space-y-4">
       <div className="flex items-end justify-between gap-3">
-        <h2 id="shipments-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <h2 id="shipments-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
           Upcoming shipments
         </h2>
-        <Link to="/dashboard/orders" className="text-sm text-[#E87722] hover:underline">
+        <Link to="/dashboard/orders" className="text-sm text-[#C89E67] hover:underline">
           View orders
         </Link>
       </div>
@@ -32,7 +32,7 @@ export function UpcomingShipments({ shipments }: UpcomingShipmentsProps) {
             <li key={s.id}>
               <Link
                 to={`/dashboard/goals/${s.treatmentId}`}
-                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 transition hover:border-[#E87722]/35"
+                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 transition hover:border-[#C89E67]/35"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-zinc-300">
                   <Package className="h-4 w-4" aria-hidden />

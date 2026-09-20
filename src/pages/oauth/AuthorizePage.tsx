@@ -35,8 +35,8 @@ export default function OAuthAuthorizePage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0B0B0C] px-4 text-white">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#121214] p-6 shadow-2xl">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E87722]">OEM cloud OAuth</p>
-        <h1 className="mt-2 text-2xl font-semibold" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#C89E67]">OEM cloud OAuth</p>
+        <h1 className="mt-2 text-2xl font-semibold" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
           Connect {provider?.displayName || providerId}
         </h1>
         <p className="mt-2 text-sm text-zinc-400">
@@ -66,7 +66,7 @@ export default function OAuthAuthorizePage() {
             type="button"
             disabled={busy}
             onClick={approve}
-            className="flex-1 rounded-lg bg-[#E87722] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="flex-1 rounded-lg bg-[#C89E67] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
             {busy ? "Authorizing…" : "Allow sync"}
           </button>

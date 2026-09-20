@@ -9,9 +9,9 @@ const Terms = () => (
       <div className="section-container max-w-3xl">
         <AnimatedSection>
           <div className="prose prose-sm font-body text-muted-foreground max-w-none">
-            <p className="text-lg font-medium text-foreground mb-4">Last updated: March 27, 2026</p>
+            <p className="text-lg font-medium text-navy mb-4">Last updated: March 27, 2026</p>
 
-            <div className="bg-muted/50 border border-border rounded-lg p-4 mb-6 text-sm font-medium text-foreground">
+            <div className="bg-muted/50 border border-border rounded-lg p-4 mb-6 text-sm font-medium text-navy">
               <p className="mb-3">BY CLICKING "I AGREE," CHECKING A RELATED BOX TO SIGNIFY YOUR ACCEPTANCE, USING ANY OTHER ACCEPTANCE PROTOCOL PRESENTED THROUGH THE SERVICE (AS DEFINED BELOW), OR OTHERWISE AFFIRMATIVELY ACCEPTING THESE TERMS AND CONDITIONS, YOU ACKNOWLEDGE THAT YOU HAVE READ, ACCEPTED, AND AGREED TO BE BOUND BY THIS AGREEMENT. IF YOU DO NOT AGREE TO THESE TERMS AND CONDITIONS, DO NOT CREATE AN ACCOUNT OR USE THE SERVICE.</p>
               <p className="mb-3"><strong>DISPUTE RESOLUTION:</strong> UNLESS YOU TIMELY OPT OUT OF ARBITRATION IN ACCORDANCE WITH THESE TERMS AND CONDITIONS, YOU AND WE AGREE THAT MOST DISPUTES BETWEEN YOU AND US, THE MEDICAL GROUPS, OR PROVIDERS ARISING OUT OF OR RELATED TO THESE TERMS AND CONDITIONS OR THE SERVICE WILL BE RESOLVED BY BINDING INDIVIDUAL ARBITRATION AND NOT IN COURT. THIS MEANS YOU WAIVE THE RIGHT TO A JURY TRIAL AND THE RIGHT TO PARTICIPATE IN A CLASS ACTION OR CLASS-WIDE ARBITRATION, SUBJECT TO THE LIMITED EXCEPTIONS BELOW.</p>
               <p><strong>MEDICAL EMERGENCY NOTICE:</strong> IF YOU HAVE A MEDICAL EMERGENCY, SEEK IN-PERSON EMERGENCY CARE IMMEDIATELY OR DIAL 911. THE SERVICE IS NOT APPROPRIATE FOR EMERGENCIES. THE SERVICE IS LIMITED TO THE EVALUATION AND TREATMENT OF ERECTILE DYSFUNCTION ("ED") AND RELATED MATTERS EXPRESSLY MADE AVAILABLE THROUGH THE PLATFORM. THE SERVICE IS NOT PRIMARY CARE AND IS NOT A SUBSTITUTE FOR AN IN-PERSON PHYSICIAN OR FOR COMPREHENSIVE UROLOGIC, CARDIAC, ENDOCRINE, OR GENERAL MEDICAL CARE.</p>
@@ -21,11 +21,11 @@ const Terms = () => (
 
             <p>Please read this Agreement carefully. In this Agreement, the terms "you" and "your" mean the individual using the Service. The Service is intended only for adults age eighteen (18) or older, or the age of majority in the user's jurisdiction if greater. The Service is not intended for minors.</p>
 
-            <h2 className="text-xl font-bold text-foreground mt-8 mb-3">1. Acceptance of Terms</h2>
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">1. Acceptance of Terms</h2>
             <p>Your access to and use of the Service is subject to this Agreement and all applicable laws and regulations. If you do not accept and agree to be bound by this Agreement in its entirety, you may not access or use the Service except as necessary to review these Terms.</p>
             <p>We may revise this Agreement from time to time in our sole discretion. Any changes are effective when posted to the Service unless otherwise stated. Your continued use of the Service after changes are posted constitutes your acceptance of the revised Agreement.</p>
 
-            <h2 className="text-xl font-bold text-foreground mt-8 mb-3">2. Your Relationship With Us</h2>
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">2. Your Relationship With Us</h2>
             <p>SpryMD operates a technology platform that enables users to access certain administrative, support, communications, payment, and coordination services in connection with telehealth services related to erectile dysfunction.</p>
             <p>SpryMD is not itself a medical provider, pharmacy, or laboratory unless expressly identified otherwise in writing. Healthcare services made available through the Service are provided by independent licensed medical groups and/or healthcare professionals (collectively, the "Medical Groups" and "Providers"). Prescription fulfillment services are provided by licensed pharmacies (the "Pharmacies"). Laboratory services, if any are ever offered through the Service, are provided by independent laboratories (the "Labs").</p>
             <p>By using the Service, you understand and agree that:</p>

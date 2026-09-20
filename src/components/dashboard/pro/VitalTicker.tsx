@@ -65,7 +65,7 @@ export function VitalTicker({
         <span
           className={cn(
             "inline-flex h-1.5 w-1.5 rounded-full",
-            live ? "bg-[#E87722] animate-pulse" : "bg-zinc-600",
+            live ? "bg-[#C89E67] animate-pulse" : "bg-zinc-600",
           )}
         />
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
@@ -82,7 +82,7 @@ export function VitalTicker({
             <span
               className={cn(
                 "font-mono text-sm tabular-nums text-zinc-100",
-                item.hot && "text-[#E87722]",
+                item.hot && "text-[#C89E67]",
               )}
             >
               {item.value}

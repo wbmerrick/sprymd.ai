@@ -22,7 +22,7 @@ export function NotificationsFeed({ items, onClear, onDismiss }: NotificationsFe
   return (
     <section aria-labelledby="notifications-heading" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="notifications-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <h2 id="notifications-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
           Notifications
         </h2>
         <div className="flex items-center gap-3 text-sm">
@@ -35,7 +35,7 @@ export function NotificationsFeed({ items, onClear, onDismiss }: NotificationsFe
               Clear all
             </button>
           )}
-          <Link to="/dashboard/support" className="text-[#E87722] hover:underline">
+          <Link to="/dashboard/support" className="text-[#C89E67] hover:underline">
             See all
           </Link>
         </div>
@@ -54,7 +54,7 @@ export function NotificationsFeed({ items, onClear, onDismiss }: NotificationsFe
                 key={item.id}
                 className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
               >
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E87722]/15 text-[#E87722]">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#C89E67]/15 text-[#C89E67]">
                   <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1">

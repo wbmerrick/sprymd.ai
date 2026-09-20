@@ -43,7 +43,7 @@ const TrustBar = () =>
       {["Board-Certified Physician", "FDA-Approved Medications", "Shipped Discreetly to Your Door"].map((item, i) =>
     <div key={i} className="flex items-center gap-2">
           <Check className="text-green w-5 h-5 flex-shrink-0" />
-          <span className="font-body text-foreground font-medium text-sm">{item}</span>
+          <span className="font-body text-navy font-medium text-sm">{item}</span>
           {i < 2 && <span className="hidden md:block ml-6 w-px h-5 bg-gray-light" />}
         </div>
     )}
@@ -71,7 +71,7 @@ const HowItWorks = () => {
               <div className="card-base card-hover text-center h-full">
                 <span className="font-display text-5xl text-primary/20 font-light">{step.num}</span>
                 <step.icon className="w-10 h-10 text-primary mx-auto mt-4 mb-4" />
-                <h3 className="font-display text-foreground text-xl font-semibold mb-3">{step.title}</h3>
+                <h3 className="font-display text-navy text-xl font-semibold mb-3">{step.title}</h3>
                 <p className="font-body text-muted-foreground text-sm leading-relaxed">{step.body}</p>
               </div>
             </AnimatedSection>
@@ -105,11 +105,11 @@ const Treatments = () => {
                     Most Popular
                   </span>
               }
-                <h3 className="font-display text-foreground text-2xl font-bold mb-1">{card.title}</h3>
+                <h3 className="font-display text-navy text-2xl font-bold mb-1">{card.title}</h3>
                 <p className="font-body text-primary font-medium text-sm mb-4">{card.subtitle}</p>
                 <p className="font-body text-muted-foreground text-sm leading-relaxed mb-4 flex-1">{card.body}</p>
                 <p className="font-body text-muted-foreground text-xs mb-2">{card.detail}</p>
-                <p className="font-display text-foreground text-lg font-bold mb-6">{card.price}</p>
+                <p className="font-display text-navy text-lg font-bold mb-6">{card.price}</p>
                 <Link to="/quiz" className="btn-primary w-full">Get Started →</Link>
               </div>
             </AnimatedSection>
@@ -181,7 +181,7 @@ const PricingSection = () => {
         <AnimatedSection delay={0.2}>
           <div className="card-base shadow-xl max-w-[480px] mx-auto p-12 rounded-3xl">
             <div className="mb-6">
-              <span className="font-display text-foreground text-7xl md:text-8xl font-bold">$75</span>
+              <span className="font-display text-navy text-7xl md:text-8xl font-bold">$75</span>
               <span className="font-body text-muted-foreground text-2xl">/month</span>
             </div>
             <div className="w-full h-px bg-gray-light mb-6" />
@@ -189,7 +189,7 @@ const PricingSection = () => {
               {items.map((item, i) =>
               <li key={i} className="flex items-center gap-3">
                   <Check className="text-green w-5 h-5 flex-shrink-0" />
-                  <span className="font-body text-foreground text-sm">{item}</span>
+                  <span className="font-body text-navy text-sm">{item}</span>
                 </li>
               )}
             </ul>
@@ -216,7 +216,7 @@ const FAQTeaser = () => {
     <section className="section-padding bg-card">
       <div className="section-container max-w-3xl">
         <AnimatedSection>
-          <h2 className="font-display text-foreground text-3xl md:text-4xl font-bold text-center mb-10">Common Questions</h2>
+          <h2 className="font-display text-navy text-3xl md:text-4xl font-bold text-center mb-10">Common Questions</h2>
         </AnimatedSection>
         <div className="space-y-4">
           {faqs.map((faq, i) =>
@@ -226,7 +226,7 @@ const FAQTeaser = () => {
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="w-full flex items-center justify-between p-6 text-left">
                 
-                  <span className="font-display text-foreground text-lg font-semibold pr-4">{faq.q}</span>
+                  <span className="font-display text-navy text-lg font-semibold pr-4">{faq.q}</span>
                   <ChevronDown className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${openIndex === i ? "rotate-180" : ""}`} />
                 </button>
                 <AnimatePresence>

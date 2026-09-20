@@ -55,7 +55,7 @@ function StaticDarkLogo() {
         />
         <path
           d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z"
-          fill="#E87722"
+          fill="#C89E67"
           stroke="#000000"
           strokeWidth="1.2"
           strokeLinejoin="round"
@@ -68,12 +68,12 @@ function StaticDarkLogo() {
           strokeWidth="0.4"
           strokeLinecap="round"
         />
-        <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill="#E87722" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
+        <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill="#C89E67" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
       </g>
       <text
         x="96"
         y="62"
-        style={{ fontFamily: "Outfit, system-ui, sans-serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
+        style={{ fontFamily: "Fraunces, Georgia, serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
         fill="#FFFFFF"
       >
         Spry
@@ -81,7 +81,7 @@ function StaticDarkLogo() {
           MD
         </tspan>
       </text>
-      <line x1="96" y1="74" x2="248" y2="74" stroke="#E87722" strokeWidth="2" strokeLinecap="round" />
+      <line x1="96" y1="74" x2="248" y2="74" stroke="#C89E67" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -130,7 +130,7 @@ function LaserLogoSvg({ play }: { play: number }) {
             stroke-dasharray: 16 420;
           }
           .ll-beam-halo-${play} {
-            stroke: #E87722;
+            stroke: #C89E67;
             stroke-width: 10;
             stroke-linecap: round;
             opacity: 0;
@@ -145,7 +145,7 @@ function LaserLogoSvg({ play }: { play: number }) {
             animation: ll-hotspot-${play} 1.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
           }
           .ll-underline-${play} {
-            stroke: #E87722;
+            stroke: #C89E67;
             stroke-width: 2.5;
             stroke-linecap: round;
             stroke-dasharray: 160;
@@ -176,9 +176,9 @@ function LaserLogoSvg({ play }: { play: number }) {
           </feMerge>
         </filter>
         <linearGradient id={beamGradId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#E87722" stopOpacity="0" />
+          <stop offset="0%" stopColor="#C89E67" stopOpacity="0" />
           <stop offset="35%" stopColor="#FF9A4A" stopOpacity="1" />
-          <stop offset="100%" stopColor="#E87722" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#C89E67" stopOpacity="0.2" />
         </linearGradient>
         <clipPath id={revealId}>
           <rect x="0" y="0" width="0" height="100">
@@ -207,7 +207,7 @@ function LaserLogoSvg({ play }: { play: number }) {
             />
             <path
               d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z"
-              fill="#E87722"
+              fill="#C89E67"
               stroke="#000000"
               strokeWidth="1.2"
               strokeLinejoin="round"
@@ -220,12 +220,12 @@ function LaserLogoSvg({ play }: { play: number }) {
               strokeWidth="0.4"
               strokeLinecap="round"
             />
-            <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill="#E87722" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
+            <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill="#C89E67" stroke="#000000" strokeWidth="1.2" paintOrder="stroke" />
           </g>
           <text
             x="96"
             y="62"
-            style={{ fontFamily: "Outfit, system-ui, sans-serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
+            style={{ fontFamily: "Fraunces, Georgia, serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
             fill="#FFFFFF"
           >
             Spry

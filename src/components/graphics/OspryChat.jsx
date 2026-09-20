@@ -125,7 +125,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
-          background: "radial-gradient(ellipse at 90% 0%, rgba(232,119,34,0.08), transparent 45%)",
+          background: "radial-gradient(ellipse at 90% 0%, rgba(200, 158, 103,0.08), transparent 45%)",
           zIndex: 0,
         }}
       />
@@ -149,15 +149,15 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
               width: 8,
               height: 8,
               borderRadius: 99,
-              background: "#E87722",
-              boxShadow: "0 0 0 3px rgba(232,119,34,0.15)",
+              background: "#C89E67",
+              boxShadow: "0 0 0 3px rgba(200, 158, 103,0.15)",
             }}
           />
           <div>
             <div className="display" style={{ fontSize: docked ? 15 : 16, fontWeight: 600, color: "#FAFAFA", letterSpacing: "-0.02em" }}>
               iSpry
             </div>
-            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(232,119,34,0.85)", textTransform: "uppercase" }}>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(200, 158, 103,0.85)", textTransform: "uppercase" }}>
               Chat helper · online
             </div>
           </div>
@@ -238,15 +238,15 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
                 alignSelf: mine ? "flex-end" : "flex-start",
                 maxWidth: "92%",
                 padding: "10px 12px",
-                background: mine ? "rgba(232,119,34,0.12)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${mine ? "rgba(232,119,34,0.35)" : "#1F1F22"}`,
+                background: mine ? "rgba(200, 158, 103,0.12)" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${mine ? "rgba(200, 158, 103,0.35)" : "#1F1F22"}`,
                 color: mine ? "#FAFAFA" : "#C8C8C8",
                 fontSize: 14,
                 lineHeight: 1.45,
               }}
             >
               {!mine && (
-                <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#E87722", marginBottom: 6, textTransform: "uppercase" }}>
+                <div className="mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "#C89E67", marginBottom: 6, textTransform: "uppercase" }}>
                   iSpry
                 </div>
               )}
@@ -375,7 +375,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
               padding: "10px 12px",
               background: "transparent",
               border: "1px solid #1F1F22",
-              color: "#E87722",
+              color: "#C89E67",
               fontSize: 12,
               letterSpacing: "0.06em",
               textTransform: "uppercase",
@@ -420,9 +420,9 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "rgba(232,119,34,0.15)",
-          border: "1px solid rgba(232,119,34,0.35)",
-          color: "#E87722",
+          background: "rgba(200, 158, 103,0.15)",
+          border: "1px solid rgba(200, 158, 103,0.35)",
+          color: "#C89E67",
           flexShrink: 0,
         }}
       >
@@ -432,7 +432,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
         <span className="display" style={{ display: "block", fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em" }}>
           iSpry
         </span>
-        <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(232,119,34,0.9)", textTransform: "uppercase" }}>
+        <span className="mono" style={{ display: "block", fontSize: 10, letterSpacing: "0.12em", color: "rgba(200, 158, 103,0.9)", textTransform: "uppercase" }}>
           Ask anything
         </span>
       </span>
@@ -442,7 +442,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
           width: 8,
           height: 8,
           borderRadius: 99,
-          background: "#E87722",
+          background: "#C89E67",
           flexShrink: 0,
         }}
       />

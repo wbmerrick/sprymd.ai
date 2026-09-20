@@ -18,8 +18,8 @@ export default function SupportPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#E87722]">Account</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Account</p>
+        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
           Support
         </h1>
         <p className="text-sm text-zinc-400">Message your care team or browse common topics.</p>
@@ -35,19 +35,19 @@ export default function SupportPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search messages and topics…"
-          className="w-full rounded-2xl border border-white/10 bg-white/[0.03] py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-zinc-600 focus:border-[#E87722]/50 focus:outline-none"
+          className="w-full rounded-2xl border border-white/10 bg-white/[0.03] py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-zinc-600 focus:border-[#C89E67]/50 focus:outline-none"
         />
       </div>
 
       <section aria-labelledby="messages-heading" className="space-y-3">
-        <h2 id="messages-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <h2 id="messages-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
           Messages
         </h2>
         <MessagesList messages={filtered} />
       </section>
 
       <section aria-labelledby="topics-heading" className="space-y-3">
-        <h2 id="topics-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <h2 id="topics-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
           Popular topics
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2">
@@ -56,7 +56,7 @@ export default function SupportPage() {
               <button
                 type="button"
                 onClick={() => console.info("stub: topic", t.id)}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left transition hover:border-[#E87722]/40"
+                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left transition hover:border-[#C89E67]/40"
               >
                 <p className="font-medium text-white">{t.title}</p>
                 <p className="mt-1 text-sm text-zinc-500">{t.description}</p>

@@ -22,7 +22,7 @@ export default function DashboardLayout() {
   if (!data.ready) {
     return (
       <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] text-zinc-500">
-        <span className="relative text-xs tracking-[0.16em] uppercase animate-pulse text-[#E87722]/80">
+        <span className="relative text-xs tracking-[0.16em] uppercase animate-pulse text-[#C89E67]/80">
           Loading your care…
         </span>
       </div>

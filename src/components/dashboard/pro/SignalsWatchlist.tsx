@@ -32,7 +32,7 @@ export function SignalsWatchlist({
         FEATURES.enableShop ? (
           <Link
             to="/?view=marketplace&filter=Devices"
-            className="font-mono text-[10px] uppercase tracking-wider text-[#E87722] hover:underline"
+            className="font-mono text-[10px] uppercase tracking-wider text-[#C89E67] hover:underline"
           >
             + Buy
           </Link>
@@ -51,7 +51,7 @@ export function SignalsWatchlist({
                 onClick={() => onSelect(d.id)}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition",
-                  selectedId === d.id ? "bg-[#E87722]/12 ring-1 ring-[#E87722]/30" : "hover:bg-white/[0.04]",
+                  selectedId === d.id ? "bg-[#C89E67]/12 ring-1 ring-[#C89E67]/30" : "hover:bg-white/[0.04]",
                 )}
               >
                 <img
@@ -61,7 +61,7 @@ export function SignalsWatchlist({
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className={cn("h-1.5 w-1.5 rounded-full", live ? "bg-[#E87722]" : "bg-zinc-600")} />
+                    <span className={cn("h-1.5 w-1.5 rounded-full", live ? "bg-[#C89E67]" : "bg-zinc-600")} />
                     <p className="truncate text-xs font-medium text-zinc-100">
                       {d.brand} · {d.name}
                     </p>
@@ -88,7 +88,7 @@ export function SignalsWatchlist({
                   <span>
                     {d.brand} {d.name}
                   </span>
-                  <span className="font-mono text-[10px] text-[#E87722]">${d.priceUsd}</span>
+                  <span className="font-mono text-[10px] text-[#C89E67]">${d.priceUsd}</span>
                 </Link>
               </li>
             ))}

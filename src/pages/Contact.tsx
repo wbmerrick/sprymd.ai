@@ -16,30 +16,30 @@ const Contact = () => {
             <div className="card-base">
               <div className="space-y-4">
                 <div>
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Name</label>
+                  <label className="font-body text-navy text-sm font-medium mb-1 block">Name</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-foreground focus:outline-none focus:border-primary transition-colors"
+                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-navy focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Email</label>
+                  <label className="font-body text-navy text-sm font-medium mb-1 block">Email</label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-foreground focus:outline-none focus:border-primary transition-colors"
+                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-navy focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Message</label>
+                  <label className="font-body text-navy text-sm font-medium mb-1 block">Message</label>
                   <textarea
                     value={form.message}
                     onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
                     rows={5}
-                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-foreground resize-none focus:outline-none focus:border-primary transition-colors"
+                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-navy resize-none focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <button className="btn-primary w-full">Send Message</button>

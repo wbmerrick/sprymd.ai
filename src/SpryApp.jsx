@@ -43,40 +43,41 @@ import {
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Brand tokens — elite performance health OS (Starlink precision × peak vitality)
-// ─────────────────────────────────────────────────────────────────────────────
-// Brand tokens — APN-inspired: black, white, warm orange (#E87722)
+// Brand tokens — "Clinical Zen": high-end wellness retreat × modern clinic.
+// Grounding natural palette — deep forest greens, slate blues, warm sandstone.
+// Calming and masculine without sterile whites or aggressive black/neon.
 // ─────────────────────────────────────────────────────────────────────────────
 const C = {
-  bg: "#000000",
-  bgAlt: "#0C0C0C",
-  paper: "#141414",
-  ink: "#FFFFFF",
-  inkSoft: "#D6D6D6",
-  muted: "#8F8F8F",
-  primary: "#E87722",
-  primaryDark: "#CF6514",
-  accent: "#E87722",
-  accentSoft: "rgba(232, 119, 34, 0.78)",
-  accentDeep: "#B85510",
-  signalDim: "rgba(232, 119, 34, 0.16)",
-  navy: "#003399",
-  line: "#2A2A2A",
-  lineSoft: "#1A1A1A",
-  ok: "#2FBF7A",
-  warn: "#E6A23C",
-  destructive: "#E25555",
+  bg: "#0C120F",        // deep forest — grounding near-black green
+  bgAlt: "#101915",
+  paper: "#16211B",     // card surface — warm dark evergreen
+  ink: "#F4F1E8",       // warm parchment white — softer than pure white
+  inkSoft: "#D2CFC2",
+  muted: "#93A096",     // sage gray
+  primary: "#C89E67",   // warm sandstone
+  primaryDark: "#B0854F",
+  accent: "#C89E67",
+  accentSoft: "rgba(200, 158, 103, 0.78)",
+  accentDeep: "#96703F",
+  signalDim: "rgba(200, 158, 103, 0.16)",
+  slate: "#5C7E9E",     // slate blue — secondary informational accent
+  navy: "#5C7E9E",      // legacy key — now slate blue
+  line: "#263129",      // green-tinted hairlines
+  lineSoft: "#1A241E",
+  ok: "#57A874",
+  warn: "#D9A441",
+  destructive: "#CE6B5D",
 };
 
 const fonts = {
-  display: "'Outfit', 'Helvetica Neue', sans-serif",
+  display: "'Fraunces', 'Georgia', 'Times New Roman', serif",
   body: "'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
   mono: "'DM Sans', 'Helvetica Neue', sans-serif",
 };
 
 const FontInjector = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,400..700&display=swap');
     :root {
       --font-mono: ${fonts.body};
       --spry-accent: ${C.accent};
@@ -88,15 +89,16 @@ const FontInjector = () => (
     body {
       font-family: ${fonts.body}; letter-spacing: -0.005em;
       background-image:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,119,34,0.08), transparent 55%),
-        linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.18)),
-        url("/brand/sprymd-hawaii-dawn.webp");
-      background-size: auto, auto, cover;
-      background-position: center, center, center 40%;
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
+        linear-gradient(180deg, rgba(12,18,15,0.30), rgba(12,18,15,0.55)),
+        url("/brand/sprymd-tn-ridge.webp");
+      background-size: auto, auto, auto, cover;
+      background-position: center, center, center, center 40%;
       background-attachment: fixed;
       background-repeat: no-repeat;
     }
-    .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.02em; }
+    .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.01em; }
     .mono { font-family: ${fonts.body}; font-weight: 600; letter-spacing: 0.04em; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -123,8 +125,8 @@ const FontInjector = () => (
       100% { transform: translateY(140%); opacity: 0; }
     }
     @keyframes breathGlow {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(232,119,34,0.14); }
-      50% { box-shadow: 0 0 0 3px rgba(232,119,34,0.22), 0 0 18px 4px rgba(232,119,34,0.38); }
+      0%, 100% { box-shadow: 0 0 0 3px rgba(200, 158, 103,0.14); }
+      50% { box-shadow: 0 0 0 3px rgba(200, 158, 103,0.22), 0 0 18px 4px rgba(200, 158, 103,0.38); }
     }
     @keyframes hairlineIn {
       from { opacity: 0; transform: scaleX(0.6); }
@@ -164,24 +166,24 @@ const FontInjector = () => (
     }
     .hero-rail {
       border-top: 1px solid ${C.line};
-      background: linear-gradient(90deg, rgba(5,5,5,0.92), rgba(11,11,12,0.75));
+      background: linear-gradient(90deg, rgba(8,13,10,0.92), rgba(14,21,17,0.75));
       backdrop-filter: blur(8px);
     }
     .instrument-panel {
       position: relative;
       isolation: isolate;
       background:
-        linear-gradient(160deg, rgba(18,18,20,0.95) 0%, rgba(5,5,5,0.98) 100%);
+        linear-gradient(160deg, rgba(20,29,24,0.95) 0%, rgba(8,12,10,0.98) 100%);
       border: 1px solid ${C.line};
     }
     .instrument-panel::before {
       content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse at 80% 20%, rgba(232,119,34,0.10), transparent 50%);
+      background: radial-gradient(ellipse at 80% 20%, rgba(200, 158, 103,0.10), transparent 50%);
     }
     .breath-glow { animation: breathGlow 3.4s ease-in-out infinite; }
-    /* Button system — hover lift, orange glow, arrow nudge, real pressed state */
+    /* Button system — soft pill radius, hover lift, sandstone glow, arrow nudge */
     .spry-btn {
-      border-radius: 8px;
+      border-radius: 999px;
       letter-spacing: 0.01em;
       transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
         transform 0.18s ease, box-shadow 0.25s ease, opacity 0.2s ease;
@@ -193,20 +195,20 @@ const FontInjector = () => (
     .spry-btn-icon { display: inline-flex; transition: transform 0.2s ease; }
     .spry-btn:hover:not(:disabled) .spry-btn-icon,
     .spry-btn:focus-visible .spry-btn-icon { transform: translateX(3px); }
-    .spry-btn--primary, .spry-btn--accent { background: ${C.accent}; color: #FFFFFF; border: 1px solid ${C.accent}; }
+    .spry-btn--primary, .spry-btn--accent { background: ${C.accent}; color: ${C.bg}; border: 1px solid ${C.accent}; }
     .spry-btn--primary:hover:not(:disabled), .spry-btn--accent:hover:not(:disabled) {
       background: ${C.primaryDark}; border-color: ${C.primaryDark};
-      box-shadow: 0 0 22px rgba(232,119,34,0.35), 0 12px 28px -16px rgba(232,119,34,0.6);
+      box-shadow: 0 0 22px rgba(200, 158, 103,0.35), 0 12px 28px -16px rgba(200, 158, 103,0.6);
     }
     .spry-btn--primary:active:not(:disabled), .spry-btn--accent:active:not(:disabled) {
       background: ${C.accentDeep}; border-color: ${C.accentDeep}; box-shadow: none;
     }
     .spry-btn--secondary { background: transparent; color: ${C.ink}; border: 1px solid ${C.line}; }
-    .spry-btn--secondary:hover:not(:disabled) { background: ${C.bgAlt}; border-color: #3A3A3A; }
+    .spry-btn--secondary:hover:not(:disabled) { background: ${C.bgAlt}; border-color: #3B4A40; }
     .spry-btn--ghost { background: transparent; color: ${C.ink}; border: 1px solid transparent; }
     .spry-btn--ghost:hover:not(:disabled) { background: ${C.bgAlt}; }
     .spry-btn--dark { background: ${C.ink}; color: ${C.bg}; border: 1px solid ${C.ink}; }
-    .spry-btn--dark:hover:not(:disabled) { background: #E8E8E8; }
+    .spry-btn--dark:hover:not(:disabled) { background: #E9E5D8; }
     /* Condition tiles — hero services grid */
     .spry-tile {
       text-align: left;
@@ -216,14 +218,14 @@ const FontInjector = () => (
     .spry-tile:hover, .spry-tile:focus-visible {
       transform: translateY(-2px);
       border-color: ${C.accent};
-      box-shadow: 0 0 20px rgba(232,119,34,0.16);
+      box-shadow: 0 0 20px rgba(200, 158, 103,0.16);
     }
     .spry-tile-arrow { display: inline-flex; transition: transform 0.2s ease; }
     .spry-tile:hover .spry-tile-arrow, .spry-tile:focus-visible .spry-tile-arrow { transform: translateX(3px); }
     /* One-shot attention ping when a CTA hands off to the condition grid */
     @keyframes attnPulse {
-      0% { box-shadow: 0 0 0 0 rgba(232,119,34,0.4); }
-      100% { box-shadow: 0 0 0 18px rgba(232,119,34,0); }
+      0% { box-shadow: 0 0 0 0 rgba(200, 158, 103,0.4); }
+      100% { box-shadow: 0 0 0 18px rgba(200, 158, 103,0); }
     }
     .spry-attn { animation: attnPulse 0.9s ease-out 2; border-radius: 20px; }
     .spry-sticky-bar { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s; will-change: transform; }
@@ -264,7 +266,7 @@ const conditions = {
     id: "weightloss", name: "Weight loss",
     tagline: "Lose weight with a real doctor watching your plan.",
     description: "Safe weight-loss medicine chosen for you. A doctor checks your answers, then we ship care to your door.",
-    icon: Scale, accent: "#E87722", fromPrice: "200",
+    icon: Scale, accent: "#C89E67", fromPrice: "200",
     treatments: [
       { id: "tirz-mid", name: "Tirzepatide Injection", sub: "5–10 mg / weekly · titrated", price: 279, chilled: true,
         note: "Dual GIP/GLP-1 agonism. The strongest agent we offer — direct alternative to compounded Mounjaro/Zepbound.",
@@ -286,7 +288,7 @@ const conditions = {
     id: "ed", name: "Men's sexual health",
     tagline: "Feel confident again — daily or when you need it.",
     description: "Simple treatments for erectile health. Private questions. A doctor reviews your case before anything ships.",
-    icon: Flame, accent: "#E87722", fromPrice: "65",
+    icon: Flame, accent: "#C89E67", fromPrice: "65",
     treatments: [
       { id: "sild-prn", name: "Sildenafil 50mg PRN", sub: "10 doses / month · as needed", price: 69, chilled: false,
         note: "The standard. Onset 30–60 min. Most cost-effective entry.", compareAt: 89, comparePeer: "Hims" },
@@ -307,7 +309,7 @@ const conditions = {
     id: "hairloss", name: "Hair loss",
     tagline: "Slow hair loss and help hair grow back.",
     description: "Proven hair treatments. Pick what fits you. A doctor makes sure it is safe for you.",
-    icon: Sparkles, accent: "#E87722", fromPrice: "40",
+    icon: Sparkles, accent: "#C89E67", fromPrice: "40",
     treatments: [
       { id: "fin", name: "Finasteride 1mg Oral", sub: "30 tablets / month", price: 25, chilled: false,
         note: "DHT blockade. The gold-standard first-line treatment.", compareAt: 32, comparePeer: "Hims" },
@@ -325,7 +327,7 @@ const conditions = {
     id: "skincare", name: "Skin care",
     tagline: "Clearer, healthier-looking skin.",
     description: "Doctor-guided skin treatments for aging, acne, and tone — made for your goals.",
-    icon: Leaf, accent: "#E87722", fromPrice: "100",
+    icon: Leaf, accent: "#C89E67", fromPrice: "100",
     treatments: [
       { id: "tret-mild", name: "Tretinoin TAAN Mild", sub: "Tret 0.03% / Azelaic 4% / Niacinamide 4% · 30 g", price: 59, chilled: false,
         note: "Compounded for tolerability. Three-active complex for texture, tone, and brightening.", badge: "Best for first-timers" },
@@ -343,7 +345,7 @@ const conditions = {
     id: "sermorelin", name: "Sermorelin",
     tagline: "Recover faster. Sleep deeper. Build lean muscle.",
     description: "Peptide therapy that helps your body make more of its own growth hormone. A doctor reviews your goals and history before anything ships.",
-    icon: Dna, accent: "#E87722", fromPrice: "199",
+    icon: Dna, accent: "#C89E67", fromPrice: "199",
     treatments: [
       { id: "serm-std", name: "Sermorelin Injection", sub: "200–300 mcg / nightly · subQ", price: 199, chilled: true,
         note: "GHRH analog that prompts your pituitary's own growth-hormone pulse. Supports recovery, sleep quality, body composition, and energy.",
@@ -358,7 +360,7 @@ const conditions = {
     id: "nad", name: "NAD+ therapy", planLabel: "NAD+ therapy",
     tagline: "Recharge your cells. Fight fatigue and brain fog.",
     description: "NAD+ supports cellular energy, focus, and healthy aging. A doctor tailors the dose and form to you before anything ships.",
-    icon: Zap, accent: "#E87722", fromPrice: "149",
+    icon: Zap, accent: "#C89E67", fromPrice: "149",
     treatments: [
       { id: "nad-inj", name: "NAD+ Injection", sub: "100 mg / 2–3× weekly · subQ", price: 249, chilled: true,
         note: "Direct NAD+ restoration for energy metabolism, mental clarity, and cellular repair. The most effective at-home format.",
@@ -373,7 +375,7 @@ const conditions = {
     id: "lowt", name: "Low energy & hormones",
     tagline: "Get your energy and drive back.",
     description: "Care for low testosterone and low energy. Labs when needed. A doctor guides every step.",
-    icon: Droplets, accent: "#E87722", fromPrice: "99",
+    icon: Droplets, accent: "#C89E67", fromPrice: "99",
     treatments: [
       { id: "t-cyp", name: "Testosterone Cypionate", sub: "100–200 mg / weekly · injectable", price: 149, chilled: false,
         note: "Gold-standard TRT. Clinician-titrated weekly injections with scheduled follow-up labs.", badge: "Most prescribed", compareAt: 199, comparePeer: "Hims" },
@@ -391,7 +393,7 @@ const conditions = {
     id: "mentalhealth", name: "Mood & focus",
     tagline: "Feel calmer. Think clearer.",
     description: "Private help for anxiety, depression, and stress. A doctor checks in and stays with you.",
-    icon: Brain, accent: "#E87722", fromPrice: "35",
+    icon: Brain, accent: "#C89E67", fromPrice: "35",
     treatments: [
       { id: "sertraline", name: "Sertraline", sub: "25–100 mg / daily · SSRI", price: 39, chilled: false,
         note: "First-line for depression and anxiety. Broad evidence base, flexible titration.", badge: "Most prescribed", compareAt: 55, comparePeer: "Hims" },
@@ -409,7 +411,7 @@ const conditions = {
     id: "pcp", name: "Your doctor",
     tagline: "A doctor you can message any day.",
     description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
-    icon: UserCheck, accent: "#E87722", fromPrice: "49",
+    icon: UserCheck, accent: "#C89E67", fromPrice: "49",
     treatments: [
       { id: "pcp-core", name: "Spry Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
         note: "Your dedicated SpryMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
@@ -742,7 +744,7 @@ const DeliveryBar = ({ onClick, glass = false }) => {
       onClick={onClick}
       className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
       style={{
-        background: glass ? "rgba(0,0,0,0.38)" : C.paper,
+        background: glass ? "rgba(9,14,11,0.38)" : C.paper,
         borderBottom: `1px solid ${C.line}`,
         color: C.ink,
         cursor: onClick ? "pointer" : "default",
@@ -778,19 +780,6 @@ const DeliveryDetailsCard = () => (
       </span>
     </div>
     <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.6 }}>{TN_DELIVERY.full}</p>
-    <ul className="mt-4 space-y-2">
-      {[
-        `Visit completed by ${TN_DELIVERY.cutoff} on ${TN_DELIVERY.eligibleDays}`,
-        "Prescription approved and filled by the pharmacy",
-        "Tennessee shipping address on an eligible medication",
-        "Carrier, weather, and controlled-substance rules can change timing",
-      ].map((item) => (
-        <li key={item} className="flex items-start gap-2">
-          <Check size={14} color={C.accent} strokeWidth={2} className="flex-shrink-0" style={{ marginTop: 3 }} />
-          <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>{item}</span>
-        </li>
-      ))}
-    </ul>
   </div>
 );
 
@@ -816,7 +805,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
     <header className="relative w-full px-6 md:px-12 py-5"
       style={{
         borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}`,
-        background: glass ? "rgba(0,0,0,0.28)" : undefined,
+        background: glass ? "rgba(9,14,11,0.28)" : undefined,
         backdropFilter: glass ? "blur(12px)" : undefined,
       }}>
       <div className="flex items-center justify-between gap-3">
@@ -853,11 +842,11 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
             className="focus-ring inline-flex items-center gap-2 rounded-lg px-3 py-2 transition-colors"
             style={{
               background: user ? C.accent : (dark ? "rgba(255,255,255,0.08)" : C.bgAlt),
-              color: user ? "#FFFFFF" : fg,
+              color: user ? C.bg : fg,
             }}
             aria-label={user ? "Open patient dashboard" : "Sign in to dashboard"}>
-            <User size={18} strokeWidth={1.75} color={user ? "#FFFFFF" : fg} />
-            <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 600, color: user ? "#FFFFFF" : fg }}>
+            <User size={18} strokeWidth={1.75} color={user ? C.bg : fg} />
+            <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 600, color: user ? C.bg : fg }}>
               {user ? "Dashboard" : "Sign in"}
             </span>
           </button>
@@ -868,7 +857,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
               <ShoppingBag size={18} strokeWidth={1.75} color={fg} />
               {cartCount > 0 && (
                 <span className="mono absolute -top-1 -right-1 flex items-center justify-center"
-                  style={{ background: C.accent, color: "#fff", fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
+                  style={{ background: C.accent, color: C.bg, fontSize: 10, width: 18, height: 18, borderRadius: 999, fontWeight: 600 }}>{cartCount}</span>
               )}
             </button>
           ) : null}
@@ -962,7 +951,7 @@ const StickyVisitBar = ({ go }) => {
         zIndex: 60,
         transform: show ? "translateY(0)" : "translateY(-110%)",
         visibility: show ? "visible" : "hidden",
-        background: "rgba(0,0,0,0.72)",
+        background: "rgba(9,14,11,0.72)",
         backdropFilter: "blur(12px)",
         borderBottom: `1px solid ${C.line}`,
       }}
@@ -1033,7 +1022,7 @@ const Landing = ({ go }) => {
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.04) 100%)" }}
+        style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.42) 0%, rgba(9,14,11,0.12) 50%, rgba(9,14,11,0.04) 100%)" }}
       />
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
         <SignalField density={28} interactive={false} />
@@ -1083,7 +1072,7 @@ const Landing = ({ go }) => {
                 marginBottom: 20,
               }}
             >
-              Men’s telehealth, built for <span className="signal-underline">Tennessee</span>.
+              Telehealth, built for <span className="signal-underline">Tennessee</span>.
             </h1>
             <p
               className="spry-rise"
@@ -1105,7 +1094,7 @@ const Landing = ({ go }) => {
               <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
             </div>
             <div className="spry-rise flex flex-wrap gap-y-2 mt-6" style={{ animationDelay: "0.28s", columnGap: 28 }}>
-              {["Licensed clinical care", "Fast & discreet", "No waiting rooms"].map((item) => (
+              {["Zero judgment", "100% confidential", "Discreet, unmarked packaging"].map((item) => (
                 <div key={item} className="inline-flex items-center gap-2">
                   <Check size={14} color={C.accent} strokeWidth={2.25} />
                   <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{item}</span>
@@ -1163,7 +1152,7 @@ const Landing = ({ go }) => {
           <div>
             <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>How it works</span>
             <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, marginTop: 10, color: C.ink, fontWeight: 650 }}>
-              Choose care → clinician review → treatment shipped.
+              You Choose → Clinician Reviews → Treatment Shipped.
             </h2>
           </div>
           <p style={{ fontSize: 15, color: C.inkSoft, maxWidth: 320, lineHeight: 1.5 }}>
@@ -1172,9 +1161,9 @@ const Landing = ({ go }) => {
         </div>
         <div className="grid md:grid-cols-3 gap-3">
           {[
-            { n: "01", t: "Choose care", d: "Pick a visit and answer a short, private intake." },
-            { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case before anything ships." },
-            { n: "03", t: "Treatment shipped", d: "If approved and filled, qualifying Tennessee orders can move next business day." },
+            { n: "01", t: "Choose the type of care you want to receive.", d: "Then answer a short, private intake questionnaire that focuses on any contraindications to that particular treatment." },
+            { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case to make sure the treatment is safe." },
+            { n: "03", t: "Treatment shipped", d: "Once treatment is approved, your prescription will be filled by our pharmacy, discreetly packaged and shipped within 24 hours for next-day delivery." },
           ].map((s) => (
             <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
@@ -1274,6 +1263,73 @@ const Landing = ({ go }) => {
                       </div>
                       <span style={{ fontSize: 13, color: C.inkSoft }}>{tier.d}</span>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Physician authority — people buy into the who as much as the what */}
+    <section id="physician" className="px-6 md:px-12 py-16 md:py-24" style={{ background: C.bgAlt, borderTop: `1px solid ${C.lineSoft}` }}>
+      <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 md:gap-14 items-center">
+        <div className="md:col-span-6">
+          <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Physician-led</span>
+          <h2 className="display" style={{ fontSize: "clamp(30px, 4.6vw, 46px)", lineHeight: 1.14, marginTop: 14, color: C.ink, fontWeight: 600 }}>
+            Founded by a physician who has spent years at the hospital bedside.
+          </h2>
+          <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 18, lineHeight: 1.6, maxWidth: 520 }}>
+            SpryMD isn&rsquo;t a faceless internet pharmacy. It was built by a practicing Tennessee
+            hospitalist — a doctor whose day job is caring for hospitalized patients — and that
+            bedside judgment shapes every treatment we offer.
+          </p>
+          <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 12, lineHeight: 1.6, maxWidth: 520 }}>
+            When you finish your intake, a real, licensed Tennessee physician personally reviews it —
+            your history, your medications, your answers — before anything is prescribed or shipped.
+            And if treatment isn&rsquo;t right for you, we&rsquo;ll tell you that too.
+          </p>
+          <div className="mt-8 space-y-4">
+            {[
+              { icon: Stethoscope, t: "Hospitalist-founded", d: "Years of inpatient hospital medicine behind every protocol — not a marketing team with a prescription pad." },
+              { icon: UserCheck, t: "A physician reads every intake", d: "Personal review by a Tennessee-licensed doctor before any treatment ships." },
+              { icon: FileText, t: "Board-certified oversight", d: "No protocol is authorized without independent medical judgment." },
+              { icon: Heart, t: "Judgment-free by design", d: "These are conditions doctors treat every single day. There's nothing you can't tell us." },
+            ].map(({ icon: Icon, t, d }) => (
+              <div key={t} className="flex items-start gap-3.5">
+                <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 38, height: 38, background: C.signalDim, border: `1px solid ${C.line}` }}>
+                  <Icon size={17} color={C.accent} strokeWidth={1.75} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{t}</div>
+                  <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.5, marginTop: 2 }}>{d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-10">
+            <Btn onClick={() => go("page", { slug: "clinicians" })} size="lg" variant="secondary" icon={ArrowRight}>How we practice medicine</Btn>
+          </div>
+        </div>
+        <div className="md:col-span-6">
+          <div className="rounded-3xl overflow-hidden relative" style={{ border: `1px solid ${C.line}`, minHeight: 420 }}>
+            <BrandAtmosphere plate="care" variant="panel" locked={false} />
+            <div className="relative z-10 flex flex-col justify-end p-7 md:p-9" style={{ minHeight: 420 }}>
+              <p className="display" style={{ fontSize: "clamp(20px, 2.4vw, 26px)", lineHeight: 1.4, color: C.ink, fontWeight: 500, maxWidth: 400 }}>
+                &ldquo;The doctor reviewing your case has heard it all before — and took an oath to
+                help, not to judge.&rdquo;
+              </p>
+              <div className="grid grid-cols-2 gap-3 mt-8">
+                {[
+                  { k: "Founder", v: "Practicing hospitalist" },
+                  { k: "Licensure", v: "Tennessee" },
+                  { k: "Every intake", v: "Physician-reviewed" },
+                  { k: "Oversight", v: "Board-certified" },
+                ].map(({ k, v }) => (
+                  <div key={k} className="rounded-2xl p-4" style={{ background: "rgba(12,18,15,0.72)", border: `1px solid ${C.line}`, backdropFilter: "blur(6px)" }}>
+                    <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", fontWeight: 600 }}>{k}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginTop: 4 }}>{v}</div>
                   </div>
                 ))}
               </div>
@@ -1383,7 +1439,7 @@ const Landing = ({ go }) => {
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.18 }}>
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.42) 74%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.10) 0%, rgba(9,14,11,0.42) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
           Spry<span style={{ color: C.accent }}>MD</span>
@@ -1427,7 +1483,7 @@ const Landing = ({ go }) => {
       >
         <div
           className="absolute overflow-y-auto overscroll-contain"
-          style={{ inset: "min(4vw, 36px)", borderRadius: 18, background: C.bg, boxShadow: "0 40px 100px rgba(0,0,0,0.45)", border: `1px solid ${C.line}` }}
+          style={{ inset: "min(4vw, 36px)", borderRadius: 18, background: C.bg, boxShadow: "0 40px 100px rgba(9,14,11,0.45)", border: `1px solid ${C.line}` }}
           onClick={(e) => e.stopPropagation()}
         >
           <Intake key={intakeOverlay} conditionId={intakeOverlay} go={overlayGo} />
@@ -1785,29 +1841,29 @@ const AUTH_THEME_KEY = "sprymd_auth_theme";
 const authThemes = {
   dark: {
     bg: "transparent",
-    ink: "#FFFFFF",
-    inkSoft: "#D6D6D6",
-    muted: "#8F8F8F",
-    line: "#2A2A2A",
-    lineSoft: "#1A1A1A",
-    inputBg: "#0C0C0C",
-    errorBg: "rgba(226,85,85,0.12)",
-    errorBorder: "rgba(226,85,85,0.35)",
-    noticeBg: "rgba(232,119,34,0.16)",
-    noticeBorder: "#B85510",
+    ink: "#F4F1E8",
+    inkSoft: "#D2CFC2",
+    muted: "#93A096",
+    line: "#263129",
+    lineSoft: "#1A241E",
+    inputBg: "#101915",
+    errorBg: "rgba(206,107,93,0.12)",
+    errorBorder: "rgba(206,107,93,0.35)",
+    noticeBg: "rgba(200, 158, 103, 0.16)",
+    noticeBorder: "#96703F",
   },
   light: {
-    bg: "#E8EAED",
-    ink: "#111111",
-    inkSoft: "#3A3A3A",
-    muted: "#6A6A6A",
-    line: "#C8CCD2",
-    lineSoft: "#D5D8DD",
-    inputBg: "#FFFFFF",
-    errorBg: "rgba(226,85,85,0.08)",
-    errorBorder: "rgba(226,85,85,0.28)",
-    noticeBg: "rgba(232,119,34,0.10)",
-    noticeBorder: "#E87722",
+    bg: "#EAE7DC",
+    ink: "#1B241E",
+    inkSoft: "#3C463F",
+    muted: "#67716A",
+    line: "#C9C4B4",
+    lineSoft: "#D8D3C4",
+    inputBg: "#FFFDF7",
+    errorBg: "rgba(206,107,93,0.08)",
+    errorBorder: "rgba(206,107,93,0.28)",
+    noticeBg: "rgba(200, 158, 103, 0.10)",
+    noticeBorder: "#C89E67",
   },
 };
 
@@ -2736,22 +2792,47 @@ const Intake = ({ conditionId, go }) => {
   const setAnswer = (key, val) => setAnswers((a) => ({ ...a, [key]: val }));
   const progress = ((step + 1) / questions.length) * 100;
 
+  // Reassure the patient: this is fast. ~20 seconds per remaining question.
+  const remainingSeconds = (questions.length - step) * 20;
+  const timeLeftLabel = isLast
+    ? "Last question"
+    : remainingSeconds <= 60
+      ? "Under a minute left"
+      : `Just ${Math.ceil(remainingSeconds / 60)} minutes left`;
+
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <Logo />
         <div className="flex items-center gap-4">
-          <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em" }}>
-            {String(step + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}
-          </span>
+          <div className="text-right">
+            <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em", display: "block" }}>
+              {String(step + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}
+            </span>
+            <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>{timeLeftLabel}</span>
+          </div>
           <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60 transition-opacity">
             <X size={20} color={C.ink} strokeWidth={1.5} />
           </button>
         </div>
       </div>
 
-      <div style={{ height: 2, background: C.lineSoft, position: "relative" }}>
-        <div style={{ height: "100%", background: C.primary, width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)" }} />
+      <div style={{ height: 3, background: C.lineSoft, position: "relative" }}>
+        <div style={{ height: "100%", background: C.primary, width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)", borderRadius: "0 999px 999px 0" }} />
+      </div>
+
+      {/* Normalizing micro-copy — a quiet, private conversation, zero friction */}
+      <div className="px-6 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-6 gap-y-1" style={{ borderBottom: `1px solid ${C.lineSoft}`, background: C.bgAlt }}>
+        {[
+          { icon: Heart, label: "Zero judgment" },
+          { icon: Lock, label: "100% confidential" },
+          { icon: Package, label: "Ships in discreet, unmarked packaging" },
+        ].map(({ icon: TrustIcon, label }) => (
+          <span key={label} className="inline-flex items-center gap-1.5">
+            <TrustIcon size={12} color={C.accent} strokeWidth={2} />
+            <span style={{ fontSize: 11.5, color: C.inkSoft, letterSpacing: "0.02em" }}>{label}</span>
+          </span>
+        ))}
       </div>
 
       <div className="flex-1 flex items-start md:items-center justify-center px-6 md:px-12 py-12 md:py-16">
@@ -2767,8 +2848,8 @@ const Intake = ({ conditionId, go }) => {
               {current.options.map((opt) => (
                 <button key={opt} onClick={() => setAnswer(current.key, opt)}
                   className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
-                  style={{ background: value === opt ? C.primary : C.paper, color: value === opt ? C.paper : C.ink,
-                    border: `1px solid ${value === opt ? C.primary : C.line}`, borderRadius: 12, fontSize: 15, fontWeight: 500 }}>
+                  style={{ background: value === opt ? C.primary : C.paper, color: value === opt ? C.bg : C.ink,
+                    border: `1px solid ${value === opt ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
                   <span>{opt}</span>
                   <div className="rounded-full flex items-center justify-center"
                     style={{ width: 22, height: 22, border: `1.5px solid ${value === opt ? C.paper : C.line}`,
@@ -2797,8 +2878,8 @@ const Intake = ({ conditionId, go }) => {
                       setAnswer(current.key, next);
                     }}
                     className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
-                    style={{ background: checked ? C.primary : C.paper, color: checked ? C.paper : C.ink,
-                      border: `1px solid ${checked ? C.primary : C.line}`, borderRadius: 12, fontSize: 15, fontWeight: 500 }}>
+                    style={{ background: checked ? C.primary : C.paper, color: checked ? C.bg : C.ink,
+                      border: `1px solid ${checked ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
                     <span style={{ flex: 1, paddingRight: 16, lineHeight: 1.45 }}>{opt}</span>
                     <div className="flex items-center justify-center flex-shrink-0"
                       style={{ width: 22, height: 22, border: `1.5px solid ${checked ? C.paper : C.line}`,
@@ -2818,7 +2899,7 @@ const Intake = ({ conditionId, go }) => {
                   <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8 }}>{f.label}</label>
                   <input type={f.type} value={answers[f.key] || ""} onChange={(e) => setAnswer(f.key, e.target.value)} placeholder={f.placeholder}
                     className="focus-ring w-full p-4"
-                    style={{ background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 12, fontSize: 18, color: C.ink, fontFamily: fonts.display, fontWeight: 500 }} />
+                    style={{ background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 16, fontSize: 18, color: C.ink, fontFamily: fonts.body, fontWeight: 500 }} />
                 </div>
               ))}
             </div>
@@ -2933,7 +3014,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
           </div>
           <div className="anim-fadeUp rounded-3xl overflow-hidden mb-8 relative" style={{ border: `1px solid ${C.line}` }}>
             <img src={planGraphic} alt={`${condition.name} treatment`} className="w-full h-44 md:h-56 object-cover" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 100%)" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.72) 0%, rgba(9,14,11,0.2) 100%)" }} />
             <div className="absolute left-6 right-6 bottom-6">
               <span className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.78)", textTransform: "uppercase" }}>Care pathway</span>
               <p style={{ color: "#fff", fontSize: 20, marginTop: 8, lineHeight: 1.2 }}>{condition.name} plan personalized to your intake.</p>
@@ -3061,7 +3142,7 @@ const Marketplace = ({ go, cart, addToCart, removeFromCart, cartCount, user, ini
         <div className="max-w-7xl mx-auto">
           <div className="relative rounded-[28px] overflow-hidden mb-10" style={{ border: `1px solid ${C.line}` }}>
             <img src={brandPlates.shop.src} alt="" className="w-full h-[180px] md:h-[260px] object-cover" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%)" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.88) 0%, rgba(9,14,11,0.45) 60%, rgba(9,14,11,0.2) 100%)" }} />
             <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
               <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Marketplace</span>
               <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1, fontWeight: 400, color: C.ink, marginTop: 10 }}>
@@ -3150,7 +3231,7 @@ const ProductCard = ({ p, onAdd }) => {
           )}
         </div>
         {p.hsa && (
-          <span className="absolute top-3 right-3 mono" style={{ fontSize: 10, letterSpacing: "0.08em", background: "rgba(0,0,0,0.65)", color: C.ink, border: `1px solid ${C.line}`, padding: "5px 9px", borderRadius: 999 }}>
+          <span className="absolute top-3 right-3 mono" style={{ fontSize: 10, letterSpacing: "0.08em", background: "rgba(9,14,11,0.65)", color: C.ink, border: `1px solid ${C.line}`, padding: "5px 9px", borderRadius: 999 }}>
             HSA/FSA
           </span>
         )}
@@ -3316,6 +3397,19 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
               <Btn onClick={handleSubmit} disabled={!canSubmit || processing} size="lg" className="w-full" icon={!processing ? Lock : null}>
                 {processing ? <span className="anim-pulse">Submitting…</span> : isSubscription ? `Submit case · $${total.toFixed(2)} auth hold` : `Place order · $${total.toFixed(2)}`}
               </Btn>
+              {/* Normalizing micro-copy at the point of friction */}
+              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                {[
+                  { icon: Heart, label: "Zero judgment" },
+                  { icon: Lock, label: "100% confidential" },
+                  { icon: Package, label: "Discreet, unmarked packaging" },
+                ].map(({ icon: TrustIcon, label }) => (
+                  <span key={label} className="inline-flex items-center gap-1.5">
+                    <TrustIcon size={12} color={C.accent} strokeWidth={2} />
+                    <span style={{ fontSize: 12, color: C.inkSoft }}>{label}</span>
+                  </span>
+                ))}
+              </div>
               <div className="flex items-center justify-center gap-2">
                 <Lock size={11} color={C.muted} />
                 <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>ENCRYPTED · CLINICIAN REVIEW BEFORE FULFILLMENT</span>
@@ -3676,7 +3770,7 @@ export default function App() {
   return (
     <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
-      {view === "landing" ? <BrandAtmosphere plate="hawaiiDawn" variant="site" locked objectPosition="center 40%" /> : null}
+      {view === "landing" ? <BrandAtmosphere plate="tn" variant="site" locked objectPosition="center 40%" /> : null}
 
       {view === "landing" && (
         <div className="relative z-10">

@@ -93,7 +93,7 @@ const Quiz = () => {
       case 0:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">How old are you?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">How old are you?</h2>
             {["Under 30", "30–39", "40–49", "50–59", "60 or older"].map(o => (
               <OptionButton key={o} label={o} selected={answers.age === o} onClick={() => selectSingle("age", o)} />
             ))}
@@ -102,7 +102,7 @@ const Quiz = () => {
       case 1:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">How would you describe your erections recently?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">How would you describe your erections recently?</h2>
             {["Can't get an erection", "Get one but can't maintain it", "Less firm than usual", "Only works in certain situations"].map(o => (
               <OptionButton key={o} label={o} selected={answers.erections === o} onClick={() => selectSingle("erections", o)} />
             ))}
@@ -111,7 +111,7 @@ const Quiz = () => {
       case 2:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">How long has this been going on?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">How long has this been going on?</h2>
             {["Less than 3 months", "3–6 months", "6–12 months", "Over a year"].map(o => (
               <OptionButton key={o} label={o} selected={answers.duration === o} onClick={() => selectSingle("duration", o)} />
             ))}
@@ -120,7 +120,7 @@ const Quiz = () => {
       case 3:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">How often does it happen?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">How often does it happen?</h2>
             {["Almost always", "Most of the time", "Sometimes", "Rarely"].map(o => (
               <OptionButton key={o} label={o} selected={answers.frequency === o} onClick={() => selectSingle("frequency", o)} />
             ))}
@@ -129,7 +129,7 @@ const Quiz = () => {
       case 4:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">Do you have any of the following conditions?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">Do you have any of the following conditions?</h2>
             <p className="text-center font-body text-muted-foreground text-sm mb-4">Select all that apply</p>
             {["Heart disease or history of heart attack", "High blood pressure (uncontrolled)", "Diabetes (Type 1 or 2)", "Low blood pressure", "None of the above"].map(o => (
               <CheckboxButton key={o} label={o} checked={answers.conditions.includes(o)} onClick={() => toggleMulti("conditions", o)} />
@@ -153,7 +153,7 @@ const Quiz = () => {
               <div className="bg-destructive/10 border-2 border-destructive rounded-2xl p-6">
                 <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
                 <h3 className="font-display text-destructive text-xl font-bold mb-2">⛔ Important Safety Notice</h3>
-                <p className="font-body text-foreground text-sm leading-relaxed">
+                <p className="font-body text-navy text-sm leading-relaxed">
                   Based on your answer, we are unable to prescribe ED medication for you at this time. Nitrate medications and ED medications together can cause a dangerous, life-threatening drop in blood pressure. Please speak with your cardiologist about safe alternatives.
                 </p>
               </div>
@@ -164,7 +164,7 @@ const Quiz = () => {
 
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-2">Are you currently taking any of these medications?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-2">Are you currently taking any of these medications?</h2>
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex items-start gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="font-body text-amber-800 text-sm font-medium">This is a critical safety question. Please answer honestly.</p>
@@ -189,7 +189,7 @@ const Quiz = () => {
       case 6:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">Have you tried ED medication before?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">Have you tried ED medication before?</h2>
             {["No, never", "Yes — it worked", "Yes — didn't work well", "Yes — had side effects"].map(o => (
               <OptionButton key={o} label={o} selected={answers.triedBefore === o} onClick={() => selectSingle("triedBefore", o)} />
             ))}
@@ -198,12 +198,12 @@ const Quiz = () => {
       case 7:
         return (
           <div className="space-y-4">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">Do you have any drug allergies?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">Do you have any drug allergies?</h2>
             <textarea
               value={answers.allergies}
               onChange={e => setAnswers(prev => ({ ...prev, allergies: e.target.value }))}
               placeholder="Type 'None' if no known allergies"
-              className="w-full rounded-xl border-2 border-gray-light p-4 font-body text-foreground resize-none h-28 focus:outline-none focus:border-primary transition-colors"
+              className="w-full rounded-xl border-2 border-gray-light p-4 font-body text-navy resize-none h-28 focus:outline-none focus:border-primary transition-colors"
             />
             <button onClick={goNext} disabled={!answers.allergies.trim()} className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed">Continue</button>
           </div>
@@ -211,7 +211,7 @@ const Quiz = () => {
       case 8:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">Which option sounds most appealing?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">Which option sounds most appealing?</h2>
             {[
               { icon: "💊", label: "Daily pill — always ready, no planning" },
               { icon: "💊", label: "As-needed pill — take it when you want it" },
@@ -224,7 +224,7 @@ const Quiz = () => {
       case 9:
         return (
           <div className="space-y-3">
-            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-6">What is your main goal?</h2>
+            <h2 className="font-display text-navy text-2xl md:text-3xl font-bold text-center mb-6">What is your main goal?</h2>
             {["Get an erection when I want one", "Better consistency and reliability", "Longer lasting", "All of the above"].map(o => (
               <OptionButton key={o} label={o} selected={answers.goal === o} onClick={() => selectSingle("goal", o)} />
             ))}
@@ -236,7 +236,7 @@ const Quiz = () => {
             <div className="w-16 h-16 rounded-full bg-green mx-auto flex items-center justify-center mb-6 animate-scale-check">
               <Check className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h2 className="font-display text-foreground text-3xl font-bold mb-3">Your Treatment Plan Is Ready.</h2>
+            <h2 className="font-display text-navy text-3xl font-bold mb-3">Your Treatment Plan Is Ready.</h2>
             <p className="font-body text-muted-foreground text-lg max-w-md mx-auto mb-8">
               Based on your answers, you may be a candidate for ED treatment. A board-certified physician will review your case personally within 24 hours.
             </p>
@@ -247,14 +247,14 @@ const Quiz = () => {
                 { text: "📦 Discreet delivery if prescribed" },
                 { text: "↩ Full refund if not a candidate" },
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 font-body text-foreground text-sm">
+                <div key={i} className="flex items-center gap-3 font-body text-navy text-sm">
                   {"icon" in item && item.icon ? <item.icon className="w-5 h-5 text-primary flex-shrink-0" /> : <span className="text-base">{item.text?.substring(0, 2)}</span>}
                   <span>{"icon" in item ? item.text : item.text?.substring(2)}</span>
                 </div>
               ))}
             </div>
             <div className="mb-6">
-              <span className="font-display text-foreground text-5xl font-bold">$75</span>
+              <span className="font-display text-navy text-5xl font-bold">$75</span>
               <span className="font-body text-muted-foreground text-xl">/month</span>
             </div>
             <a href="https://buy.stripe.com/28EfZjb5i0mEa679id7Zu00" className="btn-primary-lg w-full text-center block">Complete My SpryMD Visit — $75 →</a>
@@ -284,7 +284,7 @@ const Quiz = () => {
 
         <div className="card-base shadow-xl p-8 md:p-10 rounded-2xl relative overflow-hidden min-h-[400px] flex flex-col justify-center">
           {step > 0 && step < totalSteps && (
-            <button onClick={goBack} className="absolute top-4 left-4 font-body text-muted-foreground text-sm hover:text-foreground transition-colors">
+            <button onClick={goBack} className="absolute top-4 left-4 font-body text-muted-foreground text-sm hover:text-navy transition-colors">
               ← Back
             </button>
           )}

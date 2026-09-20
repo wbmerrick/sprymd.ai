@@ -24,8 +24,8 @@ export default function GoalsPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#E87722]">Care</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Care</p>
+        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
           Goals
         </h1>
         <p className="text-sm text-zinc-400">
@@ -35,8 +35,8 @@ export default function GoalsPage() {
 
       <section className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
         <div className="mb-3 flex items-center gap-2">
-          <Target className="h-4 w-4 text-[#E87722]" />
-          <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+          <Target className="h-4 w-4 text-[#C89E67]" />
+          <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
             Body goals
           </h2>
         </div>

@@ -46,7 +46,7 @@ const DoctorBio = () => (
           </div>
         </AnimatedSection>
         <AnimatedSection delay={0.2}>
-          <h2 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">Care without the waiting room</h2>
+          <h2 className="font-display text-navy text-3xl md:text-4xl font-bold mb-2">Care without the waiting room</h2>
           <p className="font-body text-primary font-medium mb-6">Clinician-reviewed telehealth · Tennessee</p>
           <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
             <p>SpryMD is a telehealth practice for men who want clear, private care — without sitting in a waiting room or explaining themselves in public.</p>
@@ -77,7 +77,7 @@ const CredentialsGrid = () => {
             <AnimatedSection key={i} delay={i * 0.1}>
               <div className="card-base text-center card-hover">
                 <c.icon className="w-8 h-8 text-primary mx-auto mb-3" />
-                <p className="font-body text-foreground font-medium text-sm">{c.text}</p>
+                <p className="font-body text-navy font-medium text-sm">{c.text}</p>
               </div>
             </AnimatedSection>
           ))}
@@ -113,7 +113,7 @@ const NotAPillMill = () => (
           <p>We screen every patient carefully. We decline to prescribe when it's not clinically appropriate. We follow up. We treat you like a patient — because that's what you are.</p>
           <p>If you're not a good candidate for ED medication based on your health history, we'll tell you honestly, explain why, and issue a full refund. Your safety matters more than a transaction.</p>
         </div>
-        <p className="font-body text-foreground font-medium mb-6">Ready to work with a doctor who takes your health seriously?</p>
+        <p className="font-body text-navy font-medium mb-6">Ready to work with a doctor who takes your health seriously?</p>
         <Link to="/quiz" className="btn-primary">Start My Consultation →</Link>
       </AnimatedSection>
     </div>

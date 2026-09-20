@@ -4,43 +4,43 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    --background: 150 20% 6%;
+    --foreground: 45 35% 93%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 218 40% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 218 40% 12%;
-    --primary: 208 75% 45%;
+    --card: 45 30% 97%;
+    --card-foreground: 152 18% 12%;
+    --popover: 45 30% 97%;
+    --popover-foreground: 152 18% 12%;
+    --primary: 209 26% 49%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 211 77% 25%;
+    --secondary: 210 30% 30%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 200 30% 95%;
-    --muted-foreground: 215 16% 42%;
-    --accent: 18 90% 58%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --muted: 45 20% 94%;
+    --muted-foreground: 150 8% 40%;
+    --accent: 34 47% 59%;
+    --accent-foreground: 152 20% 8%;
+    --destructive: 8 55% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 30% 88%;
-    --input: 210 30% 88%;
-    --ring: 208 75% 45%;
-    --radius: 0.5rem;
+    --border: 44 15% 85%;
+    --input: 44 15% 85%;
+    --ring: 34 47% 59%;
+    --radius: 0.75rem;
 
-    /* Custom tokens — sourced from uploaded artwork (deep navy, electric blues, sunset coral) */
-    --navy: 218 50% 12%;
-    --navy-deep: 210 60% 5%;
-    --slate: 211 77% 25%;
-    --blue: 208 75% 45%;
-    --blue-light: 201 75% 62%;
-    --coral: 18 90% 58%;
-    --coral-light: 28 95% 65%;
+    /* Custom tokens — "Clinical Zen": deep forest greens, slate blues, warm sandstone */
+    --navy: 152 18% 12%;
+    --navy-deep: 155 25% 5%;
+    --slate: 209 26% 40%;
+    --blue: 209 26% 49%;
+    --blue-light: 209 30% 64%;
+    --coral: 34 47% 59%;
+    --coral-light: 36 45% 68%;
     --magenta: 330 70% 55%;
-    --off-white: 200 40% 98%;
-    --gray-light: 210 30% 88%;
-    --gray-mid: 215 16% 47%;
-    --text-primary: 218 40% 12%;
-    --green: 142 72% 29%;
-    --green-light: 142 72% 40%;
+    --off-white: 45 35% 96%;
+    --gray-light: 44 15% 85%;
+    --gray-mid: 150 8% 47%;
+    --text-primary: 152 18% 12%;
+    --green: 142 32% 42%;
+    --green-light: 142 32% 50%;
 
     --font-display: 'Fraunces', serif;
     --font-body: 'DM Sans', sans-serif;

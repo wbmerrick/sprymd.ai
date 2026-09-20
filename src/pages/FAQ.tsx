@@ -80,7 +80,7 @@ const FAQAccordion = ({ items }: { items: FAQItem[] }) => {
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
             className="w-full flex items-center justify-between p-5 text-left"
           >
-            <span className="font-display text-foreground font-semibold pr-4">{faq.q}</span>
+            <span className="font-display text-navy font-semibold pr-4">{faq.q}</span>
             <ChevronDown className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${openIndex === i ? "rotate-180" : ""}`} />
           </button>
           <AnimatePresence>

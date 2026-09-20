@@ -10,9 +10,9 @@ const Checkout = () => {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Order Summary */}
             <div className="card-base">
-              <h2 className="font-display text-foreground text-2xl font-bold mb-6">Your Visit Summary</h2>
+              <h2 className="font-display text-navy text-2xl font-bold mb-6">Your Visit Summary</h2>
               <div className="space-y-4 mb-6">
-                <div className="flex justify-between font-body text-foreground">
+                <div className="flex justify-between font-body text-navy">
                   <span>Physician consultation</span>
                   <span className="font-semibold">$75.00</span>
                 </div>
@@ -25,7 +25,7 @@ const Checkout = () => {
                   <span>Included</span>
                 </div>
                 <div className="h-px bg-gray-light" />
-                <div className="flex justify-between font-body text-foreground text-lg font-bold">
+                <div className="flex justify-between font-body text-navy text-lg font-bold">
                   <span>Total</span>
                   <span>$75.00/month</span>
                 </div>
@@ -33,7 +33,7 @@ const Checkout = () => {
 
               <ul className="space-y-2 mb-6">
                 {["Real physician review", "Prescription if appropriate", "Discreet delivery", "Cancel anytime"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 font-body text-sm text-foreground">
+                  <li key={i} className="flex items-center gap-2 font-body text-sm text-navy">
                     <Check className="w-4 h-4 text-green flex-shrink-0" />
                     {item}
                   </li>
@@ -49,15 +49,15 @@ const Checkout = () => {
 
             {/* Payment */}
             <div className="card-base">
-              <h2 className="font-display text-foreground text-2xl font-bold mb-6">Secure Checkout</h2>
+              <h2 className="font-display text-navy text-2xl font-bold mb-6">Secure Checkout</h2>
               
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Email</label>
+                  <label className="font-body text-navy text-sm font-medium mb-1 block">Email</label>
                   <input
                     type="email"
                     placeholder="your@email.com"
-                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-foreground focus:outline-none focus:border-primary transition-colors"
+                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-navy focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
 

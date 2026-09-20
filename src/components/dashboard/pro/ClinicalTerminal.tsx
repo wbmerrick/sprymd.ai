@@ -91,8 +91,8 @@ export function ClinicalTerminal({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#E87722]">Health desk</p>
-          <h1 className="text-2xl font-semibold text-white md:text-3xl" style={{ fontFamily: "'Outfit', sans-serif" }}>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#C89E67]">Health desk</p>
+          <h1 className="text-2xl font-semibold text-white md:text-3xl" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
             Your care at a glance
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
@@ -106,8 +106,8 @@ export function ClinicalTerminal({
             className={cn(
               "rounded-md border px-3 py-1.5 text-xs font-semibold",
               panel === "connect"
-                ? "border-[#E87722] bg-[#E87722] text-white"
-                : "border-white/15 text-zinc-200 hover:border-[#E87722]/50",
+                ? "border-[#C89E67] bg-[#C89E67] text-white"
+                : "border-white/15 text-zinc-200 hover:border-[#C89E67]/50",
             )}
           >
             Connect devices
@@ -118,8 +118,8 @@ export function ClinicalTerminal({
             className={cn(
               "rounded-md border px-3 py-1.5 text-xs font-semibold",
               panel === "customize"
-                ? "border-[#E87722] bg-[#E87722] text-white"
-                : "border-white/15 text-zinc-200 hover:border-[#E87722]/50",
+                ? "border-[#C89E67] bg-[#C89E67] text-white"
+                : "border-white/15 text-zinc-200 hover:border-[#C89E67]/50",
             )}
           >
             Customize

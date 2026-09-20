@@ -61,7 +61,7 @@ export function BiometricChart({
               onClick={() => onSelectMetric(m.id)}
               className={
                 selectedMetric === m.id
-                  ? "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider bg-[#E87722]/20 text-[#E87722]"
+                  ? "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider bg-[#C89E67]/20 text-[#C89E67]"
                   : "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-zinc-500 hover:text-zinc-200"
               }
             >
@@ -84,8 +84,8 @@ export function BiometricChart({
             <AreaChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="vitalFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#E87722" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#E87722" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#C89E67" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#C89E67" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
@@ -100,7 +100,7 @@ export function BiometricChart({
                 }}
                 labelStyle={{ color: "#a1a1aa" }}
               />
-              <Area type="monotone" dataKey="v" stroke="#E87722" fill="url(#vitalFill)" strokeWidth={1.75} isAnimationActive animationDuration={400} />
+              <Area type="monotone" dataKey="v" stroke="#C89E67" fill="url(#vitalFill)" strokeWidth={1.75} isAnimationActive animationDuration={400} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

@@ -103,7 +103,7 @@ export function BodyMetricsPanel({
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-[#E87722] transition-all duration-700"
+              className="h-full rounded-full bg-[#C89E67] transition-all duration-700"
               style={{ width: `${progress ?? 12}%` }}
             />
           </div>
@@ -132,7 +132,7 @@ export function BodyMetricsPanel({
       <button
         type="button"
         onClick={save}
-        className="mt-2 w-full rounded-md border border-white/15 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:border-[#E87722]/40 hover:text-[#E87722]"
+        className="mt-2 w-full rounded-md border border-white/15 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:border-[#C89E67]/40 hover:text-[#C89E67]"
       >
         Update body size
       </button>

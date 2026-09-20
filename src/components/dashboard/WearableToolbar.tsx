@@ -135,9 +135,9 @@ export function WearableToolbar() {
                 aria-expanded={open}
                 aria-controls="wearable-panel"
               >
-                <Activity className="h-4 w-4 text-[#E87722]" aria-hidden />
+                <Activity className="h-4 w-4 text-[#C89E67]" aria-hidden />
                 <span className="hidden sm:inline">
-                  <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#E87722]">
+                  <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#C89E67]">
                     Wearables
                   </span>
                   <span className="block text-xs text-zinc-300">Home devices</span>
@@ -156,7 +156,7 @@ export function WearableToolbar() {
                       className={cn(
                         "group relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border transition md:h-14 md:w-14",
                         active
-                          ? "border-[#E87722] ring-2 ring-[#E87722]/30"
+                          ? "border-[#C89E67] ring-2 ring-[#C89E67]/30"
                           : "border-white/10 hover:border-white/25",
                       )}
                       title={`${device.brand} ${device.name}`}
@@ -171,7 +171,7 @@ export function WearableToolbar() {
                         className={cn(
                           "absolute bottom-1 right-1 h-2 w-2 rounded-full border border-black",
                           device.syncMode === "continuous"
-                            ? "bg-[#E87722]"
+                            ? "bg-[#C89E67]"
                             : device.syncMode === "sync"
                               ? "bg-sky-400"
                               : "bg-zinc-500",
@@ -195,8 +195,8 @@ export function WearableToolbar() {
                       />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-[#E87722]">{selected.brand}</p>
-                      <h3 className="text-lg font-semibold tracking-tight text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-[#C89E67]">{selected.brand}</p>
+                      <h3 className="text-lg font-semibold tracking-tight text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
                         {selected.name}
                       </h3>
                       <p className="mt-1 text-xs text-zinc-500">
@@ -247,7 +247,7 @@ export function WearableToolbar() {
                           className={cn(
                             "rounded-xl border px-3 py-2.5 text-left transition",
                             on
-                              ? "border-[#E87722]/50 bg-[#E87722]/10"
+                              ? "border-[#C89E67]/50 bg-[#C89E67]/10"
                               : "border-white/10 bg-white/[0.02] hover:border-white/20",
                           )}
                         >
@@ -275,7 +275,7 @@ export function WearableToolbar() {
                     onClick={() =>
                       run(() => setWearableSyncMode(selected.id, "continuous"), "Continuous monitoring on")
                     }
-                    className="inline-flex items-center gap-2 rounded-full border border-[#E87722]/40 bg-[#E87722]/10 px-4 py-2 text-sm font-medium text-[#E87722] disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#C89E67]/40 bg-[#C89E67]/10 px-4 py-2 text-sm font-medium text-[#C89E67] disabled:opacity-50"
                   >
                     <Radio className="h-4 w-4" />
                     Continuous monitoring
@@ -315,7 +315,7 @@ export function WearableToolbar() {
                         onChange={(e) => setPrimary(e.target.value)}
                         inputMode="decimal"
                         placeholder="e.g. 120"
-                        className="mt-1.5 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-[#E87722]/50"
+                        className="mt-1.5 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-[#C89E67]/50"
                       />
                     </label>
                     {defaults.secondaryMetric && (
@@ -326,7 +326,7 @@ export function WearableToolbar() {
                           onChange={(e) => setSecondary(e.target.value)}
                           inputMode="decimal"
                           placeholder="optional"
-                          className="mt-1.5 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-[#E87722]/50"
+                          className="mt-1.5 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-[#C89E67]/50"
                         />
                       </label>
                     )}
@@ -337,14 +337,14 @@ export function WearableToolbar() {
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
                       placeholder="Optional context for your clinician"
-                      className="mt-1.5 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-[#E87722]/50"
+                      className="mt-1.5 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-[#C89E67]/50"
                     />
                   </label>
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() => void onSaveManual()}
-                    className="mt-3 inline-flex items-center justify-center rounded-full bg-[#E87722] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    className="mt-3 inline-flex items-center justify-center rounded-full bg-[#C89E67] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                   >
                     Save to dashboard
                   </button>
@@ -354,7 +354,7 @@ export function WearableToolbar() {
                 </div>
 
                 {(notice || error) && (
-                  <p className={cn("mt-3 text-sm", error ? "text-red-400" : "text-[#E87722]")}>
+                  <p className={cn("mt-3 text-sm", error ? "text-red-400" : "text-[#C89E67]")}>
                     {error || notice}
                   </p>
                 )}

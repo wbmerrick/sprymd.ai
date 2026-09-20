@@ -50,7 +50,7 @@ export default function OAuthCallbackPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0B0B0C] px-4 text-white">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#121214] p-6 text-center">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E87722]">OAuth callback</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#C89E67]">OAuth callback</p>
         <p className="mt-3 text-sm text-zinc-300">{message}</p>
       </div>
     </div>

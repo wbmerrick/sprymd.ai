@@ -14,7 +14,7 @@ export function MessagesList({ messages }: MessagesListProps) {
         <li key={m.id}>
           <Link
             to="/dashboard/support"
-            className="block rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#E87722]/35"
+            className="block rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#C89E67]/35"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-medium text-white">{m.subject}</h3>

@@ -38,8 +38,8 @@ export function CustomizeDashboardPanel({
     <div className="rounded-lg border border-white/10 bg-[#0B0B0C] p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#E87722]">Your account</p>
-          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#C89E67]">Your account</p>
+          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
             Customize dashboard
           </h2>
           <p className="mt-1 text-sm text-zinc-400">Saved to your account. Choose a layout or toggle panels.</p>
@@ -70,7 +70,7 @@ export function CustomizeDashboardPanel({
             className={cn(
               "rounded-lg border p-3 text-left transition",
               layout.preset === p.id
-                ? "border-[#E87722]/50 bg-[#E87722]/10"
+                ? "border-[#C89E67]/50 bg-[#C89E67]/10"
                 : "border-white/10 hover:border-white/25",
             )}
           >
@@ -91,7 +91,7 @@ export function CustomizeDashboardPanel({
               onClick={() => toggle(id)}
               className={cn(
                 "rounded-md border px-3 py-2 text-left text-sm",
-                on ? "border-[#E87722]/40 bg-[#E87722]/10 text-white" : "border-white/10 text-zinc-500",
+                on ? "border-[#C89E67]/40 bg-[#C89E67]/10 text-white" : "border-white/10 text-zinc-500",
               )}
             >
               {WIDGET_LABELS[id]}

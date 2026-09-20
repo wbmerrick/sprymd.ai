@@ -4,14 +4,14 @@ const VARIANTS = {
   site: {
     imgOpacity: 1,
     overlay:
-      "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.12) 38%, rgba(0,0,0,0.40) 100%), radial-gradient(ellipse 60% 42% at 68% 20%, rgba(232,119,34,0.18), transparent 56%)",
+      "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.12) 38%, rgba(0,0,0,0.40) 100%), radial-gradient(ellipse 60% 42% at 68% 20%, rgba(200, 158, 103,0.18), transparent 56%)",
     fixed: true,
     objectPosition: "center 58%",
   },
   hero: {
     imgOpacity: 1,
     overlay:
-      "linear-gradient(105deg, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.22) 48%, rgba(0,0,0,0.18) 100%), radial-gradient(ellipse 55% 40% at 70% 22%, rgba(232,119,34,0.16), transparent 58%)",
+      "linear-gradient(105deg, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.22) 48%, rgba(0,0,0,0.18) 100%), radial-gradient(ellipse 55% 40% at 70% 22%, rgba(200, 158, 103,0.16), transparent 58%)",
     fixed: false,
     objectPosition: "center 58%",
   },
@@ -25,7 +25,7 @@ const VARIANTS = {
   dashboard: {
     imgOpacity: 0.42,
     overlay:
-      "linear-gradient(180deg, rgba(5,5,5,0.42) 0%, rgba(5,5,5,0.72) 100%), radial-gradient(ellipse 70% 40% at 50% -10%, rgba(232,119,34,0.12), transparent 55%)",
+      "linear-gradient(180deg, rgba(5,5,5,0.42) 0%, rgba(5,5,5,0.72) 100%), radial-gradient(ellipse 70% 40% at 50% -10%, rgba(200, 158, 103,0.12), transparent 55%)",
     fixed: false,
     objectPosition: "center 58%",
   },

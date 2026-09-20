@@ -27,9 +27,9 @@ export function QuickLinksFooter() {
           <li key={tile.to}>
             <Link
               to={tile.to}
-              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-5 transition hover:border-[#E87722]/40"
+              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-5 transition hover:border-[#C89E67]/40"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E87722]/15 text-[#E87722]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#C89E67]/15 text-[#C89E67]">
                 <tile.icon className="h-5 w-5" aria-hidden />
               </div>
               <div className="flex-1">
