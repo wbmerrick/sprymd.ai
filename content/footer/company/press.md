@@ -16,7 +16,7 @@ For media inquiries, partnership discussions, or brand asset requests, reach our
 
 ## Media boilerplate
 
-SpryMD Inc. is a clinician-supervised telehealth platform delivering performance medicine for men. The company connects structured assessment, physician review, and protocol optimization into a single closed loop — with discreet fulfillment through licensed pharmacy partners and continuous monitoring over time. SpryMD is headquartered in the United States and operates under the tagline: *Modern medicine, made for men.*
+SpryMD Inc. is a clinician-supervised telehealth platform delivering performance medicine for men. The company connects structured assessment, physician review, and protocol optimization into a single closed loop — with discreet fulfillment through licensed pharmacy partners and continuous monitoring over time. SpryMD is headquartered in the United States and operates under the tagline: *Modern medicine, made for men and women.*
 
 ## Key facts
 
@@ -26,7 +26,7 @@ SpryMD Inc. is a clinician-supervised telehealth platform delivering performance
 - **Fulfillment:** Compounded medications via Empower Pharmacy; discreet shipping
 - **Clinical model:** Licensed clinicians review every case before treatment is authorized
 - **Positioning:** Elite performance medicine — not a pill mill; declines when inappropriate; not emergency care
-- **Tagline:** Operate at your ceiling / Modern medicine, made for men
+- **Tagline:** Operate at your ceiling / Modern medicine, made for men and women
 
 ## Brand assets
 

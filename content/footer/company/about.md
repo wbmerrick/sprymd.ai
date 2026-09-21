@@ -14,7 +14,7 @@ SpryMD is a clinician-supervised telehealth platform built for men who want more
 
 This is not a pill mill. We practice performance medicine: evidence-based protocols for hormone optimization, metabolic health, recovery, and longevity — delivered with discretion, shipped through licensed partners, and monitored continuously. When a case isn't appropriate for telehealth, we say so. When it is, we move with precision.
 
-Modern medicine, made for men. Operate at your ceiling.
+Modern medicine, made for men and women. Operate at your ceiling.
 
 ## Mission
 

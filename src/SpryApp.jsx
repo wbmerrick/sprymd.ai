@@ -1058,7 +1058,7 @@ const Landing = ({ go }) => {
                 marginBottom: 16,
               }}
             >
-              Modern medicine, made for men
+              Modern medicine, made for men and women
             </p>
             <h1
               className="spry-rise display"
@@ -1085,7 +1085,7 @@ const Landing = ({ go }) => {
                 marginBottom: 28,
               }}
             >
-              Licensed doctors. Private visits. Treatment that ships fast &amp; discreetly to your door when it’s clinically appropriate.
+              Licensed doctors. Hassle-free private visits. Treatment that ships fast &amp; discreetly to your door when it’s clinically appropriate.
             </p>
             <div className="spry-rise" style={{ animationDelay: "0.16s", marginBottom: 16 }}>
               <DeliveryHeroNote />
@@ -1626,7 +1626,7 @@ const Footer = ({ go }) => (
       <div>
         <Logo />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
-          Modern medicine, made for men. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
+          Modern medicine, made for men and women. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
         </p>
       </div>
       {footerColumns.map((col) => (

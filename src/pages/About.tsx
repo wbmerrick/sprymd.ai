@@ -14,7 +14,7 @@ const AboutHero = () => (
     <div className="section-container relative z-10">
       <AnimatedSection>
         <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
-        <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men.</p>
+        <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men and women.</p>
       </AnimatedSection>
     </div>
   </section>

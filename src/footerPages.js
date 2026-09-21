@@ -1254,7 +1254,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "Modern medicine, made for men. Operate at your ceiling."
+            "text": "Modern medicine, made for men and women. Operate at your ceiling."
           }
         ]
       },
@@ -1538,7 +1538,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "SpryMD Inc. is a clinician-supervised telehealth platform delivering performance medicine for men. The company connects structured assessment, physician review, and protocol optimization into a single closed loop — with discreet fulfillment through licensed pharmacy partners and continuous monitoring over time. SpryMD is headquartered in the United States and operates under the tagline: *Modern medicine, made for men.*"
+            "text": "SpryMD Inc. is a clinician-supervised telehealth platform delivering performance medicine for men. The company connects structured assessment, physician review, and protocol optimization into a single closed loop — with discreet fulfillment through licensed pharmacy partners and continuous monitoring over time. SpryMD is headquartered in the United States and operates under the tagline: *Modern medicine, made for men and women.*"
           }
         ]
       },
@@ -1554,7 +1554,7 @@ export const footerPages = {
               "**Fulfillment:** Compounded medications via Empower Pharmacy; discreet shipping",
               "**Clinical model:** Licensed clinicians review every case before treatment is authorized",
               "**Positioning:** Elite performance medicine — not a pill mill; declines when inappropriate; not emergency care",
-              "**Tagline:** Operate at your ceiling / Modern medicine, made for men"
+              "**Tagline:** Operate at your ceiling / Modern medicine, made for men and women"
             ]
           }
         ]
