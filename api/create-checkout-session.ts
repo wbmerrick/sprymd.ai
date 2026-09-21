@@ -11,6 +11,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Stripe from "stripe";
 import { getServiceTier } from "../shared/serviceTiers";
+import {
+  complianceBlockReason,
+  type ComplianceAnswers,
+} from "../shared/complianceGate";
 import { handlePreflight } from "./_lib/cors";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 
@@ -21,7 +25,14 @@ type CheckoutBody = {
   patientName?: string;
   successUrl?: string;
   cancelUrl?: string;
+  physicalState?: string;
+  cashPayTermsAccepted?: boolean | string;
+  telehealthLimitationsAcknowledged?: boolean | string;
 };
+
+function affirmed(value: boolean | string | undefined): boolean {
+  return value === true || value === "true";
+}
 
 function getAppBaseUrl(req: VercelRequest): string {
   if (process.env.APP_URL) {
@@ -93,6 +104,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  const compliance: ComplianceAnswers = {
+    cashPayTermsAccepted: affirmed(body.cashPayTermsAccepted),
+    telehealthLimitationsAcknowledged: affirmed(
+      body.telehealthLimitationsAcknowledged,
+    ),
+    physicalState: String(body.physicalState || ""),
+  };
+  const consentBlock = complianceBlockReason(compliance);
+  if (consentBlock) {
+    res.status(403).json({ error: "compliance_blocked", message: consentBlock });
+    return;
+  }
+
   const baseUrl = getAppBaseUrl(req);
   const successUrl =
     body.successUrl ||
@@ -126,6 +150,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         service_tier_id: tier.id,
         patient_email: patientEmail || "",
         patient_name: patientName || "",
+        physical_state: compliance.physicalState.toUpperCase(),
+        cash_pay_terms_accepted: "true",
+        telehealth_limitations_acknowledged: "true",
       },
     });
 

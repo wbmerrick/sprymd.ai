@@ -30,14 +30,11 @@ const CheckoutSuccess = () => {
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/" className="btn-primary text-center">
-                Back to home
+              <Link to="/visit/upcoming" className="btn-primary text-center">
+                Open visit room
               </Link>
-              <Link
-                to="/checkout"
-                className="font-body text-sm text-navy underline underline-offset-4 self-center"
-              >
-                Return to checkout
+              <Link to="/intake" className="font-body text-sm text-navy underline underline-offset-4 self-center">
+                Review intake
               </Link>
             </div>
           </div>

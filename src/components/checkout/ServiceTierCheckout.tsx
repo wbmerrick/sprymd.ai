@@ -1,10 +1,18 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   SERVICE_TIERS,
   formatTierPrice,
   type ServiceTier,
   type ServiceTierId,
 } from "../../../shared/serviceTiers";
+import {
+  EMPTY_COMPLIANCE,
+  canProceedToPayment,
+  complianceBlockReason,
+  type ComplianceAnswers,
+} from "../../../shared/complianceGate";
+import ComplianceConsent from "./ComplianceConsent";
 
 export type ServiceTierCheckoutProps = {
   appointmentId?: string;
@@ -26,6 +34,8 @@ export default function ServiceTierCheckout({
   const [patientName, setPatientName] = useState(initialName);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [consent, setConsent] = useState<ComplianceAnswers>(EMPTY_COMPLIANCE);
+  const consentReady = canProceedToPayment(consent);
 
   const selectedTier: ServiceTier | undefined = SERVICE_TIERS.find(
     (t) => t.id === selectedId,
@@ -48,10 +58,20 @@ export default function ServiceTierCheckout({
       return;
     }
 
+    const consentBlock = complianceBlockReason(consent);
+    if (consentBlock) {
+      setError(consentBlock);
+      onError?.(consentBlock);
+      return;
+    }
+
     setLoading(true);
     try {
-      const payload: Record<string, string> = {
+      const payload: Record<string, string | boolean> = {
         serviceTierId: selectedTier.id,
+        physicalState: consent.physicalState,
+        cashPayTermsAccepted: true,
+        telehealthLimitationsAcknowledged: true,
       };
       if (appointmentId) payload.appointmentId = appointmentId;
       if (patientEmail.trim()) payload.patientEmail = patientEmail.trim();
@@ -99,6 +119,11 @@ export default function ServiceTierCheckout({
         </h1>
         <p className="font-body text-muted-foreground text-lg">
           One-time cash-pay telehealth fees. Pay securely with Stripe.
+        </p>
+        <p className="font-body text-sm mt-3">
+          <Link to="/intake" className="underline underline-offset-4 text-navy">
+            Complete intake first
+          </Link>
         </p>
       </div>
 
@@ -162,6 +187,8 @@ export default function ServiceTierCheckout({
         </div>
       )}
 
+      <ComplianceConsent value={consent} onChange={setConsent} />
+
       {error && (
         <p
           role="alert"
@@ -176,7 +203,8 @@ export default function ServiceTierCheckout({
           type="button"
           className="btn-primary px-8 disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={startCheckout}
-          disabled={loading}
+          disabled={loading || !consentReady}
+          data-testid="pay-button"
         >
           {loading
             ? "Starting checkout…"

@@ -21,6 +21,9 @@ import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
 import CashPayCheckout from "@/pages/CashPayCheckout";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import IntakePage from "@/pages/Intake";
+import ProviderNotePage from "@/pages/ProviderNote";
+import VisitRoomPage from "@/pages/VisitRoom";
 import OAuthAuthorizePage from "@/pages/oauth/AuthorizePage";
 import OAuthCallbackPage from "@/pages/oauth/CallbackPage";
 import { FEATURES } from "@/config/features";
@@ -52,6 +55,9 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/checkout" element={<CashPayCheckout />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/intake" element={<IntakePage />} />
+          <Route path="/provider/notes" element={<ProviderNotePage />} />
+          <Route path="/visit/:appointmentId" element={<VisitRoomPage />} />
           {FEATURES.enableDeviceDashboard ? (
             <>
               <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
