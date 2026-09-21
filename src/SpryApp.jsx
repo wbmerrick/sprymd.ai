@@ -11,6 +11,7 @@ import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
 import BrandAtmosphere from "./components/brand/BrandAtmosphere";
 import { brandPlates } from "./assets/brand/catalog";
+import imgFounder from "./assets/brand/founder-dr-merrick.jpg";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -1217,7 +1218,7 @@ const Landing = ({ go }) => {
         <div className="md:col-span-6">
           <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Your doctor</span>
           <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
-            Want Spry to become your PCP?
+            Want Spry to be your PCP?
           </h2>
           <p style={{ fontSize: 17, color: C.inkSoft, marginTop: 18, lineHeight: 1.55, maxWidth: 480 }}>
             Get checkups, lab reviews, everyday care, and quick messages — all in one place with the same doctor who knows your story.
@@ -1284,9 +1285,9 @@ const Landing = ({ go }) => {
             Founded by a physician who has spent years at the hospital bedside.
           </h2>
           <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 18, lineHeight: 1.6, maxWidth: 520 }}>
-            SpryMD isn&rsquo;t a faceless internet pharmacy. It was built by a practicing Tennessee
-            hospitalist — a doctor whose day job is caring for hospitalized patients — and that
-            bedside judgment shapes every treatment we offer.
+            SpryMD isn&rsquo;t a faceless internet pharmacy. It was founded by Dr. William Merrick, DO —
+            a practicing Tennessee hospitalist whose day job is caring for hospitalized patients — and
+            that bedside judgment shapes every treatment we offer.
           </p>
           <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 12, lineHeight: 1.6, maxWidth: 520 }}>
             When you finish your intake, a real, licensed Tennessee physician personally reviews it —
@@ -1316,21 +1317,33 @@ const Landing = ({ go }) => {
           </div>
         </div>
         <div className="md:col-span-6">
-          <div className="rounded-3xl overflow-hidden relative" style={{ border: `1px solid ${C.line}`, minHeight: 420 }}>
-            <BrandAtmosphere plate="care" variant="panel" locked={false} />
-            <div className="relative z-10 flex flex-col justify-end p-7 md:p-9" style={{ minHeight: 420 }}>
-              <p className="display" style={{ fontSize: "clamp(20px, 2.4vw, 26px)", lineHeight: 1.4, color: C.ink, fontWeight: 500, maxWidth: 400 }}>
+          <div className="rounded-3xl overflow-hidden" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
+            <div className="relative">
+              <img
+                src={imgFounder}
+                alt="Dr. William Merrick, DO — founder of SpryMD"
+                className="w-full"
+                style={{ display: "block", aspectRatio: "1 / 0.92", objectFit: "cover", objectPosition: "center 32%" }}
+              />
+              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 140, background: "linear-gradient(180deg, transparent, rgba(9,14,11,0.92))" }} />
+              <div className="absolute inset-x-0 bottom-0 p-6 md:p-7">
+                <div className="display" style={{ fontSize: 24, fontWeight: 600, color: C.ink }}>Dr. William Merrick, DO</div>
+                <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 2 }}>Founder · Practicing hospitalist · Tennessee</div>
+              </div>
+            </div>
+            <div className="p-6 md:p-7">
+              <p className="display" style={{ fontSize: 17, lineHeight: 1.5, color: C.inkSoft, fontStyle: "italic" }}>
                 &ldquo;The doctor reviewing your case has heard it all before — and took an oath to
                 help, not to judge.&rdquo;
               </p>
-              <div className="grid grid-cols-2 gap-3 mt-8">
+              <div className="grid grid-cols-2 gap-3 mt-6">
                 {[
-                  { k: "Founder", v: "Practicing hospitalist" },
+                  { k: "Training", v: "Hospital medicine" },
                   { k: "Licensure", v: "Tennessee" },
                   { k: "Every intake", v: "Physician-reviewed" },
                   { k: "Oversight", v: "Board-certified" },
                 ].map(({ k, v }) => (
-                  <div key={k} className="rounded-2xl p-4" style={{ background: "rgba(12,18,15,0.72)", border: `1px solid ${C.line}`, backdropFilter: "blur(6px)" }}>
+                  <div key={k} className="rounded-2xl p-4" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
                     <div className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", fontWeight: 600 }}>{k}</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginTop: 4 }}>{v}</div>
                   </div>
