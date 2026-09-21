@@ -1217,7 +1217,7 @@ const Landing = ({ go }) => {
         <div className="md:col-span-6">
           <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Your doctor</span>
           <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
-            Want a doctor you can reach anytime?
+            Want Spry to become your PCP?
           </h2>
           <p style={{ fontSize: 17, color: C.inkSoft, marginTop: 18, lineHeight: 1.55, maxWidth: 480 }}>
             Get checkups, lab reviews, everyday care, and quick messages — all in one place with the same doctor who knows your story.
@@ -1249,19 +1249,22 @@ const Landing = ({ go }) => {
             <div className="p-7 md:p-8 relative z-10">
               <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
               <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
-                $250<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
+                $120<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
               </div>
               <div className="mt-6 space-y-4">
-                {[{ t: "Spry Primary Care", d: "$79/mo · visits + messaging", tag: "Most popular" },
-                  { t: "Doctor + yearly labs", d: "$99/mo · full blood work included", tag: "Best value" },
-                  { t: "Household", d: "$129/mo · two adults", tag: null }].map((tier) => (
+                {[{ t: "Spry Primary Care · Acute Insight", d: "$120 · 1 visit + anytime messaging for 1 month", tag: "Most popular" },
+                  { t: "Yearly Checkup", d: "$250 · 1 visit + full blood work (yearly labs) + anytime messaging", tag: "Best value" },
+                  { t: "Spry Primary Care Cost for Two Adults", d: ["$180 · Acute Insight", "$470 · Yearly Checkups"], tag: null },
+                  { t: "Monthly Doctor-Initiated Visits", d: "$500 · Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.", tag: null }].map((tier) => (
                   <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{tier.t}</span>
                         {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
                       </div>
-                      <span style={{ fontSize: 13, color: C.inkSoft }}>{tier.d}</span>
+                      {(Array.isArray(tier.d) ? tier.d : [tier.d]).map((line) => (
+                        <span key={line} style={{ fontSize: 13, color: C.inkSoft, display: "block", lineHeight: 1.5 }}>{line}</span>
+                      ))}
                     </div>
                   </div>
                 ))}
