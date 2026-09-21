@@ -31,6 +31,7 @@ import {
   addCustomerOrder,
   addCustomerProtocol,
 } from "./lib/customerAccounts";
+import { resolveSignupNavigation } from "./lib/signupConfirmGate";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — elite performance health OS (Starlink precision × peak vitality)
@@ -1071,7 +1072,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Sign in / Sign up — per-customer account gate
 // ─────────────────────────────────────────────────────────────────────────────
-const SignIn = ({ go, returnTo, onAuthSuccess }) => {
+export const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -1080,6 +1081,8 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [emailConfirmHold, setEmailConfirmHold] = useState(false);
+  const [continueTo, setContinueTo] = useState(returnTo || "account");
 
   const canSubmit = email.includes("@") && password.length >= 8 &&
     (mode === "signin" || (name.trim().length > 0 && dob.length >= 8));
@@ -1093,10 +1096,14 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
       if (mode === "signup") {
         const { profile, needsEmailConfirm } = await signUpCustomer({ email, password, name, dob });
         onAuthSuccess(hydrateUser(profile));
-        if (needsEmailConfirm) {
-          setNotice("Account created. Check your email to confirm — you can keep using your account now.");
+        const next = resolveSignupNavigation({ needsEmailConfirm, returnTo });
+        if (!next.leaveSignIn) {
+          setNotice(next.notice);
+          setContinueTo(next.continueTo);
+          setEmailConfirmHold(true);
+        } else {
+          go(next.continueTo, { justLoggedIn: true });
         }
-        go(returnTo || "account", { justLoggedIn: true });
       } else {
         const { profile } = await signInCustomer({ email, password });
         onAuthSuccess(hydrateUser(profile));
@@ -1173,10 +1180,16 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
                 </div>
               )}
 
-              <Btn onClick={submit} disabled={!canSubmit || loading} size="lg" className="w-full">
-                {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                         : <>{mode === "signin" ? "Sign in to my account" : "Create account & continue"}</>}
-              </Btn>
+              {emailConfirmHold ? (
+                <Btn onClick={() => go(continueTo, { justLoggedIn: true })} size="lg" className="w-full">
+                  Continue to my account
+                </Btn>
+              ) : (
+                <Btn onClick={submit} disabled={!canSubmit || loading} size="lg" className="w-full">
+                  {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
+                           : <>{mode === "signin" ? "Sign in to my account" : "Create account & continue"}</>}
+                </Btn>
+              )}
 
               <div className="flex items-center gap-2 justify-center pt-2">
                 <Lock size={11} color={C.muted} />
@@ -1185,7 +1198,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             </div>
 
             <div className="text-center mt-8 pt-8" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); }}
+              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setNotice(""); setEmailConfirmHold(false); }}
                 className="focus-ring rounded text-sm hover:opacity-60 transition-opacity" style={{ color: C.inkSoft }}>
                 {mode === "signin"
                   ? <>New to SpryMD? <span style={{ color: C.accent, fontWeight: 500, textDecoration: "underline" }}>Create an account</span></>
