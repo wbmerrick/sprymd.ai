@@ -172,7 +172,7 @@ export default function IntakeQuestionnaire({
                               ? toggleMulti(question.id, option.value)
                               : update(question.id, option.value)
                           }
-                          className={`text-left rounded-xl border-2 p-3 font-body ${
+                          className={`text-left rounded-xl border-2 p-3 font-body text-navy ${
                             selected
                               ? "border-primary bg-primary/10 font-semibold"
                               : "border-gray-light"
