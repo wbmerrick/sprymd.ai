@@ -1342,10 +1342,7 @@ const Landing = ({ go }) => {
     <section className="px-6 md:px-12 py-14 md:py-20" style={{ background: C.bg }}>
       <div className="max-w-7xl mx-auto">
         <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Social proof</span>
-        <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, marginTop: 10, marginBottom: 28, color: C.ink, fontWeight: 650 }}>
-          Built here. Reviewed by a real physician.
-        </h2>
-        <div className="grid md:grid-cols-3 gap-3 mb-6">
+        <div className="grid md:grid-cols-3 gap-3 mb-6 mt-6">
           {[
             { q: "Private, straightforward, and a doctor actually reviewed my case. That’s what I wanted.", a: "Daniel · Knoxville, TN" },
             { q: "Finished the visit after work. No waiting room, no awkward small talk.", a: "Marcus · Nashville, TN" },
