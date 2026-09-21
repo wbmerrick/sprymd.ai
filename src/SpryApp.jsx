@@ -699,14 +699,18 @@ const Tag = ({ children, color, fg }) => (
   }}>{children}</span>
 );
 
+const LogoMark = ({ color = C.ink, size = 22, style = {}, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className} style={style}>
+    <path d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z" fill={C.accent} stroke="#000" strokeWidth="1.2" strokeLinejoin="round" paintOrder="stroke" />
+    <path d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15" fill="none" stroke="#000" strokeWidth="0.4" strokeLinecap="round" />
+    <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
+  </svg>
+);
+
 const Logo = ({ color = C.ink, size = 22 }) => (
   <div className="flex items-center gap-2.5">
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <path d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z" fill={C.accent} stroke="#000" strokeWidth="1.2" strokeLinejoin="round" paintOrder="stroke" />
-      <path d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15" fill="none" stroke="#000" strokeWidth="0.4" strokeLinecap="round" />
-      <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
-    </svg>
+    <LogoMark color={color} size={size} />
     <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
       Spry<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
     </span>
@@ -1041,7 +1045,10 @@ const Landing = ({ go }) => {
             marginBottom: 40,
           }}
         >
-          SpryMD
+          <div className="inline-flex items-center justify-center gap-3 md:gap-4">
+            <LogoMark size="0.84em" color={C.ink} style={{ verticalAlign: "middle" }} />
+            <span>SpryMD</span>
+          </div>
           <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
             Feel better. Stay stronger. Live longer.
           </div>
