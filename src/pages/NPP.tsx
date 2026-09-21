@@ -1,5 +1,7 @@
 import AnimatedSection from "@/components/AnimatedSection";
 
+import { COMPANY, COMPANY_CITY_STATE_ZIP } from "@/lib/company";
+
 const NPP = () => (
   <main>
     <section className="bg-navy py-24 px-4 text-center">
@@ -104,11 +106,11 @@ const NPP = () => (
             <h2 className="text-xl font-bold text-foreground mt-8 mb-3">Contact</h2>
             <p>
               William Merrick, DO<br />
-              c/o SpryMD Technologies, LLC<br />
-              [Street Address — placeholder]<br />
-              Nashville, TN [ZIP — placeholder]<br />
-              Phone: [Practice phone — placeholder]<br />
-              Email: <a href="mailto:privacy@sprymd.ai" className="text-primary underline">privacy@sprymd.ai</a>
+              c/o {COMPANY.legalName}<br />
+              {COMPANY.addressLine1}<br />
+              {COMPANY_CITY_STATE_ZIP}<br />
+              Phone: {COMPANY.phone}<br />
+              Email: <a href={`mailto:${COMPANY.privacyEmail}`} className="text-primary underline">{COMPANY.privacyEmail}</a>
             </p>
           </div>
         </AnimatedSection>

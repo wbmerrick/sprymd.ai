@@ -51,5 +51,8 @@ export function getConsentOrDefault(): ConsentPreferences {
 }
 
 export function respectsGlobalPrivacyControl(): boolean {
-  return typeof navigator !== "undefined" && navigator.globalPrivacyControl === true;
+  return (
+    typeof navigator !== "undefined" &&
+    (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true
+  );
 }

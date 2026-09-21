@@ -48,7 +48,9 @@ const Navbar = () => {
 
   { to: "/about", label: "About" },
 
-  { to: "/faq", label: "FAQ" }];
+  { to: "/faq", label: "FAQ" },
+
+  { to: "/contact", label: "Contact" }];
 
 
 

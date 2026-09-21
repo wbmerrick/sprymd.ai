@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CARE_STATE_LABELS } from "@/lib/care-states";
 import { getAuditLogForEncounter, type AuditEntry } from "@/lib/audit";
+import { getProviderIdentity } from "@/lib/provider-auth";
+import { notifyEncounterDecision } from "@/lib/notifications";
+import { isSupabaseConfigured } from "@/lib/intake/persist";
 import {
   fetchEncounterById,
   formatEncounterRef,
@@ -62,12 +65,19 @@ const CaseDetail = () => {
     const action =
       decision === "approve"
         ? "Case approved — prescription authorized"
-        : "Case declined — patient will be notified";
+        : "Case declined — treatment not appropriate at this time";
 
-    const updated = await updateEncounterCareState(id, nextState, action);
+    const updated = await updateEncounterCareState(
+      id,
+      nextState,
+      action,
+      getProviderIdentity().name,
+    );
     if (updated) {
       setEncounter(updated);
       setAuditLog(getAuditLogForEncounter(id));
+      // Fire-and-forget: the edge function audits the email outcome itself.
+      void notifyEncounterDecision(id, nextState);
     }
     setActing(false);
     navigate("/provider");
@@ -162,7 +172,10 @@ const CaseDetail = () => {
                     <AlertDialogTitle>Approve this case?</AlertDialogTitle>
                     <AlertDialogDescription>
                       This will move the case to prescribed status and authorize pharmacy
-                      fulfillment.
+                      fulfillment.{" "}
+                      {isSupabaseConfigured()
+                        ? "The patient will receive an email update."
+                        : "In demo mode, no email is sent."}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -185,7 +198,11 @@ const CaseDetail = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Decline this case?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      The patient will be notified that treatment was not appropriate at this time.
+                      This will mark the case as declined — treatment was not appropriate at this
+                      time.{" "}
+                      {isSupabaseConfigured()
+                        ? "The patient will receive an email update."
+                        : "In demo mode, no email is sent."}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

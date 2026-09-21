@@ -7,6 +7,8 @@ import { createDemoEncounter } from "@/lib/encounters";
 
 const Confirmed = () => {
   const [searchParams] = useSearchParams();
+  // Stripe Checkout redirects back with ?session_id={CHECKOUT_SESSION_ID}.
+  const stripeSessionId = searchParams.get("session_id");
 
   useEffect(() => {
     const fromUrl = searchParams.get("session");
@@ -29,6 +31,15 @@ const Confirmed = () => {
           </div>
           <h1 className="font-display text-foreground text-3xl md:text-4xl font-bold mb-2">Payment Confirmed ✓</h1>
           <p className="font-body text-muted-foreground text-lg mb-8">Your consultation has been started.</p>
+
+          {stripeSessionId && (
+            <p className="font-body text-muted-foreground text-xs mb-6 -mt-4">
+              Receipt reference:{" "}
+              <span className="font-mono">
+                {stripeSessionId.length > 20 ? `${stripeSessionId.slice(0, 20)}…` : stripeSessionId}
+              </span>
+            </p>
+          )}
 
           <div className="bg-off-white rounded-xl border border-gray-light p-6 text-left space-y-4 mb-8">
             <div className="flex items-center gap-3">
@@ -66,7 +77,9 @@ const Confirmed = () => {
             Track your visit status, message your care team, and request refills from your patient portal.
           </p>
           <p className="font-body text-muted-foreground text-xs mt-3">
-            A confirmation email has been sent to the address you provided.
+            {isSupabaseConfigured()
+              ? "A confirmation email is sent to the address used at checkout."
+              : "Demo mode: no confirmation email is sent."}
           </p>
         </div>
       </AnimatedSection>

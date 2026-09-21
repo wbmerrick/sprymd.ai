@@ -1,14 +1,78 @@
 import { useState } from "react";
 
+import { toast } from "sonner";
+
 import AnimatedSection from "@/components/AnimatedSection";
 
+import { supabase } from "@/integrations/supabase/client";
 
+import { COMPANY } from "@/lib/company";
+
+import { isSupabaseConfigured } from "@/lib/intake/persist";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Contact = () => {
 
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+    e.preventDefault();
+
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const message = form.message.trim();
+
+    if (!name) {
+      toast.error("Please enter your name.");
+      return;
+    }
+
+    if (!email || !EMAIL_REGEX.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    if (!message) {
+      toast.error("Please enter a message.");
+      return;
+    }
+
+    if (!isSupabaseConfigured()) {
+      // No backend configured — hand off to the user's mail client instead.
+      const subject = encodeURIComponent("SpryMD contact form inquiry");
+      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
+      window.location.href = `mailto:${COMPANY.email}?subject=${subject}&body=${body}`;
+      toast.info(`Opening your email app — you can also reach us directly at ${COMPANY.email}.`);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from("contact_messages")
+        .insert({ name, email, message });
+
+      if (error) throw error;
+
+      toast.success("Message sent! We'll get back to you within 24 hours.");
+      setForm({ name: "", email: "", message: "" });
+
+    } catch {
+
+      toast.error(`Something went wrong sending your message. Please try again or email us at ${COMPANY.email}.`);
+
+    } finally {
+
+      setIsSubmitting(false);
+
+    }
+
+  };
 
   return (
 
@@ -42,15 +106,23 @@ const Contact = () => {
 
             <div className="card-base card-hover">
 
-              <div className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
 
                 <div>
 
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Name</label>
+                  <label htmlFor="contact-name" className="font-body text-foreground text-sm font-medium mb-1 block">Name</label>
 
                   <input
 
+                    id="contact-name"
+
+                    name="name"
+
                     type="text"
+
+                    required
+
+                    autoComplete="name"
 
                     value={form.name}
 
@@ -64,11 +136,19 @@ const Contact = () => {
 
                 <div>
 
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Email</label>
+                  <label htmlFor="contact-email" className="font-body text-foreground text-sm font-medium mb-1 block">Email</label>
 
                   <input
 
+                    id="contact-email"
+
+                    name="email"
+
                     type="email"
+
+                    required
+
+                    autoComplete="email"
 
                     value={form.email}
 
@@ -82,9 +162,15 @@ const Contact = () => {
 
                 <div>
 
-                  <label className="font-body text-foreground text-sm font-medium mb-1 block">Message</label>
+                  <label htmlFor="contact-message" className="font-body text-foreground text-sm font-medium mb-1 block">Message</label>
 
                   <textarea
+
+                    id="contact-message"
+
+                    name="message"
+
+                    required
 
                     value={form.message}
 
@@ -98,9 +184,13 @@ const Contact = () => {
 
                 </div>
 
-                <button className="btn-primary w-full">Send Message</button>
+                <button type="submit" disabled={isSubmitting} className="btn-primary w-full disabled:opacity-60 disabled:cursor-not-allowed">
 
-              </div>
+                  {isSubmitting ? "Sending…" : "Send Message"}
+
+                </button>
+
+              </form>
 
             </div>
 
@@ -116,8 +206,4 @@ const Contact = () => {
 
 };
 
-
-
 export default Contact;
-
-

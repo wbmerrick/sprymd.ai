@@ -14,13 +14,211 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_events: {
+        Row: {
+          action: string
+          actor: string
+          actor_role: string | null
+          created_at: string
+          encounter_id: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          actor: string
+          actor_role?: string | null
+          created_at?: string
+          encounter_id?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          actor?: string
+          actor_role?: string | null
+          created_at?: string
+          encounter_id?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      encounters: {
+        Row: {
+          care_state: string
+          created_at: string
+          decision_note: string | null
+          email: string | null
+          id: string
+          intake_answers: Json
+          paid_at: string | null
+          reviewed_at: string | null
+          service_line: string
+          session_id: string
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          submitted_at: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          care_state?: string
+          created_at?: string
+          decision_note?: string | null
+          email?: string | null
+          id?: string
+          intake_answers?: Json
+          paid_at?: string | null
+          reviewed_at?: string | null
+          service_line?: string
+          session_id: string
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          care_state?: string
+          created_at?: string
+          decision_note?: string | null
+          email?: string | null
+          id?: string
+          intake_answers?: Json
+          paid_at?: string | null
+          reviewed_at?: string | null
+          service_line?: string
+          session_id?: string
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          encounter_id: string
+          id: string
+          read_at: string | null
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          encounter_id: string
+          id?: string
+          read_at?: string | null
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          encounter_id?: string
+          id?: string
+          read_at?: string | null
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_encounter_id_fkey"
+            columns: ["encounter_id"]
+            isOneToOne: false
+            referencedRelation: "encounters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      refill_requests: {
+        Row: {
+          created_at: string
+          encounter_id: string
+          id: string
+          note: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          encounter_id: string
+          id?: string
+          note?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          encounter_id?: string
+          id?: string
+          note?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refill_requests_encounter_id_fkey"
+            columns: ["encounter_id"]
+            isOneToOne: false
+            referencedRelation: "encounters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_provider: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

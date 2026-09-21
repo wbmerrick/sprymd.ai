@@ -53,18 +53,27 @@ export const usePatientAuth = (): PatientAuthState => {
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    let active = true;
+
+    // Subscribe before the initial getSession so no auth event is missed.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
       setUser(session?.user ?? null);
       setIsLoading(false);
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) return;
       setUser(session?.user ?? null);
+      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, [isDemoMode]);
 
   const signInWithEmail = useCallback(

@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Environment files — never commit real credentials
+.env
+.env.*
+!.env.example
+
+# Playwright artifacts
+test-results/
+playwright-report/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,8 +1,10 @@
-import { useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, Check, Pill, HelpCircle } from "lucide-react";
+import { AlertTriangle, Check, Pill, HelpCircle, Mail } from "lucide-react";
+import { toast } from "sonner";
 import MedicalDisclaimer from "@/components/MedicalDisclaimer";
+import { ensureSessionId, saveIntake } from "@/lib/intake/persist";
 
 interface QuizState {
   age: string;
@@ -23,14 +25,58 @@ const initialState: QuizState = {
   allergies: "", preference: "", goal: "",
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const Quiz = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<QuizState>(initialState);
   const [nitrateBlock, setNitrateBlock] = useState(false);
   const [direction, setDirection] = useState(1);
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const totalSteps = 10;
+  const totalSteps = 11;
+
+  const isEmailValid = EMAIL_REGEX.test(email.trim());
+
+  // Persist the intake as a draft_intake encounter as soon as the user
+  // reaches the treatment-plan screen (before the /checkout CTA).
+  useEffect(() => {
+    if (step !== totalSteps) return;
+
+    let cancelled = false;
+    setSaving(true);
+
+    const persist = async () => {
+      try {
+        const sessionId = ensureSessionId();
+        const { error } = await saveIntake(
+          sessionId,
+          "ed",
+          answers,
+          email.trim() || undefined,
+        );
+        if (error) {
+          toast.warning("We couldn't sync your answers to our server", {
+            description: "A local copy was saved — you can still continue to checkout.",
+          });
+        }
+      } catch {
+        toast.warning("We couldn't save your answers", {
+          description: "You can still continue to checkout.",
+        });
+      } finally {
+        if (!cancelled) setSaving(false);
+      }
+    };
+
+    void persist();
+    return () => {
+      cancelled = true;
+    };
+    // answers/email are stable while on the final screen (no inputs there).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   const goNext = useCallback(() => {
     setDirection(1);
@@ -233,6 +279,31 @@ const Quiz = () => {
         );
       case 10:
         return (
+          <div className="space-y-4">
+            <h2 className="font-display text-foreground text-2xl md:text-3xl font-bold text-center mb-2">Where should we send your results?</h2>
+            <p className="text-center font-body text-muted-foreground text-sm mb-4">
+              Your physician's review updates and receipts go to this email.
+            </p>
+            <div className="relative">
+              <Mail className="w-5 h-5 text-muted-foreground absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                className="w-full rounded-xl border-2 border-gray-light p-4 pl-12 font-body text-foreground focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            {email.trim() && !isEmailValid && (
+              <p className="font-body text-destructive text-sm">Please enter a valid email address.</p>
+            )}
+            <button onClick={goNext} disabled={!isEmailValid} className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed">Continue</button>
+            <p className="font-body text-muted-foreground text-xs text-center">HIPAA-secure · Never shared or sold</p>
+          </div>
+        );
+      case 11:
+        return (
           <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-green mx-auto flex items-center justify-center mb-6 animate-scale-check">
               <Check className="w-8 h-8 text-primary-foreground" />
@@ -258,7 +329,13 @@ const Quiz = () => {
               <span className="font-display text-foreground text-5xl font-bold">$75</span>
               <span className="font-body text-muted-foreground text-xl">/month</span>
             </div>
-            <a href="https://buy.stripe.com/28EfZjb5i0mEa679id7Zu00" className="btn-primary-lg w-full text-center block">Complete My SpryMD Visit — $75 →</a>
+            <Link
+              to="/checkout"
+              aria-disabled={saving}
+              className={`btn-primary-lg w-full text-center block ${saving ? "opacity-70 pointer-events-none" : ""}`}
+            >
+              {saving ? "Saving your answers…" : "Complete My SpryMD Visit — $75 →"}
+            </Link>
             <p className="font-body text-muted-foreground text-xs mt-4">Discreet billing · Cancel anytime · HIPAA-secure</p>
           </div>
         );

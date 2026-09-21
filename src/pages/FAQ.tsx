@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import AnimatedSection from "@/components/AnimatedSection";
 
+import { COMPANY } from "@/lib/company";
+
 
 
 interface FAQItem {
@@ -56,7 +58,7 @@ const faqGroups: FAQGroup[] = [
 
     items: [
 
-      { q: "What happens after I pay?", a: "You'll be redirected to a secure medical intake form. Complete the health questionnaire (about 5 minutes). Once submitted, your physician reviews your case within 24 hours. You'll receive an email when your review is complete." },
+      { q: "What happens after I complete my intake?", a: "You start with the secure medical intake questionnaire (about 5 minutes). Once you finish, you're taken to checkout to complete payment. After payment, your physician reviews your case within 24 hours, and you'll receive an email when your review is complete." },
 
       { q: "Will I definitely get a prescription?", a: "Not necessarily. Prescriptions are issued at physician discretion based on your health history. If ED medication isn't clinically appropriate for you, your physician will explain why and issue a full refund. Your safety comes first." },
 
@@ -94,7 +96,7 @@ const faqGroups: FAQGroup[] = [
 
       { q: "Is my information private?", a: "Completely. Your health information is HIPAA-protected and stored on encrypted, HIPAA-compliant servers. We will never sell or share your health information." },
 
-      { q: "How does billing appear on my statement?", a: "Your charge appears discreetly as [BILLING DESCRIPTOR]. No mention of ED, men's health, or medications." },
+      { q: "How does billing appear on my statement?", a: `Your charge appears discreetly as "${COMPANY.billingDescriptor}". No mention of ED, men's health, or medications.` },
 
       { q: "How is my medication packaged?", a: "Plain, unmarked packaging with no indication of contents on the outside." },
 
