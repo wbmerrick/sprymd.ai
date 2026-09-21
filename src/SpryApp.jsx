@@ -1193,7 +1193,7 @@ const Landing = ({ go }) => {
           </p>
         </div>
         <div data-conditions-grid className="grid md:grid-cols-2 gap-3 md:gap-4">
-          {Object.values(conditions).filter((cond) => cond.id !== "pcp").map((cond, i) => (
+          {Object.values(conditions).filter((cond) => !["pcp", "lowt", "mentalhealth"].includes(cond.id)).map((cond, i) => (
             <ConditionCard
               key={cond.id}
               condition={cond}
