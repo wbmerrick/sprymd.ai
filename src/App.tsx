@@ -19,6 +19,8 @@ import NPP from "@/pages/NPP";
 import About from "@/pages/About";
 import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
+import CashPayCheckout from "@/pages/CashPayCheckout";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import OAuthAuthorizePage from "@/pages/oauth/AuthorizePage";
 import OAuthCallbackPage from "@/pages/oauth/CallbackPage";
 import { FEATURES } from "@/config/features";
@@ -48,6 +50,8 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/checkout" element={<CashPayCheckout />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
           {FEATURES.enableDeviceDashboard ? (
             <>
               <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
