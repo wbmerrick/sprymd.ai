@@ -1357,27 +1357,7 @@ const Landing = ({ go }) => {
             </div>
           ))}
         </div>
-        <div className="grid md:grid-cols-2 gap-3">
-          <div className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, background: C.signalDim, border: `1px solid ${C.line}` }}>
-                <Stethoscope size={20} color={C.accent} />
-              </div>
-              <div>
-                <div className="display" style={{ fontSize: 20, fontWeight: 600, color: C.ink }}>Licensed clinical care</div>
-                <div style={{ fontSize: 13, color: C.inkSoft }}>A licensed clinician reviews every case before treatment ships</div>
-              </div>
-            </div>
-            <div className="space-y-2 mb-5">
-              {["Independent medical review on every visit", "Treatment only when clinically appropriate", "Private telehealth — no waiting rooms"].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <Check size={14} color={C.accent} />
-                  <span style={{ fontSize: 14, color: C.inkSoft }}>{item}</span>
-                </div>
-              ))}
-            </div>
-            <Btn onClick={() => go("page", { slug: "clinicians" })} size="md" variant="secondary" icon={ArrowRight}>How we practice</Btn>
-          </div>
+        <div className="grid gap-3">
           <div className="p-6 rounded-2xl relative overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
             <img
               src={brandPlates.tn.src}
