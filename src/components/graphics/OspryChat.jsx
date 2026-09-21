@@ -11,7 +11,7 @@ const STARTERS = [
 function replyFor(input) {
   const q = input.toLowerCase();
   if (q.includes("pcp") || q.includes("primary") || q.includes("doctor")) {
-    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $49/mo. Tap Get my doctor, or Start your confidential visit and choose Your doctor.";
+    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $120/mo. Tap Get my doctor, or Start your confidential visit and choose Your doctor.";
   }
   if (q.includes("how") || q.includes("work") || q.includes("system")) {
     return "Three steps: choose care → a licensed clinician reviews your case → treatment ships when approved and filled. Eligible Tennessee orders can move next business day after the 2:00 p.m. CT weekday cutoff. No waiting room.";
@@ -20,7 +20,7 @@ function replyFor(input) {
     return "Pick the area you want help with — weight, hormones, focus, sleep, performance, or your main doctor. Every plan is built around you and signed by a licensed doctor.";
   }
   if (q.includes("price") || q.includes("cost") || q.includes("how much")) {
-    return "Care plans start from $25–$149/mo depending on what you need. Weight-loss plans are adjusted by a doctor; main-doctor membership starts at $49/mo. Shipping is included when medicine is prescribed.";
+    return "Care plans start from $25–$149/mo depending on what you need. Weight-loss plans are adjusted by a doctor; main-doctor membership starts at $120/mo. Shipping is included when medicine is prescribed.";
   }
   if (q.includes("refill")) {
     return "Sign in for Quick Refills — only for medicine you already have. New care starts with a short form.";

@@ -31,7 +31,7 @@ const Privacy = () => (
 
             {/* 1. Introduction */}
             <h2 className="text-xl font-bold text-navy mt-8 mb-3">1. Introduction</h2>
-            <p>[INSERT LEGAL ENTITY NAME] and its affiliates (<strong>"SpryMD," "we," "our," or "us"</strong>) owns and operates the website located at SpryMD.ai and any related websites, software, applications, messaging tools, communications channels, content, products, and services (collectively, the <strong>"Service"</strong>). Your access to and use of the Service is subject to this Privacy Policy unless specifically stated otherwise. Capitalized terms not otherwise defined in this Privacy Policy have the same meaning as set forth in the SpryMD Terms and Conditions (<strong>"Terms and Conditions"</strong>).</p>
+            <p>SpryMD Inc., SpryMD Telehealth Tennessee P.C., and their affiliates (<strong>"SpryMD," "we," "our," or "us"</strong>) own and operate the website located at SpryMD.ai and any related websites, software, applications, messaging tools, communications channels, content, products, and services (collectively, the <strong>"Service"</strong>). Your access to and use of the Service is subject to this Privacy Policy unless specifically stated otherwise. Capitalized terms not otherwise defined in this Privacy Policy have the same meaning as set forth in the SpryMD Terms and Conditions (<strong>"Terms and Conditions"</strong>).</p>
             <p>We are committed to respecting the privacy of users of the Service. We created this Privacy Policy (<strong>"Privacy Policy"</strong>) to tell you how SpryMD collects, uses, and discloses information in order to provide you with the Service.</p>
             <p>By creating, registering, or logging into an account through the Service, or otherwise accessing or using the Service, you are acknowledging the most recent version of this Privacy Policy. We will update this Privacy Policy when necessary to reflect material changes in the Service or how we use personal information, and as required by applicable law. If we make any changes to our Privacy Policy, we will post the revised Privacy Policy and update the "Last updated" date at the top of the Privacy Policy. If we make material changes to this Privacy Policy, we will provide notice or obtain consent regarding such changes as may be required by law.</p>
             <p>If you are using the Service on behalf of an individual other than yourself, you represent that you are authorized by such an individual to act on such an individual's behalf and that such individual acknowledges the practices and policies outlined in this Privacy Policy.</p>
@@ -158,10 +158,11 @@ const Privacy = () => (
             {/* 14. Contacting Us */}
             <h2 className="text-xl font-bold text-navy mt-8 mb-3">14. Contacting Us</h2>
             <p>If you have any questions about this Privacy Policy, please contact us by email at <a href="mailto:privacy@sprymd.ai" className="text-primary underline">privacy@sprymd.ai</a> or by regular mail at:</p>
-            <p className="mt-2">
-              [INSERT LEGAL ENTITY NAME]<br />
-              [ADDRESS LINE 1]<br />
-              [CITY, STATE, ZIP]<br />
+            <p className="mt-2 text-xs">
+              SpryMD Inc. / SpryMD Telehealth Tennessee P.C.<br />
+              414 Union Street, Suite 1900<br />
+              Nashville, TN 37219<br />
+              Phone: (615) 802-7779<br />
               Attn: Privacy Officer
             </p>
           </div>

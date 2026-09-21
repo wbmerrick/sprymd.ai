@@ -230,6 +230,20 @@ export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetId[] = [
   "shipments",
 ];
 
+export type ClinicalCaseStatus = "pending_review" | "needs_info" | "approved" | "denied";
+
+export interface ClinicalCase {
+  id: string;
+  email: string;
+  treatmentId?: string;
+  conditionId?: string;
+  planName?: string;
+  intake?: Record<string, unknown>;
+  status: ClinicalCaseStatus;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
 export interface DashboardData {
   user: DashboardUser;
   treatments: Treatment[];
@@ -243,5 +257,6 @@ export interface DashboardData {
   wearableReadings: WearableReading[];
   bodyProfile: BodyProfile;
   bodyGoals: BodyGoal[];
+  clinicalCases?: ClinicalCase[];
   dashboardLayout?: DashboardLayoutConfig;
 }

@@ -41,6 +41,7 @@ import {
   recordRefillCheckout,
   ensureAccountShell,
 } from "./lib/patientCareStore";
+import { syncIntakeToDatabase } from "./lib/supabaseSync";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -346,14 +347,17 @@ const conditions = {
     id: "sermorelin", name: "Sermorelin",
     tagline: "Recover faster. Sleep deeper. Build lean muscle.",
     description: "Peptide therapy that helps your body make more of its own growth hormone. A doctor reviews your goals and history before anything ships.",
-    icon: Dna, accent: "#C89E67", fromPrice: "199",
+    icon: Dna, accent: "#C89E67", fromPrice: "149",
     treatments: [
-      { id: "serm-std", name: "Sermorelin Injection", sub: "200–300 mcg / nightly · subQ", price: 199, chilled: true,
-        note: "GHRH analog that prompts your pituitary's own growth-hormone pulse. Supports recovery, sleep quality, body composition, and energy.",
+      { id: "serm-std", name: "Sermorelin Injections", sub: "5 mL vial (2 mg/mL) · nightly subQ kit", price: 149, chilled: true,
+        note: "Prescription Sermorelin option for a simple, once-daily routine. Subcutaneous injection kit and 1-month supply included.",
         compareAt: 249, comparePeer: "Hone", badge: "Most prescribed" },
-      { id: "serm-gly", name: "Sermorelin + Glycine Injection", sub: "Enhanced nightly blend · subQ", price: 229, chilled: true,
+      { id: "serm-odt", name: "Mint Dissolvable Tablets", sub: "1000 mcg / dose · daily oral dissolve", price: 149, chilled: false,
+        note: "Needle-free alternative that dissolves under the tongue for convenient daily use. Same active ingredient as injectable format.",
+        badge: "Most popular" },
+      { id: "serm-gly", name: "Sermorelin + Glycine Injection", sub: "Enhanced nightly blend · subQ", price: 199, chilled: true,
         note: "Sermorelin paired with glycine to support deeper sleep architecture and a stronger nighttime GH release.", badge: "Best for sleep" },
-      { id: "serm-hi", name: "Sermorelin High-Dose", sub: "500 mcg / nightly · titrated · subQ", price: 269, chilled: true,
+      { id: "serm-hi", name: "Sermorelin High-Dose", sub: "500 mcg / nightly · titrated · subQ", price: 249, chilled: true,
         note: "For patients who have plateaued on standard dosing. Clinician-titrated with scheduled follow-up." },
     ],
   },
@@ -412,16 +416,18 @@ const conditions = {
     id: "pcp", name: "Your doctor",
     tagline: "A doctor you can message any day.",
     description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
-    icon: UserCheck, accent: "#C89E67", fromPrice: "49",
+    icon: UserCheck, accent: "#C89E67",     fromPrice: "120",
     treatments: [
-      { id: "pcp-core", name: "Spry Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
-        note: "Your dedicated SpryMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
-      { id: "pcp-labs", name: "PCP + Annual Labs", sub: "Membership + comprehensive metabolic panel", price: 99, chilled: false,
-        note: "Everything in Primary Care plus annual labs drawn and reviewed — lipids, A1C, CBC, hormone panel as indicated.", badge: "Best value" },
-      { id: "pcp-essentials", name: "PCP Essentials", sub: "Messaging + as-needed visits · lighter plan", price: 49, chilled: false,
-        note: "Stay connected to a clinician without a full membership load. Ideal if you already have specialists." },
-      { id: "pcp-family", name: "Household Primary Care", sub: "Up to 2 adults on one membership", price: 129, chilled: false,
-        note: "Shared household membership. Same clinician continuity for you and a partner." },
+      { id: "pcp-acute", name: "Spry Primary Care · Acute Insight", sub: "1 visit + anytime messaging for 1 month", price: 120, chilled: false,
+        note: "Comprehensive medical intake, licensed physician consultation, prescription routing if clinically appropriate, and 30 days of direct anytime messaging.", badge: "Most popular", compareAt: 175, comparePeer: "Urgent Care" },
+      { id: "pcp-yearly", name: "Yearly Checkup", sub: "1 visit + full blood work (yearly labs) + anytime messaging", price: 250, chilled: false,
+        note: "Complete annual wellness visit with full blood work (yearly labs: metabolic panel, CBC, lipids, and biomarkers) plus anytime clinician messaging.", badge: "Best value", compareAt: 350, comparePeer: "Traditional PCP" },
+      { id: "pcp-two-acute", name: "Two Adults · Acute Insight", sub: "Spry Primary Care for Two Adults · 1 visit each + anytime messaging", price: 180, chilled: false,
+        note: "Shared household care for two adults. Includes 1 visit per adult and 30 days of anytime messaging for both.", badge: "Two Adults" },
+      { id: "pcp-two-yearly", name: "Two Adults · Yearly Checkups", sub: "Spry Primary Care for Two Adults · 2 visits + full blood work for both", price: 470, chilled: false,
+        note: "Complete annual wellness for two adults with comprehensive yearly labs (blood work for both) plus continuous messaging support.", badge: "Two Adults" },
+      { id: "pcp-monthly-vip", name: "Monthly Doctor-Initiated Visits", sub: "Spry Primary Care at its finest · proactive monthly physician calls", price: 500, chilled: false,
+        note: "Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.", badge: "SpryMD Finest" },
     ],
   },
 };
@@ -623,8 +629,8 @@ const intakes = {
       disqualify: ["Active cancer diagnosis or treatment", "History of pituitary tumor or brain lesion"] },
     { key: "experience", type: "single", title: "Have you used peptide or growth hormone therapy before?",
       options: ["Never", "Yes — sermorelin or similar peptides", "Yes — HGH", "Currently using something"] },
-    { key: "preference", type: "single", title: "Which protocol sounds right?",
-      options: ["Standard nightly protocol", "Sleep-focused blend", "Maximum strength", "Not sure — recommend for me"] },
+    { key: "preference", type: "single", title: "Which treatment format do you prefer?",
+      options: ["Injections — daily subcutaneous kit", "Mint Dissolvable Tablets — needle-free daily ODT", "Sleep-focused blend (with Glycine)", "Not sure — recommend for me"] },
   ],
   nad: [
     { key: "goal", type: "multi", title: "What are you hoping NAD+ helps with?", sub: "Select all that apply.",
@@ -667,8 +673,15 @@ const intakes = {
       options: ["Annual wellness visits", "Lab ordering and review", "Chronic condition management", "Referrals to specialists", "Same-day messaging for acute issues", "Prescription renewals"] },
     { key: "conditions", type: "multi", title: "Any ongoing conditions we should know about?",
       options: ["High blood pressure", "High cholesterol", "Diabetes / prediabetes", "Thyroid disorder", "Asthma / allergies", "None of the above"] },
-    { key: "household", type: "single", title: "Who needs coverage?", options: ["Just me", "Me and a partner", "Not sure yet"] },
-    { key: "preference", type: "single", title: "Which membership fits best?", options: ["Full primary care — visits + messaging", "Primary care with annual labs included", "Lighter plan — messaging when I need it", "Household plan for two adults", "Not sure — recommend for me"] },
+    { key: "household", type: "single", title: "Who needs coverage?", options: ["Just me", "Me and a partner / two adults", "Not sure yet"] },
+    { key: "preference", type: "single", title: "Which care tier fits best?", options: [
+      "Spry Primary Care · Acute Insight ($120)",
+      "Yearly Checkup with full blood work ($250)",
+      "Two Adults · Acute Insight ($180)",
+      "Two Adults · Yearly Checkups with blood work ($470)",
+      "Monthly Doctor-Initiated Visits ($500)",
+      "Not sure — recommend for me"
+    ] },
   ],
 };
 
@@ -798,7 +811,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
     { label: "How it works", view: "how" },
     { label: "Care options", view: "landing-conditions" },
     ...(FEATURES.enableShop ? [{ label: "Shop", view: "marketplace" }] : []),
-    { label: "Refills", view: "refills" },
+    { label: "Quick Refills", view: "refills" },
     ...(user ? [{ label: "Dashboard", view: "dashboard" }] : []),
   ];
   const goNav = (view) => {
@@ -839,6 +852,22 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
           ))}
         </nav>
         <div className="flex items-center gap-3">
+          <span className="spry-desktop-only">
+            <button
+              type="button"
+              onClick={() => goNav("refills")}
+              className="focus-ring rounded-lg px-3.5 py-2 text-xs font-semibold transition-all hover:opacity-80 inline-flex items-center gap-1.5"
+              style={{
+                background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt,
+                color: fg,
+                border: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.line}`,
+              }}
+              title="Quick Refills"
+            >
+              <RefreshCw size={13} strokeWidth={2} color={C.accent} />
+              <span>Quick Refills</span>
+            </button>
+          </span>
           <span className="spry-desktop-only">
             <Btn size="sm" onClick={() => goNav("landing-conditions")}>Start your visit</Btn>
           </span>
@@ -916,19 +945,22 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
   if (variant === "compact") {
     return (
       <button onClick={onClick}
-        className="focus-ring inline-flex items-center gap-3 px-5 py-3 rounded-full transition-all hover:translate-y-[-1px]"
-        style={{ background: "transparent", color: C.ink, border: `1px solid ${C.line}`, fontSize: 14, fontWeight: 600, letterSpacing: "0.02em" }}>
-        <RefreshCw size={16} strokeWidth={2} color={C.accent} />Refills
+        type="button"
+        className="focus-ring inline-flex items-center gap-2 px-4 py-2.5 rounded-full transition-all hover:translate-y-[-1px]"
+        style={{ background: "transparent", color: C.ink, border: `1px solid ${C.line}`, fontSize: 13, fontWeight: 600, letterSpacing: "0.02em" }}>
+        <RefreshCw size={14} strokeWidth={2} color={C.accent} />
+        <span>Quick Refills</span>
       </button>
     );
   }
   return (
     <button onClick={onClick}
-      className="focus-ring group inline-flex items-center gap-3 px-7 py-4 rounded-full transition-all hover:translate-y-[-1px]"
-      style={{ background: C.paper, color: C.ink, fontSize: 15, fontWeight: 600, letterSpacing: "0.02em", border: `1px solid ${C.line}` }}>
+      type="button"
+      className="focus-ring group inline-flex items-center gap-3 px-6 py-4 rounded-full transition-all hover:translate-y-[-1px]"
+      style={{ background: C.paper, color: C.ink, fontSize: 15, fontWeight: 600, letterSpacing: "0.01em", border: `1px solid ${C.line}` }}>
       <RefreshCw size={18} strokeWidth={2} color={C.accent} />
-      Quick refills
-      <ArrowRight size={16} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
+      <span>Quick refills</span>
+      <ArrowRight size={16} strokeWidth={2} className="group-hover:translate-x-1 transition-transform opacity-70 group-hover:opacity-100" />
     </button>
   );
 };
@@ -967,6 +999,15 @@ const StickyVisitBar = ({ go }) => {
           <span className="spry-desktop-only" style={{ fontSize: 13, color: C.inkSoft }}>
             Private visits, reviewed by licensed doctors.
           </span>
+          <button
+            type="button"
+            onClick={() => go("refills")}
+            className="focus-ring text-xs font-semibold px-3 py-1.5 rounded-full transition-all inline-flex items-center gap-1.5 hover:opacity-80"
+            style={{ color: C.ink, background: C.paper, border: `1px solid ${C.line}` }}
+          >
+            <RefreshCw size={12} color={C.accent} strokeWidth={2} />
+            <span>Quick refills</span>
+          </button>
           <Btn size="sm" icon={ArrowRight} onClick={() => go("landing-conditions")}>Start your visit</Btn>
         </div>
       </div>
@@ -1100,6 +1141,7 @@ const Landing = ({ go }) => {
             </div>
             <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
               <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
+              <QuickRefillsCTA onClick={() => go("refills")} />
             </div>
             <div className="spry-rise flex flex-wrap gap-y-2 mt-6" style={{ animationDelay: "0.28s", columnGap: 28 }}>
               {["Zero judgment", "100% confidential", "Discreet, unmarked packaging"].map((item) => (
@@ -1255,27 +1297,131 @@ const Landing = ({ go }) => {
               </div>
             </div>
             <div className="p-7 md:p-8 relative z-10">
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
-              <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
-                $120<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
+              <div className="flex items-baseline justify-between gap-2">
+                <div>
+                  <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
+                  <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
+                    $120<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
+                  </div>
+                </div>
+                <Tag color={C.signalDim} fg={C.accent}>5 Care Tiers</Tag>
               </div>
-              <div className="mt-6 space-y-4">
-                {[{ t: "Spry Primary Care · Acute Insight", d: "$120 · 1 visit + anytime messaging for 1 month", tag: "Most popular" },
-                  { t: "Yearly Checkup", d: "$250 · 1 visit + full blood work (yearly labs) + anytime messaging", tag: "Best value" },
-                  { t: "Spry Primary Care Cost for Two Adults", d: ["$180 · Acute Insight", "$470 · Yearly Checkups"], tag: null },
-                  { t: "Monthly Doctor-Initiated Visits", d: "$500 · Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.", tag: null }].map((tier) => (
-                  <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-                    <div>
+
+              <div className="mt-6 space-y-3.5">
+                {/* Tier 1: Acute Insight */}
+                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
+                  <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{tier.t}</span>
-                        {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
+                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Spry Primary Care · Acute Insight</span>
+                        <Tag color={C.signalDim} fg={C.accent}>Most popular</Tag>
                       </div>
-                      {(Array.isArray(tier.d) ? tier.d : [tier.d]).map((line) => (
-                        <span key={line} style={{ fontSize: 13, color: C.inkSoft, display: "block", lineHeight: 1.5 }}>{line}</span>
-                      ))}
+                      <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>$120 · 1 visit + anytime messaging for 1 month</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => go("intake", { condition: "pcp", initialAnswers: { preference: "Spry Primary Care · Acute Insight ($120)" } })}
+                      className="focus-ring rounded-full px-4 py-2 text-xs font-semibold transition-all inline-flex items-center gap-1.5 flex-shrink-0 hover:scale-[1.02]"
+                      style={{ background: C.accent, color: C.bg }}
+                    >
+                      <span>Select · $120</span>
+                      <ArrowRight size={13} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tier 2: Yearly Checkup */}
+                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
+                  <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Yearly Checkup</span>
+                        <Tag color={C.signalDim} fg={C.accent}>Best value</Tag>
+                      </div>
+                      <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>$250 · 1 visit + full blood work (yearly labs) + anytime messaging</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => go("intake", { condition: "pcp", initialAnswers: { preference: "Yearly Checkup with full blood work ($250)" } })}
+                      className="focus-ring rounded-full px-4 py-2 text-xs font-semibold transition-all inline-flex items-center gap-1.5 flex-shrink-0 hover:scale-[1.02]"
+                      style={{ background: C.paper, color: C.ink, border: `1px solid ${C.accent}` }}
+                    >
+                      <span>Select · $250</span>
+                      <ArrowRight size={13} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tier 3: Two Adults */}
+                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
+                  <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
+                    <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Spry Primary Care Cost for Two Adults</span>
+                    <Tag color="rgba(255,255,255,0.08)" fg={C.inkSoft}>Couples & Household</Tag>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3 pt-2.5" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+                    <div className="p-3 rounded-lg flex flex-col justify-between gap-2.5" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
+                      <div>
+                        <div className="flex items-baseline justify-between">
+                          <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Acute Insight</span>
+                          <span className="display" style={{ fontSize: 16, fontWeight: 600, color: C.accent }}>$180</span>
+                        </div>
+                        <p style={{ fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 1.35 }}>2 adults · 1 visit each + anytime messaging for 1 month</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => go("intake", { condition: "pcp", initialAnswers: { household: "Me and a partner / two adults", preference: "Two Adults · Acute Insight ($180)" } })}
+                        className="focus-ring rounded-lg px-3 py-1.5 text-xs font-semibold transition-all inline-flex items-center justify-center gap-1 w-full hover:opacity-90"
+                        style={{ background: "rgba(200, 158, 103, 0.15)", color: C.accent, border: `1px solid ${C.accent}` }}
+                      >
+                        <span>Select · $180</span>
+                        <ArrowRight size={12} />
+                      </button>
+                    </div>
+
+                    <div className="p-3 rounded-lg flex flex-col justify-between gap-2.5" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
+                      <div>
+                        <div className="flex items-baseline justify-between">
+                          <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Yearly Checkups</span>
+                          <span className="display" style={{ fontSize: 16, fontWeight: 600, color: C.accent }}>$470</span>
+                        </div>
+                        <p style={{ fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 1.35 }}>2 adults · full blood work (yearly labs) + anytime messaging</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => go("intake", { condition: "pcp", initialAnswers: { household: "Me and a partner / two adults", preference: "Two Adults · Yearly Checkups with blood work ($470)" } })}
+                        className="focus-ring rounded-lg px-3 py-1.5 text-xs font-semibold transition-all inline-flex items-center justify-center gap-1 w-full hover:opacity-90"
+                        style={{ background: "rgba(200, 158, 103, 0.15)", color: C.accent, border: `1px solid ${C.accent}` }}
+                      >
+                        <span>Select · $470</span>
+                        <ArrowRight size={12} />
+                      </button>
                     </div>
                   </div>
-                ))}
+                </div>
+
+                {/* Tier 4: Monthly Doctor-Initiated Visits */}
+                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
+                  <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Monthly Doctor-Initiated Visits</span>
+                        <Tag color={C.signalDim} fg={C.accent}>SpryMD Finest</Tag>
+                      </div>
+                      <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>
+                        $500 · Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => go("intake", { condition: "pcp", initialAnswers: { preference: "Monthly Doctor-Initiated Visits ($500)" } })}
+                      className="focus-ring rounded-full px-4 py-2 text-xs font-semibold transition-all inline-flex items-center gap-1.5 flex-shrink-0 hover:scale-[1.02]"
+                      style={{ background: C.paper, color: C.ink, border: `1px solid ${C.accent}` }}
+                    >
+                      <span>Select · $500</span>
+                      <ArrowRight size={13} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2749,18 +2895,24 @@ const Dashboard = Account;
 // ─────────────────────────────────────────────────────────────────────────────
 // Intake
 // ─────────────────────────────────────────────────────────────────────────────
-const Intake = ({ conditionId, go }) => {
+const Intake = ({ conditionId, initialAnswers = {}, go }) => {
   const condition = conditions[conditionId];
   const questions = intakes[conditionId];
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(initialAnswers || {});
   const [direction, setDirection] = useState("forward");
 
-  const isLast = step === questions.length - 1;
-  const current = questions[step];
-  const value = answers[current.key];
+  const totalSteps = 1 + questions.length;
+  const isConsentsStep = step === 0;
+  const isLast = step === totalSteps - 1;
+  const current = isConsentsStep ? null : questions[step - 1];
+  const value = current ? answers[current.key] : null;
 
   const canAdvance = (() => {
+    if (isConsentsStep) {
+      return !!answers.consentTelehealth && !!answers.consentCashPay && !!answers.consentHipaa;
+    }
+    if (!current) return false;
     if (current.type === "single") return !!value;
     if (current.type === "multi") return Array.isArray(value) && value.length > 0;
     if (current.type === "compound") return current.fields.every((f) => answers[f.key]);
@@ -2777,7 +2929,16 @@ const Intake = ({ conditionId, go }) => {
           if (hit) disqualified = hit;
         }
       });
-      go("plan", { condition: conditionId, answers, disqualified });
+      const finalAnswers = {
+        ...answers,
+        consents: {
+          telehealthConsent: !!answers.consentTelehealth,
+          cashPayAgreement: !!answers.consentCashPay,
+          hipaaConsent: !!answers.consentHipaa,
+          timestamp: new Date().toISOString(),
+        },
+      };
+      go("plan", { condition: conditionId, answers: finalAnswers, disqualified });
     } else {
       setDirection("forward");
       setStep(step + 1);
@@ -2790,10 +2951,10 @@ const Intake = ({ conditionId, go }) => {
   };
 
   const setAnswer = (key, val) => setAnswers((a) => ({ ...a, [key]: val }));
-  const progress = ((step + 1) / questions.length) * 100;
+  const progress = ((step + 1) / totalSteps) * 100;
 
   // Reassure the patient: this is fast. ~20 seconds per remaining question.
-  const remainingSeconds = (questions.length - step) * 20;
+  const remainingSeconds = (totalSteps - step) * 20;
   const timeLeftLabel = isLast
     ? "Last question"
     : remainingSeconds <= 60
@@ -2807,7 +2968,7 @@ const Intake = ({ conditionId, go }) => {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em", display: "block" }}>
-              {String(step + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}
+              {String(step + 1).padStart(2, "0")} / {String(totalSteps).padStart(2, "0")}
             </span>
             <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>{timeLeftLabel}</span>
           </div>
@@ -2837,80 +2998,148 @@ const Intake = ({ conditionId, go }) => {
 
       <div className="flex-1 flex items-start md:items-center justify-center px-6 md:px-12 py-12 md:py-16">
         <div key={step} className={direction === "forward" ? "anim-slideRight" : "anim-slideLeft"} style={{ width: "100%", maxWidth: 640 }}>
-          <div className="mb-8">
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>{condition.name}</span>
-            <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.1, fontWeight: 400, color: C.ink, marginTop: 12 }}>{current.title}</h2>
-            {current.sub && <p style={{ fontSize: 15, color: C.inkSoft, marginTop: 12, lineHeight: 1.55 }}>{current.sub}</p>}
-          </div>
+          {isConsentsStep ? (
+            <div className="space-y-6">
+              <div>
+                <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>
+                  {condition.name} · Mandatory Onboarding Consents
+                </span>
+                <h2 className="display" style={{ fontSize: "clamp(26px, 4vw, 38px)", lineHeight: 1.15, fontWeight: 400, color: C.ink, marginTop: 12 }}>
+                  Tennessee Telehealth, Cash-Pay & Privacy Agreement
+                </h2>
+                <p style={{ fontSize: 14, color: C.inkSoft, marginTop: 12, lineHeight: 1.6 }}>
+                  Under Tennessee Department of Health telehealth regulations and our direct-to-consumer model, please review and actively agree to the following mandatory terms to begin your intake.
+                </p>
+              </div>
 
-          {current.type === "single" && (
-            <div className="space-y-3">
-              {current.options.map((opt) => (
-                <button key={opt} onClick={() => setAnswer(current.key, opt)}
-                  className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
-                  style={{ background: value === opt ? C.primary : C.paper, color: value === opt ? C.bg : C.ink,
-                    border: `1px solid ${value === opt ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
-                  <span>{opt}</span>
-                  <div className="rounded-full flex items-center justify-center"
-                    style={{ width: 22, height: 22, border: `1.5px solid ${value === opt ? C.paper : C.line}`,
-                      background: value === opt ? C.paper : "transparent" }}>
-                    {value === opt && <Check size={12} strokeWidth={3} color={C.primary} />}
-                  </div>
+              <div className="space-y-4 rounded-2xl p-5" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+                {/* 1. Tennessee Telehealth Consent */}
+                <label className="flex items-start gap-3.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!answers.consentTelehealth}
+                    onChange={(e) => setAnswer("consentTelehealth", e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded text-[#C89E67] focus:ring-[#C89E67]"
+                  />
+                  <span style={{ fontSize: 13, color: C.ink, lineHeight: 1.55 }}>
+                    <strong>Tennessee Telehealth Informed Consent:</strong> I consent to receive asynchronous clinical evaluation by a Tennessee-licensed physician. I understand that SpryMD is not an emergency room or acute crisis service. In an acute emergency, I will dial 911 immediately.
+                  </span>
+                </label>
+
+                {/* 2. Direct Cash-Pay Agreement */}
+                <label className="flex items-start gap-3.5 cursor-pointer pt-3" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+                  <input
+                    type="checkbox"
+                    checked={!!answers.consentCashPay}
+                    onChange={(e) => setAnswer("consentCashPay", e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded text-[#C89E67] focus:ring-[#C89E67]"
+                  />
+                  <span style={{ fontSize: 13, color: C.ink, lineHeight: 1.55 }}>
+                    <strong>100% Direct Cash-Pay Agreement:</strong> I understand that SpryMD is strictly self-pay. No insurance claims (commercial, Medicare, Medicaid) are billed or routed through third-party RCM networks. I am solely responsible for consultation and medication charges.
+                  </span>
+                </label>
+
+                {/* 3. HIPAA & Terms */}
+                <label className="flex items-start gap-3.5 cursor-pointer pt-3" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+                  <input
+                    type="checkbox"
+                    checked={!!answers.consentHipaa}
+                    onChange={(e) => setAnswer("consentHipaa", e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded text-[#C89E67] focus:ring-[#C89E67]"
+                  />
+                  <span style={{ fontSize: 13, color: C.ink, lineHeight: 1.55 }}>
+                    <strong>Notice of Privacy Practices & Terms:</strong> I have reviewed and agree to the <a href="/terms" target="_blank" style={{ color: C.accent, textDecoration: "underline" }}>Terms of Service</a>, <a href="/privacy" target="_blank" style={{ color: C.accent, textDecoration: "underline" }}>Privacy Policy</a>, and <a href="/npp" target="_blank" style={{ color: C.accent, textDecoration: "underline" }}>Notice of Privacy Practices (NPP)</a>.
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between pt-4">
+                <button onClick={handleBack} className="focus-ring inline-flex items-center gap-2 px-4 py-2 rounded-full transition-opacity hover:opacity-60" style={{ color: C.inkSoft, fontSize: 14 }}>
+                  <ArrowLeft size={16} strokeWidth={1.75} />Back
                 </button>
-              ))}
+                <Btn onClick={handleAdvance} disabled={!canAdvance} size="lg" icon={ArrowRight}>
+                  Accept & Begin Intake
+                </Btn>
+              </div>
             </div>
-          )}
+          ) : (
+            <div>
+              <div className="mb-8">
+                <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>{condition.name}</span>
+                <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.1, fontWeight: 400, color: C.ink, marginTop: 12 }}>{current.title}</h2>
+                {current.sub && <p style={{ fontSize: 15, color: C.inkSoft, marginTop: 12, lineHeight: 1.55 }}>{current.sub}</p>}
+              </div>
 
-          {current.type === "multi" && (
-            <div className="space-y-3">
-              {current.options.map((opt) => {
-                const checked = Array.isArray(value) && value.includes(opt);
-                return (
-                  <button key={opt}
-                    onClick={() => {
-                      const cur = Array.isArray(value) ? value : [];
-                      let next;
-                      if (opt.toLowerCase().includes("none of the above")) next = checked ? [] : [opt];
-                      else {
-                        const filtered = cur.filter((c) => !c.toLowerCase().includes("none of the above"));
-                        next = checked ? filtered.filter((c) => c !== opt) : [...filtered, opt];
-                      }
-                      setAnswer(current.key, next);
-                    }}
-                    className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
-                    style={{ background: checked ? C.primary : C.paper, color: checked ? C.bg : C.ink,
-                      border: `1px solid ${checked ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
-                    <span style={{ flex: 1, paddingRight: 16, lineHeight: 1.45 }}>{opt}</span>
-                    <div className="flex items-center justify-center flex-shrink-0"
-                      style={{ width: 22, height: 22, border: `1.5px solid ${checked ? C.paper : C.line}`,
-                        background: checked ? C.paper : "transparent", borderRadius: 6 }}>
-                      {checked && <Check size={12} strokeWidth={3} color={C.primary} />}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {current.type === "compound" && (
-            <div className="grid grid-cols-3 gap-3">
-              {current.fields.map((f) => (
-                <div key={f.key}>
-                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8 }}>{f.label}</label>
-                  <input type={f.type} value={answers[f.key] || ""} onChange={(e) => setAnswer(f.key, e.target.value)} placeholder={f.placeholder}
-                    className="focus-ring w-full p-4"
-                    style={{ background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 16, fontSize: 18, color: C.ink, fontFamily: fonts.body, fontWeight: 500 }} />
+              {current.type === "single" && (
+                <div className="space-y-3">
+                  {current.options.map((opt) => (
+                    <button key={opt} onClick={() => setAnswer(current.key, opt)}
+                      className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
+                      style={{ background: value === opt ? C.primary : C.paper, color: value === opt ? C.bg : C.ink,
+                        border: `1px solid ${value === opt ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
+                      <span>{opt}</span>
+                      <div className="rounded-full flex items-center justify-center"
+                        style={{ width: 22, height: 22, border: `1.5px solid ${value === opt ? C.paper : C.line}`,
+                          background: value === opt ? C.paper : "transparent" }}>
+                        {value === opt && <Check size={12} strokeWidth={3} color={C.primary} />}
+                      </div>
+                    </button>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {current.type === "multi" && (
+                <div className="space-y-3">
+                  {current.options.map((opt) => {
+                    const checked = Array.isArray(value) && value.includes(opt);
+                    return (
+                      <button key={opt}
+                        onClick={() => {
+                          const cur = Array.isArray(value) ? value : [];
+                          let next;
+                          if (opt.toLowerCase().includes("none of the above")) next = checked ? [] : [opt];
+                          else {
+                            const filtered = cur.filter((c) => !c.toLowerCase().includes("none of the above"));
+                            next = checked ? filtered.filter((c) => c !== opt) : [...filtered, opt];
+                          }
+                          setAnswer(current.key, next);
+                        }}
+                        className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
+                        style={{ background: checked ? C.primary : C.paper, color: checked ? C.bg : C.ink,
+                          border: `1px solid ${checked ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
+                        <span style={{ flex: 1, paddingRight: 16, lineHeight: 1.45 }}>{opt}</span>
+                        <div className="flex items-center justify-center flex-shrink-0"
+                          style={{ width: 22, height: 22, border: `1.5px solid ${checked ? C.paper : C.line}`,
+                            background: checked ? C.paper : "transparent", borderRadius: 6 }}>
+                          {checked && <Check size={12} strokeWidth={3} color={C.primary} />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {current.type === "compound" && (
+                <div className="grid grid-cols-3 gap-3">
+                  {current.fields.map((f) => (
+                    <div key={f.key}>
+                      <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8 }}>{f.label}</label>
+                      <input type={f.type} value={answers[f.key] || ""} onChange={(e) => setAnswer(f.key, e.target.value)} placeholder={f.placeholder}
+                        className="focus-ring w-full p-4"
+                        style={{ background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 16, fontSize: 18, color: C.ink, fontFamily: fonts.body, fontWeight: 500 }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mt-12">
+                <button onClick={handleBack} className="focus-ring inline-flex items-center gap-2 px-4 py-2 rounded-full transition-opacity hover:opacity-60" style={{ color: C.inkSoft, fontSize: 14 }}>
+                  <ArrowLeft size={16} strokeWidth={1.75} />Back
+                </button>
+                <Btn onClick={handleAdvance} disabled={!canAdvance} size="lg" icon={ArrowRight}>{isLast ? "See my plan" : "Continue"}</Btn>
+              </div>
             </div>
           )}
-
-          <div className="flex items-center justify-between mt-12">
-            <button onClick={handleBack} className="focus-ring inline-flex items-center gap-2 px-4 py-2 rounded-full transition-opacity hover:opacity-60" style={{ color: C.inkSoft, fontSize: 14 }}>
-              <ArrowLeft size={16} strokeWidth={1.75} />Back
-            </button>
-            <Btn onClick={handleAdvance} disabled={!canAdvance} size="lg" icon={ArrowRight}>{isLast ? "See my plan" : "Continue"}</Btn>
-          </div>
         </div>
       </div>
     </div>
@@ -2962,9 +3191,10 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
     else if (pref.includes("As needed")) recommended = condition.treatments.find((t) => t.id === "sild-prn") || recommended;
   }
   if (conditionId === "sermorelin" && pref) {
-    if (pref.includes("Sleep-focused")) recommended = condition.treatments.find((t) => t.id === "serm-gly") || recommended;
-    else if (pref.includes("Maximum")) recommended = condition.treatments.find((t) => t.id === "serm-hi") || recommended;
-    else if (pref.includes("Standard")) recommended = condition.treatments.find((t) => t.id === "serm-std") || recommended;
+    if (pref.includes("Tablet") || pref.includes("Dissolvable") || pref.includes("ODT") || pref.includes("needle-free")) recommended = condition.treatments.find((t) => t.id === "serm-odt") || recommended;
+    else if (pref.includes("Sleep-focused") || pref.includes("Glycine")) recommended = condition.treatments.find((t) => t.id === "serm-gly") || recommended;
+    else if (pref.includes("High-Dose") || pref.includes("Maximum")) recommended = condition.treatments.find((t) => t.id === "serm-hi") || recommended;
+    else if (pref.includes("Injection") || pref.includes("Standard")) recommended = condition.treatments.find((t) => t.id === "serm-std") || recommended;
     else if (answers?.goal?.includes?.("Deeper sleep")) recommended = condition.treatments.find((t) => t.id === "serm-gly") || recommended;
   }
   if (conditionId === "nad" && pref) {
@@ -2986,10 +3216,12 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
     else if (pref.includes("gentle")) recommended = condition.treatments.find((t) => t.id === "buspirone") || recommended;
   }
   if (conditionId === "pcp" && pref) {
-    if (pref.includes("labs")) recommended = condition.treatments.find((t) => t.id === "pcp-labs") || recommended;
-    else if (pref.includes("Lighter") || pref.includes("messaging when")) recommended = condition.treatments.find((t) => t.id === "pcp-essentials") || recommended;
-    else if (pref.includes("Household") || answers?.household?.includes("partner")) recommended = condition.treatments.find((t) => t.id === "pcp-family") || recommended;
-    else if (pref.includes("Full primary")) recommended = condition.treatments.find((t) => t.id === "pcp-core") || recommended;
+    if (pref.includes("500") || pref.includes("Doctor-Initiated") || pref.includes("Monthly")) recommended = condition.treatments.find((t) => t.id === "pcp-monthly-vip") || recommended;
+    else if (pref.includes("470") || (pref.includes("Two Adults") && (pref.includes("Yearly") || pref.includes("blood") || pref.includes("labs")))) recommended = condition.treatments.find((t) => t.id === "pcp-two-yearly") || recommended;
+    else if (pref.includes("180") || (pref.includes("Two Adults") && (pref.includes("Acute") || pref.includes("Insight")))) recommended = condition.treatments.find((t) => t.id === "pcp-two-acute") || recommended;
+    else if (pref.includes("250") || pref.includes("Yearly") || pref.includes("blood") || pref.includes("labs")) recommended = condition.treatments.find((t) => t.id === "pcp-yearly") || recommended;
+    else if (pref.includes("120") || pref.includes("Acute")) recommended = condition.treatments.find((t) => t.id === "pcp-acute") || recommended;
+    else if (answers?.household?.includes("partner") || answers?.household?.includes("two adults")) recommended = condition.treatments.find((t) => t.id === "pcp-two-acute") || recommended;
   }
 
   const alternatives = condition.treatments.filter((t) => t.id !== recommended.id);
@@ -3544,6 +3776,17 @@ export default function App() {
       window.history.replaceState({}, "", "/");
       return;
     }
+    const cond = qs.get("condition") || qs.get("intake");
+    if (cond && conditions[cond]) {
+      const initialAnswers = {};
+      const pref = qs.get("pref");
+      if (pref === "injection") initialAnswers.preference = "Injections — daily subcutaneous kit";
+      if (pref === "tablet" || pref === "oral") initialAnswers.preference = "Mint Dissolvable Tablets — needle-free daily ODT";
+      setParams({ condition: cond, initialAnswers });
+      setView("intake");
+      window.history.replaceState({}, "", "/");
+      return;
+    }
     const deepView = qs.get("view");
     if (deepView === "marketplace") {
       if (FEATURES.enableShop) {
@@ -3604,7 +3847,7 @@ export default function App() {
       openPatientDashboard();
       return;
     }
-    if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
+    if (target === "intake") { setParams({ condition: p.condition, initialAnswers: p.initialAnswers || {} }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
     if (target === "page") {
       const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
@@ -3717,7 +3960,7 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const completeCheckout = (checkoutMeta = {}) => {
+  const completeCheckout = async (checkoutMeta = {}) => {
     const email = (user?.email || checkoutMeta.email || "").toLowerCase();
     if (!email) {
       requireAuth("checkout", { ...params });
@@ -3731,6 +3974,22 @@ export default function App() {
         conditionId: params.condition,
         conditionName: conditions[params.condition]?.name,
         answers: params.answers,
+      });
+
+      // Persist to Supabase backend database
+      await syncIntakeToDatabase({
+        email,
+        name: checkoutMeta.name || user?.name,
+        conditionId: params.condition,
+        conditionName: conditions[params.condition]?.name,
+        answers: params.answers || {},
+        plan: params.plan,
+        consents: params.answers?.consents || {
+          telehealthConsent: true,
+          cashPayAgreement: true,
+          hipaaConsent: true,
+          timestamp: new Date().toISOString(),
+        },
       });
     } else if (params.mode === "cart") {
       const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
@@ -3780,7 +4039,7 @@ export default function App() {
         </div>
       )}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
-      {view === "intake" && <Intake conditionId={params.condition} go={go} />}
+      {view === "intake" && <Intake conditionId={params.condition} initialAnswers={params.initialAnswers} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
       {FEATURES.enableShop && view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
       {view === "checkout" && !(params.mode === "cart" && !FEATURES.enableShop) && (

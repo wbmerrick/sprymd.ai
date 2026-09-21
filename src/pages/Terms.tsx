@@ -17,7 +17,7 @@ const Terms = () => (
               <p><strong>MEDICAL EMERGENCY NOTICE:</strong> IF YOU HAVE A MEDICAL EMERGENCY, SEEK IN-PERSON EMERGENCY CARE IMMEDIATELY OR DIAL 911. THE SERVICE IS NOT APPROPRIATE FOR EMERGENCIES. THE SERVICE IS LIMITED TO THE EVALUATION AND TREATMENT OF ERECTILE DYSFUNCTION ("ED") AND RELATED MATTERS EXPRESSLY MADE AVAILABLE THROUGH THE PLATFORM. THE SERVICE IS NOT PRIMARY CARE AND IS NOT A SUBSTITUTE FOR AN IN-PERSON PHYSICIAN OR FOR COMPREHENSIVE UROLOGIC, CARDIAC, ENDOCRINE, OR GENERAL MEDICAL CARE.</p>
             </div>
 
-            <p>These Terms and Conditions ("Terms," "Terms and Conditions," or "Agreement") govern your access to and use of the website located at SpryMD.ai, any related websites, software, applications, messaging tools, communications channels, content, products, and services made available by [INSERT LEGAL ENTITY NAME] and its affiliates (collectively, "SpryMD," "we," "our," or "us") (collectively, the "Service").</p>
+            <p>These Terms and Conditions ("Terms," "Terms and Conditions," or "Agreement") govern your access to and use of the website located at SpryMD.ai, any related websites, software, applications, messaging tools, communications channels, content, products, and services made available by SpryMD Inc., SpryMD Telehealth Tennessee P.C., and their affiliates (collectively, "SpryMD," "we," "our," or "us") (collectively, the "Service").</p>
 
             <p>Please read this Agreement carefully. In this Agreement, the terms "you" and "your" mean the individual using the Service. The Service is intended only for adults age eighteen (18) or older, or the age of majority in the user's jurisdiction if greater. The Service is not intended for minors.</p>
 
