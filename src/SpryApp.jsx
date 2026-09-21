@@ -1318,20 +1318,19 @@ const Landing = ({ go }) => {
         </div>
         <div className="md:col-span-6">
           <div className="rounded-3xl overflow-hidden" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
-            <div className="relative">
+            <div>
               <img
                 src={imgFounder}
                 alt="Dr. William Merrick, DO — founder of SpryMD"
                 className="w-full"
-                style={{ display: "block", aspectRatio: "1 / 0.92", objectFit: "cover", objectPosition: "center 32%" }}
+                style={{ display: "block", width: "100%", height: "auto", objectFit: "contain" }}
               />
-              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 140, background: "linear-gradient(180deg, transparent, rgba(9,14,11,0.92))" }} />
-              <div className="absolute inset-x-0 bottom-0 p-6 md:p-7">
+              <div className="px-6 md:px-7 pt-5 pb-1">
                 <div className="display" style={{ fontSize: 24, fontWeight: 600, color: C.ink }}>Dr. William Merrick, DO</div>
                 <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 2 }}>Founder · Practicing hospitalist · Tennessee</div>
               </div>
             </div>
-            <div className="p-6 md:p-7">
+            <div className="p-6 md:p-7 pt-4">
               <p className="display" style={{ fontSize: 17, lineHeight: 1.5, color: C.inkSoft, fontStyle: "italic" }}>
                 &ldquo;The doctor reviewing your case has heard it all before — and took an oath to
                 help, not to judge.&rdquo;
