@@ -412,16 +412,14 @@ const conditions = {
     id: "pcp", name: "Your doctor",
     tagline: "A doctor you can message any day.",
     description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
-    icon: UserCheck, accent: "#C89E67", fromPrice: "49",
+    icon: UserCheck, accent: "#C89E67", fromPrice: "120",
     treatments: [
-      { id: "pcp-core", name: "Spry Primary Care", sub: "Ongoing PCP membership · messaging + visits", price: 79, chilled: false,
-        note: "Your dedicated SpryMD clinician. Annual wellness visit, chronic condition management, referrals, and unlimited secure messaging.", badge: "Most popular", compareAt: 129, comparePeer: "One Medical" },
-      { id: "pcp-labs", name: "PCP + Annual Labs", sub: "Membership + comprehensive metabolic panel", price: 99, chilled: false,
-        note: "Everything in Primary Care plus annual labs drawn and reviewed — lipids, A1C, CBC, hormone panel as indicated.", badge: "Best value" },
-      { id: "pcp-essentials", name: "PCP Essentials", sub: "Messaging + as-needed visits · lighter plan", price: 49, chilled: false,
-        note: "Stay connected to a clinician without a full membership load. Ideal if you already have specialists." },
-      { id: "pcp-family", name: "Household Primary Care", sub: "Up to 2 adults on one membership", price: 129, chilled: false,
-        note: "Shared household membership. Same clinician continuity for you and a partner." },
+      { id: "pcp-acute", name: "Spry Primary Care · Acute Insight", sub: "1 visit + anytime messaging for 1 month", price: 120, chilled: false,
+        note: "One clinician visit plus a month of anytime messaging. Two adults: $180.", badge: "Most popular", twoAdultPrice: 180 },
+      { id: "pcp-yearly", name: "Yearly Checkup", sub: "1 visit + full blood work + anytime messaging", price: 250, chilled: false,
+        note: "Annual visit with yearly labs and messaging. Two adults: $470.", badge: "Best value", twoAdultPrice: 470 },
+      { id: "pcp-monthly", name: "Monthly Doctor-Initiated Visits", sub: "Your doctor calls you once a month", price: 500, chilled: false,
+        note: "Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing." },
     ],
   },
 };
@@ -668,7 +666,7 @@ const intakes = {
     { key: "conditions", type: "multi", title: "Any ongoing conditions we should know about?",
       options: ["High blood pressure", "High cholesterol", "Diabetes / prediabetes", "Thyroid disorder", "Asthma / allergies", "None of the above"] },
     { key: "household", type: "single", title: "Who needs coverage?", options: ["Just me", "Me and a partner", "Not sure yet"] },
-    { key: "preference", type: "single", title: "Which membership fits best?", options: ["Full primary care — visits + messaging", "Primary care with annual labs included", "Lighter plan — messaging when I need it", "Household plan for two adults", "Not sure — recommend for me"] },
+    { key: "preference", type: "single", title: "Which plan fits best?", options: ["Acute Insight — visit + messaging for 1 month", "Yearly Checkup — visit + labs + messaging", "Monthly Doctor-Initiated Visits — doctor calls monthly", "Not sure — recommend for me"] },
   ],
 };
 
@@ -1248,26 +1246,60 @@ const Landing = ({ go }) => {
               </div>
             </div>
             <div className="p-7 md:p-8 relative z-10">
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
+              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Choose a plan</div>
               <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
                 $120<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
               </div>
-              <div className="mt-6 space-y-4">
-                {[{ t: "Spry Primary Care · Acute Insight", d: "$120 · 1 visit + anytime messaging for 1 month", tag: "Most popular" },
-                  { t: "Yearly Checkup", d: "$250 · 1 visit + full blood work (yearly labs) + anytime messaging", tag: "Best value" },
-                  { t: "Spry Primary Care Cost for Two Adults", d: ["$180 · Acute Insight", "$470 · Yearly Checkups"], tag: null },
-                  { t: "Monthly Doctor-Initiated Visits", d: "$500 · Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.", tag: null }].map((tier) => (
-                  <div key={tier.t} className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{tier.t}</span>
-                        {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
-                      </div>
-                      {(Array.isArray(tier.d) ? tier.d : [tier.d]).map((line) => (
-                        <span key={line} style={{ fontSize: 13, color: C.inkSoft, display: "block", lineHeight: 1.5 }}>{line}</span>
-                      ))}
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                {[
+                  {
+                    id: "pcp-acute",
+                    t: "Spry Primary Care · Acute Insight",
+                    d: "$120 · 1 visit + anytime messaging for 1 month",
+                    two: "$180 · Acute Insight for two adults",
+                    tag: "Most popular",
+                    span: false,
+                  },
+                  {
+                    id: "pcp-yearly",
+                    t: "Yearly Checkup",
+                    d: "$250 · 1 visit + full blood work (yearly labs) + anytime messaging",
+                    two: "$470 · Yearly Checkups for two adults",
+                    tag: "Best value",
+                    span: false,
+                  },
+                  {
+                    id: "pcp-monthly",
+                    t: "Monthly Doctor-Initiated Visits",
+                    d: "$500 · Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.",
+                    two: null,
+                    tag: null,
+                    span: true,
+                  },
+                ].map((tier) => (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => go("intake", { condition: "pcp", treatmentId: tier.id })}
+                    className={`text-left rounded-2xl p-4 transition-all focus:outline-none ${tier.span ? "col-span-2" : ""}`}
+                    style={{
+                      background: C.bgAlt,
+                      border: `1px solid ${tier.tag ? C.accent : C.line}`,
+                      boxShadow: tier.tag ? `0 0 0 1px ${C.accent}33` : "none",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{tier.t}</span>
+                      {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
                     </div>
-                  </div>
+                    <span style={{ fontSize: 13, color: C.inkSoft, display: "block", lineHeight: 1.5 }}>{tier.d}</span>
+                    {tier.two && (
+                      <span style={{ fontSize: 12, color: C.muted, display: "block", lineHeight: 1.45, marginTop: 8 }}>{tier.two}</span>
+                    )}
+                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 600, display: "inline-block", marginTop: 12 }}>
+                      Start intake →
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -2741,11 +2773,11 @@ const Dashboard = Account;
 // ─────────────────────────────────────────────────────────────────────────────
 // Intake
 // ─────────────────────────────────────────────────────────────────────────────
-const Intake = ({ conditionId, go }) => {
+const Intake = ({ conditionId, treatmentId, go }) => {
   const condition = conditions[conditionId];
   const questions = intakes[conditionId];
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => (treatmentId ? { treatmentId } : {}));
   const [direction, setDirection] = useState("forward");
 
   const isLast = step === questions.length - 1;
@@ -2978,10 +3010,11 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
     else if (pref.includes("gentle")) recommended = condition.treatments.find((t) => t.id === "buspirone") || recommended;
   }
   if (conditionId === "pcp" && pref) {
-    if (pref.includes("labs")) recommended = condition.treatments.find((t) => t.id === "pcp-labs") || recommended;
-    else if (pref.includes("Lighter") || pref.includes("messaging when")) recommended = condition.treatments.find((t) => t.id === "pcp-essentials") || recommended;
-    else if (pref.includes("Household") || answers?.household?.includes("partner")) recommended = condition.treatments.find((t) => t.id === "pcp-family") || recommended;
-    else if (pref.includes("Full primary")) recommended = condition.treatments.find((t) => t.id === "pcp-core") || recommended;
+    if (pref.includes("Yearly") || pref.includes("labs") || pref.includes("blood")) recommended = condition.treatments.find((t) => t.id === "pcp-yearly") || recommended;
+    else if (pref.includes("Monthly") || pref.includes("calls you") || pref.includes("Doctor-Initiated")) recommended = condition.treatments.find((t) => t.id === "pcp-monthly") || recommended;
+    else if (pref.includes("Acute") || pref.includes("Full primary") || pref.includes("Insight")) recommended = condition.treatments.find((t) => t.id === "pcp-acute") || recommended;
+  } else if (conditionId === "pcp" && answers?.treatmentId) {
+    recommended = condition.treatments.find((t) => t.id === answers.treatmentId) || recommended;
   }
 
   const alternatives = condition.treatments.filter((t) => t.id !== recommended.id);
@@ -3596,7 +3629,7 @@ export default function App() {
       openPatientDashboard();
       return;
     }
-    if (target === "intake") { setParams({ condition: p.condition }); setView("intake"); window.scrollTo(0, 0); return; }
+    if (target === "intake") { setParams({ condition: p.condition, treatmentId: p.treatmentId || null }); setView("intake"); window.scrollTo(0, 0); return; }
     if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
     if (target === "page") {
       const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
@@ -3772,7 +3805,7 @@ export default function App() {
         </div>
       )}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
-      {view === "intake" && <Intake conditionId={params.condition} go={go} />}
+      {view === "intake" && <Intake conditionId={params.condition} treatmentId={params.treatmentId} go={go} />}
       {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
       {FEATURES.enableShop && view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
       {view === "checkout" && !(params.mode === "cart" && !FEATURES.enableShop) && (
