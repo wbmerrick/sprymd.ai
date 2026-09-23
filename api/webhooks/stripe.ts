@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { Readable } from "node:stream";
 import Stripe from "stripe";
-import { getServiceTier } from "../../shared/serviceTiers";
+import { getServiceTier } from "../_lib/serviceTiers";
 import { sendConfirmationEmail } from "../_lib/sendConfirmationEmail";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 
@@ -54,17 +54,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    await handleCheckoutCompleted(session);
-  } else {
-    console.log(
-      JSON.stringify({
-        event: "stripe_webhook_ignored",
-        type: event.type,
-        id: event.id,
-      }),
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      await handleCheckoutCompleted(session);
+    } else {
+      console.log(
+        JSON.stringify({
+          event: "stripe_webhook_ignored",
+          type: event.type,
+          id: event.id,
+        }),
+      );
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      JSON.stringify({ event: "stripe_webhook_handler_error", message }),
     );
+    res.status(500).json({ error: "webhook_handler_failed", message });
+    return;
   }
 
   res.status(200).json({ received: true });
