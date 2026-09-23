@@ -2910,7 +2910,7 @@ const ConsultRequest = ({ conditionId, answers, disqualified, safety, go, user }
           <div className="inline-flex items-center justify-center mb-6 rounded-full p-3" style={{ background: "hsl(38, 92%, 95%)" }}>
             <AlertCircle size={28} strokeWidth={1.5} color={C.warn} />
           </div>
-          <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>{condition.name}</span>
+          <span className="mono" style={{ display: "block", fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>{condition.name}</span>
           <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 36px)", fontWeight: 400, color: C.ink, marginTop: 10, marginBottom: 16 }}>We need to talk first.</h2>
           <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, marginBottom: 16 }}>
             Because you answered <strong style={{ color: C.ink }}>{disqualified}</strong>, this treatment can't be prescribed through an online-only visit. A SpryMD clinician needs to talk with you directly before any decision is made.
@@ -2951,12 +2951,12 @@ const ConsultRequested = ({ contact, crisis, storedWhere, go }) => (
       <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
         <Check size={32} color={C.paper} strokeWidth={2} />
       </div>
-      <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Call requested</span>
+      <span className="mono" style={{ display: "block", fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Call requested</span>
       <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 56px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 16, marginBottom: 20 }}>
         We'll call <Mark>{contact?.phone || "you"}</Mark>.
       </h1>
       <p style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.55, marginBottom: 12 }}>
-        A SpryMD clinician will call within one business day{contact?.bestTime && contact.bestTime !== CONSULT_TIMES[0] ? `, ${contact.bestTime.toLowerCase()}` : ""}. We'll also email {contact?.email || "you"} to confirm.
+        A SpryMD clinician will call within one business day{contact?.bestTime && contact.bestTime !== CONSULT_TIMES[0] ? `, ${contact.bestTime.charAt(0).toLowerCase()}${contact.bestTime.slice(1)}` : ""}. We'll also email {contact?.email || "you"} to confirm.
       </p>
       <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginBottom: 32 }}>
         {storedWhere === "chart"

@@ -491,7 +491,7 @@ export function recordConsultRequest(input: {
   care.messages.unshift({
     id: `msg_${Date.now()}`,
     subject: `Clinician call requested · ${label}`,
-    preview: `We'll call ${input.phone}${input.bestTime ? ` (${input.bestTime.toLowerCase()})` : ""} to talk through your answers before any treatment decision.`,
+    preview: `We'll call ${input.phone}${input.bestTime ? ` (${input.bestTime})` : ""} to talk through your answers before any treatment decision.`,
     updatedAt: now,
     status: "no_action",
   });
