@@ -142,7 +142,11 @@ const FontInjector = () => (
     .anim-slideRight { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-slideLeft { animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-pulse { animation: pulse 2s ease-in-out infinite; }
-    .spry-rise { animation: spryRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes spryBrandIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .spry-brand-in { animation: spryBrandIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; opacity: 1; }
     .ken-burns { animation: kenBurns 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .signal-underline { display: inline-block; position: relative; }
     .signal-underline::after {
@@ -237,7 +241,7 @@ const FontInjector = () => (
     .spry-desktop-only { display: none; }
     @media (min-width: 768px) { .spry-desktop-only { display: inline-flex; } }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant, .spry-attn {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .spry-brand-in, .earth-distant, .spry-attn {
         animation: none !important;
       }
       .spry-btn, .spry-btn-icon, .spry-tile, .spry-tile-arrow, .spry-sticky-bar { transition: none !important; }
@@ -1030,14 +1034,14 @@ const Landing = ({ go }) => {
       {/* Darken the bright sky behind the centered SpryMD wordmark */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 75% 42% at 50% 12%, rgba(9,14,11,0.55) 0%, rgba(9,14,11,0.22) 45%, transparent 72%)" }}
+        style={{ background: "radial-gradient(ellipse 75% 42% at 50% 12%, rgba(9,14,11,0.72) 0%, rgba(9,14,11,0.38) 45%, transparent 72%)" }}
       />
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
         <div
-          className="spry-rise display"
+          className="spry-brand-in display"
           style={{
             animationDelay: "0.02s",
             fontSize: "clamp(46px, 7.2vw, 82px)",
@@ -1046,10 +1050,26 @@ const Landing = ({ go }) => {
             color: C.ink,
             textAlign: "center",
             marginBottom: 40,
+            opacity: 1,
           }}
         >
-          Spry<span className="spry-md">MD</span>
-          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink }}>
+          <span className="relative inline-block">
+            <span
+              aria-hidden="true"
+              className="absolute pointer-events-none"
+              style={{
+                inset: "-0.15em -0.35em",
+                borderRadius: 999,
+                background: "rgba(9,14,11,0.55)",
+                filter: "blur(18px)",
+                zIndex: 0,
+              }}
+            />
+            <span className="relative" style={{ opacity: 1 }}>
+              Spry<span className="spry-md">MD</span>
+            </span>
+          </span>
+          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink, opacity: 1 }}>
             Feel better. Stay stronger. Live longer.
           </div>
         </div>
@@ -1472,9 +1492,9 @@ const Landing = ({ go }) => {
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.18 }}>
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.38) 0%, rgba(9,14,11,0.58) 74%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.48) 0%, rgba(9,14,11,0.62) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
+        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24, opacity: 1 }}>
           Spry<span className="spry-md">MD</span>
         </div>
         <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 52px)", lineHeight: 1.12, fontWeight: 650, color: C.ink }}>
