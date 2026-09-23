@@ -1043,7 +1043,7 @@ const Landing = ({ go }) => {
             marginBottom: 40,
           }}
         >
-          Spry<span className="spry-md">MD</span>
+          Spry<span className="spry-md" style={{ textShadow: "0 1px 10px rgba(4, 18, 14, 0.55)" }}>MD</span>
           <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink }}>
             Feel better. Stay stronger. Live longer.
           </div>
