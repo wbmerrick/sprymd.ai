@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getServiceTier } from "../shared/serviceTiers";
+import { getServiceTier } from "./_lib/serviceTiers";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {

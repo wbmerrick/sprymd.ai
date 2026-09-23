@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { Readable } from "node:stream";
 import Stripe from "stripe";
-import { getServiceTier } from "../../shared/serviceTiers";
+import { getServiceTier } from "../_lib/serviceTiers";
 import { sendConfirmationEmail } from "../_lib/sendConfirmationEmail";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 
