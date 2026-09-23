@@ -18,6 +18,8 @@ export type ServiceTierCheckoutProps = {
   appointmentId?: string;
   patientEmail?: string;
   patientName?: string;
+  /** Tier to preselect (e.g. the funnel picks `protocol_start` for a medication plan). */
+  defaultTierId?: ServiceTierId;
   onError?: (message: string) => void;
 };
 
@@ -25,10 +27,13 @@ export default function ServiceTierCheckout({
   appointmentId,
   patientEmail: initialEmail = "",
   patientName: initialName = "",
+  defaultTierId,
   onError,
 }: ServiceTierCheckoutProps) {
   const [selectedId, setSelectedId] = useState<ServiceTierId>(
-    SERVICE_TIERS[0].id,
+    SERVICE_TIERS.some((t) => t.id === defaultTierId) && defaultTierId
+      ? defaultTierId
+      : SERVICE_TIERS[0].id,
   );
   const [patientEmail, setPatientEmail] = useState(initialEmail);
   const [patientName, setPatientName] = useState(initialName);

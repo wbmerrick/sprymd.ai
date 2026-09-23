@@ -452,6 +452,57 @@ export function recordSubscriptionCheckout(input: {
   return care;
 }
 
+/**
+ * Record a "request a clinician call" from a disqualified intake. The case is
+ * flagged `needs_info` so it is distinguishable from a plan awaiting approval,
+ * and the patient gets a message + notification describing the next step.
+ */
+export function recordConsultRequest(input: {
+  email: string;
+  conditionId?: string;
+  conditionName?: string;
+  disqualifier: string;
+  crisis?: boolean;
+  phone: string;
+  bestTime?: string;
+  answers?: Record<string, unknown>;
+}) {
+  const email = emailKey(input.email);
+  const care = getPatientCare(email);
+  const now = new Date().toISOString();
+  const label = input.conditionName || "care";
+
+  care.clinicalCases.unshift({
+    id: `case_${Date.now()}`,
+    email,
+    conditionId: input.conditionId,
+    planName: `Clinician call · ${label}`,
+    intake: {
+      ...(input.answers || {}),
+      consult_requested: true,
+      disqualifier: input.disqualifier,
+      crisis: !!input.crisis,
+      phone: input.phone,
+      best_time_to_call: input.bestTime || "",
+    },
+    status: "needs_info",
+    createdAt: now,
+  });
+  care.messages.unshift({
+    id: `msg_${Date.now()}`,
+    subject: `Clinician call requested · ${label}`,
+    preview: `We'll call ${input.phone}${input.bestTime ? ` (${input.bestTime.toLowerCase()})` : ""} to talk through your answers before any treatment decision.`,
+    updatedAt: now,
+    status: "no_action",
+  });
+  pushNotification(care, {
+    icon: "pill",
+    title: "Clinician call requested",
+    description: `Your ${label.toLowerCase()} answers need a live conversation first. Expect a call within one business day.`,
+  });
+  return saveCare(care);
+}
+
 export function recordCartCheckout(input: {
   email: string;
   items: { name: string; qty: number; price: number; productId?: string }[];

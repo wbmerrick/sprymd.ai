@@ -27,5 +27,9 @@ in `.env` (`VITE_SUPABASE_*`) and point at a hosted project.
 
 ### App structure / core flow
 - Routes are defined in `src/App.tsx` (react-router). Key pages live in `src/pages/`.
-- The core user flow is the multi-step medical intake quiz at `/quiz`
-  (`src/pages/Quiz.tsx`), which ends on a treatment-plan screen with a Stripe checkout link.
+- The core user flow is the homepage intake funnel in `src/SpryApp.jsx` (`Intake` → `Plan`;
+ questions and plans live in `src/data/careCatalog.ts`, logic in `src/lib/intakeFlow.ts`),
+ deep-linkable as `/?view=intake&condition=<id>`. `/quiz` redirects to the homepage care
+ options. "Continue to checkout" hands off to `/checkout` (`src/pages/CashPayCheckout.tsx`),
+ which starts a hosted Stripe Checkout via `/api/create-checkout-session` — card details are
+ never collected in-app.
