@@ -33,3 +33,13 @@ in `.env` (`VITE_SUPABASE_*`) and point at a hosted project.
  options. "Continue to checkout" hands off to `/checkout` (`src/pages/CashPayCheckout.tsx`),
  which starts a hosted Stripe Checkout via `/api/create-checkout-session` — card details are
  never collected in-app.
+
+### Clinical DB migrations (hosted Supabase)
+Apply in SQL editor (or `supabase db push`) in order when launching cash-pay visits:
+1. `supabase/migrations/20260921_telehealth_clinical.sql`
+2. `supabase/migrations/20260921_intake_and_visits.sql`
+3. `supabase/migrations/20260923_guest_patients_payment_ledger.sql`
+
+Until these are applied, chart writes return `PGRST205` and checkout still works via Stripe-only
+(with appointment provisioning skipped). Stripe webhook events to enable: `checkout.session.completed`,
+`charge.refunded`, `payment_intent.payment_failed`.

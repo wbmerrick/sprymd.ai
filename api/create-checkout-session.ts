@@ -17,6 +17,7 @@ import {
 } from "./_lib/complianceGate";
 import { handlePreflight } from "./_lib/cors";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
+import { ensureCheckoutAppointment } from "./_lib/ensureCheckoutAppointment";
 
 type CheckoutBody = {
   appointmentId?: string;
@@ -74,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const body = parseBody(req);
   const serviceTierId = String(body.serviceTierId || "").trim();
-  const appointmentId = body.appointmentId
+  let appointmentId = body.appointmentId
     ? String(body.appointmentId).trim()
     : "";
   const patientEmail = body.patientEmail
@@ -117,10 +118,71 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  let patientId = "";
+  try {
+    const ensured = await ensureCheckoutAppointment({
+      supabase: getSupabaseAdmin(),
+      appointmentId: appointmentId || undefined,
+      patientEmail: patientEmail || "unknown@sprymd.local",
+      patientName,
+      serviceTierId: tier.id,
+      amountCents: tier.amountCents,
+      currency: tier.currency,
+      physicalState: compliance.physicalState,
+    });
+    appointmentId = ensured.appointmentId;
+    patientId = ensured.patientId;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      JSON.stringify({
+        event: "ensure_checkout_appointment_failed",
+        message,
+      }),
+    );
+    // Chart tables may not be applied yet — still allow Stripe checkout; webhook
+    // will retry chart writes after migrations land.
+    if (
+      message.includes("PGRST") ||
+      message.includes("schema cache") ||
+      message.includes("does not exist") ||
+      message.includes("appointment_not_found")
+    ) {
+      console.log(
+        JSON.stringify({
+          event: "ensure_checkout_appointment_skipped",
+          message,
+          note: "Proceeding without appointment row — apply clinical migrations",
+        }),
+      );
+    } else {
+      res.status(500).json({ error: "appointment_provision_failed", message });
+      return;
+    }
+  }
+
+  // When we only had appointmentId, recover email from the chart if possible.
+  let emailForStripe = patientEmail;
+  if (!emailForStripe && patientId) {
+    try {
+      const { data } = await getSupabaseAdmin()
+        .from("patients")
+        .select("email")
+        .eq("id", patientId)
+        .maybeSingle();
+      if (data?.email) emailForStripe = String(data.email);
+    } catch {
+      /* ignore */
+    }
+  }
+
   const baseUrl = getAppBaseUrl(req);
+  // Stripe substitutes the literal `{CHECKOUT_SESSION_ID}` token — do not encode braces.
   const successUrl =
     body.successUrl ||
-    `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    (appointmentId
+      ? `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${encodeURIComponent(appointmentId)}`
+      : `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`);
   const cancelUrl = body.cancelUrl || `${baseUrl}/checkout?canceled=1`;
 
   try {
@@ -142,13 +204,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           },
         },
       ],
-      customer_email: patientEmail || undefined,
+      customer_email: emailForStripe || undefined,
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
         appointment_id: appointmentId || "",
+        patient_id: patientId || "",
         service_tier_id: tier.id,
-        patient_email: patientEmail || "",
+        patient_email: emailForStripe || "",
         patient_name: patientName || "",
         physical_state: compliance.physicalState.toUpperCase(),
         cash_pay_terms_accepted: "true",
@@ -195,7 +258,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    res.status(200).json({ url: session.url, sessionId: session.id });
+    res.status(200).json({
+      url: session.url,
+      sessionId: session.id,
+      appointmentId: appointmentId || null,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(
