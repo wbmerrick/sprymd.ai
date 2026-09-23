@@ -1398,7 +1398,7 @@ const IntakePreview = ({ conditionId, anchorRect, live, onKeep, onRelease, onOpe
       </div>
       <div style={{ width: W, height: H - BAR, overflow: "hidden" }}>
         <div aria-hidden="true" style={{ width: 1280, height: (H - BAR) / scale, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
-          <Intake key={conditionId} conditionId={conditionId} go={() => {}} />
+          <Intake key={conditionId} conditionId={conditionId} go={() => {}} persist={false} />
         </div>
       </div>
     </div>
