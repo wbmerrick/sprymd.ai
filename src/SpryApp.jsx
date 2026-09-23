@@ -11,7 +11,8 @@ import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
 import BrandAtmosphere from "./components/brand/BrandAtmosphere";
 import { brandPlates } from "./assets/brand/catalog";
-import imgFounder from "./assets/brand/founder-dr-merrick.jpg";
+import imgFounder from "./assets/brand/founder-dr-merrick.webp";
+import { applyHead } from "./lib/seo";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -103,9 +104,9 @@ const fonts = {
   mono: "'DM Sans', 'Helvetica Neue', sans-serif",
 };
 
+// Fonts are self-hosted (see index.css @font-face + preload in index.html).
 const FontInjector = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,400..700&display=swap');
     :root {
       --font-mono: ${fonts.body};
       --spry-accent: ${C.accent};
@@ -128,11 +129,20 @@ const FontInjector = () => (
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
         radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
         linear-gradient(180deg, rgba(12,18,15,0.48), rgba(12,18,15,0.62)),
-        url("/brand/sprymd-tn-ridge.webp");
+        url("${brandPlates.tn.src}");
       background-size: auto, auto, auto, cover;
       background-position: center, center, center, center 40%;
       background-attachment: fixed;
       background-repeat: no-repeat;
+    }
+    @media (max-width: 767px) {
+      body {
+        background-image:
+          radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
+          radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
+          linear-gradient(180deg, rgba(12,18,15,0.48), rgba(12,18,15,0.62)),
+          url("${brandPlates.tn.srcSmall}");
+      }
     }
     .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.01em; }
     .mono { font-family: ${fonts.body}; font-weight: 600; letter-spacing: 0.04em; }
@@ -1155,6 +1165,10 @@ const Landing = ({ go }) => {
               <img
                 src={imgFounder}
                 alt="Dr. William Merrick, DO — founder of SpryMD"
+                width={767}
+                height={1024}
+                loading="lazy"
+                decoding="async"
                 className="w-full"
                 style={{ display: "block", width: "100%", height: "auto", objectFit: "contain" }}
               />
@@ -1209,7 +1223,11 @@ const Landing = ({ go }) => {
           <div className="p-6 rounded-2xl relative overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
             <img
               src={brandPlates.tn.src}
+              srcSet={`${brandPlates.tn.srcSmall} 960w, ${brandPlates.tn.src} 1920w`}
+              sizes="(min-width: 1280px) 1216px, 100vw"
               alt=""
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full"
               style={{ objectFit: "cover", opacity: 0.45, objectPosition: "center 35%" }}
             />
@@ -3670,7 +3688,7 @@ export default function App() {
   return (
     <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
-      {view === "landing" ? <BrandAtmosphere plate="tn" variant="site" locked objectPosition="center 40%" /> : null}
+      {view === "landing" ? <BrandAtmosphere plate="tn" variant="site" locked objectPosition="center 40%" priority /> : null}
 
       {view === "landing" && (
         <div className="relative z-10">
