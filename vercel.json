@@ -9,10 +9,5 @@
       "destination": "/index.html"
     }
   ],
-  "functions": {
-    "api/**/*.ts": {
-      "includeFiles": "{shared/**,api/_lib/**}"
-    }
-  },
   "installCommand": "bun install"
 }

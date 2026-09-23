@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { Readable } from "node:stream";
+import Stripe from "stripe";
+import { getServiceTier } from "../../shared/serviceTiers";
+import { sendConfirmationEmail } from "../_lib/sendConfirmationEmail";
+import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 
 export const config = {
   api: {
@@ -16,55 +20,44 @@ async function buffer(readable: Readable): Promise<Buffer> {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "method_not_allowed" });
+    return;
+  }
+
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!stripeKey || !webhookSecret) {
+    res.status(500).json({ error: "stripe_webhook_not_configured" });
+    return;
+  }
+
+  const stripe = new Stripe(stripeKey);
+  const sig = req.headers["stripe-signature"];
+
+  if (!sig || typeof sig !== "string") {
+    res.status(400).json({ error: "missing_stripe_signature" });
+    return;
+  }
+
+  let event: Stripe.Event;
   try {
-    if (req.method !== "POST") {
-      res.status(405).json({ error: "method_not_allowed" });
-      return;
-    }
-
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    if (!stripeKey || !webhookSecret) {
-      res.status(500).json({ error: "stripe_webhook_not_configured" });
-      return;
-    }
-
-    const Stripe = (await import("stripe")).default;
-    const { getServiceTier } = await import("../../shared/serviceTiers");
-    const { sendConfirmationEmail } = await import(
-      "../_lib/sendConfirmationEmail"
+    const rawBody = await buffer(req);
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      JSON.stringify({ event: "stripe_webhook_signature_failed", message }),
     );
-    const { getSupabaseAdmin } = await import("../_lib/supabaseAdmin");
+    res.status(400).json({ error: "invalid_signature", message });
+    return;
+  }
 
-    const stripe = new Stripe(stripeKey);
-    const sig = req.headers["stripe-signature"];
-
-    if (!sig || typeof sig !== "string") {
-      res.status(400).json({ error: "missing_stripe_signature" });
-      return;
-    }
-
-    let event: import("stripe").Stripe.Event;
-    try {
-      const rawBody = await buffer(req);
-      event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(
-        JSON.stringify({ event: "stripe_webhook_signature_failed", message }),
-      );
-      res.status(400).json({ error: "invalid_signature", message });
-      return;
-    }
-
+  try {
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object as import("stripe").Stripe.Checkout.Session;
-      await handleCheckoutCompleted(session, {
-        getServiceTier,
-        sendConfirmationEmail,
-        getSupabaseAdmin,
-      });
+      const session = event.data.object as Stripe.Checkout.Session;
+      await handleCheckoutCompleted(session);
     } else {
       console.log(
         JSON.stringify({
@@ -74,25 +67,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }),
       );
     }
-
-    res.status(200).json({ received: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(
       JSON.stringify({ event: "stripe_webhook_handler_error", message }),
     );
     res.status(500).json({ error: "webhook_handler_failed", message });
+    return;
   }
+
+  res.status(200).json({ received: true });
 }
 
-async function handleCheckoutCompleted(
-  session: import("stripe").Stripe.Checkout.Session,
-  deps: {
-    getServiceTier: typeof import("../../shared/serviceTiers").getServiceTier;
-    sendConfirmationEmail: typeof import("../_lib/sendConfirmationEmail").sendConfirmationEmail;
-    getSupabaseAdmin: typeof import("../_lib/supabaseAdmin").getSupabaseAdmin;
-  },
-) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const appointmentId = session.metadata?.appointment_id || "";
   const serviceTierId = session.metadata?.service_tier_id || "";
   const patientEmail =
@@ -109,11 +96,11 @@ async function handleCheckoutCompleted(
       ? session.payment_intent
       : session.payment_intent?.id || null;
 
-  const tier = serviceTierId ? deps.getServiceTier(serviceTierId) : undefined;
+  const tier = serviceTierId ? getServiceTier(serviceTierId) : undefined;
   const paidAt = new Date().toISOString();
 
   try {
-    const supabase = deps.getSupabaseAdmin();
+    const supabase = getSupabaseAdmin();
     let updated = false;
 
     if (appointmentId) {
@@ -193,7 +180,7 @@ async function handleCheckoutCompleted(
   }
 
   if (patientEmail) {
-    await deps.sendConfirmationEmail({
+    await sendConfirmationEmail({
       to: patientEmail,
       patientName,
       appointmentId: appointmentId || null,
