@@ -11,8 +11,17 @@ import SkipToContent from "@/components/SkipToContent";
 import SpryApp from "./SpryApp.jsx";
 import { FEATURES } from "@/config/features";
 
-// Everything except the landing experience is code-split so the homepage
-// only ships what it needs (the dashboard, legal pages, checkout, etc. load on demand).
+// The landing experience and the small marketing/legal pages ship in the main
+// chunk (they share the shell and are ~15 KB gzipped together). Everything
+// app-like — dashboard, checkout, intake, provider tools, visit room, OAuth —
+// is code-split and loads on demand.
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
+import NPP from "@/pages/NPP";
+import About from "@/pages/About";
+import FAQ from "@/pages/FAQ";
+import Contact from "@/pages/Contact";
+
 const DashboardLayout = lazy(() => import("@/pages/dashboard/DashboardLayout"));
 const DashboardHomePage = lazy(() => import("@/pages/dashboard/HomePage"));
 const GoalsPage = lazy(() => import("@/pages/dashboard/GoalsPage"));
@@ -21,12 +30,6 @@ const SupportPage = lazy(() => import("@/pages/dashboard/SupportPage"));
 const OrdersPage = lazy(() => import("@/pages/dashboard/OrdersPage"));
 const SubscriptionsPage = lazy(() => import("@/pages/dashboard/SubscriptionsPage"));
 const ProfilePage = lazy(() => import("@/pages/dashboard/ProfilePage"));
-const Terms = lazy(() => import("@/pages/Terms"));
-const Privacy = lazy(() => import("@/pages/Privacy"));
-const NPP = lazy(() => import("@/pages/NPP"));
-const About = lazy(() => import("@/pages/About"));
-const FAQ = lazy(() => import("@/pages/FAQ"));
-const Contact = lazy(() => import("@/pages/Contact"));
 const CashPayCheckout = lazy(() => import("@/pages/CashPayCheckout"));
 const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
 const IntakePage = lazy(() => import("@/pages/Intake"));

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { SPRY_MD_COLOR } from "@/brand/tokens";
 
 const Navbar = () => {
@@ -11,7 +10,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -58,29 +57,25 @@ const Navbar = () => {
         </button>
       </div>
 
-      <AnimatePresence>
-        {isOpen &&
-        <motion.div
-          id="primary-mobile-menu"
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="md:hidden bg-navy overflow-hidden">
-          
-            <div className="px-4 pb-6 pt-2 flex flex-col gap-4">
-              {links.map((link) =>
-            <Link key={link.to} to={link.to} className="font-body text-primary-foreground/80 text-base py-2 hover:text-primary-foreground transition-colors">
-                  {link.label}
-                </Link>
-            )}
-              <Link to="/#landing-conditions" className="btn-primary text-center mt-2">
-                Start Your Visit
+      {/* Collapsible mobile menu: CSS grid-row transition, no animation library needed. */}
+      <div
+        id="primary-mobile-menu"
+        aria-hidden={!isOpen}
+        className={`md:hidden grid bg-navy transition-[grid-template-rows,opacity,visibility] duration-300 ease-out motion-reduce:transition-none ${
+        isOpen ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}>
+        <div className="overflow-hidden">
+          <div className="px-4 pb-6 pt-2 flex flex-col gap-4">
+            {links.map((link) =>
+            <Link key={link.to} to={link.to} tabIndex={isOpen ? 0 : -1} className="font-body text-primary-foreground/80 text-base py-2 hover:text-primary-foreground transition-colors">
+                {link.label}
               </Link>
-            </div>
-          </motion.div>
-        }
-      </AnimatePresence>
+            )}
+            <Link to="/#landing-conditions" tabIndex={isOpen ? 0 : -1} className="btn-primary text-center mt-2">
+              Start Your Visit
+            </Link>
+          </div>
+        </div>
+      </div>
     </nav>);
 
 };

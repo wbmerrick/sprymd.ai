@@ -17,11 +17,10 @@ const AboutHero = () => (
       style={{ objectPosition: "center 58%" }}
     />
     <div className="absolute inset-0 bg-black/40" />
+    {/* Hero copy renders immediately (no reveal animation): it is the LCP candidate. */}
     <div className="section-container relative z-10">
-      <AnimatedSection>
-        <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
-        <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men and women.</p>
-      </AnimatedSection>
+      <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
+      <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men and women.</p>
     </div>
   </section>
 );

@@ -1,7 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import AnimatedSection from "@/components/AnimatedSection";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -101,21 +100,20 @@ const FAQAccordion = ({ items }: { items: FAQItem[] }) => {
                 />
               </button>
             </h3>
-            <AnimatePresence>
-              {isOpen && (
-                <motion.div
-                  id={panelId}
-                  role="region"
-                  aria-labelledby={buttonId}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5">{faq.a}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Answers stay in the DOM (crawlable) and expand with a CSS grid-row transition. */}
+            <div
+              id={panelId}
+              role="region"
+              aria-labelledby={buttonId}
+              aria-hidden={!isOpen}
+              className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ease-out motion-reduce:transition-none ${
+                isOpen ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5">{faq.a}</p>
+              </div>
+            </div>
           </div>
         );
       })}
@@ -139,12 +137,11 @@ const FAQ = () => {
     <>
       <Navbar />
       <main id="main-content" className="pt-16">
+        {/* Hero renders immediately (no reveal animation): it holds the LCP element. */}
         <section className="bg-navy py-24 px-4 text-center">
           <div className="section-container">
-            <AnimatedSection>
-              <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-              <p className="font-body text-primary-foreground/70 text-xl">Everything you want to know — answered honestly.</p>
-            </AnimatedSection>
+            <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
+            <p className="font-body text-primary-foreground/70 text-xl">Everything you want to know — answered honestly.</p>
           </div>
         </section>
 
