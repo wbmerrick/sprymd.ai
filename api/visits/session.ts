@@ -84,13 +84,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ]);
 
     const isPatient = patient?.id === appointment.patient_id;
-    const isProvider = provider?.id != null && provider.id === appointment.provider_id;
+    const isProvider =
+      provider?.id != null && provider.id === appointment.provider_id;
     if (!isPatient && !isProvider) {
       res.status(403).json({ error: "not_a_participant" });
       return;
     }
 
-    const joinedColumn = role === "provider" ? "provider_joined_at" : "patient_joined_at";
+    const joinedColumn =
+      role === "provider" ? "provider_joined_at" : "patient_joined_at";
     const { error: upsertError } = await admin.from("visit_sessions").upsert(
       {
         appointment_id: appointmentId,
@@ -105,7 +107,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
 
     if (upsertError) {
-      res.status(500).json({ error: "session_log_failed", message: upsertError.message });
+      res
+        .status(500)
+        .json({ error: "session_log_failed", message: upsertError.message });
       return;
     }
 

@@ -10,11 +10,11 @@
  */
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Stripe from "stripe";
-import { getServiceTier } from "../shared/serviceTiers";
+import { getServiceTier } from "./_lib/serviceTiers";
 import {
   complianceBlockReason,
   type ComplianceAnswers,
-} from "../shared/complianceGate";
+} from "./_lib/complianceGate";
 import { handlePreflight } from "./_lib/cors";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 
