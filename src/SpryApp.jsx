@@ -711,19 +711,36 @@ const Tag = ({ children, color, fg }) => (
   }}>{children}</span>
 );
 
-const Logo = ({ color = C.ink, size = 22 }) => (
-  <div className="flex items-center gap-2.5">
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <path d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z" fill={C.accent} stroke="#000" strokeWidth="1.2" strokeLinejoin="round" paintOrder="stroke" />
-      <path d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15" fill="none" stroke="#000" strokeWidth="0.4" strokeLinecap="round" />
-      <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
-    </svg>
-    <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span className="spry-md">MD</span>
-    </span>
-  </div>
-);
+const Logo = ({ color = C.ink, size = 22, onClick, className = "" }) => {
+  const mark = (
+    <>
+      <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z" fill={C.accent} stroke="#000" strokeWidth="1.2" strokeLinejoin="round" paintOrder="stroke" />
+        <path d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15" fill="none" stroke="#000" strokeWidth="0.4" strokeLinecap="round" />
+        <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
+      </svg>
+      <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
+        Spry<span className="spry-md">MD</span>
+      </span>
+    </>
+  );
+  // Always prefer a real control when a home handler is provided so the
+  // top-left mark is clickable on intake, plan, checkout, and related views.
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`focus-ring flex items-center gap-2.5 rounded transition-opacity hover:opacity-80 ${className}`.trim()}
+        aria-label="SpryMD home"
+      >
+        {mark}
+      </button>
+    );
+  }
+  return <div className={`flex items-center gap-2.5 ${className}`.trim()}>{mark}</div>;
+};
 
 const inputStyle = { background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 12, fontSize: 15, color: C.ink, fontFamily: fonts.body };
 
@@ -834,7 +851,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
           >
             {menuOpen ? <X size={18} strokeWidth={1.75} /> : <Menu size={18} strokeWidth={1.75} />}
           </button>
-          <button onClick={() => goNav("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
+          <Logo color={fg} onClick={() => goNav("landing")} />
         </div>
         <nav className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
@@ -970,7 +987,7 @@ const StickyVisitBar = ({ go }) => {
       }}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between gap-3" style={{ paddingTop: 10, paddingBottom: 10 }}>
-        <Logo size={18} />
+        <Logo size={18} onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <span className="spry-desktop-only" style={{ fontSize: 13, color: C.inkSoft }}>
             Private visits, reviewed by licensed doctors.
@@ -1683,7 +1700,7 @@ const Footer = ({ go }) => (
   <footer className="px-6 md:px-12 py-12" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
       <div>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
           Modern medicine, made for men and women. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
         </p>
@@ -2027,9 +2044,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: T.bg, color: T.ink, transition: "background 0.25s ease, color 0.25s ease" }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${T.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home">
-          <Logo color={T.ink} />
-        </button>
+        <Logo color={T.ink} onClick={() => go("landing")} />
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -2150,7 +2165,7 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded"><Logo /></button>
+        <Logo onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <span style={{ fontSize: 13, color: C.inkSoft }}>
             <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.08em" }}>HI,</span>{" "}
@@ -2335,7 +2350,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <button onClick={() => go("refills")} className="focus-ring rounded-full p-1 hover:opacity-60">
           <X size={20} color={C.ink} strokeWidth={1.5} />
         </button>
@@ -2487,7 +2502,7 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
@@ -2862,7 +2877,7 @@ const Intake = ({ conditionId, treatmentId, go }) => {
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <div className="text-right">
             <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em", display: "block" }}>
@@ -2987,7 +3002,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
     return (
       <div className="anim-fadeIn min-h-screen px-6 md:px-12 py-12" style={{ background: C.bg }}>
         <div className="max-w-2xl mx-auto pt-12">
-          <Logo />
+          <Logo onClick={() => go("landing")} />
           <div className="mt-12 p-10 rounded-3xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
             <div className="inline-flex items-center justify-center mb-6 rounded-full p-3" style={{ background: "hsl(38, 92%, 95%)" }}>
               <AlertCircle size={28} strokeWidth={1.5} color={C.warn} />
@@ -3058,7 +3073,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo /><Tag>Plan ready</Tag>
+        <Logo onClick={() => go("landing")} /><Tag>Plan ready</Tag>
       </div>
 
       <div className="px-6 md:px-12 py-12 md:py-16">
@@ -3413,7 +3428,7 @@ const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <button onClick={() => go(isSubscription ? "plan" : "marketplace")} className="focus-ring rounded-full p-1 hover:opacity-60">
           <X size={20} color={C.ink} strokeWidth={1.5} />
         </button>
