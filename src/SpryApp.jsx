@@ -88,7 +88,7 @@ const FontInjector = () => (
       --spry-ink: ${C.ink};
       --spry-md: ${C.md};
     }
-    .spry-md { color: var(--spry-md) !important; }
+    .spry-md { color: var(--spry-md) !important; opacity: 1 !important; }
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { background: ${C.bg}; color: ${C.ink}; }
     body {
@@ -96,7 +96,7 @@ const FontInjector = () => (
       background-image:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
         radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
-        linear-gradient(180deg, rgba(12,18,15,0.30), rgba(12,18,15,0.55)),
+        linear-gradient(180deg, rgba(12,18,15,0.48), rgba(12,18,15,0.62)),
         url("/brand/sprymd-tn-ridge.webp");
       background-size: auto, auto, auto, cover;
       background-position: center, center, center, center 40%;
@@ -710,7 +710,7 @@ const Logo = ({ color = C.ink, size = 22 }) => (
       <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
     </svg>
     <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span className="spry-md" style={{ fontWeight: 500 }}>MD</span>
+      Spry<span className="spry-md">MD</span>
     </span>
   </div>
 );
@@ -747,7 +747,7 @@ const DeliveryBar = ({ onClick, glass = false }) => {
       onClick={onClick}
       className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
       style={{
-        background: glass ? "rgba(9,14,11,0.38)" : C.paper,
+        background: glass ? "rgba(9,14,11,0.58)" : C.paper,
         borderBottom: `1px solid ${C.line}`,
         color: C.ink,
         cursor: onClick ? "pointer" : "default",
@@ -808,7 +808,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
     <header className="relative w-full px-6 md:px-12 py-5"
       style={{
         borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}`,
-        background: glass ? "rgba(9,14,11,0.28)" : undefined,
+        background: glass ? "rgba(9,14,11,0.62)" : undefined,
         backdropFilter: glass ? "blur(12px)" : undefined,
       }}>
       <div className="flex items-center justify-between gap-3">
@@ -1025,7 +1025,12 @@ const Landing = ({ go }) => {
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.42) 0%, rgba(9,14,11,0.12) 50%, rgba(9,14,11,0.04) 100%)" }}
+        style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.55) 0%, rgba(9,14,11,0.38) 50%, rgba(9,14,11,0.30) 100%)" }}
+      />
+      {/* Darken the bright sky behind the centered SpryMD wordmark */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 75% 42% at 50% 12%, rgba(9,14,11,0.55) 0%, rgba(9,14,11,0.22) 45%, transparent 72%)" }}
       />
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
         <SignalField density={28} interactive={false} />
@@ -1043,7 +1048,7 @@ const Landing = ({ go }) => {
             marginBottom: 40,
           }}
         >
-          Spry<span className="spry-md" style={{ textShadow: "0 1px 10px rgba(4, 18, 14, 0.55)" }}>MD</span>
+          Spry<span className="spry-md">MD</span>
           <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink }}>
             Feel better. Stay stronger. Live longer.
           </div>
@@ -1467,7 +1472,7 @@ const Landing = ({ go }) => {
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.18 }}>
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.10) 0%, rgba(9,14,11,0.42) 74%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.38) 0%, rgba(9,14,11,0.58) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
           Spry<span className="spry-md">MD</span>
