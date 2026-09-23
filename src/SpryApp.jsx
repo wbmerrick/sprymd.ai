@@ -88,7 +88,13 @@ const FontInjector = () => (
       --spry-ink: ${C.ink};
       --spry-md: ${C.md};
     }
-    .spry-md { color: var(--spry-md) !important; opacity: 1 !important; }
+    .spry-md {
+      color: var(--spry-md) !important;
+      opacity: 1 !important;
+      -webkit-text-stroke: 0.4px rgba(9, 14, 11, 0.45);
+      paint-order: stroke fill;
+      text-shadow: 0 0 12px rgba(9, 14, 11, 0.35);
+    }
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { background: ${C.bg}; color: ${C.ink}; }
     body {
