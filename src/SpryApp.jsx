@@ -86,7 +86,9 @@ const FontInjector = () => (
       --spry-accent: ${C.accent};
       --spry-bg: ${C.bg};
       --spry-ink: ${C.ink};
+      --spry-md: ${C.md};
     }
+    .spry-md { color: var(--spry-md) !important; }
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { background: ${C.bg}; color: ${C.ink}; }
     body {
@@ -708,7 +710,7 @@ const Logo = ({ color = C.ink, size = 22 }) => (
       <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
     </svg>
     <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span style={{ fontWeight: 500, color: C.md }}>MD</span>
+      Spry<span className="spry-md" style={{ fontWeight: 500 }}>MD</span>
     </span>
   </div>
 );
@@ -1041,8 +1043,8 @@ const Landing = ({ go }) => {
             marginBottom: 40,
           }}
         >
-          Spry<span style={{ color: C.md }}>MD</span>
-          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
+          Spry<span className="spry-md">MD</span>
+          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink }}>
             Feel better. Stay stronger. Live longer.
           </div>
         </div>
@@ -1468,7 +1470,7 @@ const Landing = ({ go }) => {
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.10) 0%, rgba(9,14,11,0.42) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
-          Spry<span style={{ color: C.md }}>MD</span>
+          Spry<span className="spry-md">MD</span>
         </div>
         <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 52px)", lineHeight: 1.12, fontWeight: 650, color: C.ink }}>
           A real doctor is with you every step.
