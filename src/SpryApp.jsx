@@ -42,6 +42,7 @@ import {
   ensureAccountShell,
 } from "./lib/patientCareStore";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
+import { SPRY_MD_COLOR } from "./brand/tokens";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — "Clinical Zen": high-end wellness retreat × modern clinic.
@@ -61,6 +62,7 @@ const C = {
   accentSoft: "rgba(200, 158, 103, 0.78)",
   accentDeep: "#96703F",
   signalDim: "rgba(200, 158, 103, 0.16)",
+  md: SPRY_MD_COLOR,    // light green — SpryMD wordmark "MD"
   slate: "#5C7E9E",     // slate blue — secondary informational accent
   navy: "#5C7E9E",      // legacy key — now slate blue
   line: "#263129",      // green-tinted hairlines
@@ -84,6 +86,14 @@ const FontInjector = () => (
       --spry-accent: ${C.accent};
       --spry-bg: ${C.bg};
       --spry-ink: ${C.ink};
+      --spry-md: ${C.md};
+    }
+    .spry-md {
+      color: var(--spry-md) !important;
+      opacity: 1 !important;
+      -webkit-text-stroke: 0.4px rgba(9, 14, 11, 0.45);
+      paint-order: stroke fill;
+      text-shadow: 0 0 12px rgba(9, 14, 11, 0.35);
     }
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { background: ${C.bg}; color: ${C.ink}; }
@@ -92,7 +102,7 @@ const FontInjector = () => (
       background-image:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
         radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
-        linear-gradient(180deg, rgba(12,18,15,0.30), rgba(12,18,15,0.55)),
+        linear-gradient(180deg, rgba(12,18,15,0.48), rgba(12,18,15,0.62)),
         url("/brand/sprymd-tn-ridge.webp");
       background-size: auto, auto, auto, cover;
       background-position: center, center, center, center 40%;
@@ -138,7 +148,11 @@ const FontInjector = () => (
     .anim-slideRight { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-slideLeft { animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-pulse { animation: pulse 2s ease-in-out infinite; }
-    .spry-rise { animation: spryRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes spryBrandIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .spry-brand-in { animation: spryBrandIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; opacity: 1; }
     .ken-burns { animation: kenBurns 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .signal-underline { display: inline-block; position: relative; }
     .signal-underline::after {
@@ -233,7 +247,7 @@ const FontInjector = () => (
     .spry-desktop-only { display: none; }
     @media (min-width: 768px) { .spry-desktop-only { display: inline-flex; } }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant, .spry-attn {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .spry-brand-in, .earth-distant, .spry-attn {
         animation: none !important;
       }
       .spry-btn, .spry-btn-icon, .spry-tile, .spry-tile-arrow, .spry-sticky-bar { transition: none !important; }
@@ -706,7 +720,7 @@ const Logo = ({ color = C.ink, size = 22 }) => (
       <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
     </svg>
     <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
+      Spry<span className="spry-md">MD</span>
     </span>
   </div>
 );
@@ -743,7 +757,7 @@ const DeliveryBar = ({ onClick, glass = false }) => {
       onClick={onClick}
       className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
       style={{
-        background: glass ? "rgba(9,14,11,0.38)" : C.paper,
+        background: glass ? "rgba(9,14,11,0.58)" : C.paper,
         borderBottom: `1px solid ${C.line}`,
         color: C.ink,
         cursor: onClick ? "pointer" : "default",
@@ -804,7 +818,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
     <header className="relative w-full px-6 md:px-12 py-5"
       style={{
         borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}`,
-        background: glass ? "rgba(9,14,11,0.28)" : undefined,
+        background: glass ? "rgba(9,14,11,0.62)" : undefined,
         backdropFilter: glass ? "blur(12px)" : undefined,
       }}>
       <div className="flex items-center justify-between gap-3">
@@ -1021,14 +1035,19 @@ const Landing = ({ go }) => {
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.42) 0%, rgba(9,14,11,0.12) 50%, rgba(9,14,11,0.04) 100%)" }}
+        style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.55) 0%, rgba(9,14,11,0.38) 50%, rgba(9,14,11,0.30) 100%)" }}
+      />
+      {/* Darken the bright sky behind the centered SpryMD wordmark */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 75% 42% at 50% 12%, rgba(9,14,11,0.72) 0%, rgba(9,14,11,0.38) 45%, transparent 72%)" }}
       />
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
         <div
-          className="spry-rise display"
+          className="spry-brand-in display"
           style={{
             animationDelay: "0.02s",
             fontSize: "clamp(46px, 7.2vw, 82px)",
@@ -1037,10 +1056,26 @@ const Landing = ({ go }) => {
             color: C.ink,
             textAlign: "center",
             marginBottom: 40,
+            opacity: 1,
           }}
         >
-          SpryMD
-          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
+          <span className="relative inline-block">
+            <span
+              aria-hidden="true"
+              className="absolute pointer-events-none"
+              style={{
+                inset: "-0.15em -0.35em",
+                borderRadius: 999,
+                background: "rgba(9,14,11,0.55)",
+                filter: "blur(18px)",
+                zIndex: 0,
+              }}
+            />
+            <span className="relative" style={{ opacity: 1 }}>
+              Spry<span className="spry-md">MD</span>
+            </span>
+          </span>
+          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink, opacity: 1 }}>
             Feel better. Stay stronger. Live longer.
           </div>
         </div>
@@ -1463,10 +1498,10 @@ const Landing = ({ go }) => {
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.18 }}>
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.10) 0%, rgba(9,14,11,0.42) 74%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.48) 0%, rgba(9,14,11,0.62) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
-          Spry<span style={{ color: C.accent }}>MD</span>
+        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24, opacity: 1 }}>
+          Spry<span className="spry-md">MD</span>
         </div>
         <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 52px)", lineHeight: 1.12, fontWeight: 650, color: C.ink }}>
           A real doctor is with you every step.

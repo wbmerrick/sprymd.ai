@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { SPRY_MD_COLOR } from "@/brand/tokens";
 
 export type LaserLogoProps = {
   /** Increment to remount the SVG and restart CSS/SMIL animations from 0. */
@@ -77,7 +78,7 @@ function StaticDarkLogo() {
         fill="#FFFFFF"
       >
         Spry
-        <tspan fill="#FFFFFF" opacity={0.55}>
+        <tspan fill={SPRY_MD_COLOR}>
           MD
         </tspan>
       </text>
@@ -229,7 +230,7 @@ function LaserLogoSvg({ play }: { play: number }) {
             fill="#FFFFFF"
           >
             Spry
-            <tspan fill="#FFFFFF" opacity={0.55}>
+            <tspan fill={SPRY_MD_COLOR}>
               MD
             </tspan>
           </text>
