@@ -3337,10 +3337,27 @@ const planParamsFromProgress = (condition) => {
   };
 };
 
+/** Funnel view named in the URL (/?view=intake|plan&condition=…), or null. */
+const readFunnelFromUrl = () => {
+  if (typeof window === "undefined") return null;
+  const qs = new URLSearchParams(window.location.search);
+  const requested = qs.get("view");
+  const condition = qs.get("condition");
+  if ((requested !== "intake" && requested !== "plan") || !isKnownCondition(condition)) return null;
+  const treatmentId = qs.get("treatmentId") || null;
+  if (requested === "plan") {
+    const planParams = planParamsFromProgress(condition);
+    if (planParams) return { view: "plan", condition, treatmentId, params: planParams };
+  }
+  return { view: "intake", condition, treatmentId, params: { condition, treatmentId } };
+};
+
 export default function App() {
   const navigate = useNavigate();
-  const [view, setView] = useState("landing");
-  const [params, setParams] = useState({});
+  // Start on the funnel step named in the URL so a refresh doesn't flash the landing page.
+  const [initialFunnel] = useState(readFunnelFromUrl);
+  const [view, setView] = useState(initialFunnel?.view ?? "landing");
+  const [params, setParams] = useState(initialFunnel?.params ?? {});
   const [cart, setCart] = useState([]);
   const [refillCart, setRefillCart] = useState([]);
   const [user, setUser] = useState(null);
@@ -3401,10 +3418,10 @@ export default function App() {
       go("landing-conditions");
       return;
     }
-    if ((deepView === "intake" || deepView === "plan") && isKnownCondition(qs.get("condition"))) {
-      const condition = qs.get("condition");
-      const treatmentId = qs.get("treatmentId") || null;
-      const shown = showFunnelView(deepView, condition, { treatmentId });
+    if (initialFunnel) {
+      // View/params were already initialised from the URL; just seed the history
+      // entry so Back/Forward can restore it.
+      const { view: shown, condition, treatmentId } = initialFunnel;
       window.history.replaceState({ spryView: shown, condition, treatmentId }, "", funnelUrl(shown, condition));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
