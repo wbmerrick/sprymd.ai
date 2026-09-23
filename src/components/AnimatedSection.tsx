@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ReactNode } from "react";
 
 interface Props {
@@ -7,16 +7,21 @@ interface Props {
   delay?: number;
 }
 
-const AnimatedSection = ({ children, className = "", delay = 0 }: Props) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-80px" }}
-    transition={{ duration: 0.6, delay, ease: "easeOut" }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
+// Honors the OS "reduce motion" preference: content renders in place instead of fading up.
+const AnimatedSection = ({ children, className = "", delay = 0 }: Props) => {
+  const reduceMotion = useReducedMotion();
+  if (reduceMotion) return <div className={className}>{children}</div>;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 export default AnimatedSection;

@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedSection from "@/components/AnimatedSection";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { applyHead, faqJsonLd } from "@/lib/seo";
+import { metaForPath } from "@/seo/routes";
 
 interface FAQItem {
   q: string;
@@ -71,71 +75,106 @@ const faqGroups: FAQGroup[] = [
 
 const FAQAccordion = ({ items }: { items: FAQItem[] }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const baseId = useId();
 
   return (
     <div className="space-y-3">
-      {items.map((faq, i) => (
-        <div key={i} className="card-base p-0 overflow-hidden">
-          <button
-            onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            className="w-full flex items-center justify-between p-5 text-left"
-          >
-            <span className="font-display text-navy font-semibold pr-4">{faq.q}</span>
-            <ChevronDown className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${openIndex === i ? "rotate-180" : ""}`} />
-          </button>
-          <AnimatePresence>
-            {openIndex === i && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+      {items.map((faq, i) => {
+        const isOpen = openIndex === i;
+        const buttonId = `${baseId}-q${i}`;
+        const panelId = `${baseId}-a${i}`;
+        return (
+          <div key={i} className="card-base p-0 overflow-hidden">
+            <h3 className="m-0">
+              <button
+                type="button"
+                id={buttonId}
+                aria-expanded={isOpen}
+                aria-controls={panelId}
+                onClick={() => setOpenIndex(isOpen ? null : i)}
+                className="w-full flex items-center justify-between p-5 text-left rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
               >
-                <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5">{faq.a}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      ))}
+                <span className="font-display text-navy font-semibold pr-4">{faq.q}</span>
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+            </h3>
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={buttonId}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5">{faq.a}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
     </div>
   );
 };
 
-const FAQ = () => (
-  <main>
-    <section className="bg-navy py-24 px-4 text-center">
-      <div className="section-container">
-        <AnimatedSection>
-          <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="font-body text-primary-foreground/70 text-xl">Everything you want to know — answered honestly.</p>
-        </AnimatedSection>
-      </div>
-    </section>
+const FAQ = () => {
+  // FAQPage structured data mirrors the questions rendered on this page.
+  useEffect(() => {
+    const meta = metaForPath("/faq");
+    applyHead({
+      pageTitle: meta.pageTitle,
+      description: meta.description,
+      path: "/faq",
+      jsonLd: faqJsonLd(faqGroups.flatMap((group) => group.items.map((item) => ({ question: item.q, answer: item.a })))),
+    });
+  }, []);
 
-    <section className="section-padding bg-card">
-      <div className="section-container max-w-3xl space-y-10">
-        {faqGroups.map((group, i) => (
-          <AnimatedSection key={i} delay={i * 0.05}>
-            <span className="inline-block font-body font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4 text-2xl">{group.label}</span>
-            <FAQAccordion items={group.items} />
-          </AnimatedSection>
-        ))}
-      </div>
-    </section>
-
-    <section className="section-padding bg-off-white text-center">
-      <div className="section-container max-w-xl">
-        <AnimatedSection>
-          <h2 className="section-headline">Still have questions?</h2>
-          <p className="font-body text-muted-foreground mb-6">We respond to all inquiries within 24 hours.</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/contact" className="btn-secondary">Contact Us →</Link>
-            <Link to="/quiz" className="btn-primary">Start My Consultation — $75 →</Link>
+  return (
+    <>
+      <Navbar />
+      <main id="main-content" className="pt-16">
+        <section className="bg-navy py-24 px-4 text-center">
+          <div className="section-container">
+            <AnimatedSection>
+              <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
+              <p className="font-body text-primary-foreground/70 text-xl">Everything you want to know — answered honestly.</p>
+            </AnimatedSection>
           </div>
-        </AnimatedSection>
-      </div>
-    </section>
-  </main>
-);
+        </section>
+
+        <section className="section-padding bg-card">
+          <div className="section-container max-w-3xl space-y-10">
+            {faqGroups.map((group, i) => (
+              <AnimatedSection key={i} delay={i * 0.05}>
+                <h2 className="inline-block font-body font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4 text-2xl">{group.label}</h2>
+                <FAQAccordion items={group.items} />
+              </AnimatedSection>
+            ))}
+          </div>
+        </section>
+
+        <section className="section-padding bg-off-white text-center">
+          <div className="section-container max-w-xl">
+            <AnimatedSection>
+              <h2 className="section-headline">Still have questions?</h2>
+              <p className="font-body text-muted-foreground mb-6">We respond to all inquiries within 24 hours.</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/contact" className="btn-secondary">Contact Us →</Link>
+                <Link to="/#landing-conditions" className="btn-primary">Start My Consultation — $75 →</Link>
+              </div>
+            </AnimatedSection>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+};
 
 export default FAQ;

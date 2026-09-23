@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
@@ -290,8 +290,14 @@ const FontInjector = () => (
       .spry-btn:hover:not(:disabled) .spry-btn-icon, .spry-btn:focus-visible .spry-btn-icon,
       .spry-tile:hover .spry-tile-arrow, .spry-tile:focus-visible .spry-tile-arrow { transform: none !important; }
     }
-    input:focus, button:focus, select:focus, textarea:focus { outline: none; }
-    .focus-ring:focus-visible { box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
+    /* Keep focus rings for keyboard users only; mouse/touch focus stays clean. */
+    input:focus:not(:focus-visible), button:focus:not(:focus-visible),
+    select:focus:not(:focus-visible), textarea:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
+    input:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible,
+    a:focus-visible, [role="button"]:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid ${C.accent}; outline-offset: 2px;
+    }
+    .focus-ring:focus-visible { outline: none; box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
   `}</style>
@@ -503,12 +509,20 @@ const Logo = ({ color = C.ink, size = 22 }) => (
 
 const inputStyle = { background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 12, fontSize: 15, color: C.ink, fontFamily: fonts.body };
 
-const Field = ({ label, children }) => (
-  <div>
-    <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>{label}</label>
-    {children}
-  </div>
-);
+// Associates the label with its single form control (explicit `htmlFor`, the
+// control's own `id`, or a generated one) so screen readers announce the label.
+const Field = ({ label, htmlFor, children }) => {
+  const autoId = React.useId();
+  const control = React.isValidElement(children) ? children : null;
+  const id = htmlFor || control?.props?.id || `field-${autoId}`;
+  const content = control && !control.props.id ? React.cloneElement(control, { id }) : children;
+  return (
+    <div>
+      <label htmlFor={id} className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>{label}</label>
+      {content}
+    </div>
+  );
+};
 
 const Row = ({ label, value }) => (
   <div className="flex justify-between">
@@ -808,6 +822,7 @@ const Landing = ({ go }) => {
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
     <StickyVisitBar go={go} />
 
+    <main id="main-content">
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
         className="absolute inset-0 pointer-events-none"
@@ -1092,7 +1107,7 @@ const Landing = ({ go }) => {
                     key={tier.id}
                     type="button"
                     onClick={() => go("intake", { condition: "pcp", treatmentId: tier.id })}
-                    className={`text-left rounded-2xl p-4 transition-all focus:outline-none ${tier.span ? "col-span-2" : ""}`}
+                    className={`focus-ring text-left rounded-2xl p-4 transition-all ${tier.span ? "col-span-2" : ""}`}
                     style={{
                       background: C.bgAlt,
                       border: `1px solid ${tier.tag ? C.accent : C.line}`,
@@ -1303,6 +1318,7 @@ const Landing = ({ go }) => {
         </div>
       </div>
     </section>
+    </main>
 
     <Footer go={go} />
 
@@ -1498,7 +1514,7 @@ const Footer = ({ go }) => (
       <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 SPRYMD INC.</span>
       <div className="flex flex-wrap gap-4">
         {[{ label: "Terms", href: "/terms" }, { label: "Privacy", href: "/privacy" }, { label: "NPP", href: "/npp" }, { label: "FAQ", href: "/faq" }].map((l) => (
-          <a key={l.href} href={l.href} className="mono" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</a>
+          <Link key={l.href} to={l.href} className="mono focus-ring rounded" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</Link>
         ))}
         <span className="mono" style={{ fontSize: 11, color: C.muted }}>SPRYMD.AI</span>
       </div>
@@ -1527,10 +1543,10 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
     return (
       <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
         <Header go={go} cartCount={cartCount} user={user} />
-        <div className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
+        <main id="main-content" className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
           <h1 className="display" style={{ fontSize: 40, color: C.ink, marginBottom: 12 }}>Page not found</h1>
           <Btn onClick={() => go("landing")} icon={ArrowRight}>Back home</Btn>
-        </div>
+        </main>
         <Footer go={go} />
       </div>
     );
@@ -1571,6 +1587,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <Header go={go} cartCount={cartCount} user={user} />
+      <main id="main-content">
       <section className="px-6 md:px-12 pt-14 md:pt-20 pb-10" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <div className="max-w-3xl mx-auto">
           <button type="button" onClick={() => go("landing")} className="focus-ring mono mb-8 transition-opacity hover:opacity-60"
@@ -1663,7 +1680,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
                   </Field>
                 ))}
                 <Field label="Message">
-                  <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
+                  <textarea required id="message" name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
                 </Field>
                 <Btn type="submit" icon={Send}>Send message</Btn>
               </form>
@@ -1671,6 +1688,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
           )}
         </div>
       </section>
+      </main>
       <Footer go={go} />
     </div>
   );
@@ -3370,8 +3388,24 @@ const readFunnelFromUrl = () => {
   return { view: "intake", condition, treatmentId, params: { condition, treatmentId } };
 };
 
+// Tab titles for SpryApp's internal views (all served from "/").
+const VIEW_TITLES = {
+  intake: "Start your visit",
+  plan: "Your treatment plan",
+  checkout: "Checkout",
+  success: "Order confirmed",
+  signin: "Sign in",
+  refills: "Quick refills",
+  "refill-checkout": "Refill checkout",
+  "refill-success": "Refills ordered",
+  marketplace: "Shop",
+  account: "Your account",
+  dashboard: "Your account",
+};
+
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   // Start on the funnel step named in the URL so a refresh doesn't flash the landing page.
   const [initialFunnel] = useState(readFunnelFromUrl);
   const [view, setView] = useState(initialFunnel?.view ?? "landing");
@@ -3472,6 +3506,29 @@ export default function App() {
   const clearFunnelUrl = () => {
     if (window.location.search) window.history.replaceState({}, "", "/");
   };
+
+  // Landing anchors (/#how, /#landing-conditions) linked from other routes:
+  // the sections only exist after the account check, so scroll once ready.
+  useEffect(() => {
+    if (!authReady) return;
+    const anchor = location.hash.replace(/^#/, "");
+    if (anchor === "how" || anchor === "landing-conditions") go(anchor);
+  }, [authReady, location.hash]);
+
+  // Keep the document title in step with the current in-app view.
+  useEffect(() => {
+    if (!authReady) return;
+    if (view === "landing") {
+      applyHead({ path: "/" });
+      return;
+    }
+    if (view === "page") {
+      const page = footerPages[params.slug];
+      applyHead({ pageTitle: page?.title || "Page not found", description: page?.tagline || undefined, path: "/" });
+      return;
+    }
+    applyHead({ pageTitle: VIEW_TITLES[view] || undefined, path: "/" });
+  }, [authReady, view, params.slug]);
 
   const requireAuth = (target, extra = {}) => {
     setParams({ returnTo: target, ...extra });

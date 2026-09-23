@@ -343,10 +343,11 @@ export default function ConsultationRoom({
           <form onSubmit={sendChat} className="p-3 flex gap-2 border-t border-white/10">
             <input
               data-testid="chat-input"
+              aria-label="Message the visit"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder="Message the visit"
-              className="flex-1 rounded-xl bg-white/10 px-3 py-2 font-body text-sm outline-none"
+              className="flex-1 rounded-xl bg-white/10 px-3 py-2 font-body text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
             <button type="submit" data-testid="chat-send" className="btn-primary px-4">
               Send

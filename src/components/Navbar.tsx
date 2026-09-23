@@ -17,15 +17,16 @@ const Navbar = () => {
 
   useEffect(() => {setIsOpen(false);}, [location]);
 
+  // Anchors match the landing page section ids (SpryApp scrolls to them once loaded).
   const links = [
-  { to: "/#how-it-works", label: "How It Works" },
-  { to: "/#treatments", label: "Treatments" },
+  { to: "/#how", label: "How It Works" },
+  { to: "/#landing-conditions", label: "Treatments" },
   { to: "/about", label: "About" },
   { to: "/faq", label: "FAQ" }];
 
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-navy/90 backdrop-blur-md" : "bg-navy"}`}>
+    <nav aria-label="Primary" className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-navy/90 backdrop-blur-md" : "bg-navy"}`}>
       <div className="section-container flex items-center justify-between h-16 px-4 md:px-8">
         <Link to="/" className="font-display text-primary-foreground font-semibold text-2xl">
           Spry<span style={{ color: SPRY_MD_COLOR }}>MD</span>.AI
@@ -40,19 +41,27 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:block">
-          <Link to="/quiz" className="bg-primary text-primary-foreground rounded-full px-6 py-2.5 text-sm font-semibold font-body hover:bg-blue-light transition-all duration-200">
+          <Link to="/#landing-conditions" className="bg-primary text-primary-foreground rounded-full px-6 py-2.5 text-sm font-semibold font-body hover:bg-blue-light transition-all duration-200">
             Start Your Visit
           </Link>
         </div>
 
-        <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-primary-foreground p-2" aria-label="Toggle menu">
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden text-primary-foreground p-2"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
+          aria-controls="primary-mobile-menu"
+        >
+          {isOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
         </button>
       </div>
 
       <AnimatePresence>
         {isOpen &&
         <motion.div
+          id="primary-mobile-menu"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
@@ -65,7 +74,7 @@ const Navbar = () => {
                   {link.label}
                 </Link>
             )}
-              <Link to="/quiz" className="btn-primary text-center mt-2">
+              <Link to="/#landing-conditions" className="btn-primary text-center mt-2">
                 Start Your Visit
               </Link>
             </div>
