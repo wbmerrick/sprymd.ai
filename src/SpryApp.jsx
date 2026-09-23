@@ -1041,7 +1041,7 @@ const Landing = ({ go }) => {
             marginBottom: 40,
           }}
         >
-          SpryMD
+          Spry<span style={{ color: C.md }}>MD</span>
           <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
             Feel better. Stay stronger. Live longer.
           </div>
