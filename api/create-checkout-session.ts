@@ -9,14 +9,11 @@
  * - APP_URL (optional — success/cancel base + CORS)
  */
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import Stripe from "stripe";
-import { getServiceTier } from "../shared/serviceTiers";
 import {
   complianceBlockReason,
   type ComplianceAnswers,
 } from "../shared/complianceGate";
 import { handlePreflight } from "./_lib/cors";
-import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 
 type CheckoutBody = {
   appointmentId?: string;
@@ -59,71 +56,75 @@ function parseBody(req: VercelRequest): CheckoutBody {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (handlePreflight(req, res)) return;
-
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "method_not_allowed" });
-    return;
-  }
-
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) {
-    res.status(500).json({ error: "stripe_not_configured" });
-    return;
-  }
-
-  const body = parseBody(req);
-  const serviceTierId = String(body.serviceTierId || "").trim();
-  const appointmentId = body.appointmentId
-    ? String(body.appointmentId).trim()
-    : "";
-  const patientEmail = body.patientEmail
-    ? String(body.patientEmail).trim()
-    : "";
-  const patientName = body.patientName
-    ? String(body.patientName).trim()
-    : "";
-
-  if (!serviceTierId) {
-    res.status(400).json({ error: "missing_service_tier_id" });
-    return;
-  }
-
-  if (!appointmentId && !patientEmail) {
-    res.status(400).json({
-      error: "missing_appointment_or_patient",
-      message:
-        "Provide appointmentId, or patientEmail (+ optional patientName) with serviceTierId",
-    });
-    return;
-  }
-
-  const tier = getServiceTier(serviceTierId);
-  if (!tier) {
-    res.status(400).json({ error: "unknown_service_tier", serviceTierId });
-    return;
-  }
-
-  const compliance: ComplianceAnswers = {
-    cashPayTermsAccepted: affirmed(body.cashPayTermsAccepted),
-    telehealthLimitationsAcknowledged: affirmed(
-      body.telehealthLimitationsAcknowledged,
-    ),
-    physicalState: String(body.physicalState || ""),
-  };
-  const consentBlock = complianceBlockReason(compliance);
-  if (consentBlock) {
-    res.status(403).json({ error: "compliance_blocked", message: consentBlock });
-    return;
-  }
-
-  const baseUrl = getAppBaseUrl(req);
-  const successUrl =
-    body.successUrl ||
-    `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = body.cancelUrl || `${baseUrl}/checkout?canceled=1`;
-
   try {
+    if (handlePreflight(req, res)) return;
+
+    if (req.method !== "POST") {
+      res.status(405).json({ error: "method_not_allowed" });
+      return;
+    }
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      res.status(500).json({ error: "stripe_not_configured" });
+      return;
+    }
+
+    const body = parseBody(req);
+    const serviceTierId = String(body.serviceTierId || "").trim();
+    const appointmentId = body.appointmentId
+      ? String(body.appointmentId).trim()
+      : "";
+    const patientEmail = body.patientEmail
+      ? String(body.patientEmail).trim()
+      : "";
+    const patientName = body.patientName
+      ? String(body.patientName).trim()
+      : "";
+
+    if (!serviceTierId) {
+      res.status(400).json({ error: "missing_service_tier_id" });
+      return;
+    }
+
+    if (!appointmentId && !patientEmail) {
+      res.status(400).json({
+        error: "missing_appointment_or_patient",
+        message:
+          "Provide appointmentId, or patientEmail (+ optional patientName) with serviceTierId",
+      });
+      return;
+    }
+
+    const { getServiceTier } = await import("../shared/serviceTiers");
+    const tier = getServiceTier(serviceTierId);
+    if (!tier) {
+      res.status(400).json({ error: "unknown_service_tier", serviceTierId });
+      return;
+    }
+
+    const compliance: ComplianceAnswers = {
+      cashPayTermsAccepted: affirmed(body.cashPayTermsAccepted),
+      telehealthLimitationsAcknowledged: affirmed(
+        body.telehealthLimitationsAcknowledged,
+      ),
+      physicalState: String(body.physicalState || ""),
+    };
+    const consentBlock = complianceBlockReason(compliance);
+    if (consentBlock) {
+      res
+        .status(403)
+        .json({ error: "compliance_blocked", message: consentBlock });
+      return;
+    }
+
+    const baseUrl = getAppBaseUrl(req);
+    const successUrl =
+      body.successUrl ||
+      `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = body.cancelUrl || `${baseUrl}/checkout?canceled=1`;
+
+    const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(stripeKey);
 
     const session = await stripe.checkout.sessions.create({
@@ -158,6 +159,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (appointmentId) {
       try {
+        const { getSupabaseAdmin } = await import("./_lib/supabaseAdmin");
         const supabase = getSupabaseAdmin();
         const { error } = await supabase
           .from("appointments")

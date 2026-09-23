@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -31,32 +30,33 @@ function parseBody(req: VercelRequest): SessionBody {
  * assigned provider on the appointment. Service role writes the row.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "method_not_allowed" });
-    return;
-  }
-
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "auth_required" });
-    return;
-  }
-
-  const body = parseBody(req);
-  const appointmentId = String(body.appointmentId || "");
-  const durationSeconds = Number(body.durationSeconds);
-  const role = body.role === "provider" ? "provider" : "patient";
-
-  if (!UUID_RE.test(appointmentId)) {
-    res.status(400).json({ error: "invalid_appointment_id" });
-    return;
-  }
-  if (!Number.isInteger(durationSeconds) || durationSeconds < 0) {
-    res.status(400).json({ error: "invalid_duration" });
-    return;
-  }
-
   try {
+    if (req.method !== "POST") {
+      res.status(405).json({ error: "method_not_allowed" });
+      return;
+    }
+
+    const header = req.headers.authorization;
+    if (!header?.startsWith("Bearer ")) {
+      res.status(401).json({ error: "auth_required" });
+      return;
+    }
+
+    const body = parseBody(req);
+    const appointmentId = String(body.appointmentId || "");
+    const durationSeconds = Number(body.durationSeconds);
+    const role = body.role === "provider" ? "provider" : "patient";
+
+    if (!UUID_RE.test(appointmentId)) {
+      res.status(400).json({ error: "invalid_appointment_id" });
+      return;
+    }
+    if (!Number.isInteger(durationSeconds) || durationSeconds < 0) {
+      res.status(400).json({ error: "invalid_duration" });
+      return;
+    }
+
+    const { getSupabaseAdmin } = await import("../_lib/supabaseAdmin");
     const admin = getSupabaseAdmin();
     const { data: userData, error: userError } = await admin.auth.getUser(
       header.slice("Bearer ".length),
@@ -84,13 +84,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ]);
 
     const isPatient = patient?.id === appointment.patient_id;
-    const isProvider = provider?.id != null && provider.id === appointment.provider_id;
+    const isProvider =
+      provider?.id != null && provider.id === appointment.provider_id;
     if (!isPatient && !isProvider) {
       res.status(403).json({ error: "not_a_participant" });
       return;
     }
 
-    const joinedColumn = role === "provider" ? "provider_joined_at" : "patient_joined_at";
+    const joinedColumn =
+      role === "provider" ? "provider_joined_at" : "patient_joined_at";
     const { error: upsertError } = await admin.from("visit_sessions").upsert(
       {
         appointment_id: appointmentId,
@@ -105,7 +107,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
 
     if (upsertError) {
-      res.status(500).json({ error: "session_log_failed", message: upsertError.message });
+      res
+        .status(500)
+        .json({ error: "session_log_failed", message: upsertError.message });
       return;
     }
 
