@@ -42,6 +42,7 @@ import {
   ensureAccountShell,
 } from "./lib/patientCareStore";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
+import { SPRY_MD_COLOR } from "./brand/tokens";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — "Clinical Zen": high-end wellness retreat × modern clinic.
@@ -61,6 +62,7 @@ const C = {
   accentSoft: "rgba(200, 158, 103, 0.78)",
   accentDeep: "#96703F",
   signalDim: "rgba(200, 158, 103, 0.16)",
+  md: SPRY_MD_COLOR,    // light green — SpryMD wordmark "MD"
   slate: "#5C7E9E",     // slate blue — secondary informational accent
   navy: "#5C7E9E",      // legacy key — now slate blue
   line: "#263129",      // green-tinted hairlines
@@ -706,7 +708,7 @@ const Logo = ({ color = C.ink, size = 22 }) => (
       <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
     </svg>
     <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
+      Spry<span style={{ fontWeight: 500, color: C.md }}>MD</span>
     </span>
   </div>
 );
@@ -1466,7 +1468,7 @@ const Landing = ({ go }) => {
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.10) 0%, rgba(9,14,11,0.42) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
-          Spry<span style={{ color: C.accent }}>MD</span>
+          Spry<span style={{ color: C.md }}>MD</span>
         </div>
         <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 52px)", lineHeight: 1.12, fontWeight: 650, color: C.ink }}>
           A real doctor is with you every step.
