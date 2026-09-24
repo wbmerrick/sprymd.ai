@@ -57,6 +57,7 @@ export default function OpsQueuePage() {
   const [error, setError] = useState<string | null>(null);
   const [startingId, setStartingId] = useState<string | null>(null);
   const [reconciling, setReconciling] = useState(false);
+  const [launchHint, setLaunchHint] = useState<string | null>(null);
 
   // Migrate legacy ?status= to view filters once
   useEffect(() => {
@@ -110,6 +111,50 @@ export default function OpsQueuePage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (demo || !accessToken) {
+      setLaunchHint(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/ops/status", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as {
+          launch?: {
+            hasPaidVisit?: boolean;
+            hasPaymentLedger?: boolean;
+            awaitingPayment?: number;
+          };
+          paymentEvents?: number;
+        };
+        if (cancelled) return;
+        if (!data.launch?.hasPaidVisit) {
+          const awaiting = data.launch?.awaitingPayment ?? 0;
+          setLaunchHint(
+            awaiting > 0
+              ? `No paid visits yet · ${awaiting} awaiting Stripe. Use Sync after a completed checkout.`
+              : "No paid visits in the clinical DB yet. Complete one Stripe checkout to unlock the live queue.",
+          );
+        } else if (!data.launch?.hasPaymentLedger) {
+          setLaunchHint(
+            "Paid visits found, but payment_events ledger is empty — check Stripe webhooks.",
+          );
+        } else {
+          setLaunchHint(null);
+        }
+      } catch {
+        /* non-blocking */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, demo, items.length]);
 
   useEffect(() => {
     if (demo) return;
@@ -298,6 +343,12 @@ export default function OpsQueuePage() {
       {demo && (
         <div className="mb-5 rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-50/90">
           Demo mode — sample cases only. Live queue needs a deployed API + staff session.
+        </div>
+      )}
+
+      {!demo && launchHint && (
+        <div className="mb-5 rounded-2xl border border-sky-400/25 bg-sky-500/10 px-4 py-3 text-sm text-sky-50/90">
+          {launchHint}
         </div>
       )}
 
