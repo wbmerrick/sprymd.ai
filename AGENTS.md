@@ -56,4 +56,8 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
   `providers` row on first ops API call. Set `OPS_STAFF_EMAILS` on Vercel for additional
   clinician emails.
 - After Supabase cutover, staff must **sign up / sign in once** on the clinical project
-  (auth.users was empty post-cutover until first login).
+  (auth.users was empty post-cutover until first login). Ops requires a live Supabase
+  session (Bearer token) — local-only fallback accounts cannot call `/api/ops/*`.
+  Open `/ops` → redirected to auth (defaults to **Create account** for ops return).
+  Confirm email if the project requires it, then sign in with the allowlisted address
+  (built-in: owner email; extras via `OPS_STAFF_EMAILS`).

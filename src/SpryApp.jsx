@@ -1712,7 +1712,10 @@ const authThemes = {
 };
 
 const SignIn = ({ go, returnTo, onAuthSuccess }) => {
-  const [mode, setMode] = useState("signin");
+  const opsReturn =
+    typeof returnTo === "string" &&
+    (returnTo === "/ops" || returnTo.startsWith("/ops/") || returnTo.startsWith("/ops?"));
+  const [mode, setMode] = useState(opsReturn ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -1777,11 +1780,30 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
       if (mode === "signup") {
         onAuthSuccess(hydrateUser(result.profile));
         if (result.needsEmailConfirm) {
-          setNotice("Account created. Check your email to confirm — you can keep using your account now.");
+          setNotice(
+            opsReturn
+              ? "Account created — confirm the email link, then sign in to open Ops. Clinician APIs need a live Supabase session."
+              : "Account created. Check your email to confirm — you can keep using your account now.",
+          );
+          if (opsReturn) {
+            setMode("signin");
+            setLoading(false);
+            return;
+          }
         }
       } else {
         onAuthSuccess(hydrateUser(result.profile));
       }
+
+      // Ops APIs require a Supabase Bearer token — local-only accounts cannot call /api/ops/*.
+      if (opsReturn && result.provider === "local") {
+        setError(
+          "Ops needs a clinical Supabase login. Create the account again (or confirm email), then sign in with the same password.",
+        );
+        setLoading(false);
+        return;
+      }
+
       go(returnTo || "dashboard", { justLoggedIn: true });
     } catch (err) {
       resolveAnim();
@@ -1838,12 +1860,18 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 
           <div className="mb-8">
             <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {opsReturn
+                ? (mode === "signin" ? "Staff sign in" : "Staff account")
+                : (mode === "signin" ? "Sign in" : "Create account")}
             </p>
             <p style={{ fontSize: 15, color: T.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
-              {mode === "signin"
-                ? "Open your care plan, prescriptions, and orders."
-                : "One email. Your care plan stays private to you."}
+              {opsReturn
+                ? (mode === "signin"
+                  ? "Use your allowlisted clinician email to open the ops queue."
+                  : "First login after cutover: create your account with the allowlisted staff email, then open Ops.")
+                : (mode === "signin"
+                  ? "Open your care plan, prescriptions, and orders."
+                  : "One email. Your care plan stays private to you.")}
             </p>
           </div>
 
