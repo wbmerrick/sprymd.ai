@@ -3,6 +3,11 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import ConsultationRoom from "./ConsultationRoom";
 import type { SessionDurationLog } from "@/lib/clinicalDrafts";
+import type { LiveJoinResult } from "@/lib/liveVideo";
+
+const previewOnly = async (): Promise<LiveJoinResult> => ({
+  fallbackReason: "Live video is not configured on the server.",
+});
 
 describe("ConsultationRoom", () => {
   it("starts the timer only after both parties join and logs duration on leave", async () => {
@@ -29,6 +34,7 @@ describe("ConsultationRoom", () => {
           role="patient"
           displayName="Alex"
           remoteJoined={false}
+          connectLive={previewOnly}
           onLogDuration={onLogDuration}
         />
       </MemoryRouter>,
@@ -66,6 +72,7 @@ describe("ConsultationRoom", () => {
           role="provider"
           displayName="Dr. Lee"
           remoteJoined
+          connectLive={previewOnly}
           onLogDuration={async (entry) => {
             logs.push(entry);
             return { location: "device", message: "Session duration saved on this device." };

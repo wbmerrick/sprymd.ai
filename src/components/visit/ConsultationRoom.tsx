@@ -11,6 +11,12 @@ import {
   shouldStartSessionClock,
 } from "@/lib/visitTimer";
 import { videoVendorNotice, type VideoVendorId } from "@/lib/videoVendors";
+import {
+  connectLiveVisit,
+  type LiveConnection,
+  type LiveJoinResult,
+  type VisitChatPayload,
+} from "@/lib/liveVideo";
 import type { VisitRole } from "@/types/telehealth";
 
 type ChatLine = {
@@ -24,9 +30,9 @@ type ConsultationRoomProps = {
   appointmentId: string;
   role: VisitRole;
   displayName: string;
-  vendor?: VideoVendorId;
   remoteJoined?: boolean;
   allowSimulateRemote?: boolean;
+  connectLive?: (args: Parameters<typeof connectLiveVisit>[0]) => Promise<LiveJoinResult>;
   onLogDuration?: (entry: SessionDurationLog) => Promise<SaveResult> | void;
 };
 
@@ -40,24 +46,45 @@ type PresenceMessage = {
   at?: string;
 };
 
+function attachTrack(el: HTMLVideoElement | null, track: MediaStreamTrack | null) {
+  if (!el) return;
+  if (!track) {
+    el.srcObject = null;
+    return;
+  }
+  const current = el.srcObject;
+  if (current instanceof MediaStream && current.getTracks()[0] === track) return;
+  el.srcObject = new MediaStream([track]);
+  const play = el.play?.();
+  if (play && typeof play.then === "function") void play.catch(() => undefined);
+}
+
 export default function ConsultationRoom({
   appointmentId,
   role,
   displayName,
-  vendor = "local-preview",
   remoteJoined,
   allowSimulateRemote = remoteJoined == null,
+  connectLive = connectLiveVisit,
   onLogDuration = logSessionDuration,
 }: ConsultationRoomProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const liveRef = useRef<LiveConnection | null>(null);
   const loggedRef = useRef(false);
+  const joinGen = useRef(0);
   const [localJoined, setLocalJoined] = useState(false);
   const [broadcastRemote, setBroadcastRemote] = useState(false);
+  const [vendorRemote, setVendorRemote] = useState(false);
   const [simulatedRemote, setSimulatedRemote] = useState(false);
+  const [transport, setTransport] = useState<VideoVendorId>("local-preview");
+  const [localTrack, setLocalTrack] = useState<MediaStreamTrack | null>(null);
+  const [remoteTrack, setRemoteTrack] = useState<MediaStreamTrack | null>(null);
   const [audioOn, setAudioOn] = useState(true);
   const [videoOn, setVideoOn] = useState(true);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [joinNotice, setJoinNotice] = useState<string | null>(null);
   const [bothJoinedAt, setBothJoinedAt] = useState<number | null>(null);
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -65,7 +92,7 @@ export default function ConsultationRoom({
   const [draft, setDraft] = useState("");
   const [logMessage, setLogMessage] = useState<string | null>(null);
 
-  const remotePresent = remoteJoined ?? (broadcastRemote || simulatedRemote);
+  const remotePresent = remoteJoined ?? (vendorRemote || broadcastRemote || simulatedRemote);
   const otherRole: VisitRole = role === "patient" ? "provider" : "patient";
   const clockRunning = localJoined && remotePresent && bothJoinedAt != null && endedAt == null;
   const durationSeconds = sessionDurationSeconds(bothJoinedAt, endedAt, now);
@@ -83,7 +110,7 @@ export default function ConsultationRoom({
   }, [clockRunning]);
 
   useEffect(() => {
-    if (remoteJoined != null || typeof BroadcastChannel === "undefined") return;
+    if (remoteJoined != null || transport !== "local-preview" || typeof BroadcastChannel === "undefined") return;
     const channel = new BroadcastChannel(`sprymd-visit-${appointmentId}`);
     const announce = () => {
       if (!localJoined) return;
@@ -115,32 +142,81 @@ export default function ConsultationRoom({
       window.clearInterval(pulse);
       channel.close();
     };
-  }, [appointmentId, displayName, localJoined, remoteJoined, role]);
+  }, [appointmentId, displayName, localJoined, remoteJoined, role, transport]);
+
+  useEffect(() => {
+    attachTrack(videoRef.current, videoOn ? localTrack : null);
+  }, [localTrack, videoOn]);
+
+  useEffect(() => {
+    attachTrack(remoteVideoRef.current, remoteTrack);
+  }, [remoteTrack]);
 
   useEffect(() => {
     return () => {
+      joinGen.current += 1;
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      void liveRef.current?.leave();
     };
   }, []);
 
+  function rememberChat(line: ChatLine) {
+    setChat((current) => (current.some((item) => item.id === line.id) ? current : [...current, line]));
+  }
+
   async function join() {
+    const gen = ++joinGen.current;
     setJoinError(null);
+    setJoinNotice(null);
     setLocalJoined(true);
+
+    const result = await connectLive({
+      appointmentId,
+      role,
+      displayName,
+      onRemoteJoined: (present) => {
+        if (gen === joinGen.current) setVendorRemote(present);
+      },
+      onChat: (payload) => {
+        if (gen === joinGen.current) rememberChat(payload);
+      },
+      onLocalVideo: (track) => {
+        if (gen === joinGen.current) setLocalTrack(track);
+      },
+      onRemoteVideo: (track) => {
+        if (gen === joinGen.current) setRemoteTrack(track);
+      },
+    });
+
+    if (gen !== joinGen.current) {
+      if ("connection" in result) await result.connection.leave();
+      return;
+    }
+
+    if ("connection" in result) {
+      liveRef.current = result.connection;
+      setTransport(result.connection.vendor);
+      return;
+    }
+
+    setTransport("local-preview");
+    setJoinNotice(result.fallbackReason);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true,
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        const playResult = videoRef.current.play?.();
-        if (playResult && typeof playResult.then === "function") {
-          await playResult.catch(() => undefined);
-        }
+      if (gen !== joinGen.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
       }
+      streamRef.current = stream;
+      const videoTrack = stream.getVideoTracks()[0] ?? null;
+      setLocalTrack(videoTrack);
     } catch {
-      setJoinError("Camera and microphone are unavailable. You can still use chat.");
+      if (gen === joinGen.current) {
+        setJoinError("Camera and microphone are unavailable. You can still use chat.");
+      }
     }
   }
 
@@ -157,7 +233,11 @@ export default function ConsultationRoom({
     if (endedAt != null) return;
     const ended = Date.now();
     setEndedAt(ended);
+    joinGen.current += 1;
     streamRef.current?.getTracks().forEach((track) => track.stop());
+    const live = liveRef.current;
+    liveRef.current = null;
+    void live?.leave();
     if (typeof BroadcastChannel !== "undefined") {
       const channel = new BroadcastChannel(`sprymd-visit-${appointmentId}`);
       channel.postMessage({ type: "leave", appointmentId, role } satisfies PresenceMessage);
@@ -175,7 +255,7 @@ export default function ConsultationRoom({
       durationSeconds: sessionDurationSeconds(bothJoinedAt, ended, ended),
       startedAt: new Date(bothJoinedAt).toISOString(),
       endedAt: new Date(ended).toISOString(),
-      videoVendor: vendor,
+      videoVendor: transport,
     };
     try {
       const result = await onLogDuration(entry);
@@ -200,6 +280,10 @@ export default function ConsultationRoom({
     };
     setChat((current) => [...current, line]);
     setDraft("");
+    if (liveRef.current) {
+      liveRef.current.sendChat({ type: "chat", ...line });
+      return;
+    }
     if (typeof BroadcastChannel !== "undefined") {
       const channel = new BroadcastChannel(`sprymd-visit-${appointmentId}`);
       channel.postMessage({
@@ -237,21 +321,35 @@ export default function ConsultationRoom({
         <section className="p-4 flex flex-col gap-4">
           <div className="relative flex-1 min-h-[280px] rounded-2xl bg-black/40 overflow-hidden border border-white/10">
             <video
+              ref={remoteVideoRef}
+              playsInline
+              className={`w-full h-full object-cover ${remoteTrack ? "" : "hidden"}`}
+            />
+            <video
               ref={videoRef}
               muted
               playsInline
-              className={`w-full h-full object-cover ${videoOn && localJoined ? "" : "hidden"}`}
+              className={
+                localTrack && videoOn
+                  ? remoteTrack
+                    ? "absolute bottom-3 right-3 w-36 h-24 rounded-lg object-cover border border-white/30"
+                    : "w-full h-full object-cover"
+                  : "hidden"
+              }
             />
-            {(!localJoined || !videoOn) && (
+            {(!localJoined || (!videoOn && !remoteTrack)) && (
               <div className="absolute inset-0 flex items-center justify-center font-body text-primary-foreground/80 px-6 text-center">
-                {localJoined ? "Camera off" : "Join to start your camera preview"}
+                {localJoined ? "Camera off" : "Join to start your visit"}
               </div>
             )}
             <div className="absolute bottom-3 left-3 rounded-full bg-black/50 px-3 py-1 text-xs font-body">
               {remotePresent ? `${otherRole} is in the room` : `Waiting for ${otherRole}`}
             </div>
           </div>
-          <p className="font-body text-xs text-primary-foreground/70">{videoVendorNotice(vendor)}</p>
+          <p data-testid="video-transport" className="font-body text-xs text-primary-foreground/70">
+            {videoVendorNotice(transport)}
+            {joinNotice ? ` ${joinNotice}` : ""}
+          </p>
           {joinError && <p className="font-body text-sm text-red-300">{joinError}</p>}
           {logMessage && (
             <p role="status" className="font-body text-sm">
@@ -273,7 +371,8 @@ export default function ConsultationRoom({
                   onClick={() => {
                     const next = !audioOn;
                     setAudioOn(next);
-                    setTrackEnabled("audio", next);
+                    if (liveRef.current) liveRef.current.setAudioEnabled(next);
+                    else setTrackEnabled("audio", next);
                   }}
                 >
                   {audioOn ? "Mute" : "Unmute"}
@@ -286,7 +385,8 @@ export default function ConsultationRoom({
                   onClick={() => {
                     const next = !videoOn;
                     setVideoOn(next);
-                    setTrackEnabled("video", next);
+                    if (liveRef.current) liveRef.current.setVideoEnabled(next);
+                    else setTrackEnabled("video", next);
                   }}
                 >
                   {videoOn ? "Stop video" : "Start video"}
@@ -299,7 +399,7 @@ export default function ConsultationRoom({
                 >
                   Leave
                 </button>
-                {allowSimulateRemote && remoteJoined == null && !remotePresent && (
+                {allowSimulateRemote && transport === "local-preview" && remoteJoined == null && !remotePresent && (
                   <button
                     type="button"
                     data-testid="simulate-remote"
@@ -324,9 +424,9 @@ export default function ConsultationRoom({
           <div className="px-4 py-3 border-b border-white/10">
             <h2 className="font-display text-lg">Secure chat</h2>
             <p className="font-body text-xs text-primary-foreground/70">
-              Messages stay in this visit. They are not written to the browser
-              store. Production chat should use the video vendor data channel
-              under the same BAA.
+              {transport === "local-preview"
+                ? "Messages stay in this browser until a live room is connected."
+                : "Messages travel inside the encrypted visit and are not saved in the browser."}
             </p>
           </div>
           <div data-testid="chat-log" className="flex-1 overflow-y-auto p-4 space-y-3">

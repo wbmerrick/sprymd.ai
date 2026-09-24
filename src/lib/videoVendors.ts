@@ -23,9 +23,18 @@
  *    Track local participant audio/video enablement for the toggles.
  *    Treat participantConnected for the other role as the second join.
  *
- * This build ships a local-preview adapter so the room UI, toggles, chat, and
- * duration log work without those secrets. Local preview never leaves the
- * browser and is not a HIPAA video transport.
+ * The live path is implemented:
+ * - POST /api/visits/token mints a private-room token after checking the
+ *   signed-in patient or assigned provider.
+ * - src/lib/liveVideo.ts joins with @daily-co/daily-js or twilio-video.
+ * - Chat uses Daily app messages or a Twilio data track.
+ * - If the user is signed out or no vendor key is set, the room stays a
+ *   local preview and does not transmit audio or video.
+ *
+ * Required server env (set one vendor):
+ * - Daily: DAILY_API_KEY
+ * - Twilio: TWILIO_ACCOUNT_SID, TWILIO_API_KEY, TWILIO_API_SECRET
+ * - Optional VIDEO_VENDOR=daily|twilio|off
  */
 
 export type VideoVendorId = "local-preview" | "daily" | "twilio";
@@ -49,9 +58,11 @@ export const VIDEO_VENDOR_REQUIREMENTS: Record<
 };
 
 export function videoVendorNotice(vendor: VideoVendorId): string {
-  if (vendor === "local-preview") {
-    return "Local preview only. Audio and video stay on this device. Production visits use Daily.co or Twilio Video under a signed BAA.";
+  if (vendor === "daily") {
+    return "Encrypted Daily.co room. A signed Daily BAA is required before this carries patient information.";
   }
-  const req = VIDEO_VENDOR_REQUIREMENTS[vendor];
-  return `${req.summary} Install ${req.packageName}. Server env: ${req.serverEnv.join(", ")}.`;
+  if (vendor === "twilio") {
+    return "Encrypted Twilio Video room. A signed Twilio BAA is required before this carries patient information.";
+  }
+  return "Local preview only. Audio and video stay on this device until Daily.co or Twilio Video is configured.";
 }
