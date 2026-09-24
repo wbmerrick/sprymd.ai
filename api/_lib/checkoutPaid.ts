@@ -10,3 +10,14 @@ export function checkoutSessionLooksPaid(session: {
     session.payment_status === "no_payment_required"
   );
 }
+
+/**
+ * Only awaiting_payment rows may be promoted to paid via reconcile.
+ * Prevents refunded/cancelled/completed visits from being revived when
+ * Stripe Checkout still reports payment_status=paid.
+ */
+export function appointmentEligibleForPaidReconcile(
+  status: string | null | undefined,
+): boolean {
+  return status === "awaiting_payment";
+}

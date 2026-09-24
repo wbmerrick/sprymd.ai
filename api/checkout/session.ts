@@ -11,6 +11,7 @@ import {
  * Resolve a Stripe Checkout session id (or appointment id) to visit deep-link
  * data for the post-payment success page. If the row is still awaiting_payment
  * but Stripe says paid, reconcile inline (webhook lag safety net).
+ * Never promotes cancelled/refunded/completed rows back to paid.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handlePreflight(req, res)) return;
@@ -53,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (
       data &&
-      data.status !== "paid" &&
+      data.status === "awaiting_payment" &&
       stripeSessionId &&
       process.env.STRIPE_SECRET_KEY
     ) {

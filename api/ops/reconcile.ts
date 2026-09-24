@@ -133,6 +133,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
         return;
       }
+      if (appt.status !== "awaiting_payment") {
+        res.status(409).json({
+          error: "not_awaiting_payment",
+          status: appt.status,
+          appointmentId: appt.id,
+          message:
+            "Only awaiting_payment visits can be reconciled to paid (refuses cancelled/refunded revival).",
+        });
+        return;
+      }
     }
 
     if (!sessionId) {

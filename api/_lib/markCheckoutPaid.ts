@@ -1,19 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
-import { checkoutSessionLooksPaid } from "./checkoutPaid";
+import { checkoutSessionLooksPaid, appointmentEligibleForPaidReconcile } from "./checkoutPaid";
 import { getServiceTier } from "./serviceTiers";
 import {
   ensureCheckoutAppointment,
   recordPaymentEvent,
 } from "./ensureCheckoutAppointment";
 
-export { checkoutSessionLooksPaid };
+export { checkoutSessionLooksPaid, appointmentEligibleForPaidReconcile };
 
 export type MarkPaidResult = {
   updated: boolean;
   appointmentId: string;
   patientId: string;
   alreadyPaid: boolean;
+  /** True when the row exists but is no longer awaiting_payment (e.g. cancelled after refund). */
+  skippedNonAwaiting?: boolean;
 };
 
 /**
@@ -73,7 +75,7 @@ export async function markAppointmentPaidFromSession(input: {
     }
   }
 
-  // Already paid?
+  // Already paid / terminal / non-awaiting?
   if (appointmentId) {
     const { data: current } = await supabase
       .from("appointments")
@@ -86,6 +88,18 @@ export async function markAppointmentPaidFromSession(input: {
         appointmentId: String(current.id),
         patientId: String(current.patient_id || patientId || ""),
         alreadyPaid: true,
+      };
+    }
+    if (
+      current &&
+      !appointmentEligibleForPaidReconcile(String(current.status || ""))
+    ) {
+      return {
+        updated: false,
+        appointmentId: String(current.id),
+        patientId: String(current.patient_id || patientId || ""),
+        alreadyPaid: false,
+        skippedNonAwaiting: true,
       };
     }
   }
@@ -105,6 +119,7 @@ export async function markAppointmentPaidFromSession(input: {
         updated_at: paidAt,
       })
       .eq("id", appointmentId)
+      .eq("status", "awaiting_payment")
       .select("id, patient_id")
       .maybeSingle();
 
@@ -134,6 +149,7 @@ export async function markAppointmentPaidFromSession(input: {
         updated_at: paidAt,
       })
       .eq("stripe_checkout_session_id", session.id)
+      .eq("status", "awaiting_payment")
       .select("id, patient_id")
       .maybeSingle();
 
@@ -152,23 +168,26 @@ export async function markAppointmentPaidFromSession(input: {
     }
   }
 
-  await recordPaymentEvent({
-    supabase,
-    stripeEventId: input.stripeEventId || `reconcile:${session.id}`,
-    stripeCheckoutSessionId: session.id,
-    stripePaymentIntentId: paymentIntentId,
-    appointmentId: appointmentId || null,
-    patientId: patientId || null,
-    eventType: input.eventType || "checkout.session.reconciled",
-    amountCents: session.amount_total ?? tier?.amountCents ?? null,
-    currency: session.currency || tier?.currency || "usd",
-    status: session.payment_status || "paid",
-    payload: {
-      id: session.id,
-      payment_status: session.payment_status,
-      status: session.status,
-    },
-  });
+  // Only ledger when we actually transitioned awaiting → paid (avoid noise on skips)
+  if (updated) {
+    await recordPaymentEvent({
+      supabase,
+      stripeEventId: input.stripeEventId || `reconcile:${session.id}`,
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: paymentIntentId,
+      appointmentId: appointmentId || null,
+      patientId: patientId || null,
+      eventType: input.eventType || "checkout.session.reconciled",
+      amountCents: session.amount_total ?? tier?.amountCents ?? null,
+      currency: session.currency || tier?.currency || "usd",
+      status: session.payment_status || "paid",
+      payload: {
+        id: session.id,
+        payment_status: session.payment_status,
+        status: session.status,
+      },
+    });
+  }
 
   return {
     updated,
