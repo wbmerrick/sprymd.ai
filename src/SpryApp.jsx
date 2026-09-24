@@ -3413,7 +3413,13 @@ export default function App() {
     const qs = new URLSearchParams(window.location.search);
     if (qs.get("auth") === "1") {
       const returnTo = qs.get("returnTo") || "dashboard";
-      const target = returnTo.startsWith("/dashboard") || returnTo === "account" ? "dashboard" : returnTo;
+      // Absolute paths (/ops, /dashboard/…) stay intact for router navigate after sign-in.
+      const target =
+        returnTo.startsWith("/")
+          ? returnTo
+          : returnTo === "account"
+            ? "dashboard"
+            : returnTo;
       setParams({ returnTo: target });
       setView("signin");
       window.history.replaceState({}, "", "/");
@@ -3510,6 +3516,13 @@ export default function App() {
       setView("landing");
       clearFunnelUrl();
       setTimeout(() => { const el = document.getElementById("how"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
+      return;
+    }
+    // Router paths from auth returnTo (e.g. /ops, /dashboard/profile)
+    if (typeof target === "string" && target.startsWith("/")) {
+      navigate(target);
+      clearFunnelUrl();
+      window.scrollTo(0, 0);
       return;
     }
     // Auth gates — account + refills require a signed-in customer
