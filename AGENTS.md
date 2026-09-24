@@ -47,7 +47,10 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
 ### Ops / clinician console
 - UI: `/ops` (queue) and `/ops/:appointmentId` (case detail) under `src/pages/ops/`.
 - Demo (no auth): `/ops?demo=1`.
-- APIs: `GET /api/ops/queue`, `GET|PATCH /api/ops/appointment` (staff-gated).
+- APIs: `GET /api/ops/queue`, `GET|PATCH /api/ops/appointment`,
+  `POST /api/ops/reconcile` (staff-gated; `{ appointmentId }` or `{ allAwaiting: true }`).
+- Success page `GET /api/checkout/session` also reconciles **only** when status is
+  `awaiting_payment` (never revives cancelled/refunded rows).
 - Auth: Supabase Bearer session must be on `OPS_STAFF_EMAILS` / `MASTER_EMAILS`, or an
   active `providers` row (`api/_lib/staffAuth.ts`). Allowlisted staff auto-provision a
   `providers` row on first ops API call. Set `OPS_STAFF_EMAILS` on Vercel for additional
