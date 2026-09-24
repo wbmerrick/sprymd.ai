@@ -236,10 +236,10 @@ export const conditions: Record<ConditionId, Condition> = {
     id: "pcp", name: "Your doctor",
     tagline: "A doctor you can message any day.",
     description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
-    icon: UserCheck, accent: "#C89E67", fromPrice: "120",
+    icon: UserCheck, accent: "#C89E67", fromPrice: "100",
     treatments: [
-      { id: "pcp-acute", name: "Spry Primary Care · Acute Insight", sub: "1 visit + anytime messaging for 1 month", price: 120, chilled: false,
-        note: "One clinician visit plus a month of anytime messaging. Two adults: $180.", badge: "Most popular", twoAdultPrice: 180 },
+      { id: "pcp-acute", name: "Acute Insight", sub: "Meant for acute issues/complaints · 1 visit + anytime messaging for 1 month", price: 100, chilled: false,
+        note: "One clinician visit plus a month of anytime messaging for acute issues and complaints. Two adults: $180.", badge: "Most popular", twoAdultPrice: 180 },
       { id: "pcp-yearly", name: "Yearly Checkup", sub: "1 visit + full blood work + anytime messaging", price: 250, chilled: false,
         note: "Annual visit with yearly labs and messaging. Two adults: $470.", badge: "Best value", twoAdultPrice: 470 },
       { id: "pcp-monthly", name: "Monthly Doctor-Initiated Visits", sub: "Your doctor calls you once a month", price: 500, chilled: false,

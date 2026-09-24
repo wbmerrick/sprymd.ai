@@ -1043,20 +1043,20 @@ const Landing = ({ go }) => {
                 <div className="rounded-lg flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
                   <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
                 </div>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Doctor care online</span>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Spry Primary Care</span>
               </div>
             </div>
             <div className="p-7 md:p-8 relative z-10">
               <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Choose a plan</div>
-              <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
-                $120<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
+              <div className="display" style={{ fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: 600, color: C.ink, lineHeight: 1.2, marginTop: 8 }}>
+                Online Provider Visits start at $100
               </div>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {[
                   {
                     id: "pcp-acute",
-                    t: "Spry Primary Care · Acute Insight",
-                    d: "$120 · 1 visit + anytime messaging for 1 month",
+                    t: "Acute Insight — meant for acute issues/complaints",
+                    d: "$100 · 1 visit + anytime messaging for 1 month",
                     two: "$180 · Acute Insight for two adults",
                     tag: "Most popular",
                     span: false,
