@@ -110,7 +110,7 @@ export const conditions: Record<ConditionId, Condition> = {
     ],
   },
   ed: {
-    id: "ed", name: "Men's sexual health",
+    id: "ed", name: "Erectile dysfunction",
     tagline: "Feel confident again — daily or when you need it.",
     description: "Simple treatments for erectile health. Private questions. A doctor reviews your case before anything ships.",
     icon: Flame, accent: "#C89E67", fromPrice: "65",
