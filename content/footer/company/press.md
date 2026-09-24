@@ -32,7 +32,7 @@ SpryMD Inc. is a clinician-supervised telehealth platform delivering performance
 
 Logo and favicon files are available for approved media use. Request assets by emailing **press@sprymd.ai** — include your outlet, intended use, and deadline.
 
-**[PLACEHOLDER: Brand asset download link — to be added]**
+A public brand-kit download will be linked here when assets are finalized. Until then, email press@sprymd.ai for approved logo files.
 
 ## Press contact
 

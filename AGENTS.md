@@ -47,10 +47,32 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
 ### Ops / clinician console
 - UI: `/ops` (queue) and `/ops/:appointmentId` (case detail) under `src/pages/ops/`.
 - Demo (no auth): `/ops?demo=1`.
-- APIs: `GET /api/ops/queue`, `GET|PATCH /api/ops/appointment` (staff-gated).
+- APIs: `GET /api/ops/queue`, `GET|PATCH /api/ops/appointment`,
+  `POST /api/ops/reconcile` (staff-gated; `{ appointmentId }` or `{ allAwaiting: true }`),
+  `GET /api/ops/status` (staff launch snapshot: paid/awaiting counts, payment_events).
+- Success page `GET /api/checkout/session` also reconciles **only** when status is
+  `awaiting_payment` (never revives cancelled/refunded rows).
 - Auth: Supabase Bearer session must be on `OPS_STAFF_EMAILS` / `MASTER_EMAILS`, or an
   active `providers` row (`api/_lib/staffAuth.ts`). Allowlisted staff auto-provision a
   `providers` row on first ops API call. Set `OPS_STAFF_EMAILS` on Vercel for additional
   clinician emails.
 - After Supabase cutover, staff must **sign up / sign in once** on the clinical project
-  (auth.users was empty post-cutover until first login).
+  (auth.users was empty post-cutover until first login). Ops requires a live Supabase
+  session (Bearer token) — local-only fallback accounts cannot call `/api/ops/*`.
+  Open `/ops` → redirected to auth (defaults to **Create account** for ops return).
+  Confirm email if the project requires it, then sign in with the allowlisted address
+  (built-in: owner email; extras via `OPS_STAFF_EMAILS`).
+  Alternate bootstrap: create any Auth user, confirm email, insert an active
+  `providers` row for that `user_id` — `requireStaff` accepts active providers without
+  allowlist. Verified live: `GET /api/ops/queue` returns 200 with staff Bearer on www.
+
+### Launch checklist
+1. Merge PR that adds `POST /api/ops/reconcile` + success-page poll (Stripe webhook lag net).
+2. Complete one live Stripe Checkout ($75 `visit_basic`) → confirm appointment `status=paid`
+   and a `payment_events` row (webhook on production already handles this).
+3. Staff: open `/ops` with allowlisted Supabase login; optional `Sync N awaiting`.
+4. Video: set `DAILY_API_KEY` (Daily BAA first) or Twilio video trio; confirm via `GET /api/health`.
+5. Legal: NPP draft shipped; counsel review before calling it final. No street-address
+   placeholders remain — privacy@sprymd.ai is the contact of record.
+6. Smoke: `node scripts/launch-check.mjs` and
+   `node scripts/watch-paid-appointment.mjs <sessionId> <appointmentId>`.
