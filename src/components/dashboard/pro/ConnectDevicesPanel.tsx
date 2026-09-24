@@ -44,7 +44,7 @@ export function ConnectDevicesPanel({
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#C89E67]">Connect gear</p>
-          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+          <h2 className="text-lg font-semibold text-white font-display">
             Sync any wearable
           </h2>
           <p className="mt-1 max-w-xl text-sm text-zinc-400">

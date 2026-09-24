@@ -19,7 +19,7 @@ export default function SupportPage() {
     <div className="space-y-8">
       <header className="space-y-2">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Account</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h1 className="text-3xl font-semibold text-white font-display">
           Support
         </h1>
         <p className="text-sm text-zinc-400">Message your care team or browse common topics.</p>
@@ -40,14 +40,14 @@ export default function SupportPage() {
       </div>
 
       <section aria-labelledby="messages-heading" className="space-y-3">
-        <h2 id="messages-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h2 id="messages-heading" className="text-lg font-semibold text-white font-display">
           Messages
         </h2>
         <MessagesList messages={filtered} />
       </section>
 
       <section aria-labelledby="topics-heading" className="space-y-3">
-        <h2 id="topics-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h2 id="topics-heading" className="text-lg font-semibold text-white font-display">
           Popular topics
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2">

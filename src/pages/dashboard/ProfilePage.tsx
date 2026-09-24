@@ -42,7 +42,7 @@ export default function ProfilePage() {
     <div className="space-y-8">
       <header className="space-y-2">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Account</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h1 className="text-3xl font-semibold text-white font-display">
           {user.name}
         </h1>
         <p className="text-sm text-zinc-400">{user.email}</p>

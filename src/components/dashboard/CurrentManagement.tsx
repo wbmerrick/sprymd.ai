@@ -17,7 +17,7 @@ export function CurrentManagement({ treatments }: CurrentManagementProps) {
     <section aria-labelledby="current-management-heading" className="space-y-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h2 id="current-management-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+          <h2 id="current-management-heading" className="text-lg font-semibold text-white font-display">
             Your treatments
           </h2>
           <p className="mt-1 text-sm text-zinc-500">Active care plans linked to your goals.</p>

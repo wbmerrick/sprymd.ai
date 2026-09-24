@@ -37,8 +37,7 @@ export default function DashboardLayout() {
   return (
     <DashboardContext.Provider value={data}>
       <div
-        className="relative min-h-screen overflow-hidden bg-[#050505] text-zinc-100"
-        style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+        className="relative min-h-screen overflow-hidden bg-[#050505] text-zinc-100 font-body"
       >
         <BrandAtmosphere plate="hawaiiDawn" variant="wash" />
         <div className="relative z-10">

@@ -12,8 +12,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Fraunces", "serif"],
-        body: ["DM Sans", "sans-serif"],
+        display: ["Fraunces", "Georgia", "Times New Roman", "serif"],
+        body: ["DM Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        // Labels/eyebrows — same face as body (not a separate monospace)
+        mono: ["DM Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
