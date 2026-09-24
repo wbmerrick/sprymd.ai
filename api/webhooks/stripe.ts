@@ -9,6 +9,7 @@ import {
   checkoutSessionEligibleToMarkPaid,
   markAppointmentPaidFromSession,
 } from "../_lib/markCheckoutPaid";
+import { expandCheckoutSessionPaymentIntent } from "../_lib/expandCheckoutSession";
 
 export const config = {
   api: {
@@ -119,17 +120,10 @@ async function handleCheckoutCompleted(
   // (race: charge.refunded before checkout.session.completed).
   let sessionForMark: Stripe.Checkout.Session = session;
   try {
-    if (typeof session.payment_intent === "string" && session.payment_intent) {
-      const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
-      sessionForMark = {
-        ...session,
-        payment_intent: pi,
-      } as Stripe.Checkout.Session;
-    } else if (!session.payment_intent) {
-      sessionForMark = await stripe.checkout.sessions.retrieve(session.id, {
-        expand: ["payment_intent"],
-      });
-    }
+    sessionForMark = (await expandCheckoutSessionPaymentIntent(
+      stripe,
+      session,
+    )) as Stripe.Checkout.Session;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(
