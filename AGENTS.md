@@ -43,3 +43,10 @@ Apply in SQL editor (or `supabase db push`) in order when launching cash-pay vis
 Until these are applied, chart writes return `PGRST205` and checkout still works via Stripe-only
 (with appointment provisioning skipped). Stripe webhook events to enable: `checkout.session.completed`,
 `charge.refunded`, `payment_intent.payment_failed`.
+
+### Ops / clinician console
+- UI: `/ops` (queue) and `/ops/:appointmentId` (case detail) under `src/pages/ops/`.
+- APIs: `GET /api/ops/queue`, `GET|PATCH /api/ops/appointment` (staff-gated).
+- Auth: Supabase Bearer session must be on `OPS_STAFF_EMAILS` / `MASTER_EMAILS`, or an
+  active `providers` row (`api/_lib/staffAuth.ts`). Set `OPS_STAFF_EMAILS` on Vercel for
+  additional clinician emails.
