@@ -62,3 +62,6 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
   Open `/ops` → redirected to auth (defaults to **Create account** for ops return).
   Confirm email if the project requires it, then sign in with the allowlisted address
   (built-in: owner email; extras via `OPS_STAFF_EMAILS`).
+  Alternate bootstrap: create any Auth user, confirm email, insert an active
+  `providers` row for that `user_id` — `requireStaff` accepts active providers without
+  allowlist. Verified live: `GET /api/ops/queue` returns 200 with staff Bearer on www.
