@@ -168,6 +168,48 @@ export default function OpsAppointmentPage() {
     navigate(withDemo(`/visit/${data.appointment.id}`, demo));
   }
 
+  async function syncPayment() {
+    if (!data?.appointment || demo) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/ops/reconcile", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ appointmentId: data.appointment.id }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        unpaid?: boolean;
+        alreadyPaid?: boolean;
+        error?: string;
+        message?: string;
+        paymentStatus?: string;
+      };
+      if (!res.ok) {
+        const msg = json.message || json.error || "Reconcile failed";
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+      if (json.unpaid) {
+        toast.message(`Stripe still ${json.paymentStatus || "unpaid"}`);
+        return;
+      }
+      toast.success(json.alreadyPaid ? "Already paid" : "Payment synced");
+      await load();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loading) {
     return (
       <main className="px-4 md:px-8 py-10 max-w-3xl mx-auto text-sm text-white/50">
@@ -307,6 +349,18 @@ export default function OpsAppointmentPage() {
             >
               SOAP note
             </Link>
+          </div>
+        )}
+        {a.status === "awaiting_payment" && !demo && (
+          <div className="mt-4">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void syncPayment()}
+              className="rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-50 hover:bg-amber-500/20 disabled:opacity-50"
+            >
+              Sync payment from Stripe
+            </button>
           </div>
         )}
       </section>
