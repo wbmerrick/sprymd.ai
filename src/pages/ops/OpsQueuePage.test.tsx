@@ -39,6 +39,7 @@ beforeEach(() => {
             currency: "usd",
             paidAt: "2026-09-24T12:00:00Z",
             createdAt: "2026-09-24T11:00:00Z",
+            providerId: null,
             patient: {
               id: "p1",
               email: "patient@example.com",
@@ -68,9 +69,9 @@ describe("OpsQueuePage", () => {
       expect(screen.getByText("Alex Patient")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("patient@example.com · TN")).toBeInTheDocument();
+    expect(screen.getByText(/patient@example.com · TN/)).toBeInTheDocument();
     expect(screen.getByText("$79.00")).toBeInTheDocument();
-    expect(screen.getByText("protocol")).toBeInTheDocument();
+    expect(screen.getByText(/assign & start visit/i)).toBeInTheDocument();
 
     const link = screen.getByRole("link", { name: /alex patient/i });
     expect(link).toHaveAttribute(

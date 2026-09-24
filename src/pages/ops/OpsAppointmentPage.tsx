@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useOutletContext, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import type { OpsOutletContext } from "./OpsLayout";
 
 type DetailResponse = {
@@ -38,7 +39,16 @@ type DetailResponse = {
   }>;
 };
 
-const NEXT_STATUSES = [
+const PRIMARY_BY_STATUS: Record<string, string[]> = {
+  paid: ["completed"],
+  awaiting_payment: ["paid", "cancelled"],
+  scheduled: ["paid", "cancelled", "no_show"],
+  completed: [],
+  cancelled: ["paid"],
+  no_show: ["paid"],
+};
+
+const ALL_STATUSES = [
   "paid",
   "completed",
   "cancelled",
@@ -52,6 +62,53 @@ function money(cents: number, currency = "usd") {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format((cents || 0) / 100);
+}
+
+function guidance(status: string, assigned: boolean): { title: string; body: string } {
+  switch (status) {
+    case "paid":
+      return {
+        title: assigned ? "Ready for visit" : "Assign yourself, then start",
+        body: assigned
+          ? "Open the visit room with the patient, then write and sign the SOAP note. Mark completed when done."
+          : "Claim this case so it sits on your queue, open the visit room, and document the encounter.",
+      };
+    case "awaiting_payment":
+      return {
+        title: "Checkout not finished",
+        body: "Patient started checkout but payment is not confirmed yet. No clinician action unless they reach out.",
+      };
+    case "scheduled":
+      return {
+        title: "Visit scheduled",
+        body: "Confirm timing with the patient. When they pay (or if already covered), move to paid and start the room.",
+      };
+    case "completed":
+      return {
+        title: "Encounter closed",
+        body: "Review the note if needed. Reopen only if documentation was marked complete by mistake.",
+      };
+    case "cancelled":
+    case "no_show":
+      return {
+        title: "Closed without visit",
+        body: "No further action unless ops reopens the case.",
+      };
+    default:
+      return {
+        title: "Review case",
+        body: "Check patient details, payments, and intake before acting.",
+      };
+  }
+}
+
+async function copyText(label: string, value: string) {
+  try {
+    await navigator.clipboard.writeText(value);
+    toast.success(`${label} copied`);
+  } catch {
+    toast.error(`Could not copy ${label.toLowerCase()}`);
+  }
 }
 
 export default function OpsAppointmentPage() {
@@ -92,7 +149,7 @@ export default function OpsAppointmentPage() {
     void load();
   }, [load]);
 
-  async function patch(body: Record<string, unknown>) {
+  async function patch(body: Record<string, unknown>, successMessage?: string) {
     setBusy(true);
     setError(null);
     try {
@@ -112,12 +169,17 @@ export default function OpsAppointmentPage() {
         message?: string;
       };
       if (!res.ok) {
-        setError(json.message || json.error || "Update failed.");
+        const msg = json.message || json.error || "Update failed.";
+        setError(msg);
+        toast.error(msg);
         return;
       }
+      toast.success(successMessage || "Updated");
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Network error");
+      const msg = err instanceof Error ? err.message : "Network error";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -146,6 +208,11 @@ export default function OpsAppointmentPage() {
 
   const a = data.appointment;
   const patient = a.patient;
+  const tip = guidance(a.status, !!a.providerId);
+  const primaryStatuses = PRIMARY_BY_STATUS[a.status] || [];
+  const secondaryStatuses = ALL_STATUSES.filter(
+    (s) => s !== a.status && !primaryStatuses.includes(s),
+  );
 
   return (
     <main className="px-4 md:px-8 py-8 max-w-4xl mx-auto">
@@ -154,21 +221,40 @@ export default function OpsAppointmentPage() {
       </Link>
 
       <div className="mt-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-[11px] tracking-[0.18em] uppercase text-[#9dba8c]/90">
             Case
           </p>
-          <h1 className="font-display text-3xl md:text-4xl mt-2">
+          <h1 className="font-display text-3xl md:text-4xl mt-2 truncate">
             {patient?.fullName || "Patient"}
           </h1>
-          <p className="text-sm text-white/55 mt-2">
-            {patient?.email || "—"}
-            {patient?.phone ? ` · ${patient.phone}` : ""}
-            {patient?.state ? ` · ${patient.state}` : ""}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/55">
+            {patient?.email ? (
+              <button
+                type="button"
+                className="underline underline-offset-4 hover:text-white"
+                onClick={() => void copyText("Email", patient.email)}
+              >
+                {patient.email}
+              </button>
+            ) : (
+              <span>—</span>
+            )}
+            {patient?.phone && (
+              <button
+                type="button"
+                className="underline underline-offset-4 hover:text-white"
+                onClick={() => void copyText("Phone", patient.phone!)}
+              >
+                {patient.phone}
+              </button>
+            )}
+            {patient?.state && <span>{patient.state}</span>}
+            {patient?.dateOfBirth && <span>DOB {patient.dateOfBirth}</span>}
+          </div>
           <p className="text-xs text-white/35 mt-2 font-mono break-all">{a.id}</p>
         </div>
-        <div className="text-right">
+        <div className="md:text-right shrink-0">
           <div className="text-sm capitalize text-white/70">
             {a.status.replace(/_/g, " ")}
           </div>
@@ -178,6 +264,11 @@ export default function OpsAppointmentPage() {
           <div className="text-xs text-white/45 mt-1">{a.serviceTier}</div>
         </div>
       </div>
+
+      <section className="mt-6 rounded-2xl border border-[#9dba8c]/35 bg-[#9dba8c]/10 px-5 py-4">
+        <h2 className="text-sm font-medium text-[#d7e6cb]">{tip.title}</h2>
+        <p className="text-sm text-white/70 mt-1">{tip.body}</p>
+      </section>
 
       {error && (
         <div
@@ -190,8 +281,8 @@ export default function OpsAppointmentPage() {
 
       <section className="mt-8 grid md:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-white/10 p-5">
-          <h2 className="text-sm font-medium mb-3">Actions</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
+          <h2 className="text-sm font-medium mb-3">Do next</h2>
+          <div className="flex flex-wrap gap-2 mb-5">
             <Link
               to={`/visit/${a.id}`}
               className="rounded-full bg-[#9dba8c] text-[#0b100e] px-4 py-2 text-sm font-medium"
@@ -206,27 +297,63 @@ export default function OpsAppointmentPage() {
             </Link>
             <button
               type="button"
-              disabled={busy}
-              onClick={() => void patch({ assignSelf: true })}
+              disabled={busy || !!a.providerId}
+              onClick={() => void patch({ assignSelf: true }, "Assigned to you")}
               className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5 disabled:opacity-50"
             >
-              Assign to me
+              {a.providerId ? "Assigned" : "Assign to me"}
             </button>
           </div>
-          <label className="block text-xs text-white/45 mb-2">Update status</label>
-          <div className="flex flex-wrap gap-2">
-            {NEXT_STATUSES.map((status) => (
-              <button
-                key={status}
-                type="button"
-                disabled={busy || a.status === status}
-                onClick={() => void patch({ status })}
-                className="rounded-full border border-white/15 px-3 py-1.5 text-xs capitalize disabled:opacity-40 hover:border-white/40"
-              >
-                {status.replace(/_/g, " ")}
-              </button>
-            ))}
-          </div>
+
+          {primaryStatuses.length > 0 && (
+            <>
+              <label className="block text-xs text-white/45 mb-2">
+                Mark status
+              </label>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {primaryStatuses.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    disabled={busy}
+                    onClick={() =>
+                      void patch(
+                        { status },
+                        `Marked ${status.replace(/_/g, " ")}`,
+                      )
+                    }
+                    className="rounded-full border border-[#9dba8c]/50 bg-[#9dba8c]/15 px-3 py-1.5 text-xs capitalize hover:bg-[#9dba8c]/25 disabled:opacity-40"
+                  >
+                    {status.replace(/_/g, " ")}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <details className="text-sm">
+            <summary className="cursor-pointer text-white/45 hover:text-white/70">
+              Other statuses
+            </summary>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {secondaryStatuses.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  disabled={busy}
+                  onClick={() =>
+                    void patch(
+                      { status },
+                      `Marked ${status.replace(/_/g, " ")}`,
+                    )
+                  }
+                  className="rounded-full border border-white/15 px-3 py-1.5 text-xs capitalize disabled:opacity-40 hover:border-white/40"
+                >
+                  {status.replace(/_/g, " ")}
+                </button>
+              ))}
+            </div>
+          </details>
         </div>
 
         <div className="rounded-2xl border border-white/10 p-5">

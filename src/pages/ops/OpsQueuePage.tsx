@@ -10,6 +10,7 @@ type QueueItem = {
   currency: string;
   paidAt: string | null;
   createdAt: string;
+  providerId: string | null;
   patient: {
     id: string;
     email: string;
@@ -21,6 +22,7 @@ type QueueItem = {
 
 const STATUS_FILTERS = [
   { id: "", label: "All" },
+  { id: "needs_attention", label: "Needs attention" },
   { id: "paid", label: "Paid" },
   { id: "awaiting_payment", label: "Awaiting pay" },
   { id: "completed", label: "Completed" },
@@ -28,6 +30,15 @@ const STATUS_FILTERS = [
   { id: "scheduled", label: "Scheduled" },
   { id: "no_show", label: "No-show" },
 ] as const;
+
+const STATUS_PRIORITY: Record<string, number> = {
+  paid: 0,
+  awaiting_payment: 1,
+  scheduled: 2,
+  completed: 3,
+  no_show: 4,
+  cancelled: 5,
+};
 
 function money(cents: number, currency = "usd") {
   try {
@@ -38,6 +49,22 @@ function money(cents: number, currency = "usd") {
   } catch {
     return `$${((cents || 0) / 100).toFixed(2)}`;
   }
+}
+
+function relativeTime(iso: string | null | undefined) {
+  if (!iso) return "—";
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return "—";
+  const delta = Date.now() - t;
+  const abs = Math.abs(delta);
+  const mins = Math.round(abs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 48) return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  if (days < 14) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
 function statusTone(status: string) {
@@ -56,20 +83,60 @@ function statusTone(status: string) {
   }
 }
 
+function nextAction(item: QueueItem): string {
+  switch (item.status) {
+    case "paid":
+      return item.providerId ? "Open visit / write note" : "Assign & start visit";
+    case "awaiting_payment":
+      return "Waiting on checkout";
+    case "scheduled":
+      return "Confirm visit time";
+    case "completed":
+      return "Review chart";
+    case "cancelled":
+    case "no_show":
+      return "Closed";
+    default:
+      return "Review";
+  }
+}
+
+function matchesSearch(item: QueueItem, q: string) {
+  if (!q) return true;
+  const hay = [
+    item.patient?.fullName,
+    item.patient?.email,
+    item.patient?.phone,
+    item.patient?.state,
+    item.id,
+    item.serviceTier,
+    item.status,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return hay.includes(q);
+}
+
 export default function OpsQueuePage() {
   const { accessToken } = useOutletContext<OpsOutletContext>();
   const [params, setParams] = useSearchParams();
   const status = params.get("status") || "";
+  const qParam = params.get("q") || "";
+  const [query, setQuery] = useState(qParam);
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const apiStatus =
+    status && status !== "needs_attention" ? status : "";
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const qs = new URLSearchParams();
-      if (status) qs.set("status", status);
+      if (apiStatus) qs.set("status", apiStatus);
       qs.set("limit", "100");
       const res = await fetch(`/api/ops/queue?${qs.toString()}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -91,28 +158,72 @@ export default function OpsQueuePage() {
     } finally {
       setLoading(false);
     }
-  }, [accessToken, status]);
+  }, [accessToken, apiStatus]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const counts = useMemo(() => {
-    const map: Record<string, number> = {};
+  useEffect(() => {
+    setQuery(qParam);
+  }, [qParam]);
+
+  const attentionCount = useMemo(
+    () => items.filter((i) => i.status === "paid").length,
+    [items],
+  );
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let rows = items.filter((item) => matchesSearch(item, q));
+    if (status === "needs_attention") {
+      rows = rows.filter((i) => i.status === "paid");
+    }
+    return [...rows].sort((a, b) => {
+      const pa = STATUS_PRIORITY[a.status] ?? 9;
+      const pb = STATUS_PRIORITY[b.status] ?? 9;
+      if (pa !== pb) return pa - pb;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [items, query, status]);
+
+  const filterCounts = useMemo(() => {
+    const map: Record<string, number> = { needs_attention: 0 };
     for (const item of items) {
       map[item.status] = (map[item.status] || 0) + 1;
+      if (item.status === "paid") map.needs_attention += 1;
     }
     return map;
   }, [items]);
 
+  function setFilter(id: string) {
+    const next = new URLSearchParams(params);
+    if (id) next.set("status", id);
+    else next.delete("status");
+    setParams(next, { replace: true });
+  }
+
+  function commitSearch(value: string) {
+    const next = new URLSearchParams(params);
+    const trimmed = value.trim();
+    if (trimmed) next.set("q", trimmed);
+    else next.delete("q");
+    setParams(next, { replace: true });
+  }
+
   return (
     <main className="px-4 md:px-8 py-8 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
-          <p className="text-[11px] tracking-[0.18em] uppercase text-[#9dba8c]/90">Queue</p>
-          <h1 className="font-display text-3xl md:text-4xl mt-2">Cases & orders</h1>
+          <p className="text-[11px] tracking-[0.18em] uppercase text-[#9dba8c]/90">
+            Queue
+          </p>
+          <h1 className="font-display text-3xl md:text-4xl mt-2">
+            Cases & orders
+          </h1>
           <p className="text-sm text-white/55 mt-2 max-w-xl">
-            Paid visits, intakes, and fulfillment status. Open a row to review the patient, update status, or jump to the visit / SOAP note.
+            Work paid visits first. Open a row to assign yourself, start the
+            visit, or update fulfillment status.
           </p>
         </div>
         <button
@@ -124,19 +235,46 @@ export default function OpsQueuePage() {
         </button>
       </div>
 
+      {!loading && !error && attentionCount > 0 && status !== "needs_attention" && (
+        <button
+          type="button"
+          onClick={() => setFilter("needs_attention")}
+          className="mb-6 w-full text-left rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 hover:bg-emerald-500/15 transition-colors"
+        >
+          <span className="text-sm text-emerald-100">
+            <span className="font-medium">{attentionCount} paid</span>
+            {" "}
+            {attentionCount === 1 ? "case needs" : "cases need"} clinician attention →
+          </span>
+        </button>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        <label className="flex-1 relative">
+          <span className="sr-only">Search patients</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitSearch(query);
+            }}
+            onBlur={() => commitSearch(query)}
+            placeholder="Search name, email, state, or id…"
+            className="w-full rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm placeholder:text-white/35 focus:outline-none focus:border-[#9dba8c]/60"
+          />
+        </label>
+      </div>
+
       <div className="flex flex-wrap gap-2 mb-6">
         {STATUS_FILTERS.map((f) => {
           const active = status === f.id;
+          const count = f.id ? filterCounts[f.id] : items.length;
           return (
             <button
               key={f.id || "all"}
               type="button"
-              onClick={() => {
-                const next = new URLSearchParams(params);
-                if (f.id) next.set("status", f.id);
-                else next.delete("status");
-                setParams(next, { replace: true });
-              }}
+              onClick={() => setFilter(f.id)}
               className={`rounded-full px-3 py-1.5 text-xs border transition-colors ${
                 active
                   ? "bg-[#9dba8c] text-[#0b100e] border-[#9dba8c]"
@@ -144,7 +282,7 @@ export default function OpsQueuePage() {
               }`}
             >
               {f.label}
-              {f.id && counts[f.id] ? ` · ${counts[f.id]}` : ""}
+              {typeof count === "number" && count > 0 ? ` · ${count}` : ""}
             </button>
           );
         })}
@@ -170,18 +308,26 @@ export default function OpsQueuePage() {
         <div className="hidden md:grid grid-cols-12 gap-3 px-4 py-3 text-[11px] tracking-wider uppercase text-white/40 border-b border-white/10">
           <div className="col-span-2">Status</div>
           <div className="col-span-4">Patient</div>
-          <div className="col-span-2">Tier</div>
+          <div className="col-span-2">Next step</div>
           <div className="col-span-2">Amount</div>
-          <div className="col-span-2">Created</div>
+          <div className="col-span-2">When</div>
         </div>
 
         {loading ? (
           <p className="px-4 py-10 text-sm text-white/45">Loading queue…</p>
-        ) : items.length === 0 ? (
-          <p className="px-4 py-10 text-sm text-white/45">No cases in this filter.</p>
+        ) : visible.length === 0 ? (
+          <div className="px-4 py-10 text-sm text-white/45 space-y-2">
+            <p>No cases in this view.</p>
+            {query && (
+              <p>
+                Clear search or try another filter — paid checkouts appear here
+                after Stripe confirms.
+              </p>
+            )}
+          </div>
         ) : (
           <ul className="divide-y divide-white/10">
-            {items.map((item) => (
+            {visible.map((item) => (
               <li key={item.id}>
                 <Link
                   to={`/ops/${item.id}`}
@@ -201,18 +347,19 @@ export default function OpsQueuePage() {
                     <div className="text-xs text-white/45 truncate">
                       {item.patient?.email || "—"}
                       {item.patient?.state ? ` · ${item.patient.state}` : ""}
+                      {item.serviceTier ? ` · ${item.serviceTier}` : ""}
                     </div>
                   </div>
-                  <div className="md:col-span-2 text-sm text-white/75">
-                    {item.serviceTier}
+                  <div className="md:col-span-2 text-sm text-white/70">
+                    {nextAction(item)}
                   </div>
                   <div className="md:col-span-2 text-sm">
                     {money(item.amountCents, item.currency)}
                   </div>
                   <div className="md:col-span-2 text-xs text-white/45">
-                    {item.createdAt
-                      ? new Date(item.createdAt).toLocaleString()
-                      : "—"}
+                    <span title={item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}>
+                      {relativeTime(item.createdAt)}
+                    </span>
                   </div>
                 </Link>
               </li>
