@@ -7,13 +7,15 @@ import type { OpsOutletContext } from "./OpsLayout";
 const outlet: OpsOutletContext = {
   accessToken: "test-token",
   email: "wbmerrick@gmail.com",
+  demo: false,
+  providerId: null,
 };
 
 function OpsShell() {
   return <Outlet context={outlet} />;
 }
 
-function renderQueue(search = "") {
+function renderQueue(search = "?view=todo") {
   return render(
     <MemoryRouter initialEntries={[`/ops${search}`]}>
       <Routes>
@@ -60,21 +62,18 @@ afterEach(() => {
 });
 
 describe("OpsQueuePage", () => {
-  it("renders the staff queue with patient rows", async () => {
+  it("renders the staff queue with patient rows and start CTA", async () => {
     renderQueue();
 
-    expect(screen.getByRole("heading", { name: /cases & orders/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /patient queue/i })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Alex Patient")).toBeInTheDocument();
     });
 
     expect(screen.getByText(/patient@example.com · TN/)).toBeInTheDocument();
-    expect(screen.getByText("$79.00")).toBeInTheDocument();
-    expect(screen.getByText(/assign & start visit/i)).toBeInTheDocument();
-
-    const link = screen.getByRole("link", { name: /alex patient/i });
-    expect(link).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /claim & start/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /details/i })).toHaveAttribute(
       "href",
       "/ops/11111111-1111-4111-8111-111111111111",
     );
@@ -101,5 +100,38 @@ describe("OpsQueuePage", () => {
       expect(screen.getByRole("alert")).toHaveTextContent(/staff_required/i);
     });
     expect(screen.getByRole("alert")).toHaveTextContent(/OPS_STAFF_EMAILS/i);
+    expect(screen.getByRole("link", { name: /preview with demo data/i })).toHaveAttribute(
+      "href",
+      "/ops?demo=1",
+    );
+  });
+
+  it("loads demo fixtures without calling the API", async () => {
+    const demoOutlet: OpsOutletContext = {
+      ...outlet,
+      accessToken: "demo",
+      demo: true,
+      providerId: "11111111-1111-4111-8111-111111111111",
+    };
+
+    function DemoShell() {
+      return <Outlet context={demoOutlet} />;
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/ops?demo=1&view=todo"]}>
+        <Routes>
+          <Route path="/ops" element={<DemoShell />}>
+            <Route index element={<OpsQueuePage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Jordan Demo")).toBeInTheDocument();
+    });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(screen.getByText(/demo mode/i)).toBeInTheDocument();
   });
 });

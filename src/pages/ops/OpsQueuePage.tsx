@@ -1,107 +1,30 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
+import { Link, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import type { OpsOutletContext } from "./OpsLayout";
+import { DEMO_QUEUE, DEMO_STAFF } from "./opsDemoData";
+import {
+  money,
+  nextActionLabel,
+  relativeTime,
+  statusLabel,
+  statusTone,
+  STATUS_PRIORITY,
+  withDemo,
+  type OpsQueueItem,
+} from "./opsHelpers";
 
-type QueueItem = {
-  id: string;
-  status: string;
-  serviceTier: string;
-  amountCents: number;
-  currency: string;
-  paidAt: string | null;
-  createdAt: string;
-  providerId: string | null;
-  patient: {
-    id: string;
-    email: string;
-    fullName: string;
-    phone?: string;
-    state?: string;
-  } | null;
-};
-
-const STATUS_FILTERS = [
-  { id: "", label: "All" },
-  { id: "needs_attention", label: "Needs attention" },
-  { id: "paid", label: "Paid" },
-  { id: "awaiting_payment", label: "Awaiting pay" },
-  { id: "completed", label: "Completed" },
-  { id: "cancelled", label: "Cancelled" },
-  { id: "scheduled", label: "Scheduled" },
-  { id: "no_show", label: "No-show" },
+const VIEW_FILTERS = [
+  { id: "todo", label: "To do" },
+  { id: "mine", label: "Mine" },
+  { id: "waiting", label: "Waiting" },
+  { id: "done", label: "Done" },
+  { id: "all", label: "All" },
 ] as const;
 
-const STATUS_PRIORITY: Record<string, number> = {
-  paid: 0,
-  awaiting_payment: 1,
-  scheduled: 2,
-  completed: 3,
-  no_show: 4,
-  cancelled: 5,
-};
+type ViewId = (typeof VIEW_FILTERS)[number]["id"];
 
-function money(cents: number, currency = "usd") {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency.toUpperCase(),
-    }).format((cents || 0) / 100);
-  } catch {
-    return `$${((cents || 0) / 100).toFixed(2)}`;
-  }
-}
-
-function relativeTime(iso: string | null | undefined) {
-  if (!iso) return "—";
-  const t = new Date(iso).getTime();
-  if (!Number.isFinite(t)) return "—";
-  const delta = Date.now() - t;
-  const abs = Math.abs(delta);
-  const mins = Math.round(abs / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 48) return `${hrs}h ago`;
-  const days = Math.round(hrs / 24);
-  if (days < 14) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString();
-}
-
-function statusTone(status: string) {
-  switch (status) {
-    case "paid":
-      return "bg-emerald-500/15 text-emerald-200 border-emerald-500/30";
-    case "awaiting_payment":
-      return "bg-amber-500/15 text-amber-100 border-amber-500/30";
-    case "completed":
-      return "bg-sky-500/15 text-sky-100 border-sky-500/30";
-    case "cancelled":
-    case "no_show":
-      return "bg-rose-500/15 text-rose-100 border-rose-500/30";
-    default:
-      return "bg-white/10 text-white/80 border-white/15";
-  }
-}
-
-function nextAction(item: QueueItem): string {
-  switch (item.status) {
-    case "paid":
-      return item.providerId ? "Open visit / write note" : "Assign & start visit";
-    case "awaiting_payment":
-      return "Waiting on checkout";
-    case "scheduled":
-      return "Confirm visit time";
-    case "completed":
-      return "Review chart";
-    case "cancelled":
-    case "no_show":
-      return "Closed";
-    default:
-      return "Review";
-  }
-}
-
-function matchesSearch(item: QueueItem, q: string) {
+function matchesSearch(item: OpsQueueItem, q: string) {
   if (!q) return true;
   const hay = [
     item.patient?.fullName,
@@ -119,30 +42,51 @@ function matchesSearch(item: QueueItem, q: string) {
 }
 
 export default function OpsQueuePage() {
-  const { accessToken } = useOutletContext<OpsOutletContext>();
+  const { accessToken, demo, providerId: layoutProviderId } =
+    useOutletContext<OpsOutletContext>();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const status = params.get("status") || "";
+  const view = (params.get("view") as ViewId) || "todo";
   const qParam = params.get("q") || "";
   const [query, setQuery] = useState(qParam);
-  const [items, setItems] = useState<QueueItem[]>([]);
+  const [items, setItems] = useState<OpsQueueItem[]>([]);
+  const [staffProviderId, setStaffProviderId] = useState<string | null>(
+    layoutProviderId,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startingId, setStartingId] = useState<string | null>(null);
 
-  const apiStatus =
-    status && status !== "needs_attention" ? status : "";
+  // Migrate legacy ?status= to view filters once
+  useEffect(() => {
+    const legacy = params.get("status");
+    if (!legacy || params.get("view")) return;
+    const next = new URLSearchParams(params);
+    next.delete("status");
+    if (legacy === "needs_attention" || legacy === "paid") next.set("view", "todo");
+    else if (legacy === "awaiting_payment") next.set("view", "waiting");
+    else if (legacy === "completed") next.set("view", "done");
+    else next.set("view", "all");
+    setParams(next, { replace: true });
+  }, [params, setParams]);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    if (demo) {
+      setItems(DEMO_QUEUE);
+      setStaffProviderId(DEMO_STAFF.providerId);
+      setLoading(false);
+      return;
+    }
     try {
-      const qs = new URLSearchParams();
-      if (apiStatus) qs.set("status", apiStatus);
-      qs.set("limit", "100");
+      const qs = new URLSearchParams({ limit: "100" });
       const res = await fetch(`/api/ops/queue?${qs.toString()}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data = (await res.json().catch(() => ({}))) as {
-        items?: QueueItem[];
+        items?: OpsQueueItem[];
+        staff?: { providerId?: string | null };
         error?: string;
         message?: string;
       };
@@ -152,61 +96,76 @@ export default function OpsQueuePage() {
         return;
       }
       setItems(data.items || []);
+      if (data.staff?.providerId) setStaffProviderId(data.staff.providerId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [accessToken, apiStatus]);
+  }, [accessToken, demo]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
-      void load();
-    }, 45_000);
+    if (demo) return;
+    const id = window.setInterval(() => void load(), 45_000);
     return () => window.clearInterval(id);
-  }, [load]);
+  }, [load, demo]);
 
   useEffect(() => {
     setQuery(qParam);
   }, [qParam]);
 
-  const attentionCount = useMemo(
-    () => items.filter((i) => i.status === "paid").length,
-    [items],
-  );
+  const myProviderId = staffProviderId || layoutProviderId;
+
+  const counts = useMemo(() => {
+    const todo = items.filter((i) => i.status === "paid").length;
+    const mine = items.filter(
+      (i) => myProviderId && i.providerId === myProviderId && i.status === "paid",
+    ).length;
+    const waiting = items.filter((i) => i.status === "awaiting_payment").length;
+    const done = items.filter((i) => i.status === "completed").length;
+    return { todo, mine, waiting, done, all: items.length };
+  }, [items, myProviderId]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     let rows = items.filter((item) => matchesSearch(item, q));
-    if (status === "needs_attention") {
-      rows = rows.filter((i) => i.status === "paid");
+    switch (view) {
+      case "todo":
+        rows = rows.filter((i) => i.status === "paid");
+        break;
+      case "mine":
+        rows = rows.filter(
+          (i) => myProviderId && i.providerId === myProviderId && i.status === "paid",
+        );
+        break;
+      case "waiting":
+        rows = rows.filter((i) => i.status === "awaiting_payment");
+        break;
+      case "done":
+        rows = rows.filter((i) => i.status === "completed");
+        break;
+      default:
+        break;
     }
     return [...rows].sort((a, b) => {
       const pa = STATUS_PRIORITY[a.status] ?? 9;
       const pb = STATUS_PRIORITY[b.status] ?? 9;
       if (pa !== pb) return pa - pb;
+      const unassigned = Number(!!b.providerId) - Number(!!a.providerId);
+      if (view === "todo" && unassigned !== 0) return unassigned;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [items, query, status]);
+  }, [items, query, view, myProviderId]);
 
-  const filterCounts = useMemo(() => {
-    const map: Record<string, number> = { needs_attention: 0 };
-    for (const item of items) {
-      map[item.status] = (map[item.status] || 0) + 1;
-      if (item.status === "paid") map.needs_attention += 1;
-    }
-    return map;
-  }, [items]);
-
-  function setFilter(id: string) {
+  function setView(id: ViewId) {
     const next = new URLSearchParams(params);
-    if (id) next.set("status", id);
-    else next.delete("status");
+    next.set("view", id);
+    next.delete("status");
     setParams(next, { replace: true });
   }
 
@@ -218,19 +177,55 @@ export default function OpsQueuePage() {
     setParams(next, { replace: true });
   }
 
+  async function startVisit(item: OpsQueueItem, e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (demo) {
+      navigate(withDemo(`/visit/${item.id}`, true));
+      return;
+    }
+    setStartingId(item.id);
+    try {
+      if (!item.providerId) {
+        const res = await fetch(
+          `/api/ops/appointment?id=${encodeURIComponent(item.id)}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ assignSelf: true }),
+          },
+        );
+        if (!res.ok) {
+          const json = (await res.json().catch(() => ({}))) as {
+            error?: string;
+            message?: string;
+          };
+          toast.error(json.message || json.error || "Could not assign case");
+          return;
+        }
+        toast.success("Assigned — opening visit");
+      }
+      navigate(`/visit/${item.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Network error");
+    } finally {
+      setStartingId(null);
+    }
+  }
+
   return (
-    <main className="px-4 md:px-8 py-8 max-w-6xl mx-auto">
+    <main className="px-4 md:px-8 py-8 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
           <p className="text-[11px] tracking-[0.18em] uppercase text-[#9dba8c]/90">
-            Queue
+            Today
           </p>
-          <h1 className="font-display text-3xl md:text-4xl mt-2">
-            Cases & orders
-          </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-xl">
-            Work paid visits first. Open a row to assign yourself, start the
-            visit, or update fulfillment status.
+          <h1 className="font-display text-3xl md:text-4xl mt-2">Patient queue</h1>
+          <p className="text-sm text-white/55 mt-2 max-w-lg">
+            Paid visits first. Claim a case, start the visit, write the note, mark done.
           </p>
         </div>
         <button
@@ -242,54 +237,58 @@ export default function OpsQueuePage() {
         </button>
       </div>
 
-      {!loading && !error && attentionCount > 0 && status !== "needs_attention" && (
+      {demo && (
+        <div className="mb-5 rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-50/90">
+          Demo mode — sample cases only. Live queue needs a deployed API + staff session.
+        </div>
+      )}
+
+      {counts.todo > 0 && view !== "todo" && (
         <button
           type="button"
-          onClick={() => setFilter("needs_attention")}
-          className="mb-6 w-full text-left rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 hover:bg-emerald-500/15 transition-colors"
+          onClick={() => setView("todo")}
+          className="mb-5 w-full text-left rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 hover:bg-emerald-500/15 transition-colors"
         >
           <span className="text-sm text-emerald-100">
-            <span className="font-medium">{attentionCount} paid</span>
-            {" "}
-            {attentionCount === 1 ? "case needs" : "cases need"} clinician attention →
+            <span className="font-medium">{counts.todo} waiting</span> for a clinician →
           </span>
         </button>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <label className="flex-1 relative">
-          <span className="sr-only">Search patients</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitSearch(query);
-            }}
-            onBlur={() => commitSearch(query)}
-            placeholder="Search name, email, state, or id…"
-            className="w-full rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm placeholder:text-white/35 focus:outline-none focus:border-[#9dba8c]/60"
-          />
-        </label>
-      </div>
+      <label className="block mb-4">
+        <span className="sr-only">Search patients</span>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commitSearch(query);
+          }}
+          onBlur={() => commitSearch(query)}
+          placeholder="Search name, email, or state…"
+          className="w-full rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm placeholder:text-white/35 focus:outline-none focus:border-[#9dba8c]/60"
+        />
+      </label>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {STATUS_FILTERS.map((f) => {
-          const active = status === f.id;
-          const count = f.id ? filterCounts[f.id] : items.length;
+      <div className="flex flex-wrap gap-2 mb-6" role="tablist" aria-label="Queue views">
+        {VIEW_FILTERS.map((f) => {
+          const active = view === f.id;
+          const count = counts[f.id];
           return (
             <button
-              key={f.id || "all"}
+              key={f.id}
               type="button"
-              onClick={() => setFilter(f.id)}
-              className={`rounded-full px-3 py-1.5 text-xs border transition-colors ${
+              role="tab"
+              aria-selected={active}
+              onClick={() => setView(f.id)}
+              className={`rounded-full px-3.5 py-1.5 text-xs border transition-colors ${
                 active
                   ? "bg-[#9dba8c] text-[#0b100e] border-[#9dba8c]"
                   : "border-white/15 text-white/70 hover:border-white/35"
               }`}
             >
               {f.label}
-              {typeof count === "number" && count > 0 ? ` · ${count}` : ""}
+              {count > 0 ? ` · ${count}` : ""}
             </button>
           );
         })}
@@ -303,94 +302,107 @@ export default function OpsQueuePage() {
           {error}
           {(error === "staff_required" || error.includes("staff")) && (
             <p className="mt-2 text-rose-100/80">
-              Sign in with an allowlisted staff email, or add yourself to the{" "}
-              <code className="text-xs">providers</code> table. Server env:{" "}
+              Sign in with an allowlisted staff email, or add an active{" "}
+              <code className="text-xs">providers</code> row. Env:{" "}
               <code className="text-xs">OPS_STAFF_EMAILS</code>.
             </p>
           )}
+          <p className="mt-2">
+            <Link to="/ops?demo=1" className="underline underline-offset-4">
+              Preview with demo data
+            </Link>
+          </p>
         </div>
       )}
 
       <div className="rounded-2xl border border-white/10 overflow-hidden">
         <div className="hidden md:grid grid-cols-12 gap-3 px-4 py-3 text-[11px] tracking-wider uppercase text-white/40 border-b border-white/10">
+          <div className="col-span-5">Patient</div>
           <div className="col-span-2">Status</div>
-          <div className="col-span-4">Patient</div>
-          <div className="col-span-2">Next step</div>
-          <div className="col-span-2">Amount</div>
           <div className="col-span-2">When</div>
+          <div className="col-span-3">Action</div>
         </div>
 
         {loading ? (
           <ul className="divide-y divide-white/10" aria-busy="true" aria-label="Loading queue">
-            {[0, 1, 2, 3].map((i) => (
+            {[0, 1, 2].map((i) => (
               <li key={i} className="px-4 py-5 animate-pulse">
-                <div className="grid md:grid-cols-12 gap-3">
-                  <div className="md:col-span-2 h-5 rounded-full bg-white/10 w-20" />
-                  <div className="md:col-span-4 space-y-2">
-                    <div className="h-4 rounded bg-white/10 w-40" />
-                    <div className="h-3 rounded bg-white/5 w-56" />
-                  </div>
-                  <div className="md:col-span-2 h-4 rounded bg-white/10 w-24" />
-                  <div className="md:col-span-2 h-4 rounded bg-white/10 w-16" />
-                  <div className="md:col-span-2 h-3 rounded bg-white/5 w-14" />
-                </div>
+                <div className="h-10 rounded-xl bg-white/5" />
               </li>
             ))}
           </ul>
         ) : visible.length === 0 ? (
-          <div className="px-4 py-10 text-sm text-white/45 space-y-2">
-            <p>No cases in this view.</p>
-            {query && (
-              <p>
-                Clear search or try another filter — paid checkouts appear here
-                after Stripe confirms.
-              </p>
-            )}
+          <div className="px-4 py-12 text-center space-y-2">
+            <p className="text-sm text-white/70">
+              {view === "todo" ? "Nothing waiting — nice work." : "No cases in this view."}
+            </p>
+            <p className="text-xs text-white/40">
+              New paid checkouts show up here after Stripe confirms.
+            </p>
           </div>
         ) : (
           <ul className="divide-y divide-white/10">
-            {visible.map((item) => (
-              <li key={item.id}>
-                <Link
-                  to={`/ops/${item.id}`}
-                  className="grid md:grid-cols-12 gap-2 md:gap-3 px-4 py-4 hover:bg-white/[0.03] transition-colors"
-                >
-                  <div className="md:col-span-2 flex flex-wrap items-center gap-1.5">
-                    <span
-                      className={`inline-flex rounded-full border px-2.5 py-0.5 text-[11px] capitalize ${statusTone(item.status)}`}
+            {visible.map((item) => {
+              const canStart = item.status === "paid";
+              return (
+                <li key={item.id}>
+                  <div className="grid md:grid-cols-12 gap-3 px-4 py-4 items-center hover:bg-white/[0.03] transition-colors">
+                    <Link
+                      to={withDemo(`/ops/${item.id}`, demo)}
+                      className="md:col-span-5 min-w-0 block"
                     >
-                      {item.status.replace(/_/g, " ")}
-                    </span>
-                    {item.status === "paid" && !item.providerId && (
-                      <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-100">
-                        Unassigned
+                      <div className="font-medium truncate">
+                        {item.patient?.fullName || "Unnamed patient"}
+                      </div>
+                      <div className="text-xs text-white/45 truncate mt-0.5">
+                        {item.patient?.email || "—"}
+                        {item.patient?.state ? ` · ${item.patient.state}` : ""}
+                        {` · ${money(item.amountCents, item.currency)}`}
+                      </div>
+                    </Link>
+                    <div className="md:col-span-2 flex flex-wrap gap-1.5">
+                      <span
+                        className={`inline-flex rounded-full border px-2.5 py-0.5 text-[11px] capitalize ${statusTone(item.status)}`}
+                      >
+                        {statusLabel(item.status)}
                       </span>
-                    )}
-                  </div>
-                  <div className="md:col-span-4 min-w-0">
-                    <div className="font-medium truncate">
-                      {item.patient?.fullName || "Unnamed patient"}
+                      {item.status === "paid" && !item.providerId && (
+                        <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-100">
+                          Unassigned
+                        </span>
+                      )}
                     </div>
-                    <div className="text-xs text-white/45 truncate">
-                      {item.patient?.email || "—"}
-                      {item.patient?.state ? ` · ${item.patient.state}` : ""}
-                      {item.serviceTier ? ` · ${item.serviceTier}` : ""}
+                    <div className="md:col-span-2 text-xs text-white/45">
+                      {relativeTime(item.paidAt || item.createdAt)}
+                    </div>
+                    <div className="md:col-span-3 flex flex-wrap gap-2">
+                      {canStart ? (
+                        <button
+                          type="button"
+                          disabled={startingId === item.id}
+                          onClick={(e) => void startVisit(item, e)}
+                          className="rounded-full bg-[#9dba8c] text-[#0b100e] px-3.5 py-1.5 text-xs font-medium disabled:opacity-50"
+                        >
+                          {startingId === item.id
+                            ? "Starting…"
+                            : nextActionLabel(item)}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-white/45 self-center">
+                          {nextActionLabel(item)}
+                        </span>
+                      )}
+                      <Link
+                        to={withDemo(`/ops/${item.id}`, demo)}
+                        className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:border-white/35"
+                      >
+                        Details
+                      </Link>
                     </div>
                   </div>
-                  <div className="md:col-span-2 text-sm text-white/70">
-                    {nextAction(item)}
-                  </div>
-                  <div className="md:col-span-2 text-sm">
-                    {money(item.amountCents, item.currency)}
-                  </div>
-                  <div className="md:col-span-2 text-xs text-white/45">
-                    <span title={item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}>
-                      {relativeTime(item.createdAt)}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
