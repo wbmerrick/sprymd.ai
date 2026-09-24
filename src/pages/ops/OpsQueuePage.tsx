@@ -165,6 +165,13 @@ export default function OpsQueuePage() {
   }, [load]);
 
   useEffect(() => {
+    const id = window.setInterval(() => {
+      void load();
+    }, 45_000);
+    return () => window.clearInterval(id);
+  }, [load]);
+
+  useEffect(() => {
     setQuery(qParam);
   }, [qParam]);
 
@@ -314,7 +321,22 @@ export default function OpsQueuePage() {
         </div>
 
         {loading ? (
-          <p className="px-4 py-10 text-sm text-white/45">Loading queue…</p>
+          <ul className="divide-y divide-white/10" aria-busy="true" aria-label="Loading queue">
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i} className="px-4 py-5 animate-pulse">
+                <div className="grid md:grid-cols-12 gap-3">
+                  <div className="md:col-span-2 h-5 rounded-full bg-white/10 w-20" />
+                  <div className="md:col-span-4 space-y-2">
+                    <div className="h-4 rounded bg-white/10 w-40" />
+                    <div className="h-3 rounded bg-white/5 w-56" />
+                  </div>
+                  <div className="md:col-span-2 h-4 rounded bg-white/10 w-24" />
+                  <div className="md:col-span-2 h-4 rounded bg-white/10 w-16" />
+                  <div className="md:col-span-2 h-3 rounded bg-white/5 w-14" />
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : visible.length === 0 ? (
           <div className="px-4 py-10 text-sm text-white/45 space-y-2">
             <p>No cases in this view.</p>
@@ -333,12 +355,17 @@ export default function OpsQueuePage() {
                   to={`/ops/${item.id}`}
                   className="grid md:grid-cols-12 gap-2 md:gap-3 px-4 py-4 hover:bg-white/[0.03] transition-colors"
                 >
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-2 flex flex-wrap items-center gap-1.5">
                     <span
                       className={`inline-flex rounded-full border px-2.5 py-0.5 text-[11px] capitalize ${statusTone(item.status)}`}
                     >
                       {item.status.replace(/_/g, " ")}
                     </span>
+                    {item.status === "paid" && !item.providerId && (
+                      <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-100">
+                        Unassigned
+                      </span>
+                    )}
                   </div>
                   <div className="md:col-span-4 min-w-0">
                     <div className="font-medium truncate">

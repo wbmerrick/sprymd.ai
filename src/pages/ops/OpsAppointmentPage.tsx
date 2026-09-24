@@ -150,6 +150,15 @@ export default function OpsAppointmentPage() {
   }, [load]);
 
   async function patch(body: Record<string, unknown>, successMessage?: string) {
+    const nextStatus = typeof body.status === "string" ? body.status : null;
+    if (
+      nextStatus &&
+      (nextStatus === "cancelled" || nextStatus === "no_show") &&
+      !window.confirm(`Mark this case as ${nextStatus.replace(/_/g, " ")}?`)
+    ) {
+      return;
+    }
+
     setBusy(true);
     setError(null);
     try {
