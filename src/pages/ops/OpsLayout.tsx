@@ -19,7 +19,6 @@ async function resolveOpsSession(): Promise<OpsSession | null> {
     };
   }
 
-  // Fall back to local Spry session restore (may establish Supabase session).
   await restoreCustomerSession();
   const again = await supabase.auth.getSession();
   const s2 = again.data.session;
@@ -59,18 +58,20 @@ export default function OpsLayout() {
     return <Navigate to={`/?auth=1&returnTo=${returnTo}`} replace />;
   }
 
-  // Client gate is allowlist-only; API also accepts active providers rows.
-  // Non-master signed-in users still reach the page and get a clear API 403.
   return (
-    <div className="min-h-screen bg-[#0b100e] text-[#f3efe6]">
-      <header className="border-b border-white/10 px-4 md:px-8 py-4 flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_#14201a_0%,_#0b100e_55%)] text-[#f3efe6]">
+      <header className="border-b border-white/10 px-4 md:px-8 py-4 flex items-center justify-between gap-4 backdrop-blur-sm bg-black/20">
         <div className="flex items-center gap-4 min-w-0">
           <Link to="/ops" className="font-display text-lg tracking-tight shrink-0">
             Spry<span className="text-[#9dba8c]">MD</span> Ops
           </Link>
-          <span className="text-xs text-white/45 truncate hidden sm:inline">
-            Clinician / order console
-          </span>
+          <nav className="hidden sm:flex items-center gap-3 text-xs text-white/50">
+            <Link to="/ops" className="hover:text-white transition-colors">
+              Queue
+            </Link>
+            <span className="text-white/25">|</span>
+            <span>Clinician console</span>
+          </nav>
         </div>
         <div className="flex items-center gap-3 text-xs text-white/55">
           <span className="hidden md:inline truncate max-w-[220px]">{session.email}</span>
