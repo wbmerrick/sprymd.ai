@@ -249,9 +249,14 @@ export default function OpsQueuePage() {
       }
       const paid = json.paid ?? 0;
       const scanned = json.scanned ?? 0;
+      const cancelled = (json as { cancelled?: number }).cancelled ?? 0;
       if (paid > 0) {
         toast.success(
           `Synced ${paid} payment${paid === 1 ? "" : "s"} from Stripe (${scanned} checked)`,
+        );
+      } else if (cancelled > 0) {
+        toast.message(
+          `Cleared ${cancelled} expired checkout${cancelled === 1 ? "" : "s"} · none newly paid`,
         );
       } else {
         toast.message(

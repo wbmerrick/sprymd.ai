@@ -72,11 +72,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         try {
           const session = await stripe.checkout.sessions.retrieve(sid);
           if (!checkoutSessionLooksPaid(session)) {
+            // Drop abandoned/expired checkouts from the waiting queue
+            if (session.status === "expired") {
+              const now = new Date().toISOString();
+              const { data: cancelled } = await admin
+                .from("appointments")
+                .update({ status: "cancelled", updated_at: now })
+                .eq("id", row.id)
+                .eq("status", "awaiting_payment")
+                .select("id")
+                .maybeSingle();
+              results.push({
+                appointmentId: row.id,
+                sessionId: sid,
+                unpaid: true,
+                expired: true,
+                cancelled: Boolean(cancelled),
+                paymentStatus: session.payment_status,
+                sessionStatus: session.status,
+              });
+              continue;
+            }
             results.push({
               appointmentId: row.id,
               sessionId: sid,
               unpaid: true,
               paymentStatus: session.payment_status,
+              sessionStatus: session.status,
             });
             continue;
           }
@@ -97,10 +119,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const paid = results.filter((r) => r.updated || r.alreadyPaid).length;
+      const cancelled = results.filter((r) => r.cancelled).length;
       res.status(200).json({
         ok: true,
         scanned: results.length,
         paid,
+        cancelled,
         results,
       });
       return;
