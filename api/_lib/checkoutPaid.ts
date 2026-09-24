@@ -21,3 +21,41 @@ export function appointmentEligibleForPaidReconcile(
 ): boolean {
   return status === "awaiting_payment";
 }
+
+/**
+ * Stripe leaves Checkout Session payment_status=paid after refunds.
+ * When PaymentIntent is expanded, reject fully-refunded / canceled intents.
+ */
+export function paymentIntentStillCollectible(paymentIntent: {
+  status?: string | null;
+  amount_received?: number | null;
+  amount_refunded?: number | null;
+} | string | null | undefined): boolean {
+  if (!paymentIntent || typeof paymentIntent === "string") {
+    // Not expanded — caller should expand for reconcile; webhook session object
+    // usually has string id only on completed events (safe to proceed).
+    return true;
+  }
+  if (paymentIntent.status === "canceled") return false;
+  const received = Number(paymentIntent.amount_received || 0);
+  const refunded = Number(paymentIntent.amount_refunded || 0);
+  if (refunded > 0 && received > 0 && refunded >= received) return false;
+  return true;
+}
+
+/** Session looks paid AND any expanded PaymentIntent is not fully refunded. */
+export function checkoutSessionEligibleToMarkPaid(session: {
+  payment_status?: string | null;
+  status?: string | null;
+  payment_intent?:
+    | string
+    | {
+        status?: string | null;
+        amount_received?: number | null;
+        amount_refunded?: number | null;
+      }
+    | null;
+}): boolean {
+  if (!checkoutSessionLooksPaid(session)) return false;
+  return paymentIntentStillCollectible(session.payment_intent);
+}

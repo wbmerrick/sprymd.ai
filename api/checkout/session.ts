@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { handlePreflight } from "../_lib/cors";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 import {
-  checkoutSessionLooksPaid,
+  checkoutSessionEligibleToMarkPaid,
   markAppointmentPaidFromSession,
 } from "../_lib/markCheckoutPaid";
 
@@ -60,8 +60,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ) {
       try {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-        const session = await stripe.checkout.sessions.retrieve(stripeSessionId);
-        if (checkoutSessionLooksPaid(session)) {
+        const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
+          expand: ["payment_intent"],
+        });
+        if (checkoutSessionEligibleToMarkPaid(session)) {
           await markAppointmentPaidFromSession({
             supabase,
             session,

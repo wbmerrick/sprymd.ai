@@ -39,13 +39,23 @@ export async function ensureCheckoutAppointment(
   if (input.appointmentId) {
     const { data: existing, error } = await supabase
       .from("appointments")
-      .select("id, patient_id")
+      .select("id, patient_id, status")
       .eq("id", input.appointmentId)
       .maybeSingle();
 
     if (error) throw new Error(error.message);
     if (!existing?.id || !existing.patient_id) {
       throw new Error("appointment_not_found");
+    }
+
+    // Never revive cancelled/paid/completed rows back to awaiting_payment.
+    const status = String(existing.status || "");
+    if (status && status !== "awaiting_payment") {
+      return {
+        appointmentId: existing.id as string,
+        patientId: existing.patient_id as string,
+        created: false,
+      };
     }
 
     const patch: Record<string, unknown> = {
@@ -62,7 +72,8 @@ export async function ensureCheckoutAppointment(
     const { error: updateError } = await supabase
       .from("appointments")
       .update(patch)
-      .eq("id", existing.id);
+      .eq("id", existing.id)
+      .eq("status", "awaiting_payment");
 
     if (updateError) throw new Error(updateError.message);
 

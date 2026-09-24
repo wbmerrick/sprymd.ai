@@ -167,4 +167,35 @@ describe("markAppointmentPaidFromSession", () => {
     expect(result.updated).toBe(false);
     expect(paymentEvents.length).toBe(0);
   });
+
+  it("skips fully refunded PaymentIntents even when session.payment_status is paid", async () => {
+    const { client, appointments, paymentEvents } = mockSupabase({
+      appointments: [
+        {
+          id: "appt-1",
+          status: "awaiting_payment",
+          patient_id: "pat-1",
+          stripe_checkout_session_id: "cs_test_abc",
+        },
+      ],
+    });
+
+    const result = await markAppointmentPaidFromSession({
+      supabase: client,
+      session: paidSession({
+        payment_intent: {
+          id: "pi_test_1",
+          object: "payment_intent",
+          status: "succeeded",
+          amount_received: 7500,
+          amount_refunded: 7500,
+        } as Stripe.PaymentIntent,
+      }),
+    });
+
+    expect(result.updated).toBe(false);
+    expect(result.skippedRefunded).toBe(true);
+    expect(appointments[0].status).toBe("awaiting_payment");
+    expect(paymentEvents.length).toBe(0);
+  });
 });

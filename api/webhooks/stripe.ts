@@ -184,7 +184,8 @@ async function handleChargeRefunded(charge: Stripe.Charge, stripeEventId: string
           status: "cancelled",
           updated_at: new Date().toISOString(),
         })
-        .eq("id", appointmentId);
+        .eq("id", appointmentId)
+        .in("status", ["awaiting_payment", "paid", "in_progress", "claimed"]);
     }
   }
 

@@ -4,7 +4,7 @@ import { handlePreflight, applyCors } from "../_lib/cors";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 import { requireStaff } from "../_lib/staffAuth";
 import {
-  checkoutSessionLooksPaid,
+  checkoutSessionEligibleToMarkPaid,
   markAppointmentPaidFromSession,
 } from "../_lib/markCheckoutPaid";
 
@@ -70,8 +70,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const sid = String(row.stripe_checkout_session_id || "");
         if (!sid) continue;
         try {
-          const session = await stripe.checkout.sessions.retrieve(sid);
-          if (!checkoutSessionLooksPaid(session)) {
+          const session = await stripe.checkout.sessions.retrieve(sid, {
+            expand: ["payment_intent"],
+          });
+          if (!checkoutSessionEligibleToMarkPaid(session)) {
             // Drop abandoned/expired checkouts from the waiting queue
             if (session.status === "expired") {
               const now = new Date().toISOString();
@@ -87,6 +89,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 sessionId: sid,
                 unpaid: true,
                 expired: true,
+                cancelled: Boolean(cancelled),
+                paymentStatus: session.payment_status,
+                sessionStatus: session.status,
+              });
+              continue;
+            }
+            // Fully refunded but session still shows paid — cancel awaiting noise
+            const looksPaid =
+              session.payment_status === "paid" || session.status === "complete";
+            if (looksPaid) {
+              const now = new Date().toISOString();
+              const { data: cancelled } = await admin
+                .from("appointments")
+                .update({ status: "cancelled", updated_at: now })
+                .eq("id", row.id)
+                .eq("status", "awaiting_payment")
+                .select("id")
+                .maybeSingle();
+              results.push({
+                appointmentId: row.id,
+                sessionId: sid,
+                unpaid: true,
+                refunded: true,
                 cancelled: Boolean(cancelled),
                 paymentStatus: session.payment_status,
                 sessionStatus: session.status,
@@ -174,15 +199,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["payment_intent"],
+    });
 
-    if (!checkoutSessionLooksPaid(session)) {
+    if (!checkoutSessionEligibleToMarkPaid(session)) {
       res.status(200).json({
         ok: false,
         unpaid: true,
         paymentStatus: session.payment_status,
         sessionStatus: session.status,
         sessionId: session.id,
+        refunded:
+          session.payment_status === "paid" || session.status === "complete",
       });
       return;
     }

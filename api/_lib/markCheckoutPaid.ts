@@ -1,13 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
-import { checkoutSessionLooksPaid, appointmentEligibleForPaidReconcile } from "./checkoutPaid";
+import {
+  checkoutSessionLooksPaid,
+  checkoutSessionEligibleToMarkPaid,
+  appointmentEligibleForPaidReconcile,
+} from "./checkoutPaid";
 import { getServiceTier } from "./serviceTiers";
 import {
   ensureCheckoutAppointment,
   recordPaymentEvent,
 } from "./ensureCheckoutAppointment";
 
-export { checkoutSessionLooksPaid, appointmentEligibleForPaidReconcile };
+export {
+  checkoutSessionLooksPaid,
+  checkoutSessionEligibleToMarkPaid,
+  appointmentEligibleForPaidReconcile,
+};
 
 export type MarkPaidResult = {
   updated: boolean;
@@ -16,6 +24,8 @@ export type MarkPaidResult = {
   alreadyPaid: boolean;
   /** True when the row exists but is no longer awaiting_payment (e.g. cancelled after refund). */
   skippedNonAwaiting?: boolean;
+  /** True when Stripe session is paid-looking but PaymentIntent is fully refunded. */
+  skippedRefunded?: boolean;
 };
 
 /**
@@ -48,6 +58,49 @@ export async function markAppointmentPaidFromSession(input: {
   const tier = serviceTierId ? getServiceTier(serviceTierId) : undefined;
   const paidAt = new Date().toISOString();
 
+  // Reject fully-refunded PaymentIntents even when session.payment_status is still paid.
+  if (!checkoutSessionEligibleToMarkPaid(session)) {
+    return {
+      updated: false,
+      appointmentId,
+      patientId,
+      alreadyPaid: false,
+      skippedRefunded: checkoutSessionLooksPaid(session),
+    };
+  }
+
+  // Guard terminal rows BEFORE ensureCheckoutAppointment (which must not revive them).
+  if (appointmentId) {
+    const { data: current } = await supabase
+      .from("appointments")
+      .select("id, status, patient_id")
+      .eq("id", appointmentId)
+      .maybeSingle();
+    if (current?.status === "paid") {
+      return {
+        updated: false,
+        appointmentId: String(current.id),
+        patientId: String(current.patient_id || patientId || ""),
+        alreadyPaid: true,
+      };
+    }
+    if (
+      current &&
+      !appointmentEligibleForPaidReconcile(String(current.status || ""))
+    ) {
+      return {
+        updated: false,
+        appointmentId: String(current.id),
+        patientId: String(current.patient_id || patientId || ""),
+        alreadyPaid: false,
+        skippedNonAwaiting: true,
+      };
+    }
+    if (current?.patient_id && !patientId) {
+      patientId = String(current.patient_id);
+    }
+  }
+
   if ((!appointmentId || !patientId) && patientEmail && serviceTierId && tier) {
     try {
       const ensured = await ensureCheckoutAppointment({
@@ -75,7 +128,7 @@ export async function markAppointmentPaidFromSession(input: {
     }
   }
 
-  // Already paid / terminal / non-awaiting?
+  // Re-check after ensure in case ensure returned an existing non-awaiting row.
   if (appointmentId) {
     const { data: current } = await supabase
       .from("appointments")
@@ -168,7 +221,6 @@ export async function markAppointmentPaidFromSession(input: {
     }
   }
 
-  // Only ledger when we actually transitioned awaiting → paid (avoid noise on skips)
   if (updated) {
     await recordPaymentEvent({
       supabase,

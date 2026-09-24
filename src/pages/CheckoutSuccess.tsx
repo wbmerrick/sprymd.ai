@@ -14,10 +14,15 @@ type SessionLookup = {
 const MAX_LOOKUP_ATTEMPTS = 4;
 const LOOKUP_RETRY_MS = 1500;
 
-async function fetchSession(sessionId: string): Promise<SessionLookup | null> {
-  const res = await fetch(
-    `/api/checkout/session?session_id=${encodeURIComponent(sessionId)}`,
-  );
+async function fetchSessionLookup(input: {
+  sessionId?: string | null;
+  appointmentId?: string | null;
+}): Promise<SessionLookup | null> {
+  const qs = new URLSearchParams();
+  if (input.sessionId) qs.set("session_id", input.sessionId);
+  if (input.appointmentId) qs.set("appointment_id", input.appointmentId);
+  if (![...qs.keys()].length) return null;
+  const res = await fetch(`/api/checkout/session?${qs.toString()}`);
   if (!res.ok) return null;
   return (await res.json()) as SessionLookup;
 }
@@ -31,10 +36,12 @@ const CheckoutSuccess = () => {
       ? { appointmentId: appointmentFromUrl, visitPath: `/visit/${appointmentFromUrl}` }
       : null,
   );
-  const [confirming, setConfirming] = useState(Boolean(sessionId && !appointmentFromUrl));
+  // Always confirm when we have a session_id — cash-pay success URLs include
+  // appointment_id too, and that path must still hit reconcile.
+  const [confirming, setConfirming] = useState(Boolean(sessionId || appointmentFromUrl));
 
   useEffect(() => {
-    if (appointmentFromUrl || !sessionId) {
+    if (!sessionId && !appointmentFromUrl) {
       setConfirming(false);
       return;
     }
@@ -43,7 +50,10 @@ const CheckoutSuccess = () => {
       setConfirming(true);
       try {
         for (let attempt = 0; attempt < MAX_LOOKUP_ATTEMPTS; attempt++) {
-          const data = await fetchSession(sessionId);
+          const data = await fetchSessionLookup({
+            sessionId,
+            appointmentId: appointmentFromUrl,
+          });
           if (cancelled) return;
           if (data) {
             setLookup(data);
@@ -67,7 +77,8 @@ const CheckoutSuccess = () => {
 
   const visitPath =
     lookup?.visitPath ||
-    (lookup?.appointmentId ? `/visit/${lookup.appointmentId}` : null);
+    (lookup?.appointmentId ? `/visit/${lookup.appointmentId}` : null) ||
+    (appointmentFromUrl ? `/visit/${appointmentFromUrl}` : null);
   const stillAwaiting = lookup?.status === "awaiting_payment";
 
   return (
