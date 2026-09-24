@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Outlet, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import OpsQueuePage from "./OpsQueuePage";
@@ -104,6 +104,54 @@ describe("OpsQueuePage", () => {
       "href",
       "/ops?demo=1",
     );
+  });
+
+  it("shows Sync awaiting and posts allAwaiting reconcile", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/ops/reconcile")) {
+        return Response.json({ ok: true, scanned: 1, paid: 1 });
+      }
+      return Response.json({
+        items: [
+          {
+            id: "22222222-2222-4222-8222-222222222222",
+            status: "awaiting_payment",
+            serviceTier: "protocol",
+            amountCents: 7900,
+            currency: "usd",
+            paidAt: null,
+            createdAt: "2026-09-24T11:00:00Z",
+            providerId: null,
+            patient: {
+              id: "p2",
+              email: "wait@example.com",
+              fullName: "Wait Patient",
+              state: "TN",
+            },
+          },
+        ],
+        staff: { email: outlet.email, providerId: null },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderQueue("?view=waiting");
+
+    const syncBtn = await screen.findByRole("button", {
+      name: /sync 1 awaiting/i,
+    });
+    fireEvent.click(syncBtn);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/ops/reconcile",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ allAwaiting: true }),
+        }),
+      );
+    });
   });
 
   it("loads demo fixtures without calling the API", async () => {

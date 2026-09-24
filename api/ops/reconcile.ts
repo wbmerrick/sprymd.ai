@@ -9,7 +9,7 @@ import {
 } from "../_lib/markCheckoutPaid";
 
 /**
- * POST /api/ops/reconcile — { appointmentId? , sessionId? }
+ * POST /api/ops/reconcile — { appointmentId? , sessionId? , allAwaiting? }
  * Staff: pull Stripe Checkout state and mark paid if payment cleared
  * (covers webhook lag / missed events).
  */
@@ -34,6 +34,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? (JSON.parse(req.body || "{}") as Record<string, unknown>)
       : ((req.body || {}) as Record<string, unknown>);
 
+  const allAwaiting =
+    body.allAwaiting === true || body.allAwaiting === "true";
   let sessionId = String(body.sessionId || req.query.session_id || "").trim();
   const appointmentId = String(
     body.appointmentId || req.query.appointment_id || "",
@@ -47,6 +49,62 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const admin = getSupabaseAdmin();
+    const stripe = new Stripe(stripeKey);
+
+    if (allAwaiting) {
+      const { data: rows, error } = await admin
+        .from("appointments")
+        .select("id, stripe_checkout_session_id, status")
+        .eq("status", "awaiting_payment")
+        .not("stripe_checkout_session_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) {
+        res.status(500).json({ error: "lookup_failed", message: error.message });
+        return;
+      }
+
+      const results: Array<Record<string, unknown>> = [];
+      for (const row of rows || []) {
+        const sid = String(row.stripe_checkout_session_id || "");
+        if (!sid) continue;
+        try {
+          const session = await stripe.checkout.sessions.retrieve(sid);
+          if (!checkoutSessionLooksPaid(session)) {
+            results.push({
+              appointmentId: row.id,
+              sessionId: sid,
+              unpaid: true,
+              paymentStatus: session.payment_status,
+            });
+            continue;
+          }
+          const marked = await markAppointmentPaidFromSession({
+            supabase: admin,
+            session,
+            stripeEventId: `reconcile:${session.id}`,
+            eventType: "checkout.session.reconciled",
+          });
+          results.push({ appointmentId: row.id, sessionId: sid, ...marked });
+        } catch (err) {
+          results.push({
+            appointmentId: row.id,
+            sessionId: sid,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+
+      const paid = results.filter((r) => r.updated || r.alreadyPaid).length;
+      res.status(200).json({
+        ok: true,
+        scanned: results.length,
+        paid,
+        results,
+      });
+      return;
+    }
 
     if (!sessionId && appointmentId) {
       const { data: appt, error } = await admin
@@ -82,7 +140,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const stripe = new Stripe(stripeKey);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!checkoutSessionLooksPaid(session)) {

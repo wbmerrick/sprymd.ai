@@ -20,9 +20,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     supabaseServiceRole: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
     resendApiKey: Boolean(process.env.RESEND_API_KEY),
     checkoutFromEmail: Boolean(process.env.CHECKOUT_FROM_EMAIL),
-    opsStaffEmails: Boolean(
+    opsStaffEmailsEnv: Boolean(
       process.env.OPS_STAFF_EMAILS || process.env.MASTER_EMAILS,
     ),
+    // staffAuth ships with a built-in owner email even when env is unset
+    opsStaffBuiltinAllowlist: true,
   };
 
   const ready =

@@ -56,6 +56,7 @@ export default function OpsQueuePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startingId, setStartingId] = useState<string | null>(null);
+  const [reconciling, setReconciling] = useState(false);
 
   // Migrate legacy ?status= to view filters once
   useEffect(() => {
@@ -178,6 +179,50 @@ export default function OpsQueuePage() {
     setParams(next, { replace: true });
   }
 
+  async function syncAwaitingPayments() {
+    if (demo || reconciling) return;
+    setReconciling(true);
+    try {
+      const res = await fetch("/api/ops/reconcile", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ allAwaiting: true }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        scanned?: number;
+        paid?: number;
+        error?: string;
+        message?: string;
+      };
+      if (!res.ok) {
+        toast.error(json.message || json.error || "Could not sync payments");
+        return;
+      }
+      const paid = json.paid ?? 0;
+      const scanned = json.scanned ?? 0;
+      if (paid > 0) {
+        toast.success(
+          `Synced ${paid} payment${paid === 1 ? "" : "s"} from Stripe (${scanned} checked)`,
+        );
+      } else {
+        toast.message(
+          scanned > 0
+            ? `Checked ${scanned} checkout${scanned === 1 ? "" : "s"} — none paid yet`
+            : "No awaiting checkouts to sync",
+        );
+      }
+      await load({ silent: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Network error");
+    } finally {
+      setReconciling(false);
+    }
+  }
+
   async function startVisit(item: OpsQueueItem, e: MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
@@ -229,13 +274,25 @@ export default function OpsQueuePage() {
             Paid visits first. Claim a case, start the visit, write the note, mark done.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="self-start rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
-        >
-          Refresh
-        </button>
+        <div className="flex flex-wrap gap-2 self-start">
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
+          >
+            Refresh
+          </button>
+          {!demo && counts.waiting > 0 && (
+            <button
+              type="button"
+              disabled={reconciling}
+              onClick={() => void syncAwaitingPayments()}
+              className="rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-50 hover:bg-amber-500/20 disabled:opacity-50"
+            >
+              {reconciling ? "Syncing…" : `Sync ${counts.waiting} awaiting`}
+            </button>
+          )}
+        </div>
       </div>
 
       {demo && (
