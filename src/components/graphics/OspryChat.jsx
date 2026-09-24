@@ -380,7 +380,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
               letterSpacing: "0.06em",
               textTransform: "uppercase",
               cursor: "pointer",
-              fontFamily: "var(--font-mono), ui-monospace, monospace",
+              fontFamily: "var(--font-body)",
             }}
           >
             Start your confidential visit <ArrowRight size={14} />

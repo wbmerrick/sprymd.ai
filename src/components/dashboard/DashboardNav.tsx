@@ -64,7 +64,7 @@ export function DashboardNav({ user, unreadCount }: DashboardNavProps) {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#050505]/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-3 py-3 md:px-5">
         <div className="flex min-w-0 items-center gap-6">
-          <Link to="/" className="shrink-0 font-semibold tracking-tight text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <Link to="/" className="shrink-0 font-semibold tracking-tight text-white font-display">
             Spry<span style={{ color: SPRY_MD_COLOR }}>MD</span>
           </Link>
           <nav aria-label="Patient account" className="hidden items-center gap-6 md:flex">

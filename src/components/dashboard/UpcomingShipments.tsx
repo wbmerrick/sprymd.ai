@@ -14,7 +14,7 @@ export function UpcomingShipments({ shipments }: UpcomingShipmentsProps) {
   return (
     <section aria-labelledby="shipments-heading" className="space-y-4">
       <div className="flex items-end justify-between gap-3">
-        <h2 id="shipments-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h2 id="shipments-heading" className="text-lg font-semibold text-white font-display">
           Upcoming shipments
         </h2>
         <Link to="/dashboard/orders" className="text-sm text-[#C89E67] hover:underline">

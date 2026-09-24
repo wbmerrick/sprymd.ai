@@ -17,8 +17,7 @@ export function GreetingHeader({ name }: GreetingHeaderProps) {
       <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Your health hub</p>
       <h1
         id="dashboard-greeting"
-        className="text-3xl font-semibold tracking-tight text-white sm:text-4xl"
-        style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+        className="text-3xl font-semibold tracking-tight text-white sm:text-4xl font-display"
       >
         {hello}, {first}.
       </h1>

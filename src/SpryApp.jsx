@@ -37,7 +37,7 @@ import {
 import { FEATURES } from "./config/features";
 import { recordRefillCheckout } from "./lib/patientCareStore";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
-import { SPRY_MD_COLOR } from "./brand/tokens";
+import { FONT_BODY, FONT_DISPLAY, SPRY_MD_COLOR } from "./brand/tokens";
 import { conditions } from "./data/careCatalog";
 import {
   ADULT_NO,
@@ -98,15 +98,17 @@ const C = {
 };
 
 const fonts = {
-  display: "'Fraunces', 'Georgia', 'Times New Roman', serif",
-  body: "'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-  mono: "'DM Sans', 'Helvetica Neue', sans-serif",
+  display: FONT_DISPLAY,
+  body: FONT_BODY,
+  /** Label/eyebrow style — same face as body, tighter tracking via .mono */
+  mono: FONT_BODY,
 };
 
 const FontInjector = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,400..700&display=swap');
     :root {
+      --font-display: ${fonts.display};
+      --font-body: ${fonts.body};
       --font-mono: ${fonts.body};
       --spry-accent: ${C.accent};
       --spry-bg: ${C.bg};

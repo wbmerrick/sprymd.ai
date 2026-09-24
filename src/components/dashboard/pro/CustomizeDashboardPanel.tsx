@@ -39,7 +39,7 @@ export function CustomizeDashboardPanel({
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#C89E67]">Your account</p>
-          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+          <h2 className="text-lg font-semibold text-white font-display">
             Customize dashboard
           </h2>
           <p className="mt-1 text-sm text-zinc-400">Saved to your account. Choose a layout or toggle panels.</p>

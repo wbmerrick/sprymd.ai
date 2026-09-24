@@ -46,7 +46,7 @@ export default function TreatmentDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{tx.category}</p>
-            <h1 className="mt-1 text-3xl font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+            <h1 className="mt-1 text-3xl font-semibold text-white font-display">
               {tx.medicationName}
             </h1>
             <p className="mt-2 text-sm text-zinc-400">{tx.dosage}</p>

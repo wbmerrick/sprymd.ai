@@ -196,7 +196,7 @@ export function WearableToolbar() {
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-[0.16em] text-[#C89E67]">{selected.brand}</p>
-                      <h3 className="text-lg font-semibold tracking-tight text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+                      <h3 className="text-lg font-semibold tracking-tight text-white font-display">
                         {selected.name}
                       </h3>
                       <p className="mt-1 text-xs text-zinc-500">

@@ -22,7 +22,7 @@ export function NotificationsFeed({ items, onClear, onDismiss }: NotificationsFe
   return (
     <section aria-labelledby="notifications-heading" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="notifications-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h2 id="notifications-heading" className="text-lg font-semibold text-white font-display">
           Notifications
         </h2>
         <div className="flex items-center gap-3 text-sm">

@@ -19,7 +19,7 @@ function CareHome() {
     <div className="space-y-6">
       <header className="space-y-2">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#C89E67]">Care</p>
-        <h1 className="text-2xl font-semibold text-white md:text-3xl" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h1 className="text-2xl font-semibold text-white md:text-3xl font-display">
           Your care at a glance
         </h1>
         <p className="text-sm text-zinc-500">
