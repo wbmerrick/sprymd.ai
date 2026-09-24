@@ -36,13 +36,14 @@ Media inquiries, interview requests, and brand asset access.
 
 ### Mailing address
 
-**[PLACEHOLDER — confirm before publishing]**
+Privacy correspondence is handled by email. For written notices:
 
 SpryMD Inc.  
 Attn: Privacy Officer  
-[Street Address]  
-[City], TN [ZIP]  
+privacy@sprymd.ai  
 United States
+
+A physical mailing address will be published here once the registered office is confirmed.
 
 ## Contact form
 

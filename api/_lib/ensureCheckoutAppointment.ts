@@ -48,9 +48,20 @@ export async function ensureCheckoutAppointment(
       throw new Error("appointment_not_found");
     }
 
-    // Never revive cancelled/paid/completed rows back to awaiting_payment.
+    // Never revive cancelled/paid/completed/in-visit rows back to awaiting_payment.
+    // Pre-payment statuses (scheduled, awaiting_payment, empty) may be moved into checkout.
     const status = String(existing.status || "");
-    if (status && status !== "awaiting_payment") {
+    const terminal = new Set([
+      "cancelled",
+      "canceled",
+      "paid",
+      "completed",
+      "no_show",
+      "in_progress",
+      "claimed",
+      "refunded",
+    ]);
+    if (status && terminal.has(status)) {
       return {
         appointmentId: existing.id as string,
         patientId: existing.patient_id as string,
@@ -73,7 +84,7 @@ export async function ensureCheckoutAppointment(
       .from("appointments")
       .update(patch)
       .eq("id", existing.id)
-      .eq("status", "awaiting_payment");
+      .in("status", ["awaiting_payment", "scheduled"]);
 
     if (updateError) throw new Error(updateError.message);
 
