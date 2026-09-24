@@ -25,6 +25,9 @@ import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import IntakePage from "@/pages/Intake";
 import ProviderNotePage from "@/pages/ProviderNote";
 import VisitRoomPage from "@/pages/VisitRoom";
+import OpsLayout from "@/pages/ops/OpsLayout";
+import OpsQueuePage from "@/pages/ops/OpsQueuePage";
+import OpsAppointmentPage from "@/pages/ops/OpsAppointmentPage";
 import OAuthAuthorizePage from "@/pages/oauth/AuthorizePage";
 import OAuthCallbackPage from "@/pages/oauth/CallbackPage";
 import { FEATURES } from "@/config/features";
@@ -68,6 +71,10 @@ const App = () => (
           <Route path="/intake" element={<IntakePage />} />
           <Route path="/provider/notes" element={<ProviderNotePage />} />
           <Route path="/visit/:appointmentId" element={<VisitRoomPage />} />
+          <Route path="/ops" element={<OpsLayout />}>
+            <Route index element={<OpsQueuePage />} />
+            <Route path=":appointmentId" element={<OpsAppointmentPage />} />
+          </Route>
           {FEATURES.enableDeviceDashboard ? (
             <>
               <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
