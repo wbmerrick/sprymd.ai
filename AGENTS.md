@@ -46,7 +46,11 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
 
 ### Ops / clinician console
 - UI: `/ops` (queue) and `/ops/:appointmentId` (case detail) under `src/pages/ops/`.
+- Demo (no auth): `/ops?demo=1`.
 - APIs: `GET /api/ops/queue`, `GET|PATCH /api/ops/appointment` (staff-gated).
 - Auth: Supabase Bearer session must be on `OPS_STAFF_EMAILS` / `MASTER_EMAILS`, or an
-  active `providers` row (`api/_lib/staffAuth.ts`). Set `OPS_STAFF_EMAILS` on Vercel for
-  additional clinician emails.
+  active `providers` row (`api/_lib/staffAuth.ts`). Allowlisted staff auto-provision a
+  `providers` row on first ops API call. Set `OPS_STAFF_EMAILS` on Vercel for additional
+  clinician emails.
+- After Supabase cutover, staff must **sign up / sign in once** on the clinical project
+  (auth.users was empty post-cutover until first login).
