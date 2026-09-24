@@ -1473,7 +1473,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "SpryMD Inc. Attn: Privacy Officer [Street Address] [City], TN [ZIP] United States"
+            "text": "SpryMD Inc. Attn: Privacy Officer — privacy@sprymd.ai — United States"
           }
         ]
       },
