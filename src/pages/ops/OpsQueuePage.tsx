@@ -156,7 +156,7 @@ export default function OpsQueuePage() {
       const pa = STATUS_PRIORITY[a.status] ?? 9;
       const pb = STATUS_PRIORITY[b.status] ?? 9;
       if (pa !== pb) return pa - pb;
-      const unassigned = Number(!!b.providerId) - Number(!!a.providerId);
+      const unassigned = Number(!!a.providerId) - Number(!!b.providerId);
       if (view === "todo" && unassigned !== 0) return unassigned;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
