@@ -61,6 +61,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const awaiting = counts.awaiting_payment || 0;
     const readyForClinician = paid > 0;
     const ledgerOk = (paymentEvents || 0) > 0;
+    const dailyApiKey = Boolean(process.env.DAILY_API_KEY);
+    const twilioVideo = Boolean(
+      process.env.TWILIO_ACCOUNT_SID &&
+        process.env.TWILIO_API_KEY &&
+        process.env.TWILIO_API_SECRET,
+    );
+    const videoVendor = process.env.VIDEO_VENDOR || null;
+    const videoReady = dailyApiKey || twilioVideo;
 
     res.status(200).json({
       ok: true,
@@ -77,6 +85,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         hasPaymentLedger: ledgerOk,
         hasStaffProvider: Boolean(auth.staff.providerId),
         awaitingPayment: awaiting,
+        videoReady,
+        video: {
+          dailyApiKey,
+          twilioVideo,
+          vendor: videoVendor,
+        },
       },
     });
   } catch (err) {

@@ -5,7 +5,11 @@ import { getServiceTier } from "../_lib/serviceTiers";
 import { sendConfirmationEmail } from "../_lib/sendConfirmationEmail";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 import { recordPaymentEvent } from "../_lib/ensureCheckoutAppointment";
-import { markAppointmentPaidFromSession } from "../_lib/markCheckoutPaid";
+import {
+  checkoutSessionEligibleToMarkPaid,
+  markAppointmentPaidFromSession,
+} from "../_lib/markCheckoutPaid";
+import { expandCheckoutSessionPaymentIntent } from "../_lib/expandCheckoutSession";
 
 export const config = {
   api: {
@@ -59,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (event.type === "checkout.session.completed") {
       await handleCheckoutCompleted(
+        stripe,
         event.data.object as Stripe.Checkout.Session,
         event.id,
       );
@@ -91,6 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function handleCheckoutCompleted(
+  stripe: Stripe,
   session: Stripe.Checkout.Session,
   stripeEventId: string,
 ) {
@@ -109,11 +115,77 @@ async function handleCheckoutCompleted(
 
   let appointmentId = session.metadata?.appointment_id || "";
 
+  // Webhook payloads usually have payment_intent as a string id. Expand so
+  // checkoutSessionEligibleToMarkPaid can reject fully refunded intents
+  // (race: charge.refunded before checkout.session.completed).
+  let sessionForMark: Stripe.Checkout.Session = session;
+  try {
+    sessionForMark = (await expandCheckoutSessionPaymentIntent(
+      stripe,
+      session,
+    )) as Stripe.Checkout.Session;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      JSON.stringify({
+        event: "checkout_completed_expand_pi_failed",
+        sessionId: session.id,
+        message,
+      }),
+    );
+  }
+
+  if (!checkoutSessionEligibleToMarkPaid(sessionForMark)) {
+    const supabase = getSupabaseAdmin();
+    const now = new Date().toISOString();
+    if (appointmentId) {
+      await supabase
+        .from("appointments")
+        .update({ status: "cancelled", updated_at: now })
+        .eq("id", appointmentId)
+        .eq("status", "awaiting_payment");
+    } else {
+      await supabase
+        .from("appointments")
+        .update({ status: "cancelled", updated_at: now })
+        .eq("stripe_checkout_session_id", session.id)
+        .eq("status", "awaiting_payment");
+    }
+    console.log(
+      JSON.stringify({
+        event: "checkout_completed_skipped_refunded",
+        sessionId: session.id,
+        appointmentId: appointmentId || null,
+      }),
+    );
+    await recordPaymentEvent({
+      supabase,
+      stripeEventId,
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId:
+        typeof sessionForMark.payment_intent === "string"
+          ? sessionForMark.payment_intent
+          : sessionForMark.payment_intent?.id || null,
+      appointmentId: appointmentId || null,
+      patientId: session.metadata?.patient_id || null,
+      eventType: "checkout.session.completed_refunded",
+      amountCents,
+      currency: session.currency || tier?.currency || "usd",
+      status: "refunded",
+      payload: {
+        id: session.id,
+        payment_status: session.payment_status,
+        status: session.status,
+      },
+    });
+    return;
+  }
+
   try {
     const supabase = getSupabaseAdmin();
     const result = await markAppointmentPaidFromSession({
       supabase,
-      session,
+      session: sessionForMark,
       stripeEventId,
       eventType: "checkout.session.completed",
     });
@@ -126,6 +198,8 @@ async function handleCheckoutCompleted(
           appointmentId: appointmentId || null,
           sessionId: session.id,
           note: "No appointment row matched; payment recorded in Stripe (+ ledger if available)",
+          skippedRefunded: result.skippedRefunded || false,
+          skippedNonAwaiting: result.skippedNonAwaiting || false,
         }),
       );
     }

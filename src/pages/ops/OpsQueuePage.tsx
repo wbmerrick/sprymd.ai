@@ -129,6 +129,7 @@ export default function OpsQueuePage() {
             hasPaidVisit?: boolean;
             hasPaymentLedger?: boolean;
             awaitingPayment?: number;
+            videoReady?: boolean;
           };
           paymentEvents?: number;
         };
@@ -143,6 +144,10 @@ export default function OpsQueuePage() {
         } else if (!data.launch?.hasPaymentLedger) {
           setLaunchHint(
             "Paid visits found, but payment_events ledger is empty — check Stripe webhooks.",
+          );
+        } else if (data.launch?.videoReady === false) {
+          setLaunchHint(
+            "Cash-pay path is live. Video visits need DAILY_API_KEY (Daily BAA) or Twilio video keys on Vercel.",
           );
         } else {
           setLaunchHint(null);

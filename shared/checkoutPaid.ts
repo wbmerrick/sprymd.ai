@@ -24,6 +24,8 @@ export function appointmentEligibleForPaidReconcile(
 /**
  * Stripe leaves Checkout Session payment_status=paid after refunds.
  * When PaymentIntent is expanded, reject fully-refunded / canceled intents.
+ * String ids are treated as unknown here — callers (webhook/reconcile) must
+ * expand before relying on this for refund safety.
  */
 export function paymentIntentStillCollectible(paymentIntent: {
   status?: string | null;
