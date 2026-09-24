@@ -70,13 +70,14 @@ export default function OpsQueuePage() {
     setParams(next, { replace: true });
   }, [params, setParams]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (opts?: { silent?: boolean }) => {
+    const silent = !!opts?.silent;
+    if (!silent) setLoading(true);
     setError(null);
     if (demo) {
       setItems(DEMO_QUEUE);
       setStaffProviderId(DEMO_STAFF.providerId);
-      setLoading(false);
+      if (!silent) setLoading(false);
       return;
     }
     try {
@@ -92,16 +93,16 @@ export default function OpsQueuePage() {
       };
       if (!res.ok) {
         setError(data.message || data.error || "Unable to load ops queue.");
-        setItems([]);
+        if (!silent) setItems([]);
         return;
       }
       setItems(data.items || []);
       if (data.staff?.providerId) setStaffProviderId(data.staff.providerId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
-      setItems([]);
+      if (!silent) setItems([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [accessToken, demo]);
 
@@ -111,7 +112,7 @@ export default function OpsQueuePage() {
 
   useEffect(() => {
     if (demo) return;
-    const id = window.setInterval(() => void load(), 45_000);
+    const id = window.setInterval(() => void load({ silent: true }), 45_000);
     return () => window.clearInterval(id);
   }, [load, demo]);
 
