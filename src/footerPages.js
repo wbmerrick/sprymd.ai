@@ -1469,11 +1469,15 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**[PLACEHOLDER — confirm before publishing]**"
+            "text": "Privacy correspondence is handled by email. For written notices:"
           },
           {
             "type": "p",
             "text": "SpryMD Inc. Attn: Privacy Officer — privacy@sprymd.ai — United States"
+          },
+          {
+            "type": "p",
+            "text": "A physical mailing address will be published here once the registered office is confirmed."
           }
         ]
       },
@@ -1568,7 +1572,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**[PLACEHOLDER: Brand asset download link — to be added]**"
+            "text": "A public brand-kit download will be linked here when assets are finalized. Until then, email press@sprymd.ai for approved logo files."
           }
         ]
       },

@@ -65,3 +65,14 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
   Alternate bootstrap: create any Auth user, confirm email, insert an active
   `providers` row for that `user_id` — `requireStaff` accepts active providers without
   allowlist. Verified live: `GET /api/ops/queue` returns 200 with staff Bearer on www.
+
+### Launch checklist
+1. Merge PR that adds `POST /api/ops/reconcile` + success-page poll (Stripe webhook lag net).
+2. Complete one live Stripe Checkout ($75 `visit_basic`) → confirm appointment `status=paid`
+   and a `payment_events` row (webhook on production already handles this).
+3. Staff: open `/ops` with allowlisted Supabase login; optional `Sync N awaiting`.
+4. Video: set `DAILY_API_KEY` (Daily BAA first) or Twilio video trio; confirm via `GET /api/health`.
+5. Legal: NPP draft shipped; counsel review before calling it final. No street-address
+   placeholders remain — privacy@sprymd.ai is the contact of record.
+6. Smoke: `node scripts/launch-check.mjs` and
+   `node scripts/watch-paid-appointment.mjs <sessionId> <appointmentId>`.
