@@ -48,7 +48,8 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
 - UI: `/ops` (queue) and `/ops/:appointmentId` (case detail) under `src/pages/ops/`.
 - Demo (no auth): `/ops?demo=1`.
 - APIs: `GET /api/ops/queue`, `GET|PATCH /api/ops/appointment`,
-  `POST /api/ops/reconcile` (staff-gated; `{ appointmentId }` or `{ allAwaiting: true }`).
+  `POST /api/ops/reconcile` (staff-gated; `{ appointmentId }` or `{ allAwaiting: true }`),
+  `GET /api/ops/status` (staff launch snapshot: paid/awaiting counts, payment_events).
 - Success page `GET /api/checkout/session` also reconciles **only** when status is
   `awaiting_payment` (never revives cancelled/refunded rows).
 - Auth: Supabase Bearer session must be on `OPS_STAFF_EMAILS` / `MASTER_EMAILS`, or an
