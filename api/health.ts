@@ -25,6 +25,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ),
     // staffAuth ships with a built-in owner email even when env is unset
     opsStaffBuiltinAllowlist: true,
+    dailyApiKey: Boolean(process.env.DAILY_API_KEY),
+    twilioVideo: Boolean(
+      process.env.TWILIO_ACCOUNT_SID &&
+        process.env.TWILIO_API_KEY &&
+        process.env.TWILIO_API_SECRET,
+    ),
+    videoVendor: process.env.VIDEO_VENDOR || null,
   };
 
   const ready =
