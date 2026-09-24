@@ -416,7 +416,7 @@ export default function OpsAppointmentPage() {
         )}
       </section>
 
-      <section className="mt-6 rounded-2xl border border-white/10 p-5">
+      <section className="mt-6 rounded-2xl border border-white/10 p-5 mb-24 md:mb-0">
         <h2 className="text-sm font-medium mb-3">Recent intakes</h2>
         {data.intakes.length === 0 ? (
           <p className="text-sm text-white/45">
@@ -438,6 +438,21 @@ export default function OpsAppointmentPage() {
           </ul>
         )}
       </section>
+
+      <div className="md:hidden fixed bottom-0 inset-x-0 border-t border-white/10 bg-[#0b100e]/95 backdrop-blur-md px-4 py-3 flex gap-2 z-20">
+        <Link
+          to={`/visit/${a.id}`}
+          className="flex-1 text-center rounded-full bg-[#9dba8c] text-[#0b100e] px-3 py-2.5 text-sm font-medium"
+        >
+          Visit room
+        </Link>
+        <Link
+          to={`/provider/notes?appointmentId=${encodeURIComponent(a.id)}`}
+          className="flex-1 text-center rounded-full border border-white/20 px-3 py-2.5 text-sm"
+        >
+          SOAP note
+        </Link>
+      </div>
     </main>
   );
 }
