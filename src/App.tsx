@@ -46,6 +46,8 @@ const App = () => (
         <AppSpeedInsights />
         <Routes>
           <Route path="/" element={<SpryApp />} />
+          {/* Legacy CTA target (Navbar/About/FAQ) — opens the care options on the homepage. */}
+          <Route path="/quiz" element={<Navigate to="/?view=start" replace />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHomePage />} />
             <Route path="goals" element={<GoalsPage />} />

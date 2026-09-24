@@ -27,5 +27,19 @@ in `.env` (`VITE_SUPABASE_*`) and point at a hosted project.
 
 ### App structure / core flow
 - Routes are defined in `src/App.tsx` (react-router). Key pages live in `src/pages/`.
-- The core user flow is the multi-step medical intake quiz at `/quiz`
-  (`src/pages/Quiz.tsx`), which ends on a treatment-plan screen with a Stripe checkout link.
+- The core user flow is the homepage intake funnel in `src/SpryApp.jsx` (`Intake` → `Plan`;
+ questions and plans live in `src/data/careCatalog.ts`, logic in `src/lib/intakeFlow.ts`),
+ deep-linkable as `/?view=intake&condition=<id>`. `/quiz` redirects to the homepage care
+ options. "Continue to checkout" hands off to `/checkout` (`src/pages/CashPayCheckout.tsx`),
+ which starts a hosted Stripe Checkout via `/api/create-checkout-session` — card details are
+ never collected in-app.
+
+### Clinical DB migrations (hosted Supabase)
+Apply in SQL editor (or `supabase db push`) in order when launching cash-pay visits:
+1. `supabase/migrations/20260921_telehealth_clinical.sql`
+2. `supabase/migrations/20260921_intake_and_visits.sql`
+3. `supabase/migrations/20260923_guest_patients_payment_ledger.sql`
+
+Until these are applied, chart writes return `PGRST205` and checkout still works via Stripe-only
+(with appointment provisioning skipped). Stripe webhook events to enable: `checkout.session.completed`,
+`charge.refunded`, `payment_intent.payment_failed`.

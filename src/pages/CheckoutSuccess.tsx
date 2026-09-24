@@ -1,12 +1,47 @@
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimatedSection from "@/components/AnimatedSection";
 
+type SessionLookup = {
+  appointmentId?: string;
+  visitPath?: string;
+  status?: string;
+};
+
 const CheckoutSuccess = () => {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
+  const appointmentFromUrl = params.get("appointment_id");
+  const [lookup, setLookup] = useState<SessionLookup | null>(
+    appointmentFromUrl
+      ? { appointmentId: appointmentFromUrl, visitPath: `/visit/${appointmentFromUrl}` }
+      : null,
+  );
+
+  useEffect(() => {
+    if (appointmentFromUrl || !sessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/checkout/session?session_id=${encodeURIComponent(sessionId)}`,
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as SessionLookup;
+        if (!cancelled) setLookup(data);
+      } catch {
+        /* keep fallback CTA */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, appointmentFromUrl]);
+
+  const visitPath = lookup?.visitPath || (lookup?.appointmentId ? `/visit/${lookup.appointmentId}` : null);
 
   return (
     <div className="min-h-screen flex flex-col bg-off-white">
@@ -30,8 +65,11 @@ const CheckoutSuccess = () => {
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/visit/upcoming" className="btn-primary text-center">
-                Open visit room
+              <Link
+                to={visitPath || "/visit/upcoming"}
+                className="btn-primary text-center"
+              >
+                {visitPath ? "Open your visit room" : "Open visit room"}
               </Link>
               <Link to="/intake" className="font-body text-sm text-navy underline underline-offset-4 self-center">
                 Review intake
