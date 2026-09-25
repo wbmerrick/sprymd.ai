@@ -39,6 +39,7 @@ import { recordRefillCheckout } from "./lib/patientCareStore";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
 import { FONT_BODY, FONT_DISPLAY, SPRY_MD_COLOR } from "./brand/tokens";
 import { conditions } from "./data/careCatalog";
+import { careEduPages, conditionToEduSlug } from "./data/careEduPages";
 import {
   ADULT_NO,
   ADULT_YES,
@@ -770,48 +771,13 @@ const StickyVisitBar = ({ go }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
+const openCareEdu = (go, conditionId) => {
+  const slug = conditionToEduSlug[conditionId];
+  if (slug) go("page", { slug });
+  else go("intake", { condition: conditionId });
+};
+
 const Landing = ({ go }) => {
-  // Hover-preview of the next page (intake) — fades in the longer you hover.
-  const [preview, setPreview] = useState(null); // { id, rect }
-  const [previewLive, setPreviewLive] = useState(false);
-  const [intakeOverlay, setIntakeOverlay] = useState(null); // condition id shown in front of landing
-  const previewHideTimer = useRef(null);
-
-  const canHoverPreview = () =>
-    typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover)").matches;
-
-  const clearPreviewTimer = () => {
-    if (previewHideTimer.current) { clearTimeout(previewHideTimer.current); previewHideTimer.current = null; }
-  };
-  const showPreview = (id, e) => {
-    if (!canHoverPreview()) return;
-    clearPreviewTimer();
-    setPreview({ id, rect: e.currentTarget.getBoundingClientRect() });
-    setPreviewLive(true);
-  };
-  const keepPreview = clearPreviewTimer;
-  const releasePreview = () => {
-    clearPreviewTimer();
-    previewHideTimer.current = setTimeout(() => {
-      setPreviewLive(false);
-      previewHideTimer.current = setTimeout(() => setPreview(null), 300);
-    }, 200);
-  };
-  useEffect(() => () => clearPreviewTimer(), []);
-
-  const openIntakeOverlay = () => {
-    if (!preview) return;
-    setIntakeOverlay(preview.id);
-    clearPreviewTimer();
-    setPreviewLive(false);
-    setPreview(null);
-  };
-  const overlayGo = (target, p = {}) => {
-    setIntakeOverlay(null);
-    if (target === "landing") return; // closing the overlay keeps you on this page
-    go(target, p);
-  };
-
   return (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
@@ -935,9 +901,7 @@ const Landing = ({ go }) => {
                 return (
                   <button
                     key={cond.id}
-                    onClick={() => go("intake", { condition: cond.id })}
-                    onMouseEnter={(e) => showPreview(cond.id, e)}
-                    onMouseLeave={releasePreview}
+                    onClick={() => openCareEdu(go, cond.id)}
                     className="spry-tile focus-ring text-left rounded-2xl p-4"
                     style={{ background: C.bg }}
                   >
@@ -954,7 +918,7 @@ const Landing = ({ go }) => {
                     </div>
                     <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45, marginTop: 10 }}>{cond.tagline}</p>
                     <span className="inline-flex items-center gap-1.5 mt-3" style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>
-                      Start intake <span className="spry-tile-arrow"><ArrowRight size={14} /></span>
+                      Learn more <span className="spry-tile-arrow"><ArrowRight size={14} /></span>
                     </span>
                   </button>
                 );
@@ -1016,10 +980,8 @@ const Landing = ({ go }) => {
             <ConditionCard
               key={cond.id}
               condition={cond}
-              onClick={() => go("intake", { condition: cond.id })}
+              onClick={() => openCareEdu(go, cond.id)}
               delay={i * 0.06}
-              onHoverStart={(e) => showPreview(cond.id, e)}
-              onHoverEnd={releasePreview}
             />
           ))}
         </div>
@@ -1306,45 +1268,17 @@ const Landing = ({ go }) => {
     </section>
 
     <Footer go={go} />
-
-    {preview && (
-      <IntakePreview
-        key={preview.id}
-        conditionId={preview.id}
-        anchorRect={preview.rect}
-        live={previewLive}
-        onKeep={keepPreview}
-        onRelease={releasePreview}
-        onOpen={openIntakeOverlay}
-      />
-    )}
-
-    {intakeOverlay && (
-      <div
-        className="fixed inset-0 anim-fadeIn"
-        style={{ zIndex: 98, background: "rgba(16,11,6,0.55)", backdropFilter: "blur(3px)" }}
-        onClick={() => setIntakeOverlay(null)}
-      >
-        <div
-          className="absolute overflow-y-auto overscroll-contain"
-          style={{ inset: "min(4vw, 36px)", borderRadius: 18, background: C.bg, boxShadow: "0 40px 100px rgba(9,14,11,0.45)", border: `1px solid ${C.line}` }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Intake key={intakeOverlay} conditionId={intakeOverlay} go={overlayGo} />
-        </div>
-      </div>
-    )}
   </div>
   );
 };
 
-const ConditionCard = ({ condition, onClick, delay, onHoverStart, onHoverEnd }) => {
+const ConditionCard = ({ condition, onClick, delay }) => {
   const [hover, setHover] = useState(false);
-  
+
   return (
     <button onClick={onClick}
-      onMouseEnter={(e) => { setHover(true); onHoverStart?.(e); }}
-      onMouseLeave={() => { setHover(false); onHoverEnd?.(); }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       className="anim-fadeUp focus-ring text-left p-7 md:p-8 transition-all duration-300 group relative overflow-hidden"
       style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
       <div className="absolute inset-y-0 left-0 w-px transition-all" style={{ background: C.accent, opacity: hover ? 1 : 0, boxShadow: hover ? `0 0 24px ${C.accent}` : "none" }} />
@@ -1362,65 +1296,6 @@ const ConditionCard = ({ condition, onClick, delay, onHoverStart, onHoverEnd }) 
         </span>
       </div>
     </button>
-  );
-};
-
-// Floating preview of the next page (the treatment's intake questionnaire).
-// Opacity ramps up the longer you hover; mouse-out fades it away; clicking it
-// opens the real intake in front of the page you were hovering on.
-const IntakePreview = ({ conditionId, anchorRect, live, onKeep, onRelease, onOpen }) => {
-  const [ramp, setRamp] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setRamp(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
-  const condition = conditions[conditionId];
-  const W = 380, H = 500, M = 16, BAR = 36;
-  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-  let left = anchorRect.right + M;
-  if (left + W > vw - M) left = anchorRect.left - M - W;
-  if (left < M) left = Math.min(Math.max(M, anchorRect.left + anchorRect.width / 2 - W / 2), Math.max(M, vw - M - W));
-  const top = Math.min(Math.max(M, anchorRect.top + anchorRect.height / 2 - H / 2), Math.max(M, vh - M - H));
-  const scale = W / 1280;
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={`Open ${condition.name} intake`}
-      onMouseEnter={onKeep}
-      onMouseLeave={onRelease}
-      onClick={onOpen}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
-      className="fixed cursor-pointer focus-ring"
-      style={{
-        left, top, width: W, height: H, zIndex: 95,
-        opacity: live && ramp ? 1 : 0,
-        transition: live ? "opacity 2.8s linear" : "opacity 0.25s ease",
-        borderRadius: 14, overflow: "hidden",
-        background: C.bg, border: `1px solid ${C.line}`,
-        boxShadow: "0 24px 64px rgba(24,16,8,0.3)",
-      }}
-    >
-      <div className="flex items-center justify-between px-3" style={{ height: BAR, background: C.bgAlt, borderBottom: `1px solid ${C.lineSoft}` }}>
-        <div className="flex items-center gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="rounded-full" style={{ width: 8, height: 8, background: C.line }} />
-          ))}
-        </div>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, fontWeight: 600 }}>
-          {condition.name} intake
-        </span>
-        <span style={{ fontSize: 11, fontWeight: 700, color: C.accent }}>Click to open</span>
-      </div>
-      <div style={{ width: W, height: H - BAR, overflow: "hidden" }}>
-        <div aria-hidden="true" style={{ width: 1280, height: (H - BAR) / scale, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
-          <Intake key={conditionId} conditionId={conditionId} go={() => {}} persist={false} />
-        </div>
-      </div>
-    </div>
   );
 };
 
@@ -1521,8 +1396,38 @@ const RichText = ({ text }) => {
   );
 };
 
+const FaqBlock = ({ items }) => {
+  const [open, setOpen] = useState(0);
+  return (
+    <div className="space-y-2" style={{ marginTop: 4 }}>
+      {items.map((item, ii) => {
+        const isOpen = open === ii;
+        return (
+          <div key={ii} style={{ border: `1px solid ${C.lineSoft}`, borderRadius: 12, background: C.bgAlt, overflow: "hidden" }}>
+            <button
+              type="button"
+              className="focus-ring w-full text-left flex items-start justify-between gap-4 px-4 py-3.5"
+              onClick={() => setOpen(isOpen ? -1 : ii)}
+              aria-expanded={isOpen}
+              style={{ background: "transparent", border: "none", color: C.ink }}
+            >
+              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>{item.q}</span>
+              <span className="mono flex-shrink-0" style={{ fontSize: 18, color: C.accent, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
+            </button>
+            {isOpen && (
+              <div className="px-4 pb-4" style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft }}>
+                <RichText text={item.a} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const FooterPage = ({ slug, go, cartCount, user }) => {
-  const page = footerPages[slug];
+  const page = careEduPages[slug] || footerPages[slug];
   const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
   if (!page || (!FEATURES.enableShop && shopStackSlugs.has(slug))) {
     return (
@@ -1578,15 +1483,25 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
             style={{ fontSize: 11, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", background: "transparent", border: "none", padding: 0 }}>
             ← SpryMD
           </button>
-          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase", marginBottom: 14 }}>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: careEduPages[slug] ? "none" : "uppercase", marginBottom: 14, fontWeight: 700 }}>
             {page.eyebrow}
           </div>
           <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.02, fontWeight: 600, color: C.ink, marginBottom: 16 }}>
             {page.title}
           </h1>
-          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: 28 }}>
+          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: page.highlights?.length ? 22 : 28 }}>
             {page.tagline}
           </p>
+          {page.highlights?.length > 0 && (
+            <ul className="space-y-3 mb-8" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {page.highlights.map((item, ii) => (
+                <li key={ii} className="flex gap-3" style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>
+                  <Check size={16} color={C.accent} strokeWidth={2.25} style={{ marginTop: 3, flexShrink: 0 }} />
+                  <span><RichText text={item} /></span>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="flex flex-wrap items-center gap-3">
             <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
             {page.fromPrice && (
@@ -1638,11 +1553,48 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
                       </ol>
                     );
                   }
+                  if (block.type === "table") {
+                    return (
+                      <div key={bi} className="overflow-x-auto" style={{ border: `1px solid ${C.line}`, borderRadius: 14 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                          <thead>
+                            <tr style={{ background: C.bgAlt }}>
+                              {block.headers.map((h, hi) => (
+                                <th key={hi} className="text-left px-4 py-3" style={{ color: C.ink, fontWeight: 650, borderBottom: `1px solid ${C.line}` }}>
+                                  {h}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {block.rows.map((row, ri) => (
+                              <tr key={ri}>
+                                {row.map((cell, ci) => (
+                                  <td key={ci} className="px-4 py-3 align-top" style={{ color: ci === 0 ? C.ink : C.inkSoft, fontWeight: ci === 0 ? 600 : 400, borderBottom: ri < block.rows.length - 1 ? `1px solid ${C.lineSoft}` : "none" }}>
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  }
+                  if (block.type === "faq") {
+                    return <FaqBlock key={bi} items={block.items} />;
+                  }
                   return null;
                 })}
               </div>
             </div>
           ))}
+
+          {page.conditionId && (
+            <div className="pt-2">
+              <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
+            </div>
+          )}
 
           {slug === "contact" && (
             <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
