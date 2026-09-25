@@ -1590,8 +1590,8 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
           <div className="flex flex-wrap items-center gap-3">
             <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
             {page.fromPrice && (
-              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.12em", color: C.muted, textTransform: "uppercase" }}>
-                From ${page.fromPrice}/mo
+              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: C.muted, textTransform: "uppercase" }}>
+                From ${page.fromPrice}/mo if approved · visit fee at checkout
               </span>
             )}
           </div>
@@ -3087,13 +3087,13 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
               <p style={{ fontSize: 15, marginTop: 24, opacity: 0.85, lineHeight: 1.55 }}>
                 {recommended.note}{" "}
                 {conditionId === "pcp"
-                  ? "Includes ongoing clinician support, secure messaging, and care coordination."
-                  : "Compounded at Empower Pharmacy. Free shipping. Includes ongoing clinician support and dose adjustments."}
+                  ? "Includes ongoing clinician support, secure messaging, and care coordination once your visit is completed."
+                  : "If approved, compounded at our pharmacy partner and shipped discreetly. Medication is billed separately after clinician approval — not at this visit checkout."}
               </p>
               <div className="mt-8 space-y-2">
                 {(conditionId === "pcp"
-                  ? ["Unlimited secure messaging", "Annual wellness visit", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
-                  : ["Free shipping, every refill", "Message your clinician anytime", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
+                  ? ["Secure messaging after your visit", "Clinician-led care plan", "Cancel future care anytime", "Tennessee-licensed physician review"]
+                  : ["Discreet shipping when prescribed", "Message your care team after your visit", "Cancel future care anytime", "Tennessee-licensed physician review"]
                 ).map((b) => (
                   <div key={b} className="flex items-center gap-2">
                     <Check size={14} strokeWidth={2} color={C.accentSoft} />
@@ -3116,7 +3116,7 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
                       <Tag color={C.accent} fg={C.paper}>SAVE ${recommended.compareAt - recommended.price} VS {recommended.comparePeer.toUpperCase()}</Tag>
                     </div>
                   )}
-                  <p style={{ fontSize: 12, opacity: 0.6, marginTop: 12 }}>Billed monthly only after a clinician approves. Cancel anytime.</p>
+                  <p style={{ fontSize: 12, opacity: 0.6, marginTop: 12 }}>Plan price if a clinician approves treatment. Soft launch bills medication separately — not at this checkout. Cancel future care anytime.</p>
                 </div>
                 <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to visit checkout</Btn>
                 <p style={{ fontSize: 12, opacity: 0.75, marginTop: 12, lineHeight: 1.45, textAlign: "center" }}>

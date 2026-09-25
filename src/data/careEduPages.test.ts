@@ -27,4 +27,11 @@ describe("careEduPages", () => {
     expect(faq?.type).toBe("faq");
     if (faq?.type === "faq") expect(faq.items.length).toBeGreaterThanOrEqual(3);
   });
+
+  it("does not claim patients pay nothing unless approved", () => {
+    const blob = JSON.stringify(careEduPages);
+    expect(blob).not.toMatch(/pay nothing unless approved/i);
+    expect(blob).toMatch(/visit fee/i);
+    expect(blob).toMatch(/never auto-charged at checkout/i);
+  });
 });
