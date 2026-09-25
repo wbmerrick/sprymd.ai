@@ -88,7 +88,8 @@ const DETAILS: Record<string, OpsDetailResponse> = {
       createdAt: DEMO_QUEUE[0].createdAt,
       updatedAt: DEMO_QUEUE[0].paidAt!,
       providerId: null,
-      stripeCheckoutSessionId: "cs_demo_jordan",
+      stripeCheckoutSessionId: "cs_live_demo_jordan",
+      stripePaymentIntentId: "pi_live_demo_jordan",
       patient: {
         id: "p-demo-1",
         email: "jordan.demo@example.com",
@@ -128,7 +129,8 @@ const DETAILS: Record<string, OpsDetailResponse> = {
       createdAt: DEMO_QUEUE[1].createdAt,
       updatedAt: DEMO_QUEUE[1].paidAt!,
       providerId: DEMO_PROVIDER,
-      stripeCheckoutSessionId: "cs_demo_sam",
+      stripeCheckoutSessionId: "cs_live_demo_sam",
+      stripePaymentIntentId: "pi_live_demo_sam",
       patient: {
         id: "p-demo-2",
         email: "sam.demo@example.com",
@@ -179,6 +181,7 @@ export function getDemoDetail(id: string): OpsDetailResponse | null {
       updatedAt: row.createdAt,
       providerId: row.providerId,
       stripeCheckoutSessionId: null,
+      stripePaymentIntentId: null,
       patient: row.patient
         ? { ...row.patient, dateOfBirth: "1990-01-01" }
         : null,

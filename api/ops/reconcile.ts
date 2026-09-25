@@ -74,8 +74,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             expand: ["payment_intent"],
           });
           if (!checkoutSessionEligibleToMarkPaid(session)) {
+            const expiredByClock =
+              typeof session.expires_at === "number" &&
+              session.expires_at * 1000 <= Date.now() &&
+              session.payment_status !== "paid";
+            const isExpired =
+              session.status === "expired" || expiredByClock;
+
             // Drop abandoned/expired checkouts from the waiting queue
-            if (session.status === "expired") {
+            if (isExpired) {
+              if (session.status === "open") {
+                try {
+                  await stripe.checkout.sessions.expire(sid);
+                } catch {
+                  /* already expired or not expireable */
+                }
+              }
               const now = new Date().toISOString();
               const { data: cancelled } = await admin
                 .from("appointments")
