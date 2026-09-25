@@ -10,6 +10,9 @@ const STARTERS = [
 
 function replyFor(input) {
   const q = input.toLowerCase();
+  if (q.includes("price") || q.includes("cost") || q.includes("how much") || q.includes("pricing")) {
+    return "Today you pay a one-time clinician visit fee (about $75–$99 depending on the visit type). Plan prices shown as from $X/mo are what treatment would cost if a clinician approves — medication is not auto-charged at checkout. Soft launch is cash-pay visit first; meds are coordinated after approval.";
+  }
   if (q.includes("pcp") || q.includes("primary") || q.includes("doctor")) {
     return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Start with a clinician visit (cash-pay), then membership or follow-up plans are offered when clinically appropriate. Tap Start your confidential visit and choose Your doctor.";
   }
@@ -18,9 +21,6 @@ function replyFor(input) {
   }
   if (q.includes("protocol") || q.includes("fit") || q.includes("start") || q.includes("treat") || q.includes("plan")) {
     return "Pick the area you want help with — weight, hormones, focus, sleep, performance, or your main doctor. Every plan is built around you and signed by a licensed doctor.";
-  }
-  if (q.includes("price") || q.includes("cost") || q.includes("how much")) {
-    return "Today you pay a one-time clinician visit fee (about $75–$99 depending on the visit type). Plan prices shown as from $X/mo are what treatment would cost if a clinician approves — medication is not auto-charged at checkout. Soft launch is cash-pay visit first; meds are coordinated after approval.";
   }
   if (q.includes("refill")) {
     return "Sign in for Quick Refills — only for medicine you already have. New care starts with a short form.";

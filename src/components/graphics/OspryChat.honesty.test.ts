@@ -10,4 +10,12 @@ describe("iSpry soft-launch honesty", () => {
     expect(src).not.toMatch(/Shipping is included when medicine is prescribed/);
     expect(src).not.toMatch(/Plans start at \$49\/mo/);
   });
+
+  it("matches cost questions before generic how-it-works", () => {
+    const priceIdx = src.indexOf('q.includes("price")');
+    const howIdx = src.indexOf('q.includes("how")');
+    expect(priceIdx).toBeGreaterThan(-1);
+    expect(howIdx).toBeGreaterThan(-1);
+    expect(priceIdx).toBeLessThan(howIdx);
+  });
 });

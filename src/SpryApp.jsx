@@ -915,7 +915,7 @@ const Landing = ({ go }) => {
                       <div className="min-w-0">
                         <div style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{cond.name}</div>
                         {cond.fromPrice && (
-                          <div style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo</div>
+                          <div style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo if approved</div>
                         )}
                       </div>
                     </div>
@@ -1293,7 +1293,7 @@ const ConditionCard = ({ condition, onClick, delay }) => {
       <h3 className="display relative" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
       <p className="relative" style={{ fontSize: 14, color: C.inkSoft, marginBottom: 20, lineHeight: 1.5 }}>{condition.tagline}</p>
       <div className="flex items-center justify-between relative" style={{ borderTop: `1px solid ${C.lineSoft}`, paddingTop: 14 }}>
-        <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>From</span>
+        <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>From · if approved</span>
         <span className="display" style={{ fontSize: 22, fontWeight: 600, color: C.ink }}>
           ${condition.fromPrice}<span style={{ fontSize: 12, color: C.muted, fontWeight: 500, marginLeft: 4 }}>/mo</span>
         </span>
