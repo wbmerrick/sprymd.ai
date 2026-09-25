@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import NotFound from "./pages/NotFound";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
@@ -747,6 +748,8 @@ const openCareEdu = (go, conditionId) => {
 };
 
 const carePageUrl = (slug) => `/care/${encodeURIComponent(slug)}`;
+const isKnownCarePageSlug = (slug) => Boolean(slug && (careEduPages[slug] || footerPages[slug]));
+const SHOP_STACK_SLUGS = new Set(["supplements", "devices", "sleep"]);
 
 const Landing = ({ go }) => {
   return (
@@ -3372,18 +3375,21 @@ export default function App() {
   useEffect(() => {
     if (!authReady) return;
     if (careSlugFromRoute) {
-      const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
-      if (!FEATURES.enableShop && shopStackSlugs.has(careSlugFromRoute)) {
+      if (!FEATURES.enableShop && SHOP_STACK_SLUGS.has(careSlugFromRoute)) {
         setView("landing");
         setParams({});
         navigate("/", { replace: true });
         return;
       }
-      if (careEduPages[careSlugFromRoute] || footerPages[careSlugFromRoute]) {
+      if (isKnownCarePageSlug(careSlugFromRoute)) {
         setParams({ slug: careSlugFromRoute });
         setView("page");
         return;
       }
+      // /care/:slug matches any string; unknown slugs must 404 — do not leave the homepage mounted.
+      setParams({ slug: careSlugFromRoute });
+      setView("notfound");
+      return;
     }
     const qs = new URLSearchParams(window.location.search);
     if (qs.get("auth") === "1") {
@@ -3539,19 +3545,19 @@ export default function App() {
       return;
     }
     if (target === "page") {
-      const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
-      if (!FEATURES.enableShop && shopStackSlugs.has(p.slug)) {
+      if (!FEATURES.enableShop && SHOP_STACK_SLUGS.has(p.slug)) {
         setView("landing");
         clearFunnelUrl();
         window.scrollTo(0, 0);
         return;
       }
       setParams({ slug: p.slug });
-      setView("page");
-      if (careEduPages[p.slug] || footerPages[p.slug]) {
+      if (isKnownCarePageSlug(p.slug)) {
+        setView("page");
         navigate(carePageUrl(p.slug));
       } else {
-        clearFunnelUrl();
+        setView("notfound");
+        navigate(carePageUrl(p.slug), { replace: true });
       }
       window.scrollTo(0, 0);
       return;
@@ -3694,6 +3700,7 @@ export default function App() {
         </div>
       )}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
+      {view === "notfound" && <NotFound />}
       {view === "intake" && isKnownCondition(params.condition) && (
         <Intake key={params.condition} conditionId={params.condition} treatmentId={params.treatmentId} go={go} />
       )}

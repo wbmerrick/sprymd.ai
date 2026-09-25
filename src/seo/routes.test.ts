@@ -8,6 +8,8 @@ describe("route metadata", () => {
     expect(metaForPath("/dashboard/goals/abc").path).toBe("/dashboard");
     expect(metaForPath("/visit/upcoming").indexable).toBe(false);
     expect(metaForPath("/definitely-not-a-page")).toBe(NOT_FOUND_META);
+    expect(metaForPath("/care/not-real")).toBe(NOT_FOUND_META);
+    expect(metaForPath("/care/ed").indexable).toBe(true);
   });
 
   it("gives every public page a unique title and description", () => {

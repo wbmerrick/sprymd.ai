@@ -132,7 +132,8 @@ export const ROUTE_META: RouteMeta[] = [
     changefreq: "monthly",
     priority: 0.85,
   },
-  { path: "/care", prefix: true, pageTitle: "Care options", description: DEFAULT_DESCRIPTION, indexable: false },
+  // Unknown /care/:slug values fall through to NOT_FOUND_META (no catch-all prefix —
+  // that previously titled bogus care URLs "Care options" while the SPA still matched).
   // Transactional / account surfaces: titled for the tab, kept out of the index.
   { path: "/quiz", pageTitle: "Start your visit", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/intake", pageTitle: "Medical intake", description: DEFAULT_DESCRIPTION, indexable: false },
