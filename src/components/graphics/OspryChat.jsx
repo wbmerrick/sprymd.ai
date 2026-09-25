@@ -23,7 +23,7 @@ function replyFor(input) {
     return "Pick the area you want help with — weight, hormones, focus, sleep, performance, or your main doctor. Every plan is built around you and signed by a licensed doctor.";
   }
   if (q.includes("refill")) {
-    return "Sign in for Quick Refills — only for medicine you already have. New care starts with a short form.";
+    return "Sign in and open Refills to request a clinician review for medicine already on your chart. Soft launch does not auto-charge cards for refills — we confirm payment after approval. New care starts with a short visit.";
   }
   return "I'm iSpry — SpryMD's care helper. Ask about care plans, how Spry works, pricing, your doctor, or refills. For medical decisions, a licensed doctor still signs every plan.";
 }

@@ -27,6 +27,19 @@ describe("checkout honesty (STAR-12)", () => {
     expect(src).toMatch(/visit fee at checkout/);
   });
 
+  it("refill flow does not fake Empower API or card capture", () => {
+    const src = readFileSync(join(process.cwd(), "src/SpryApp.jsx"), "utf8");
+    expect(src).not.toMatch(/Querying Empower medication database/);
+    expect(src).not.toMatch(/Pulled live from the Empower medication database/);
+    expect(src).not.toMatch(/Pay \$\{total\.toFixed\(2\)\} & e-prescribe/);
+    expect(src).not.toMatch(/Your meds are <Mark>on the way<\/Mark>/);
+    expect(src).not.toMatch(/meds are .{0,20}on the way/i);
+    expect(src).not.toMatch(/gethealthy\.com automatically/);
+    expect(src).toMatch(/Submit refill request/);
+    expect(src).toMatch(/NO CARD CHARGE ON THIS STEP/);
+    expect(src).toMatch(/\$0 charged today/);
+  });
+
   it("legacy Checkout mock is visit-fee-only if ever re-routed", () => {
     const src = readFileSync(join(process.cwd(), "src/pages/Checkout.tsx"), "utf8");
     expect(src).not.toMatch(/\$75\/month/i);

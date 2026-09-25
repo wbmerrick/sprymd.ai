@@ -307,38 +307,6 @@ const FontInjector = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 // Catalog (conditions + plans) lives in ./data/careCatalog.ts.
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock Empower Rx History — what a logged-in patient sees in Quick Refills
-// In production: GET https://api.empowerpharmacy.com/v1/patients/{id}/prescriptions
-// Wholesale costs are NEVER exposed client-side; only marginated retail.
-// ─────────────────────────────────────────────────────────────────────────────
-const mockRxHistory = [
-  { rxId: "EMP-294817", name: "Tirzepatide Injection", strength: "8 mg/2 mL · grapeseed oil",
-    sig: "Inject 0.25 mL (10 units) subQ once weekly", lastFilled: "Mar 14, 2026", refills: 5, refillsUsed: 1,
-    price: 279, chilled: true, category: "Weight Loss", icon: Scale, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 28 },
-  { rxId: "EMP-294112", name: "Tadalafil ODT", strength: "6 mg · oral dissolve",
-    sig: "Dissolve one tablet under tongue daily", lastFilled: "Apr 02, 2026", refills: 11, refillsUsed: 0,
-    price: 99, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-291003", name: "Hair Restore MFK Topical", strength: "Minoxidil 5% / Fin 0.3% / Ketoconazole 2% · 60 mL",
-    sig: "Apply 1 mL to scalp twice daily", lastFilled: "Feb 28, 2026", refills: 5, refillsUsed: 2,
-    price: 89, chilled: false, category: "Hair Loss", icon: Sparkles, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 60 },
-  { rxId: "EMP-289445", name: "Tretinoin TAAN Mild Cream", strength: "Tret 0.03% / Azelaic 4% / Niac 4% · 30 g",
-    sig: "Apply pea-sized amount nightly", lastFilled: "Mar 22, 2026", refills: 11, refillsUsed: 1,
-    price: 59, chilled: false, category: "Dermatology", icon: Leaf, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-285332", name: "Sildenafil 50mg", strength: "50 mg · 10 tablets",
-    sig: "Take one tablet 30–60 min before activity", lastFilled: "Apr 18, 2026", refills: 5, refillsUsed: 0,
-    price: 69, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-281109", name: "Methylene Blue Capsule", strength: "10 mg · cognition / mitochondrial support",
-    sig: "Take one capsule each morning", lastFilled: "Mar 30, 2026", refills: 2, refillsUsed: 1,
-    price: 79, chilled: false, category: "Longevity", icon: Zap, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-];
-
 const rxIconFor = (rx) => {
   const cat = (rx?.category || "").toLowerCase();
   if (cat.includes("weight") || cat.includes("metabolic")) return Scale;
@@ -1957,17 +1925,11 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Quick Refills — Empower medication database query for this patient
+// Soft-launch refill UI — request clinician review; no fake Empower API or card capture.
 // ─────────────────────────────────────────────────────────────────────────────
 const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   const [filter, setFilter] = useState("All");
-  const [loaded, setLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 700);
-    return () => clearTimeout(t);
-  }, []);
 
   const rxs = user?.rxHistory || [];
   const categories = ["All", ...Array.from(new Set(rxs.map((r) => r.category)))];
@@ -2007,71 +1969,67 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
           </h1>
           <div className="flex items-center gap-4 flex-wrap">
             <p style={{ fontSize: 15, color: C.inkSoft, maxWidth: 580, lineHeight: 1.55 }}>
-              Pulled live from the Empower medication database. Select what you need refilled — we'll e-prescribe and ship the same day. Your health record updates automatically.
+              Request a refill for medicine already on your SpryMD chart. A clinician confirms appropriateness first — then we coordinate payment and pharmacy shipping. Soft launch does not auto-charge cards here.
             </p>
           </div>
           <div className="mt-6 flex items-center gap-3 flex-wrap">
-            <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} active Rx</Tag>
-            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: SpryMD Clinician</Tag>
-            <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />gethealthy.com synced</Tag>
+            <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} on file</Tag>
+            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Clinician review before ship</Tag>
+            <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />No auto-charge at request</Tag>
           </div>
         </div>
       </section>
 
-      <section className="px-6 md:px-12 py-4 sticky top-0 z-10" style={{ background: C.bg, borderTop: `1px solid ${C.lineSoft}`, borderBottom: `1px solid ${C.lineSoft}` }}>
-        <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
-            {categories.map((cat) => (
-              <button key={cat} onClick={() => setFilter(cat)}
-                className="focus-ring px-4 py-2 rounded-full transition-all whitespace-nowrap"
-                style={{ background: filter === cat ? C.ink : "transparent", color: filter === cat ? C.paper : C.ink,
-                  border: `1px solid ${filter === cat ? C.ink : C.line}`, fontSize: 13, fontWeight: 500 }}>
-                {cat}
-              </button>
-            ))}
-          </div>
-          <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search prescriptions..."
-            className="focus-ring px-4 py-2 rounded-full text-sm"
-            style={{ background: C.bgAlt, border: `1px solid ${C.line}`, color: C.ink, minWidth: 200, fontFamily: fonts.body }} />
-        </div>
-      </section>
-
-      {!loaded && (
-        <section className="px-6 md:px-12 py-20">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center mb-6">
-              <RefreshCw size={32} color={C.accent} strokeWidth={1.5} className="anim-spin" />
+      {rxs.length > 0 && (
+        <section className="px-6 md:px-12 py-4 sticky top-0 z-10" style={{ background: C.bg, borderTop: `1px solid ${C.lineSoft}`, borderBottom: `1px solid ${C.lineSoft}` }}>
+          <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
+              {categories.map((cat) => (
+                <button key={cat} onClick={() => setFilter(cat)}
+                  className="focus-ring px-4 py-2 rounded-full transition-all whitespace-nowrap"
+                  style={{ background: filter === cat ? C.ink : "transparent", color: filter === cat ? C.paper : C.ink,
+                    border: `1px solid ${filter === cat ? C.ink : C.line}`, fontSize: 13, fontWeight: 500 }}>
+                  {cat}
+                </button>
+              ))}
             </div>
-            <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 8 }}>
-              Querying Empower medication database…
-            </h3>
-            <p style={{ fontSize: 13, color: C.muted, fontFamily: fonts.mono, letterSpacing: "0.05em" }}>
-              GET /api/v1/patients/{user.email.split("@")[0]}/prescriptions
-            </p>
+            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search prescriptions..."
+              className="focus-ring px-4 py-2 rounded-full text-sm"
+              style={{ background: C.bgAlt, border: `1px solid ${C.line}`, color: C.ink, minWidth: 200, fontFamily: fonts.body }} />
           </div>
         </section>
       )}
 
-      {loaded && (
-        <section className="px-6 md:px-12 py-8 pb-32">
-          <div className="max-w-7xl mx-auto space-y-3">
-            {filtered.map((rx, i) => (
-              <RxRow key={rx.rxId} rx={rx} inCart={isInCart(rx.rxId)}
-                onAdd={() => addRefill(rx)} onRemove={() => removeRefill(rx.rxId)} delay={i * 0.04} />
-            ))}
-            {filtered.length === 0 && (
-              <div className="text-center py-20"><p style={{ color: C.muted, fontSize: 15 }}>No prescriptions match those filters.</p></div>
-            )}
-          </div>
-        </section>
-      )}
+      <section className="px-6 md:px-12 py-8 pb-32">
+        <div className="max-w-7xl mx-auto space-y-3">
+          {rxs.length === 0 ? (
+            <div className="text-center py-16 px-4 rounded-3xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <p style={{ color: C.ink, fontSize: 18, fontWeight: 500, marginBottom: 8 }}>No prescriptions on file yet</p>
+              <p style={{ color: C.inkSoft, fontSize: 14, lineHeight: 1.55, maxWidth: 420, margin: "0 auto 24px" }}>
+                Start a clinician visit to get a plan reviewed. After a prescription is approved and filled, you can request refills here.
+              </p>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your visit</Btn>
+            </div>
+          ) : (
+            <>
+              {filtered.map((rx, i) => (
+                <RxRow key={rx.rxId} rx={rx} inCart={isInCart(rx.rxId)}
+                  onAdd={() => addRefill(rx)} onRemove={() => removeRefill(rx.rxId)} delay={i * 0.04} />
+              ))}
+              {filtered.length === 0 && (
+                <div className="text-center py-20"><p style={{ color: C.muted, fontSize: 15 }}>No prescriptions match those filters.</p></div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
       {cartCount > 0 && (
         <button onClick={() => go("refill-checkout")}
           className="anim-fadeUp focus-ring fixed bottom-6 right-6 px-6 py-4 rounded-full flex items-center gap-3 shadow-lg transition-transform hover:-translate-y-0.5"
           style={{ background: C.accent, color: "#fff", zIndex: 30 }}>
           <Send size={16} strokeWidth={2} />
-          <span style={{ fontSize: 14, fontWeight: 500 }}>E-Prescribe {cartCount} · ${cartTotal.toFixed(2)}</span>
+          <span style={{ fontSize: 14, fontWeight: 500 }}>Request review · {cartCount} · ~${cartTotal.toFixed(2)}</span>
           <ArrowRight size={16} />
         </button>
       )}
@@ -2134,35 +2092,18 @@ const RxRow = ({ rx, inCart, onAdd, onRemove, delay }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Refill checkout — separate flow (Stripe → gethealthy.com → Empower e-Rx)
+// Soft-launch refill request — no fake card capture; clinician confirms before pay/ship.
 // ─────────────────────────────────────────────────────────────────────────────
 const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
-  const [card, setCard] = useState("");
-  const [exp, setExp] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [zip, setZip] = useState("");
-  const [shipping, setShipping] = useState("standard");
   const [processing, setProcessing] = useState(false);
+  const [note, setNote] = useState("");
 
-  const formatCard = (v) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-  const formatExp = (v) => {
-    const digits = v.replace(/\D/g, "").slice(0, 4);
-    if (digits.length <= 2) return digits;
-    return digits.slice(0, 2) + " / " + digits.slice(2);
-  };
-
-  const hasChilled = refillCart.some((i) => i.chilled);
   const subtotal = refillCart.reduce((s, i) => s + i.price, 0);
-  const shippingCost = shipping === "overnight" ? (hasChilled ? 41 : 33) : (hasChilled ? 20 : 15);
-  const tax = subtotal * 0.0875;
-  const total = subtotal + shippingCost + tax;
-
-  const canSubmit = card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5;
 
   const submit = () => {
-    if (!canSubmit) return;
+    if (!refillCart.length || processing) return;
     setProcessing(true);
-    setTimeout(() => onComplete(), 1500);
+    setTimeout(() => onComplete(), 600);
   };
 
   return (
@@ -2178,72 +2119,43 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
       <div className="px-6 md:px-12 py-12">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
           <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Refill Checkout</span>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Refill request</span>
             <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 8, color: C.ink }}>
-              E-prescribe & <Mark>ship</Mark>.
+              Ask for a <Mark>clinician review</Mark>.
             </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55, maxWidth: 460 }}>
-              Once paid, we transmit your prescriptions to Empower Pharmacy and update your record at gethealthy.com automatically.
+            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55, maxWidth: 480 }}>
+              Soft launch does not charge a card on this screen. Submit the request, a Tennessee-licensed clinician confirms it is appropriate, then we coordinate payment and pharmacy shipping with you — clearly, before anything ships.
             </p>
 
-            <div className="mb-8">
-              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 12, fontWeight: 500 }}>Shipping</label>
-              <div className="grid grid-cols-2 gap-3">
-                {[{ id: "standard", label: "2nd Day Express", days: hasChilled ? "1–2 days · refrigerated" : "1–2 days", price: hasChilled ? 20 : 15 },
-                  { id: "overnight", label: "Eligible TN next-business-day", days: hasChilled ? "After fill · refrigerated" : "After approval and fill", price: hasChilled ? 41 : 33 }].map((s) => (
-                  <button key={s.id} onClick={() => setShipping(s.id)}
-                    className="focus-ring text-left p-4 rounded-xl transition-all"
-                    style={{ background: shipping === s.id ? C.primary : C.paper, color: shipping === s.id ? C.paper : C.ink,
-                      border: `1px solid ${shipping === s.id ? C.primary : C.line}` }}>
-                    <div style={{ fontSize: 14, fontWeight: 500 }}>{s.label}</div>
-                    <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>{s.days}</div>
-                    <div className="display" style={{ fontSize: 18, fontWeight: 500, marginTop: 8 }}>${s.price}</div>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-4">
-                <DeliveryDetailsCard />
-              </div>
-            </div>
-
             <div className="space-y-5">
-              <Field label="Cardholder name">
-                <input value={user.name} readOnly className="focus-ring w-full p-4" style={{ ...inputStyle, opacity: 0.7 }} />
+              <Field label="Account email">
+                <input value={user.email} readOnly className="focus-ring w-full p-4" style={{ ...inputStyle, opacity: 0.7 }} />
               </Field>
-              <div>
-                <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Card information</label>
-                <div className="rounded-xl overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                  <input value={card} onChange={(e) => setCard(formatCard(e.target.value))} placeholder="1234 1234 1234 1234"
-                    className="focus-ring w-full p-4"
-                    style={{ ...inputStyle, border: "none", borderBottom: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                  <div className="flex">
-                    <input value={exp} onChange={(e) => setExp(formatExp(e.target.value))} placeholder="MM / YY"
-                      className="focus-ring flex-1 p-4"
-                      style={{ ...inputStyle, border: "none", borderRight: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                    <input value={cvc} onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="CVC"
-                      className="focus-ring flex-1 p-4"
-                      style={{ ...inputStyle, border: "none", borderRadius: 0, background: "transparent" }} />
-                  </div>
-                </div>
-              </div>
-              <Field label="ZIP / Postal code">
-                <input value={zip} onChange={(e) => setZip(e.target.value.slice(0, 10))} placeholder="38201" className="focus-ring w-full p-4" style={inputStyle} />
+              <Field label="Optional note for your clinician">
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value.slice(0, 500))}
+                  placeholder="Dose change, side effects, timing preferences…"
+                  rows={4}
+                  className="focus-ring w-full p-4"
+                  style={{ ...inputStyle, resize: "vertical", minHeight: 110 }}
+                />
               </Field>
 
-              <Btn onClick={submit} disabled={!canSubmit || processing} size="lg" className="w-full" icon={!processing ? Send : null}>
-                {processing ? <span className="anim-pulse">Processing...</span> : `Pay $${total.toFixed(2)} & e-prescribe`}
+              <Btn onClick={submit} disabled={!refillCart.length || processing} size="lg" className="w-full" icon={!processing ? Send : null}>
+                {processing ? <span className="anim-pulse">Submitting…</span> : "Submit refill request"}
               </Btn>
 
               <div className="flex items-center justify-center gap-2">
                 <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>STRIPE · NCPDP-COMPLIANT E-RX</span>
+                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>NO CARD CHARGE ON THIS STEP</span>
               </div>
             </div>
           </div>
 
           <div>
             <div className="p-8 rounded-3xl sticky top-8" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 24 }}>Refill summary</h3>
+              <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 24 }}>Request summary</h3>
 
               <div className="space-y-4 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
                 {refillCart.map((rx) => {
@@ -2264,14 +2176,13 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
               </div>
 
               <div className="space-y-2 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
-                <Row label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
-                <Row label={`Shipping (${shipping === "overnight" ? "Overnight" : "2-Day"}${hasChilled ? " · refrigerated" : ""})`} value={`$${shippingCost.toFixed(2)}`} />
-                <Row label="Tax (est.)" value={`$${tax.toFixed(2)}`} />
+                <Row label="Estimated med total (if approved)" value={`$${subtotal.toFixed(2)}`} />
+                <Row label="Charged today" value="$0.00" />
               </div>
 
               <div className="flex items-baseline justify-between">
-                <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>Total</span>
-                <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
+                <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>Due now</span>
+                <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>$0</span>
               </div>
 
               <div className="mt-6 p-4 rounded-xl" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
@@ -2280,7 +2191,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
                   <div>
                     <div style={{ fontSize: 12, color: C.ink, fontWeight: 500, marginBottom: 4 }}>What happens next</div>
                     <div style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.5 }}>
-                      Health record updated at gethealthy.com → e-Rx transmitted to Empower → discreet shipment within {shipping === "overnight" ? "24 hours" : "48 hours"}.
+                      Clinician reviews your chart → we confirm payment with you → pharmacy fulfills and ships discreetly. Eligible Tennessee orders may qualify for next-business-day delivery after approval and fill.
                     </div>
                   </div>
                 </div>
@@ -2293,8 +2204,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Refill Success — animated webhook + e-prescribe pipeline
+// Soft-launch refill success — request queued, not “meds on the way”
 // ─────────────────────────────────────────────────────────────────────────────
 const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const [stage, setStage] = useState(0);
@@ -2302,9 +2212,9 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   useEffect(() => {
     const stages = [
       { delay: 0, stage: 0 },
-      { delay: 1200, stage: 1 },
-      { delay: 2600, stage: 2 },
-      { delay: 4000, stage: 3 },
+      { delay: 900, stage: 1 },
+      { delay: 1800, stage: 2 },
+      { delay: 2700, stage: 3 },
     ];
     const timers = stages.map((s) => setTimeout(() => setStage(s.stage), s.delay));
     return () => timers.forEach(clearTimeout);
@@ -2315,7 +2225,7 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const steps = [
     { title: "Refill request recorded", sub: "Saved to your SpryMD account · pending clinician confirmation", icon: Lock },
     { title: "Chart flagged for review", sub: "A clinician will confirm appropriateness before pharmacy release", icon: FileText },
-    { title: "Queued for fulfillment", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} will release after approval`, icon: Send },
+    { title: "Payment & fulfillment next", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} — we confirm payment with you only after approval`, icon: Send },
   ];
 
   return (
@@ -2332,10 +2242,10 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
               {stage >= 3 ? <Check size={32} color={C.paper} strokeWidth={2} /> : <RefreshCw size={28} color={C.primary} strokeWidth={1.75} className="anim-spin" />}
             </div>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>
-              {stage >= 3 ? "Refill complete" : "Processing your refill..."}
+              {stage >= 3 ? "Request submitted" : "Queuing your request…"}
             </span>
             <h1 className="display" style={{ fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 16 }}>
-              {stage >= 3 ? <>Your meds are <Mark>on the way</Mark>.</> : <>Hang tight, <Mark>working...</Mark></>}
+              {stage >= 3 ? <>We&rsquo;ll <Mark>confirm next</Mark>.</> : <>Hang tight, <Mark>saving…</Mark></>}
             </h1>
           </div>
 
@@ -2370,17 +2280,17 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
               <div className="rounded-2xl p-6 mb-6" style={{ background: C.primary, color: C.paper }}>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div>
-                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Order #SR-29481</span>
+                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Refill request</span>
                     <div className="display" style={{ fontSize: 24, fontWeight: 500, marginTop: 4 }}>
-                      ${total.toFixed(2)} · {refillCart.length} prescription{refillCart.length > 1 ? "s" : ""}
+                      ~${total.toFixed(2)} · {refillCart.length} item{refillCart.length > 1 ? "s" : ""} · $0 charged today
                     </div>
                   </div>
                   <Tag color="rgba(255,255,255,0.1)" fg={C.paper}>
-                    <Truck size={10} style={{ display: "inline", marginRight: 4 }} />Tracking sent to email
+                    <Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Pending clinician review
                   </Tag>
                 </div>
                 <p style={{ fontSize: 13, color: "rgba(248,244,234,0.75)", lineHeight: 1.55 }}>
-                  Empower will dispense and ship within 24–48 hours. You'll get tracking once the package leaves the facility. Refrigerated items ship in insulated cold-chain packaging.
+                  Nothing ships until a clinician approves and you confirm payment. Questions? Email support@sprymd.ai — we aim to reply within one business day.
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 flex-wrap">
