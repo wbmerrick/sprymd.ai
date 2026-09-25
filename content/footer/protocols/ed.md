@@ -1,54 +1,51 @@
 ---
 slug: ed
-title: Erectile Dysfunction Protocol
+title: Your Ultimate On-Demand ED Solution
 navLabel: ED
-eyebrow: PROTOCOLS
-tagline: PDE5 protocols. Daily or on-demand.
-fromPrice: "49"
-ctaLabel: Begin protocol
+eyebrow: Wingman by spryMD.ai
+tagline: The definitive 2-in-1 treatment for uncompromising performance, flexibility, and spontaneity.
+fromPrice: "65"
+ctaLabel: Start Your SpryMD Consultation
 ctaTarget: intake
 conditionId: ed
 ---
 
-## Overview
+## Highlights
 
-Erectile dysfunction is common, treatable, and rarely something you need to navigate alone in a waiting room. SpryMD offers sildenafil and tadalafil in on-demand, daily, and oral-dissolve formulations — compounded by Empower Pharmacy and prescribed only after clinician review.
+- **Maximum Strength Formulation:** Combines 80 mg Sildenafil + 20 mg Tadalafil
+- **Rapid Onset:** Fast-acting support so you are ready when the moment strikes
+- **Extended Window:** Up to 36 hours of sustained erectile confidence
+- **Discreet & Direct:** 100% online consultation with secure, private shipping
 
-Whether you need a cost-effective PRN option, steady-state daily coverage, or a combination protocol for partial responders, your dose and formulation are matched to your physiology and preference. Discreet packaging. No pharmacy line.
+## The Power of the 2-in-1 Advantage
 
-## Who it's for
+Wingman is a precision-engineered formulation designed for modern men who demand both immediate results and lasting confidence. By merging the two most trusted, clinically proven active ingredients in erectile dysfunction treatment, Wingman eliminates the need to choose between fast action and longevity.
 
-- Men experiencing difficulty achieving or maintaining an erection sufficient for sexual activity
-- Patients who want on-demand dosing, daily low-dose coverage, or fast-onset oral dissolve tablets
-- Those who have tried standard PDE5 monotherapy without full response
-- Anyone seeking private, clinician-supervised treatment without an in-office visit
+| Performance Metric | Wingman | Traditional Single-Ingredient Meds |
+| --- | --- | --- |
+| Active Ingredients | Sildenafil (80 mg) + Tadalafil (20 mg) | Single ingredient only |
+| Response Time | Fast-acting for on-demand use | Often requires rigid timing or daily dosing |
+| Effective Duration | Up to 36 hours of flexibility | Typically limited to 4–6 hours |
+| Care Delivery | Seamless SpryMD digital clinic | Traditional in-person waiting rooms |
 
-## What you get
+## Get Started in 3 Simple Steps
 
-- Licensed clinician review before any prescription is issued
-- Formulation matched to your timing preference — PRN, daily, or ODT
-- Prescriptions compounded by Empower Pharmacy and shipped discreetly
-- Secure messaging for dose adjustments and side effect management
-- Combination protocols available when monotherapy is insufficient
-- Cancel anytime
+01. **Quick Clinical Intake** — Complete a brief, secure medical questionnaire directly on the spryMD.ai platform. Skip the waiting room and provide your health history on your own schedule.
 
-## How it works
+02. **Licensed Provider Review** — A U.S.-licensed medical provider will evaluate your profile to ensure the Wingman 80/20 formulation is the safest and most effective treatment for you. You pay nothing unless approved.
 
-01. **Assess** — Complete a confidential intake covering symptoms, cardiovascular history, current medications, and treatment preferences.
+03. **Fast, Discreet Delivery** — Once prescribed, your medication is processed by a trusted pharmacy and shipped directly to your doorstep in unmarked packaging to protect your privacy.
 
-02. **Clinician interpretation** — A licensed provider reviews your case, screens for contraindications (including nitrate use), and selects the appropriate agent and dose.
+## Frequently Asked Questions
 
-03. **Continuous optimization** — Adjust formulation or dose based on response. Escalate to combination protocols when clinically indicated.
+**What makes the 80 mg Sildenafil / 20 mg Tadalafil combination so effective?**
+Sildenafil provides a robust, immediate increase in blood flow for harder, fuller erections right when you need them. Tadalafil stays in your system longer, providing a reliable foundation of erectile support that can last for up to 36 hours. Wingman combines these properties for the ultimate on-demand solution.
 
-## Protocol options
+**Is it safe to take both medications together?**
+Wingman is formulated to maximize the benefits of both PDE5 inhibitors. During your initial intake, a spryMD.ai medical provider will carefully review your specific health history to ensure this precise dosage combination is safe and appropriate for your body.
 
-- **Sildenafil 50mg PRN** — On-demand tablet. Onset 30–60 minutes. Most cost-effective entry.
-- **Tadalafil 5mg Daily** — Steady-state coverage. No timing required before activity.
-- **Sildenafil ODT** — 60 mg oral dissolve. Fast melt, onset ~15 minutes. No water needed.
-- **Tadalafil ODT Daily** — 6 mg daily oral dissolve for spontaneity without a swallowed pill.
-- **Hard Mint Combo ODT** — Sildenafil 55 mg + tadalafil 12.5 mg. Faster onset plus extended duration for partial responders.
-- **Climax Combo ODT** — Tadalafil 12 mg + oxytocin 100 IU. Premium tier for patients seeking enhanced sensory response.
+**Do I need an existing prescription?**
+No. The spryMD.ai platform facilitates the entire process. Our integrated telehealth infrastructure connects you with a medical professional who can write your prescription entirely online if you are a suitable candidate.
 
-## Safety
-
-We screen for cardiovascular disease, nitrate or riociguat use, severe hepatic impairment, and other contraindications to PDE5 inhibitors. Treatment is declined when the risk profile is unfavorable. SpryMD is not emergency care — call 911 for chest pain, sudden vision or hearing loss, priapism lasting more than four hours, or any acute medical emergency.
+**How quickly will I receive my medication?**
+Our streamlined digital platform ensures your intake is reviewed promptly. Most approved prescriptions are processed and shipped safely and discreetly within 24 to 48 hours.
