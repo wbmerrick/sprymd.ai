@@ -11,6 +11,7 @@ import {
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
 import BrandAtmosphere from "./components/brand/BrandAtmosphere";
+import SlideToConfirm from "./components/auth/SlideToConfirm";
 import { brandPlates } from "./assets/brand/catalog";
 import imgFounder from "./assets/brand/founder-dr-merrick.jpg";
 
@@ -1744,8 +1745,12 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  // Login launches only after the slide-to-confirm completes (not via Enter/submit click).
+  const handleFormSubmit = (e) => {
     e.preventDefault();
+  };
+
+  const launchAuth = async () => {
     if (!canSubmit || loading) return;
     setLoading(true);
     setError("");
@@ -1864,7 +1869,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-4">
             {mode === "signup" && (
               <>
                 <div>
@@ -1902,10 +1907,19 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
               </div>
             )}
 
-            <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
-              {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                       : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
-            </Btn>
+            <SlideToConfirm
+              label={mode === "signin" ? "Slide to sign in" : "Slide to create account"}
+              loadingLabel={mode === "signin" ? "Signing in…" : "Creating account…"}
+              disabled={!canSubmit}
+              loading={loading}
+              onConfirm={launchAuth}
+              accent={C.accent}
+              accentDeep={C.accentDeep}
+              trackBg={T.inputBg}
+              trackBorder={T.line}
+              ink={T.ink}
+              muted={T.muted}
+            />
 
             <div className="flex items-center gap-2 justify-center pt-1">
               <Lock size={11} color={T.muted} />
