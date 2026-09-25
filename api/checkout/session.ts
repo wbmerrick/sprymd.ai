@@ -78,6 +78,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .eq("id", data.id)
             .maybeSingle();
           if (refreshed.data) data = refreshed.data;
+        } else {
+          // Drop expired / fully-refunded checkouts from the waiting queue
+          // when the success page (or ops) looks them up.
+          const expired = session.status === "expired";
+          const looksPaid =
+            session.payment_status === "paid" || session.status === "complete";
+          if (expired || looksPaid) {
+            const now = new Date().toISOString();
+            const { data: cancelled } = await supabase
+              .from("appointments")
+              .update({ status: "cancelled", updated_at: now })
+              .eq("id", data.id)
+              .eq("status", "awaiting_payment")
+              .select(
+                "id, status, service_tier, amount_cents, paid_at, patient_id, stripe_checkout_session_id",
+              )
+              .maybeSingle();
+            if (cancelled) data = cancelled;
+          }
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
