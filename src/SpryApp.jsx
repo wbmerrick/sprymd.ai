@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
@@ -40,6 +40,7 @@ import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/gra
 import { FONT_BODY, FONT_DISPLAY, SPRY_MD_COLOR } from "./brand/tokens";
 import { conditions } from "./data/careCatalog";
 import { careEduPages, conditionToEduSlug } from "./data/careEduPages";
+import { applyHead } from "./lib/seo";
 import {
   ADULT_NO,
   ADULT_YES,
@@ -777,6 +778,8 @@ const openCareEdu = (go, conditionId) => {
   else go("intake", { condition: conditionId });
 };
 
+const carePageUrl = (slug) => `/care/${encodeURIComponent(slug)}`;
+
 const Landing = ({ go }) => {
   return (
   <div className="anim-fadeIn relative">
@@ -1503,36 +1506,12 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
 
   useEffect(() => {
     if (!page) return;
-    const prevTitle = document.title;
-    const title = `${page.title} | SpryMD`;
-    document.title = title;
-    const desc = page.tagline || page.title;
-    let meta = document.querySelector('meta[name="description"]');
-    const prevDesc = meta?.getAttribute("content") || "";
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute("content", desc);
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) {
-      ogTitle = document.createElement("meta");
-      ogTitle.setAttribute("property", "og:title");
-      document.head.appendChild(ogTitle);
-    }
-    ogTitle.setAttribute("content", title);
-    let ogDesc = document.querySelector('meta[property="og:description"]');
-    if (!ogDesc) {
-      ogDesc = document.createElement("meta");
-      ogDesc.setAttribute("property", "og:description");
-      document.head.appendChild(ogDesc);
-    }
-    ogDesc.setAttribute("content", desc);
-    return () => {
-      document.title = prevTitle;
-      if (meta) meta.setAttribute("content", prevDesc);
-    };
+    applyHead({
+      pageTitle: page.title,
+      description: page.tagline || page.title,
+      path: careEduPages[slug] ? `/care/${slug}` : `/`,
+      noindex: !careEduPages[slug],
+    });
   }, [page, slug]);
 
   if (!page || (!FEATURES.enableShop && shopStackSlugs.has(slug))) {
@@ -3440,6 +3419,9 @@ const readFunnelFromUrl = () => {
 
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const routeParams = useParams();
+  const careSlugFromRoute = routeParams.slug;
   // Start on the funnel step named in the URL so a refresh doesn't flash the landing page.
   const [initialFunnel] = useState(readFunnelFromUrl);
   const [view, setView] = useState(initialFunnel?.view ?? "landing");
@@ -3475,10 +3457,24 @@ export default function App() {
     return "intake";
   };
 
-  // Deep-links: /?auth=1&returnTo=…, /?view=marketplace&filter=Devices,
+  // Deep-links: /care/:slug, /?auth=1&returnTo=…, /?view=marketplace&filter=Devices,
   // /?view=start (care options), /?view=intake|plan&condition=<id> (also /quiz).
   useEffect(() => {
     if (!authReady) return;
+    if (careSlugFromRoute) {
+      const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+      if (!FEATURES.enableShop && shopStackSlugs.has(careSlugFromRoute)) {
+        setView("landing");
+        setParams({});
+        navigate("/", { replace: true });
+        return;
+      }
+      if (careEduPages[careSlugFromRoute] || footerPages[careSlugFromRoute]) {
+        setParams({ slug: careSlugFromRoute });
+        setView("page");
+        return;
+      }
+    }
     const qs = new URLSearchParams(window.location.search);
     if (qs.get("auth") === "1") {
       const returnTo = qs.get("returnTo") || "dashboard";
@@ -3517,7 +3513,7 @@ export default function App() {
       window.history.replaceState({ spryView: shown, condition, treatmentId }, "", funnelUrl(shown, condition));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authReady]);
+  }, [authReady, careSlugFromRoute, location.pathname]);
 
   // Browser Back / Forward between landing ⇄ intake ⇄ plan.
   useEffect(() => {
@@ -3544,6 +3540,10 @@ export default function App() {
   };
 
   const clearFunnelUrl = () => {
+    if (window.location.pathname.startsWith("/care/")) {
+      navigate("/", { replace: true });
+      return;
+    }
     if (window.location.search) window.history.replaceState({}, "", "/");
   };
 
@@ -3638,7 +3638,11 @@ export default function App() {
       }
       setParams({ slug: p.slug });
       setView("page");
-      clearFunnelUrl();
+      if (careEduPages[p.slug] || footerPages[p.slug]) {
+        navigate(carePageUrl(p.slug));
+      } else {
+        clearFunnelUrl();
+      }
       window.scrollTo(0, 0);
       return;
     }
@@ -3741,6 +3745,7 @@ export default function App() {
     setView("landing");
     setParams({});
     clearFunnelUrl();
+    navigate("/");
     window.scrollTo(0, 0);
   };
 
@@ -3772,7 +3777,7 @@ export default function App() {
       {view === "landing" ? <BrandAtmosphere plate="tn" variant="site" locked objectPosition="center 40%" /> : null}
 
       {view === "landing" && (
-        <div className="relative z-10">
+        <div id="main-content" className="relative z-10">
           <DeliveryBar onClick={() => go("how")} glass />
           <Header go={go} cartCount={cartCount} user={user} glass />
           <Landing go={go} />
