@@ -28,6 +28,7 @@ export type OpsDetailResponse = {
     updatedAt: string;
     providerId: string | null;
     stripeCheckoutSessionId: string | null;
+    stripePaymentIntentId?: string | null;
     patient: {
       id: string;
       email: string;
@@ -43,6 +44,8 @@ export type OpsDetailResponse = {
     status: string | null;
     amount_cents: number | null;
     created_at: string;
+    stripe_checkout_session_id?: string | null;
+    stripe_payment_intent_id?: string | null;
   }>;
   intakes: Array<{
     id: string;

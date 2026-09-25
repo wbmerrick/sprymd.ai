@@ -46,6 +46,16 @@ describe("OpsAppointmentPage", () => {
     expect(screen.getByRole("link", { name: /open soap note/i })).toBeInTheDocument();
     expect(screen.getByText(/async review checklist/i)).toBeInTheDocument();
     expect(screen.getByText(/launch playbook/i)).toBeInTheDocument();
+    expect(screen.getByText(/decline \/ refund/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /open stripe payment \(refund\)/i }),
+    ).toHaveAttribute(
+      "href",
+      "https://dashboard.stripe.com/payments/pi_live_demo_jordan",
+    );
+    expect(
+      screen.getByRole("button", { name: /decline \+ refund/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/erectile dysfunction for ~8 months/i)).toBeInTheDocument();
     expect(screen.getByText(/age 38|age \d+/i)).toBeInTheDocument();
   });

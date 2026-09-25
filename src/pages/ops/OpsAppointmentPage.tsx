@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { OpsOutletContext } from "./OpsLayout";
@@ -11,9 +11,13 @@ import {
   withDemo,
   type OpsDetailResponse,
 } from "./opsHelpers";
+import {
+  openStripeRefundDeepLink,
+  stripeRefundDeepLink,
+} from "@/lib/stripeDashboardLinks";
 
 const PRIMARY_BY_STATUS: Record<string, string[]> = {
-  paid: ["completed"],
+  paid: ["completed", "cancelled"],
   awaiting_payment: ["paid", "cancelled"],
   scheduled: ["paid", "cancelled", "no_show"],
   completed: [],
@@ -208,6 +212,56 @@ export default function OpsAppointmentPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  const refundIds = useMemo(() => {
+    if (!data?.appointment) {
+      return { paymentIntentId: null as string | null, checkoutSessionId: null as string | null };
+    }
+    const fromPaymentsPi = data.payments
+      .map((p) => p.stripe_payment_intent_id)
+      .find((id) => Boolean(id && String(id).trim()));
+    const fromPaymentsCs = data.payments
+      .map((p) => p.stripe_checkout_session_id)
+      .find((id) => Boolean(id && String(id).trim()));
+    return {
+      paymentIntentId:
+        data.appointment.stripePaymentIntentId ||
+        (fromPaymentsPi ? String(fromPaymentsPi) : null),
+      checkoutSessionId:
+        data.appointment.stripeCheckoutSessionId ||
+        (fromPaymentsCs ? String(fromPaymentsCs) : null),
+    };
+  }, [data]);
+
+  const refundLink = useMemo(() => stripeRefundDeepLink(refundIds), [refundIds]);
+
+  async function declineAndRefund() {
+    if (!data?.appointment) return;
+    if (demo) {
+      if (refundLink) {
+        openStripeRefundDeepLink(refundIds);
+      }
+      toast.message("Demo — opened Stripe link; status not saved");
+      return;
+    }
+    const ok = window.confirm(
+      "Decline this patient?\n\n1) Stripe Dashboard opens so you can issue a full refund.\n2) This case will be marked cancelled.\n\nContinue?",
+    );
+    if (!ok) return;
+    const opened = openStripeRefundDeepLink(refundIds);
+    if (!opened) {
+      toast.error(
+        "No Stripe payment id on this case — refund manually in Dashboard, then mark cancelled.",
+      );
+    } else {
+      toast.message(
+        refundLink?.kind === "payment_intent"
+          ? "Stripe payment opened — click Refund, then return here"
+          : "Stripe search opened — open the payment, Refund, then return here",
+      );
+    }
+    await patch({ status: "cancelled" }, "Marked cancelled — finish refund in Stripe");
   }
 
   if (loading) {
@@ -418,9 +472,9 @@ export default function OpsAppointmentPage() {
           <h2 className="text-sm font-medium mb-2">Launch playbook</h2>
           <ul className="text-sm text-white/65 space-y-2 list-disc pl-5">
             <li>
-              <span className="text-white/85">Not a candidate:</span> full
-              refund in Stripe Dashboard (Payments → charge → Refund), then mark
-              this case cancelled. Webhook records{" "}
+              <span className="text-white/85">Not a candidate:</span> use{" "}
+              <span className="text-white/85">Decline + refund</span> below —
+              opens Stripe, then marks this case cancelled. Webhook records{" "}
               <code className="text-xs text-white/50">charge.refunded</code>.
             </li>
             <li>
@@ -433,6 +487,74 @@ export default function OpsAppointmentPage() {
               show as SPRYMD on the card — no ED wording.
             </li>
           </ul>
+        </section>
+      )}
+
+      {(isPaid || a.status === "cancelled") && (
+        <section className="mt-6 rounded-2xl border border-rose-400/25 bg-rose-500/5 p-5">
+          <h2 className="text-sm font-medium text-rose-50/95 mb-2">
+            Decline / refund
+          </h2>
+          <p className="text-sm text-white/60 mb-4">
+            Full refunds are issued in Stripe Dashboard (we do not move card
+            money from this console). Deep link opens the payment when we have a
+            PaymentIntent, otherwise Dashboard search on the Checkout Session.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {refundLink ? (
+              <a
+                href={refundLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
+              >
+                {refundLink.kind === "payment_intent"
+                  ? "Open Stripe payment (Refund)"
+                  : "Find payment in Stripe"}
+              </a>
+            ) : (
+              <span className="text-xs text-white/45 self-center">
+                No Stripe id on file yet — search Dashboard by patient email.
+              </span>
+            )}
+            {isPaid && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void declineAndRefund()}
+                className="rounded-full border border-rose-400/50 bg-rose-500/15 px-4 py-2 text-sm text-rose-50 hover:bg-rose-500/25 disabled:opacity-50"
+              >
+                Decline + refund
+              </button>
+            )}
+            {refundLink && (
+              <button
+                type="button"
+                onClick={() => {
+                  void copyText("Stripe refund link", refundLink.href);
+                }}
+                className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/70 hover:border-white/35"
+              >
+                Copy link
+              </button>
+            )}
+          </div>
+          {(refundIds.paymentIntentId || refundIds.checkoutSessionId) && (
+            <dl className="mt-4 space-y-1 text-[11px] text-white/40 font-mono break-all">
+              {refundIds.paymentIntentId && (
+                <div>
+                  <dt className="inline text-white/35">pi </dt>
+                  <dd className="inline">{refundIds.paymentIntentId}</dd>
+                </div>
+              )}
+              {refundIds.checkoutSessionId && (
+                <div>
+                  <dt className="inline text-white/35">cs </dt>
+                  <dd className="inline">{refundIds.checkoutSessionId}</dd>
+                </div>
+              )}
+            </dl>
+          )}
         </section>
       )}
 
