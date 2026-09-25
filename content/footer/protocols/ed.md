@@ -32,9 +32,9 @@ Wingman is a precision-engineered formulation designed for modern men who demand
 
 01. **Quick Clinical Intake** — Complete a brief, secure medical questionnaire directly on the spryMD.ai platform. Skip the waiting room and provide your health history on your own schedule.
 
-02. **Licensed Provider Review** — A U.S.-licensed medical provider will evaluate your profile to ensure the Wingman 80/20 formulation is the safest and most effective treatment for you. You pay nothing unless approved.
+02. **Visit fee + licensed review** — Complete intake, pay a one-time clinician visit fee, then a U.S.-licensed provider evaluates whether Wingman 80/20 is safe and appropriate. Medication is never auto-charged at checkout.
 
-03. **Fast, Discreet Delivery** — Once prescribed, your medication is processed by a trusted pharmacy and shipped directly to your doorstep in unmarked packaging to protect your privacy.
+03. **Fast, Discreet Delivery** — If prescribed, your medication is filled by a trusted pharmacy and shipped unmarked to your door. Medication billing is coordinated separately after approval.
 
 ## Frequently Asked Questions
 

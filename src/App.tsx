@@ -4,6 +4,8 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import RouteSeo from "@/components/RouteSeo";
+import SkipToContent from "@/components/SkipToContent";
 // @ts-ignore - JSX single-file marketing app
 import SpryApp from "./SpryApp.jsx";
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
@@ -30,6 +32,7 @@ import OpsQueuePage from "@/pages/ops/OpsQueuePage";
 import OpsAppointmentPage from "@/pages/ops/OpsAppointmentPage";
 import OAuthAuthorizePage from "@/pages/oauth/AuthorizePage";
 import OAuthCallbackPage from "@/pages/oauth/CallbackPage";
+import NotFound from "@/pages/NotFound";
 import { FEATURES } from "@/config/features";
 
 const queryClient = new QueryClient();
@@ -45,12 +48,15 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AppSpeedInsights />
+        <SkipToContent />
+        <RouteSeo />
         <Routes>
           <Route path="/" element={<SpryApp />} />
           {/* Legacy CTA target (Navbar/About/FAQ) — opens the care options on the homepage. */}
           <Route path="/quiz" element={<Navigate to="/?view=start" replace />} />
+          <Route path="/care/:slug" element={<SpryApp />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHomePage />} />
             <Route path="goals" element={<GoalsPage />} />
@@ -86,7 +92,7 @@ const App = () => (
               <Route path="/oauth/callback" element={<Navigate to="/dashboard" replace />} />
             </>
           )}
-          <Route path="*" element={<SpryApp />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

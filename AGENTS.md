@@ -71,7 +71,9 @@ Until these are applied, chart writes return `PGRST205` and checkout still works
 2. ~~Complete one live Stripe Checkout ($75 `visit_basic`) → `status=paid` + `payment_events`~~ (done; re-smoke before public open).
 3. Staff: open `/ops` with allowlisted Supabase login; optional `Sync N awaiting`.
 4. **Care model (launch):** asynchronous chart review. Video (`DAILY_API_KEY` / Twilio) is optional — do not block soft launch.
-5. Legal: NPP draft shipped; counsel review before calling it final. Card statement text is `SPRYMD` (see `shared/statementDescriptor.ts` + FAQ).
-6. Clinical dry-run: paid → patient intake → `/ops` claim → SOAP → pharmacy handoff **or** Stripe full refund + mark cancelled.
+5. Legal: NPP draft shipped; Terms scope updated for full catalog — **counsel review before calling final**. Card statement text is `SPRYMD` (see `shared/statementDescriptor.ts` + FAQ).
+6. Clinical dry-run: paid → patient intake → `/ops` claim → SOAP → pharmacy handoff **or** Stripe full refund + mark cancelled. Follow `docs/ops/empower-fulfillment-sop.md` and `docs/ops/dress-rehearsal-checklist.md`.
 7. Smoke: `node scripts/launch-check.mjs` and
    `node scripts/watch-paid-appointment.mjs <sessionId> <appointmentId>`.
+8. Contact: `/contact` and in-app contact forms POST `/api/contact` (Resend → `SUPPORT_INBOX` / support@sprymd.ai).
+9. Conversion: success page pushes `checkout_completed` to `window.dataLayer` (wire GTM container when ads budget exists).

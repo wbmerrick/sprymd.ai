@@ -84,9 +84,9 @@ const HowItWorks = () => {
 
 const Treatments = () => {
   const cards = [
-  { title: "Tadalafil Daily", subtitle: "Once-Daily Freedom", body: "Take it every day and be ready whenever the moment is right. No planning. No timing. Just confidence.", detail: "5mg · Daily dosing", price: "From $75/month", popular: true },
-  { title: "Sildenafil", subtitle: "When You Need It", body: "Take it 30–60 minutes before intimacy. Works for 4–6 hours. Flexible and effective.", detail: "25–100mg · As-needed", price: "From $75/month", popular: false },
-  { title: "Tadalafil As-Needed", subtitle: "The Weekend Option", body: "Take it before intimacy and stay ready for up to 36 hours. Ideal for planned occasions.", detail: "10–20mg · As-needed", price: "From $75/month", popular: false }];
+  { title: "Tadalafil Daily", subtitle: "Once-Daily Freedom", body: "Take it every day and be ready whenever the moment is right. No planning. No timing. Just confidence.", detail: "5mg · Daily dosing", price: "From $75/mo if approved", popular: true },
+  { title: "Sildenafil", subtitle: "When You Need It", body: "Take it 30–60 minutes before intimacy. Works for 4–6 hours. Flexible and effective.", detail: "25–100mg · As-needed", price: "From $75/mo if approved", popular: false },
+  { title: "Tadalafil As-Needed", subtitle: "The Weekend Option", body: "Take it before intimacy and stay ready for up to 36 hours. Ideal for planned occasions.", detail: "10–20mg · As-needed", price: "From $75/mo if approved", popular: false }];
 
 
   return (
@@ -124,7 +124,7 @@ const WhyChooseUs = () => {
   const features = [
   "Real physician review",
   "Results within 24 hours",
-  "$75/month — no surprise fees",
+  "One-time visit fee today — meds only if approved",
   "Discreet billing and shipping",
   "Cancel or pause anytime",
   "Licensed in Tennessee"];

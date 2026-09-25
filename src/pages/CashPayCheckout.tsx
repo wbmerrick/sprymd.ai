@@ -51,9 +51,12 @@ const CashPayCheckout = () => {
                 </h2>
                 <p className="font-body text-sm text-muted-foreground mb-3">{treatment.sub}</p>
                 <p className="font-body text-navy text-sm leading-relaxed">
-                  <strong>${treatment.price}/mo</strong> is billed only if a Tennessee-licensed clinician approves
-                  this plan after reviewing your intake. Today you pay the visit fee below; if treatment is
-                  not appropriate, the visit fee is your only charge and a prescription is never guaranteed.
+                  Today you pay the <strong>one-time clinician visit fee</strong> below via Stripe.
+                  The plan price (<strong>${treatment.price}/mo</strong>) is what treatment would cost
+                  <em> if</em> a Tennessee-licensed clinician approves it after reviewing your intake —
+                  we do <strong>not</strong> charge medication automatically at checkout.
+                  If treatment is not appropriate, the visit fee is your only charge and a prescription
+                  is never guaranteed.
                 </p>
                 <p className="font-body text-xs text-muted-foreground mt-3">
                   Not the right plan?{" "}
