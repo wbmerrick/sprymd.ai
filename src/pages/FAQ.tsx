@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedSection from "@/components/AnimatedSection";
+import { STATEMENT_DESCRIPTOR_DISPLAY } from "@shared/statementDescriptor";
 
 interface FAQItem {
   q: string;
@@ -20,7 +21,7 @@ const faqGroups: FAQGroup[] = [
     items: [
       { q: "Is this real medical care?", a: "Yes. Every consultation is reviewed and prescribed by a licensed physician — not a nurse practitioner, PA, or AI. You receive a real diagnosis and prescription from a doctor who is professionally and legally accountable for your care." },
       { q: "How is this different from going to my regular doctor?", a: "Instead of scheduling, waiting, and having an uncomfortable conversation, you complete a thorough health intake online. Your physician reviews the same information they'd collect in-office and makes the same clinical decision — in a fraction of the time and with complete privacy." },
-      { q: "Is this a video visit?", a: "No. This is asynchronous telehealth — you complete your intake at your own pace, and your physician reviews it on their end. No scheduled appointment. No video call. Faster and more private." },
+      { q: "Is this a video visit?", a: "No — launch care is asynchronous. You complete a thorough intake at your own pace; your physician reviews it on their end and messages you with the plan. No scheduled appointment or required video call. Faster and more private. (Live video can be added later when clinically useful.)" },
       { q: "What states do you serve?", a: "We currently serve patients located in Tennessee. We are working to expand to additional states." },
     ],
   },
@@ -46,7 +47,7 @@ const faqGroups: FAQGroup[] = [
     label: "Privacy and Security",
     items: [
       { q: "Is my information private?", a: "Completely. Your health information is HIPAA-protected and stored on encrypted, HIPAA-compliant servers. We will never sell or share your health information." },
-      { q: "How does billing appear on my statement?", a: "Your charge appears discreetly as [BILLING DESCRIPTOR]. No mention of ED, men's health, or medications." },
+      { q: "How does billing appear on my statement?", a: `Your charge appears discreetly as ${STATEMENT_DESCRIPTOR_DISPLAY} (some banks add a short merchant prefix). No mention of ED, men's health, or medications.` },
       { q: "How is my medication packaged?", a: "Plain, unmarked packaging with no indication of contents on the outside." },
       { q: "Do you share my information with my insurance?", a: "No. This is cash-pay only. We do not bill insurance and do not share information with insurers." },
     ],
@@ -55,7 +56,7 @@ const faqGroups: FAQGroup[] = [
     label: "Pricing and Billing",
     items: [
       { q: "What does it cost?", a: "$75/month — includes physician review, prescription (if appropriate), pharmacy fulfillment, and secure provider messaging. No hidden fees." },
-      { q: "What if I'm not approved?", a: "Full refund if the physician determines you are not a candidate for treatment. You never pay for care you can't receive." },
+      { q: "What if I'm not approved?", a: "Full refund if the physician determines you are not a candidate for treatment. Refunds are issued from our payment processor to your original card; allow a few business days for the bank to post it. You never pay for care you can't receive." },
       { q: "How do I cancel?", a: "Log into your patient portal or email us. No cancellation fee. Takes effect at end of current billing period." },
       { q: "Do you accept insurance?", a: "No. Cash-pay only. Many patients find $75/month is less than their insurance copay for a specialist visit." },
     ],

@@ -147,7 +147,7 @@ export default function OpsQueuePage() {
           );
         } else if (data.launch?.videoReady === false) {
           setLaunchHint(
-            "Cash-pay path is live. Video visits need DAILY_API_KEY (Daily BAA) or Twilio video keys on Vercel.",
+            "Cash-pay + ledger are live. Launch model is async chart review — video keys (Daily/Twilio) are optional.",
           );
         } else {
           setLaunchHint(null);
@@ -278,11 +278,11 @@ export default function OpsQueuePage() {
     }
   }
 
-  async function startVisit(item: OpsQueueItem, e: MouseEvent) {
+  async function claimAndOpen(item: OpsQueueItem, e: MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     if (demo) {
-      navigate(withDemo(`/visit/${item.id}`, true));
+      navigate(withDemo(`/ops/${item.id}`, true));
       return;
     }
     setStartingId(item.id);
@@ -307,9 +307,9 @@ export default function OpsQueuePage() {
           toast.error(json.message || json.error || "Could not assign case");
           return;
         }
-        toast.success("Assigned — opening visit");
+        toast.success("Assigned — opening chart");
       }
-      navigate(`/visit/${item.id}`);
+      navigate(`/ops/${item.id}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Network error");
     } finally {
@@ -326,7 +326,8 @@ export default function OpsQueuePage() {
           </p>
           <h1 className="font-display text-3xl md:text-4xl mt-2">Patient queue</h1>
           <p className="text-sm text-white/55 mt-2 max-w-lg">
-            Paid visits first. Claim a case, start the visit, write the note, mark done.
+            Paid visits first. Claim a case, review intake, document the decision,
+            then pharmacy or refund.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 self-start">
@@ -499,11 +500,11 @@ export default function OpsQueuePage() {
                         <button
                           type="button"
                           disabled={startingId === item.id}
-                          onClick={(e) => void startVisit(item, e)}
+                          onClick={(e) => void claimAndOpen(item, e)}
                           className="rounded-full bg-[#9dba8c] text-[#0b100e] px-3.5 py-1.5 text-xs font-medium disabled:opacity-50"
                         >
                           {startingId === item.id
-                            ? "Starting…"
+                            ? "Opening…"
                             : nextActionLabel(item)}
                         </button>
                       ) : (

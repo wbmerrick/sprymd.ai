@@ -18,6 +18,7 @@ import {
 import { handlePreflight } from "./_lib/cors";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 import { ensureCheckoutAppointment } from "./_lib/ensureCheckoutAppointment";
+import { STATEMENT_DESCRIPTOR } from "../shared/statementDescriptor";
 
 type CheckoutBody = {
   appointmentId?: string;
@@ -207,6 +208,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       customer_email: emailForStripe || undefined,
       success_url: successUrl,
       cancel_url: cancelUrl,
+      payment_intent_data: {
+        // Card charges require suffix (account prefix + this). Keep discreet.
+        statement_descriptor_suffix: STATEMENT_DESCRIPTOR,
+      },
       metadata: {
         appointment_id: appointmentId || "",
         patient_id: patientId || "",

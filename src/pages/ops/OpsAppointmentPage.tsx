@@ -248,25 +248,28 @@ export default function OpsAppointmentPage() {
       n: 1,
       label: "Assigned",
       done: !!a.providerId,
-      hint: a.providerId ? "You own this case" : "Claim it before starting",
+      hint: a.providerId ? "You own this case" : "Claim it before documenting",
     },
     {
       n: 2,
-      label: "Visit",
-      done: false,
-      hint: "Open the room with the patient",
+      label: "Review intake",
+      done: data.intakes.length > 0,
+      hint:
+        data.intakes.length > 0
+          ? "Intake on file — read before deciding"
+          : "Wait for patient intake or message them to finish",
     },
     {
       n: 3,
-      label: "SOAP note",
+      label: "SOAP / decision",
       done: a.status === "completed",
-      hint: "Document and sign",
+      hint: "Approve Rx path or decline + refund",
     },
     {
       n: 4,
-      label: "Complete",
+      label: "Pharmacy or refund",
       done: a.status === "completed",
-      hint: "Mark the encounter done",
+      hint: "Send Rx to compounding pharmacy, or refund in Stripe Dashboard",
     },
   ];
 
@@ -332,23 +335,33 @@ export default function OpsAppointmentPage() {
         <p className="text-sm text-white/70 mt-1">{tip.body}</p>
         {isPaid && (
           <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void startVisit()}
-              className="rounded-full bg-[#9dba8c] text-[#0b100e] px-5 py-2.5 text-sm font-medium disabled:opacity-50"
-            >
-              {a.providerId ? "Start visit" : "Claim & start visit"}
-            </button>
+            {!a.providerId && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void patch({ assignSelf: true }, "Assigned to you")}
+                className="rounded-full bg-[#9dba8c] text-[#0b100e] px-5 py-2.5 text-sm font-medium disabled:opacity-50"
+              >
+                Claim case
+              </button>
+            )}
             <Link
               to={withDemo(
                 `/provider/notes?appointmentId=${encodeURIComponent(a.id)}`,
                 demo,
               )}
-              className="rounded-full border border-white/20 px-4 py-2.5 text-sm hover:bg-white/5"
+              className="rounded-full bg-[#9dba8c] text-[#0b100e] px-5 py-2.5 text-sm font-medium"
             >
-              SOAP note
+              Open SOAP note
             </Link>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void startVisit()}
+              className="rounded-full border border-white/20 px-4 py-2.5 text-sm hover:bg-white/5 disabled:opacity-50"
+            >
+              Video room (optional)
+            </button>
           </div>
         )}
         {a.status === "awaiting_payment" && !demo && (
@@ -367,7 +380,7 @@ export default function OpsAppointmentPage() {
 
       {isPaid && (
         <section className="mt-6 rounded-2xl border border-white/10 p-5">
-          <h2 className="text-sm font-medium mb-4">Visit checklist</h2>
+          <h2 className="text-sm font-medium mb-4">Async review checklist</h2>
           <ol className="space-y-3">
             {steps.map((step) => (
               <li key={step.n} className="flex gap-3 items-start">
@@ -397,6 +410,29 @@ export default function OpsAppointmentPage() {
               Assign to me only
             </button>
           )}
+        </section>
+      )}
+
+      {isPaid && (
+        <section className="mt-6 rounded-2xl border border-white/10 p-5">
+          <h2 className="text-sm font-medium mb-2">Launch playbook</h2>
+          <ul className="text-sm text-white/65 space-y-2 list-disc pl-5">
+            <li>
+              <span className="text-white/85">Not a candidate:</span> full
+              refund in Stripe Dashboard (Payments → charge → Refund), then mark
+              this case cancelled. Webhook records{" "}
+              <code className="text-xs text-white/50">charge.refunded</code>.
+            </li>
+            <li>
+              <span className="text-white/85">Approve Rx:</span> send the
+              prescription to your compounding pharmacy (portal / fax / phone —
+              manual is fine for launch). Then mark completed.
+            </li>
+            <li>
+              <span className="text-white/85">Statement text:</span> charges
+              show as SPRYMD on the card — no ED wording.
+            </li>
+          </ul>
         </section>
       )}
 
@@ -508,31 +544,33 @@ export default function OpsAppointmentPage() {
 
       <div className="md:hidden fixed bottom-0 inset-x-0 border-t border-white/10 bg-[#0b100e]/95 backdrop-blur-md px-4 py-3 flex gap-2 z-20">
         {isPaid ? (
+          <Link
+            to={withDemo(
+              `/provider/notes?appointmentId=${encodeURIComponent(a.id)}`,
+              demo,
+            )}
+            className="flex-1 text-center rounded-full bg-[#9dba8c] text-[#0b100e] px-3 py-2.5 text-sm font-medium"
+          >
+            SOAP note
+          </Link>
+        ) : (
           <button
             type="button"
             disabled={busy}
-            onClick={() => void startVisit()}
+            onClick={() => void syncPayment()}
             className="flex-1 rounded-full bg-[#9dba8c] text-[#0b100e] px-3 py-2.5 text-sm font-medium disabled:opacity-50"
           >
-            {a.providerId ? "Start visit" : "Claim & start"}
+            Sync payment
           </button>
-        ) : (
-          <Link
-            to={withDemo(`/visit/${a.id}`, demo)}
-            className="flex-1 text-center rounded-full bg-[#9dba8c] text-[#0b100e] px-3 py-2.5 text-sm font-medium"
-          >
-            Visit room
-          </Link>
         )}
-        <Link
-          to={withDemo(
-            `/provider/notes?appointmentId=${encodeURIComponent(a.id)}`,
-            demo,
-          )}
-          className="flex-1 text-center rounded-full border border-white/20 px-3 py-2.5 text-sm"
+        <button
+          type="button"
+          disabled={busy || !isPaid}
+          onClick={() => void startVisit()}
+          className="flex-1 text-center rounded-full border border-white/20 px-3 py-2.5 text-sm disabled:opacity-40"
         >
-          SOAP note
-        </Link>
+          Video (opt.)
+        </button>
       </div>
       <div className="h-20 md:hidden" />
     </main>
