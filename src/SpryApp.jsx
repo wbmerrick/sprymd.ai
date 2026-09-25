@@ -1483,7 +1483,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
             style={{ fontSize: 11, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", background: "transparent", border: "none", padding: 0 }}>
             ← SpryMD
           </button>
-          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase", marginBottom: 14 }}>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: careEduPages[slug] ? "none" : "uppercase", marginBottom: 14, fontWeight: 700 }}>
             {page.eyebrow}
           </div>
           <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.02, fontWeight: 600, color: C.ink, marginBottom: 16 }}>
