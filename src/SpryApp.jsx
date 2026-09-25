@@ -949,7 +949,7 @@ const Landing = ({ go }) => {
           {[
             { n: "01", t: "Choose the type of care you want to receive.", d: "Then answer a short, private intake questionnaire that focuses on any contraindications to that particular treatment." },
             { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case to make sure the treatment is safe." },
-            { n: "03", t: "Treatment shipped", d: "Once treatment is approved, your prescription will be filled by our pharmacy, discreetly packaged and shipped within 24 hours for next-day delivery." },
+            { n: "03", t: "Treatment shipped", d: "Once treatment is approved, your prescription is filled by our pharmacy partner, discreetly packaged, and shipped to your door. Timing depends on medication and carrier — qualifying Tennessee orders may be eligible for next-business-day delivery." },
           ].map((s) => (
             <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
