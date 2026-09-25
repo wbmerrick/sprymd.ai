@@ -1426,9 +1426,115 @@ const FaqBlock = ({ items }) => {
   );
 };
 
+const ContactFormInline = () => {
+  const [status, setStatus] = useState("idle"); // idle | loading | sent | error
+  const [error, setError] = useState("");
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setStatus("loading");
+    const fd = new FormData(e.currentTarget);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: String(fd.get("name") || ""),
+          email: String(fd.get("email") || ""),
+          topic: String(fd.get("topic") || "General"),
+          message: String(fd.get("message") || ""),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        setError(data.message || "We couldn't send that. Email support@sprymd.ai.");
+        setStatus("error");
+        return;
+      }
+      setStatus("sent");
+      e.currentTarget.reset();
+    } catch {
+      setError("Network error. Please email support@sprymd.ai.");
+      setStatus("error");
+    }
+  };
+
+  if (status === "sent") {
+    return (
+      <div className="pt-4 space-y-3" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+        <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink }}>Message sent</h2>
+        <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.55 }}>
+          Thanks — we got it. For emergencies call 911. You can also reach us at support@sprymd.ai.
+        </p>
+        <Btn type="button" variant="secondary" onClick={() => setStatus("idle")}>Send another</Btn>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+      <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
+      <form className="space-y-4" onSubmit={onSubmit}>
+        {[
+          { id: "name", label: "Name", type: "text" },
+          { id: "email", label: "Email", type: "email" },
+          { id: "topic", label: "Topic", type: "text" },
+        ].map((f) => (
+          <Field key={f.id} label={f.label}>
+            <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
+          </Field>
+        ))}
+        <Field label="Message">
+          <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
+        </Field>
+        {error && <p role="alert" style={{ fontSize: 14, color: C.danger || "#CE6B5D" }}>{error}</p>}
+        <Btn type="submit" icon={Send} disabled={status === "loading"}>
+          {status === "loading" ? "Sending…" : "Send message"}
+        </Btn>
+      </form>
+    </div>
+  );
+};
+
 const FooterPage = ({ slug, go, cartCount, user }) => {
   const page = careEduPages[slug] || footerPages[slug];
   const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+
+  useEffect(() => {
+    if (!page) return;
+    const prevTitle = document.title;
+    const title = `${page.title} | SpryMD`;
+    document.title = title;
+    const desc = page.tagline || page.title;
+    let meta = document.querySelector('meta[name="description"]');
+    const prevDesc = meta?.getAttribute("content") || "";
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "description");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", desc);
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    if (!ogTitle) {
+      ogTitle = document.createElement("meta");
+      ogTitle.setAttribute("property", "og:title");
+      document.head.appendChild(ogTitle);
+    }
+    ogTitle.setAttribute("content", title);
+    let ogDesc = document.querySelector('meta[property="og:description"]');
+    if (!ogDesc) {
+      ogDesc = document.createElement("meta");
+      ogDesc.setAttribute("property", "og:description");
+      document.head.appendChild(ogDesc);
+    }
+    ogDesc.setAttribute("content", desc);
+    return () => {
+      document.title = prevTitle;
+      if (meta) meta.setAttribute("content", prevDesc);
+    };
+  }, [page, slug]);
+
   if (!page || (!FEATURES.enableShop && shopStackSlugs.has(slug))) {
     return (
       <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
@@ -1596,32 +1702,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
             </div>
           )}
 
-          {slug === "contact" && (
-            <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
-              <form
-                className="space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  alert("Thanks — this demo form does not send yet. Email support@sprymd.ai.");
-                }}
-              >
-                {[
-                  { id: "name", label: "Name", type: "text" },
-                  { id: "email", label: "Email", type: "email" },
-                  { id: "topic", label: "Topic", type: "text" },
-                ].map((f) => (
-                  <Field key={f.id} label={f.label}>
-                    <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
-                  </Field>
-                ))}
-                <Field label="Message">
-                  <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
-                </Field>
-                <Btn type="submit" icon={Send}>Send message</Btn>
-              </form>
-            </div>
-          )}
+          {slug === "contact" && <ContactFormInline />}
         </div>
       </section>
       <Footer go={go} />
@@ -1668,7 +1749,13 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
     typeof returnTo === "string" &&
     (returnTo === "/ops" || returnTo.startsWith("/ops/") || returnTo.startsWith("/ops?"));
   const [mode, setMode] = useState(opsReturn ? "signup" : "signin");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => {
+    try {
+      return localStorage.getItem("sprymd_guest_checkout_email") || "";
+    } catch {
+      return "";
+    }
+  });
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
@@ -3052,8 +3139,10 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
                   )}
                   <p style={{ fontSize: 12, opacity: 0.6, marginTop: 12 }}>Billed monthly only after a clinician approves. Cancel anytime.</p>
                 </div>
-                <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to checkout</Btn>
-                <p style={{ fontSize: 12, opacity: 0.75, marginTop: 12, lineHeight: 1.45, textAlign: "center" }}>Next: pay the visit fee securely with Stripe. Medication is billed only if a clinician approves it.</p>
+                <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to visit checkout</Btn>
+                <p style={{ fontSize: 12, opacity: 0.75, marginTop: 12, lineHeight: 1.45, textAlign: "center" }}>
+                  Next: pay the one-time visit fee securely with Stripe. The ${recommended.price}/mo plan price is charged only after a clinician approves treatment — not at this checkout.
+                </p>
                 <div className="flex items-center justify-center gap-2 mt-3">
                   <Lock size={12} color={C.accentSoft} />
                   <span className="mono" style={{ fontSize: 10, opacity: 0.7, letterSpacing: "0.1em" }}>SECURE · STRIPE CHECKOUT</span>

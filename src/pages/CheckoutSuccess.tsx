@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimatedSection from "@/components/AnimatedSection";
+import { trackConversion } from "@/lib/conversionTrack";
+import { loadCheckoutSelection } from "@/lib/intakeFlow";
+import { ensureAccountShell } from "@/lib/patientCareStore";
 
 type SessionLookup = {
   appointmentId?: string;
@@ -13,6 +16,7 @@ type SessionLookup = {
 
 const MAX_LOOKUP_ATTEMPTS = 4;
 const LOOKUP_RETRY_MS = 1500;
+const GUEST_CHECKOUT_EMAIL_KEY = "sprymd_guest_checkout_email";
 
 async function fetchSessionLookup(input: {
   sessionId?: string | null;
@@ -27,6 +31,18 @@ async function fetchSessionLookup(input: {
   return (await res.json()) as SessionLookup;
 }
 
+function rememberGuestCheckoutEmail() {
+  try {
+    const selection = loadCheckoutSelection();
+    const email = selection?.email?.trim().toLowerCase();
+    if (!email) return;
+    localStorage.setItem(GUEST_CHECKOUT_EMAIL_KEY, email);
+    ensureAccountShell(email);
+  } catch {
+    /* ignore */
+  }
+}
+
 const CheckoutSuccess = () => {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
@@ -36,9 +52,8 @@ const CheckoutSuccess = () => {
       ? { appointmentId: appointmentFromUrl, visitPath: `/visit/${appointmentFromUrl}` }
       : null,
   );
-  // Always confirm when we have a session_id — cash-pay success URLs include
-  // appointment_id too, and that path must still hit reconcile.
   const [confirming, setConfirming] = useState(Boolean(sessionId || appointmentFromUrl));
+  const tracked = useRef(false);
 
   useEffect(() => {
     if (!sessionId && !appointmentFromUrl) {
@@ -57,7 +72,6 @@ const CheckoutSuccess = () => {
           if (cancelled) return;
           if (data) {
             setLookup(data);
-            // Inline reconcile runs on each GET; stop once no longer awaiting.
             if (data.status !== "awaiting_payment") break;
           }
           if (attempt < MAX_LOOKUP_ATTEMPTS - 1) {
@@ -75,11 +89,30 @@ const CheckoutSuccess = () => {
     };
   }, [sessionId, appointmentFromUrl]);
 
+  useEffect(() => {
+    if (tracked.current) return;
+    if (confirming) return;
+    if (lookup?.status === "awaiting_payment") return;
+    // Fire once when we believe payment cleared (or URL-only success with no status).
+    if (!sessionId && !appointmentFromUrl) return;
+    tracked.current = true;
+    rememberGuestCheckoutEmail();
+    const selection = loadCheckoutSelection();
+    trackConversion("checkout_completed", {
+      session_id: sessionId,
+      appointment_id: lookup?.appointmentId || appointmentFromUrl,
+      condition_id: selection?.conditionId,
+      treatment_id: selection?.treatmentId,
+      status: lookup?.status || "unknown",
+    });
+  }, [confirming, lookup, sessionId, appointmentFromUrl]);
+
   const visitPath =
     lookup?.visitPath ||
     (lookup?.appointmentId ? `/visit/${lookup.appointmentId}` : null) ||
     (appointmentFromUrl ? `/visit/${appointmentFromUrl}` : null);
   const stillAwaiting = lookup?.status === "awaiting_payment";
+  const paid = lookup?.status === "paid" || (!confirming && !stillAwaiting && Boolean(sessionId || appointmentFromUrl));
 
   return (
     <div className="min-h-screen flex flex-col bg-off-white">
@@ -94,8 +127,10 @@ const CheckoutSuccess = () => {
               Payment successful
             </h1>
             <p className="font-body text-muted-foreground text-lg mb-6">
-              Thank you. Your cash-pay visit fee has been received. You will get
-              a confirmation email shortly.
+              Thank you. Your <strong>visit fee</strong> has been received
+              {paid ? " and confirmed" : ""}. A Tennessee-licensed clinician will
+              review your intake asynchronously — medication is only prescribed
+              (and billed) if clinically appropriate. You will get a confirmation email shortly.
             </p>
             {confirming && (
               <p className="font-body text-sm text-muted-foreground mb-4">
@@ -104,8 +139,7 @@ const CheckoutSuccess = () => {
             )}
             {!confirming && stillAwaiting && (
               <p className="font-body text-sm text-amber-800/90 mb-4">
-                Payment is still confirming. You can open the visit room — it
-                unlocks as soon as Stripe finishes.
+                Payment is still confirming. Your chart review unlocks as soon as Stripe finishes.
               </p>
             )}
             {sessionId && (
@@ -114,16 +148,19 @@ const CheckoutSuccess = () => {
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                to={visitPath || "/visit/upcoming"}
-                className="btn-primary text-center"
-              >
-                {visitPath ? "Open your visit room" : "Open visit room"}
+              <Link to="/?auth=1" className="btn-primary text-center">
+                Create your account
               </Link>
-              <Link to="/intake" className="font-body text-sm text-navy underline underline-offset-4 self-center">
-                Review intake
-              </Link>
+              {visitPath && (
+                <Link to={visitPath} className="font-body text-sm text-navy underline underline-offset-4 self-center">
+                  Visit room (if scheduled)
+                </Link>
+              )}
             </div>
+            <p className="font-body text-xs text-muted-foreground mt-6">
+              Questions? Email{" "}
+              <a className="underline" href="mailto:support@sprymd.ai">support@sprymd.ai</a>
+            </p>
           </div>
         </AnimatedSection>
       </main>

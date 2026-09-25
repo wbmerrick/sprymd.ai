@@ -216,8 +216,9 @@ export default function ServiceTierCheckout({
             : `Pay ${selectedTier ? formatTierPrice(selectedTier) : ""} →`}
         </button>
         <p className="font-body text-xs text-muted-foreground text-center max-w-md">
-          You will be redirected to Stripe Checkout. Prescriptions are issued
-          only when clinically appropriate.
+          You will be redirected to Stripe Checkout for the visit fee only.
+          Medication plans are not charged at this step — a clinician must approve
+          before any prescription is issued or billed.
         </p>
       </div>
     </div>
