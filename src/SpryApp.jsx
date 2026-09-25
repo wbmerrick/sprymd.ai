@@ -1908,6 +1908,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             )}
 
             <SlideToConfirm
+              key={mode}
               label={mode === "signin" ? "Slide to sign in" : "Slide to create account"}
               loadingLabel={mode === "signin" ? "Signing in…" : "Creating account…"}
               disabled={!canSubmit}
