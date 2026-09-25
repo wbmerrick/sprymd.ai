@@ -110,7 +110,7 @@ export function statusLabel(status: string) {
 export function nextActionLabel(item: Pick<OpsQueueItem, "status" | "providerId">) {
   switch (item.status) {
     case "paid":
-      return item.providerId ? "Start visit" : "Claim & start";
+      return item.providerId ? "Review chart" : "Claim & review";
     case "awaiting_payment":
       return "Waiting on pay";
     case "scheduled":
@@ -132,20 +132,20 @@ export function guidance(
   switch (status) {
     case "paid":
       return {
-        title: assigned ? "Ready for the visit" : "Claim this case, then start",
+        title: assigned ? "Async review ready" : "Claim this case, then review",
         body: assigned
-          ? "Join the visit room, document the encounter, then mark completed."
-          : "Assign yourself so the case is yours, open the visit, then write the SOAP note.",
+          ? "Read the intake, write the SOAP / decision, then fulfill via pharmacy or refund in Stripe if not a candidate. Video room is optional."
+          : "Assign yourself, review the chart intake, document the decision, then pharmacy handoff or full refund.",
       };
     case "awaiting_payment":
       return {
         title: "Checkout not finished",
-        body: "No clinician action yet — payment has not cleared.",
+        body: "No clinician action yet — payment has not cleared. Use Sync payment if Stripe already succeeded.",
       };
     case "scheduled":
       return {
         title: "Visit scheduled",
-        body: "Confirm timing. When paid, start the room and document.",
+        body: "Confirm timing. When paid, review the chart (video only if needed).",
       };
     case "completed":
       return {
@@ -156,7 +156,7 @@ export function guidance(
     case "no_show":
       return {
         title: "Closed without visit",
-        body: "No further action unless ops reopens the case.",
+        body: "If the patient paid and was declined, confirm the Stripe refund already posted.",
       };
     default:
       return {

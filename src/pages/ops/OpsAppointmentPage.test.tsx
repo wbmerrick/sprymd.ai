@@ -34,16 +34,18 @@ afterEach(() => {
 });
 
 describe("OpsAppointmentPage", () => {
-  it("shows checklist and claim & start for an unpaid-assigned paid demo case", async () => {
+  it("shows async checklist and claim CTAs for an unassigned paid demo case", async () => {
     renderDetail();
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /jordan demo/i })).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/claim this case, then start/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /claim & start visit/i })).toBeInTheDocument();
-    expect(screen.getByText(/visit checklist/i)).toBeInTheDocument();
+    expect(screen.getByText(/claim this case, then review/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /claim case/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open soap note/i })).toBeInTheDocument();
+    expect(screen.getByText(/async review checklist/i)).toBeInTheDocument();
+    expect(screen.getByText(/launch playbook/i)).toBeInTheDocument();
     expect(screen.getByText(/erectile dysfunction for ~8 months/i)).toBeInTheDocument();
     expect(screen.getByText(/age 38|age \d+/i)).toBeInTheDocument();
   });

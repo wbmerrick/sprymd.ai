@@ -72,7 +72,7 @@ describe("OpsQueuePage", () => {
     });
 
     expect(screen.getByText(/patient@example.com · TN/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /claim & start/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /claim & review/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /details/i })).toHaveAttribute(
       "href",
       "/ops/11111111-1111-4111-8111-111111111111",

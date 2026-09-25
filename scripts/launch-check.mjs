@@ -38,6 +38,8 @@ async function main() {
       videoTwilio: Boolean(health?.checks?.twilioVideo),
       opsStaffEnv: Boolean(health?.checks?.opsStaffEmailsEnv),
       opsStaffBuiltin: Boolean(health?.checks?.opsStaffBuiltinAllowlist),
+      // Soft launch is async chart review — video keys are optional.
+      asyncLaunchOk: Boolean(health?.ok) && reconcileRes.status !== 404,
     },
   };
 
@@ -46,6 +48,11 @@ async function main() {
     report.launchGates.cashPayReady &&
     report.launchGates.reconcileRouted &&
     report.launchGates.opsDemoOk;
+  if (ok && !report.launchGates.videoDaily && !report.launchGates.videoTwilio) {
+    console.error(
+      "note: video vendor unset — OK for async soft launch; set DAILY_API_KEY after BAA for live video.",
+    );
+  }
   process.exit(ok ? 0 : 2);
 }
 
