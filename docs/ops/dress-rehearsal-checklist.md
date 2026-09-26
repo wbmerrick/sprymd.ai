@@ -8,9 +8,12 @@ Companion SOP: [empower-fulfillment-sop.md](./empower-fulfillment-sop.md)
 
 - [x] `GET /api/health` → `ok: true` (Stripe secret + webhook secret + Supabase service role)
 - [x] Clinical migrations applied (`telehealth_clinical`, `intake_and_visits`, `guest_patients_payment_ledger`)
+- [x] Pharmacy handoff columns applied (`appointments.pharmacy_status|notes|sent_at`)
 - [x] Resend key present (`resendApiKey: true`)
+- [x] Launch smoke: `node scripts/launch-check.mjs` → `asyncLaunchOk: true` (video optional)
 - [ ] Staff can sign into `/ops` with allowlisted Supabase email
 - [ ] Empower / pharmacy transmit channel agreed (portal login, fax, phone) — even if manual
+- [ ] Ship guest post-pay intake API (`POST /api/intake/guest`) — PR #62; prod returns 404 until merge/deploy
 
 ## Script (happy path)
 
@@ -23,8 +26,9 @@ Companion SOP: [empower-fulfillment-sop.md](./empower-fulfillment-sop.md)
    - Success page loads
    - Confirmation email arrives (Resend)
    - `/ops` shows the case as **paid**
-7. Staff: **Claim** → review chart → write brief SOAP note
-8. Either:
+7. On success page: **Complete medical intake** (`/intake?appointmentId=&session_id=`) → confirm `patient_intakes` row in ops
+8. Staff: **Claim** → review chart → write brief SOAP note → set **Pharmacy handoff** (`queued` / `sent` / notes)
+9. Either:
    - **Approve** → transmit Rx via manual Empower channel → paste tracking into ops note when available, **or**
    - **Decline** → full refund via Stripe deep link → mark cancelled
 

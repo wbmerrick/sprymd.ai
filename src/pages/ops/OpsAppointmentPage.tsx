@@ -51,6 +51,8 @@ export default function OpsAppointmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [pharmacyNotes, setPharmacyNotes] = useState("");
+  const [pharmacyStatus, setPharmacyStatus] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -89,6 +91,12 @@ export default function OpsAppointmentPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (!data?.appointment) return;
+    setPharmacyNotes(data.appointment.pharmacyNotes || "");
+    setPharmacyStatus(data.appointment.pharmacyStatus || "");
+  }, [data?.appointment]);
+
   async function patch(body: Record<string, unknown>, successMessage?: string) {
     if (demo) {
       toast.message("Demo mode — status changes are not saved");
@@ -113,6 +121,29 @@ export default function OpsAppointmentPage() {
           },
         });
         toast.success("Assigned (demo)");
+      } else if (
+        (body.pharmacyStatus != null || body.pharmacyNotes != null) &&
+        data
+      ) {
+        setData({
+          ...data,
+          appointment: {
+            ...data.appointment,
+            pharmacyStatus:
+              typeof body.pharmacyStatus === "string"
+                ? body.pharmacyStatus
+                : data.appointment.pharmacyStatus,
+            pharmacyNotes:
+              typeof body.pharmacyNotes === "string"
+                ? body.pharmacyNotes
+                : data.appointment.pharmacyNotes,
+            pharmacySentAt:
+              body.pharmacyStatus === "sent"
+                ? new Date().toISOString()
+                : data.appointment.pharmacySentAt,
+          },
+        });
+        toast.success(successMessage || "Updated (demo)");
       }
       return true;
     }
@@ -469,6 +500,76 @@ export default function OpsAppointmentPage() {
 
       {isPaid && (
         <section className="mt-6 rounded-2xl border border-white/10 p-5">
+          <h2 className="text-sm font-medium mb-2">Pharmacy handoff</h2>
+          <p className="text-sm text-white/55 mb-4">
+            After you approve an Rx, record how it left the chart (portal / fax /
+            phone). Manual fulfillment is fine for launch.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {(["queued", "sent", "held", "declined"] as const).map((status) => (
+              <button
+                key={status}
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setPharmacyStatus(status);
+                  void patch(
+                    {
+                      pharmacyStatus: status,
+                      pharmacyNotes: pharmacyNotes,
+                    },
+                    `Pharmacy marked ${status}`,
+                  );
+                }}
+                className={`rounded-full px-3 py-1.5 text-xs capitalize border disabled:opacity-40 ${
+                  pharmacyStatus === status
+                    ? "bg-[#9dba8c] text-[#0b100e] border-[#9dba8c]"
+                    : "border-white/15 text-white/70 hover:border-white/35"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+          <label className="block text-xs text-white/45 mb-1" htmlFor="pharmacy-notes">
+            Pharmacy notes
+          </label>
+          <textarea
+            id="pharmacy-notes"
+            value={pharmacyNotes}
+            onChange={(e) => setPharmacyNotes(e.target.value)}
+            rows={3}
+            placeholder="Drug, strength, directions, pharmacy name, confirmation #"
+            className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#9dba8c]/60"
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                void patch(
+                  {
+                    pharmacyStatus: pharmacyStatus || "queued",
+                    pharmacyNotes,
+                  },
+                  "Pharmacy notes saved",
+                )
+              }
+              className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5 disabled:opacity-50"
+            >
+              Save pharmacy notes
+            </button>
+            {a.pharmacySentAt && (
+              <span className="text-xs text-white/40 self-center">
+                Sent {new Date(a.pharmacySentAt).toLocaleString()}
+              </span>
+            )}
+          </div>
+        </section>
+      )}
+
+      {isPaid && (
+        <section className="mt-6 rounded-2xl border border-white/10 p-5">
           <h2 className="text-sm font-medium mb-2">Launch playbook</h2>
           <ul className="text-sm text-white/65 space-y-2 list-disc pl-5">
             <li>
@@ -478,9 +579,9 @@ export default function OpsAppointmentPage() {
               <code className="text-xs text-white/50">charge.refunded</code>.
             </li>
             <li>
-              <span className="text-white/85">Approve Rx:</span> send the
-              prescription to your compounding pharmacy (portal / fax / phone —
-              manual is fine for launch). Then mark completed.
+              <span className="text-white/85">Approve Rx:</span> use{" "}
+              <span className="text-white/85">Pharmacy handoff</span> above
+              (portal / fax / phone — manual is fine). Then mark completed.
             </li>
             <li>
               <span className="text-white/85">Statement text:</span> charges

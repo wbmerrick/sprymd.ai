@@ -18,7 +18,11 @@ const STATUSES = new Set([
 type PatchBody = {
   status?: string;
   assignSelf?: boolean | string;
+  pharmacyStatus?: string;
+  pharmacyNotes?: string;
 };
+
+const PHARMACY_STATUSES = new Set(["queued", "sent", "held", "declined", ""]);
 
 function parseBody(req: VercelRequest): PatchBody {
   if (!req.body) return {};
@@ -71,7 +75,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse) {
     const { data: appointment, error } = await admin
       .from("appointments")
       .select(
-        "id, status, service_tier, amount_cents, currency, paid_at, scheduled_at, created_at, updated_at, stripe_checkout_session_id, stripe_payment_intent_id, patient_id, provider_id, patients(id, email, full_name, phone, state_of_residence, date_of_birth)",
+        "id, status, service_tier, amount_cents, currency, paid_at, scheduled_at, created_at, updated_at, stripe_checkout_session_id, stripe_payment_intent_id, patient_id, provider_id, pharmacy_status, pharmacy_notes, pharmacy_sent_at, patients(id, email, full_name, phone, state_of_residence, date_of_birth)",
       )
       .eq("id", id)
       .maybeSingle();
@@ -135,6 +139,9 @@ async function handleGet(req: VercelRequest, res: VercelResponse) {
         stripePaymentIntentId: appointment.stripe_payment_intent_id,
         patientId: appointment.patient_id,
         providerId: appointment.provider_id,
+        pharmacyStatus: appointment.pharmacy_status || null,
+        pharmacyNotes: appointment.pharmacy_notes || null,
+        pharmacySentAt: appointment.pharmacy_sent_at || null,
         patient: patient
           ? {
               id: patient.id,
@@ -198,6 +205,21 @@ async function handlePatch(
       return;
     }
     patch.provider_id = providerId;
+  }
+
+  if (body.pharmacyStatus != null) {
+    const pharmacyStatus = String(body.pharmacyStatus).trim().toLowerCase();
+    if (!PHARMACY_STATUSES.has(pharmacyStatus)) {
+      res.status(400).json({ error: "invalid_pharmacy_status" });
+      return;
+    }
+    patch.pharmacy_status = pharmacyStatus || null;
+    if (pharmacyStatus === "sent") {
+      patch.pharmacy_sent_at = new Date().toISOString();
+    }
+  }
+  if (body.pharmacyNotes != null) {
+    patch.pharmacy_notes = String(body.pharmacyNotes).slice(0, 4000);
   }
 
   if (Object.keys(patch).length <= 1) {

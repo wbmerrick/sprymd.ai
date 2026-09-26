@@ -90,6 +90,9 @@ const DETAILS: Record<string, OpsDetailResponse> = {
       providerId: null,
       stripeCheckoutSessionId: "cs_live_demo_jordan",
       stripePaymentIntentId: "pi_live_demo_jordan",
+      pharmacyStatus: null,
+      pharmacyNotes: null,
+      pharmacySentAt: null,
       patient: {
         id: "p-demo-1",
         email: "jordan.demo@example.com",
@@ -131,6 +134,9 @@ const DETAILS: Record<string, OpsDetailResponse> = {
       providerId: DEMO_PROVIDER,
       stripeCheckoutSessionId: "cs_live_demo_sam",
       stripePaymentIntentId: "pi_live_demo_sam",
+      pharmacyStatus: "sent",
+      pharmacyNotes: "Tadalafil 5mg daily · faxed to compounding partner",
+      pharmacySentAt: new Date(Date.now() - 30 * 60_000).toISOString(),
       patient: {
         id: "p-demo-2",
         email: "sam.demo@example.com",
@@ -182,6 +188,9 @@ export function getDemoDetail(id: string): OpsDetailResponse | null {
       providerId: row.providerId,
       stripeCheckoutSessionId: null,
       stripePaymentIntentId: null,
+      pharmacyStatus: null,
+      pharmacyNotes: null,
+      pharmacySentAt: null,
       patient: row.patient
         ? { ...row.patient, dateOfBirth: "1990-01-01" }
         : null,
