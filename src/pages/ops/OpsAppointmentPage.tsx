@@ -200,7 +200,9 @@ export default function OpsAppointmentPage() {
       const ok = await patch({ assignSelf: true }, "Assigned to you");
       if (!ok && !demo) return;
     }
-    navigate(withDemo(`/visit/${data.appointment.id}`, demo));
+    const qs = new URLSearchParams({ role: "provider" });
+    if (demo) qs.set("demo", "1");
+    navigate(`/visit/${data.appointment.id}?${qs.toString()}`);
   }
 
   async function syncPayment() {
