@@ -18,7 +18,7 @@ import {
 import { handlePreflight } from "./_lib/cors";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 import { ensureCheckoutAppointment } from "./_lib/ensureCheckoutAppointment";
-import { STATEMENT_DESCRIPTOR } from "../shared/statementDescriptor";
+import { STATEMENT_DESCRIPTOR } from "./_lib/statementDescriptor";
 
 type CheckoutBody = {
   appointmentId?: string;
