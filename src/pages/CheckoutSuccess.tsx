@@ -7,6 +7,8 @@ import AnimatedSection from "@/components/AnimatedSection";
 import { trackConversion } from "@/lib/conversionTrack";
 import { loadCheckoutSelection } from "@/lib/intakeFlow";
 import { ensureAccountShell } from "@/lib/patientCareStore";
+import { buildFunnelDraft } from "@/lib/caseSubmission";
+import { saveGuestIntakeDraft } from "@/lib/guestIntakeSubmit";
 
 type SessionLookup = {
   appointmentId?: string;
@@ -47,6 +49,7 @@ const CheckoutSuccess = () => {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
   const appointmentFromUrl = params.get("appointment_id");
+  const intakeDone = params.get("intake") === "1";
   const [lookup, setLookup] = useState<SessionLookup | null>(
     appointmentFromUrl
       ? { appointmentId: appointmentFromUrl, visitPath: `/visit/${appointmentFromUrl}` }
@@ -54,6 +57,7 @@ const CheckoutSuccess = () => {
   );
   const [confirming, setConfirming] = useState(Boolean(sessionId || appointmentFromUrl));
   const tracked = useRef(false);
+  const [funnelSync, setFunnelSync] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionId && !appointmentFromUrl) {
@@ -107,12 +111,56 @@ const CheckoutSuccess = () => {
     });
   }, [confirming, lookup, sessionId, appointmentFromUrl]);
 
+  // Best-effort: push homepage funnel answers into the chart so ops sees a summary
+  // even before the full /intake questionnaire is completed.
+  useEffect(() => {
+    const appointmentId = lookup?.appointmentId || appointmentFromUrl;
+    if (!sessionId?.startsWith("cs_") || !appointmentId || intakeDone) return;
+    const selection = loadCheckoutSelection();
+    if (!selection?.conditionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const draft = buildFunnelDraft(
+          {
+            kind: "plan_selected",
+            conditionId: selection.conditionId,
+            answers: selection.answers || {},
+            treatmentId: selection.treatmentId,
+          },
+          crypto.randomUUID(),
+          null,
+        );
+        draft.appointmentId = appointmentId;
+        const result = await saveGuestIntakeDraft(draft, sessionId);
+        if (!cancelled) {
+          setFunnelSync(
+            result.location === "database"
+              ? "Your plan answers were sent to your clinician."
+              : null,
+          );
+        }
+      } catch {
+        /* non-blocking */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lookup?.appointmentId, appointmentFromUrl, sessionId, intakeDone]);
+
+  const appointmentId = lookup?.appointmentId || appointmentFromUrl;
   const visitPath =
     lookup?.visitPath ||
-    (lookup?.appointmentId ? `/visit/${lookup.appointmentId}` : null) ||
-    (appointmentFromUrl ? `/visit/${appointmentFromUrl}` : null);
+    (appointmentId ? `/visit/${appointmentId}` : null);
   const stillAwaiting = lookup?.status === "awaiting_payment";
-  const paid = lookup?.status === "paid" || (!confirming && !stillAwaiting && Boolean(sessionId || appointmentFromUrl));
+  const paid =
+    lookup?.status === "paid" ||
+    (!confirming && !stillAwaiting && Boolean(sessionId || appointmentFromUrl));
+  const intakePath =
+    appointmentId && sessionId
+      ? `/intake?appointmentId=${encodeURIComponent(appointmentId)}&session_id=${encodeURIComponent(sessionId)}`
+      : "/intake";
 
   return (
     <div className="min-h-screen flex flex-col bg-off-white">
@@ -139,21 +187,45 @@ const CheckoutSuccess = () => {
             )}
             {!confirming && stillAwaiting && (
               <p className="font-body text-sm text-amber-800/90 mb-4">
-                Payment is still confirming. Your chart review unlocks as soon as Stripe finishes.
+                Payment is still confirming. Continue your intake — the chart
+                unlocks for your clinician as soon as Stripe finishes.
               </p>
+            )}
+            {intakeDone && (
+              <p className="font-body text-sm text-emerald-800 mb-4">
+                Intake submitted. A clinician will review your case.
+              </p>
+            )}
+            {funnelSync && !intakeDone && (
+              <p className="font-body text-sm text-navy/80 mb-4">{funnelSync}</p>
             )}
             {sessionId && (
               <p className="font-body text-xs text-muted-foreground mb-8 break-all">
                 Session: {sessionId}
               </p>
             )}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/?auth=1" className="btn-primary text-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+              {!intakeDone && (
+                <Link to={intakePath} className="btn-primary text-center">
+                  Complete medical intake
+                </Link>
+              )}
+              <Link
+                to="/?auth=1"
+                className={
+                  intakeDone
+                    ? "btn-primary text-center"
+                    : "font-body text-sm text-navy underline underline-offset-4 self-center"
+                }
+              >
                 Create your account
               </Link>
               {visitPath && (
-                <Link to={visitPath} className="font-body text-sm text-navy underline underline-offset-4 self-center">
-                  Visit room (if scheduled)
+                <Link
+                  to={visitPath}
+                  className="font-body text-sm text-navy underline underline-offset-4 self-center"
+                >
+                  Visit room (optional)
                 </Link>
               )}
             </div>

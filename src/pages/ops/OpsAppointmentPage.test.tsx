@@ -56,6 +56,10 @@ describe("OpsAppointmentPage", () => {
     expect(
       screen.getByRole("button", { name: /decline \+ refund/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /^pharmacy handoff$/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^sent$/i })).toBeInTheDocument();
     expect(screen.getByText(/erectile dysfunction for ~8 months/i)).toBeInTheDocument();
     expect(screen.getByText(/age 38|age \d+/i)).toBeInTheDocument();
   });
