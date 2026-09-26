@@ -147,11 +147,7 @@ export default function OpsQueuePage() {
           );
         } else if (data.launch?.videoReady === false) {
           setLaunchHint(
-<<<<<<< HEAD
-            "Cash-pay + ledger are live. Specialty care is async chart review; live video is for PCP visits only (Daily/Twilio keys optional until PCP video is on).",
-=======
-            "Cash-pay + ledger are live. Hard-open care model is async chart review — video keys (Daily/Twilio) are optional.",
->>>>>>> ea5ef30 (docs(launch): reframe soft-open as hard-open master checklist)
+            "Cash-pay + ledger are live. Hard open: specialty care is async chart review; live video is for PCP visits only (Daily/Twilio after BAA).",
           );
         } else {
           setLaunchHint(null);

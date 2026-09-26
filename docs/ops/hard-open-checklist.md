@@ -10,11 +10,12 @@ Companion docs: [dress-rehearsal-checklist.md](./dress-rehearsal-checklist.md), 
 | In scope at hard open | Out of scope (stay off / deferred) |
 |-----------------------|-------------------------------------|
 | Care catalog cash-pay visits (TN) | Shop / marketplace (`FEATURES.enableShop`) |
-| Async chart review (no required video) | Device / wearables dashboard |
-| Stripe visit fee + refunds | Multi-state expansion |
-| Ops queue + pharmacy handoff fields | Empower e-Rx API automation |
-| Contact → Resend support inbox | GTM / paid ads (optional growth) |
-| Manual Empower / partner pharmacy fulfill | Live video (optional after BAA) |
+| Async chart review for specialty protocols | Device / wearables dashboard |
+| Live video for **PCP visits only** (Daily/Twilio after BAA) | Multi-state expansion |
+| Stripe visit fee + refunds | Empower e-Rx API automation |
+| Ops queue + pharmacy handoff fields | GTM / paid ads (optional growth) |
+| Contact → Resend support inbox | Specialty live video (not in scope) |
+| Manual Empower / partner pharmacy fulfill | Med subscriptions / shop |
 
 ## Master todo
 

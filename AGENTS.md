@@ -71,19 +71,11 @@ Until the first three are applied, chart writes return `PGRST205` and checkout s
 Master table: `docs/ops/hard-open-checklist.md` (public TN cash-pay open — not friends-and-family).
 
 1. ~~Merge PR that adds `POST /api/ops/reconcile` + success-page poll~~ (done).
-<<<<<<< HEAD
-2. ~~Complete one live Stripe Checkout ($75 `visit_basic`) → `status=paid` + `payment_events`~~ (done; re-smoke before public open).
-3. Staff: open `/ops` with allowlisted Supabase login; optional `Sync N awaiting`.
-4. **Care model (launch):** specialty / protocol care is **asynchronous chart review**. Live video (`DAILY_API_KEY` / Twilio) is for **PCP visits only** — do not require video for ED, weight loss, etc.
-5. Legal: NPP draft shipped; Terms scope updated for full catalog — **counsel review before calling final**. Card statement text is `SPRYMD` (see `shared/statementDescriptor.ts` + FAQ).
-6. Clinical dry-run: paid → **Complete medical intake** on success page (`/intake?appointmentId=&session_id=`) → chart row in `patient_intakes` → `/ops` claim → SOAP → **Pharmacy handoff** **or** Decline + refund. Follow `docs/ops/empower-fulfillment-sop.md` and `docs/ops/dress-rehearsal-checklist.md`.
-=======
 2. ~~Complete one live Stripe Checkout ($75 `visit_basic`) → `status=paid` + `payment_events`~~ (done; re-smoke on cutover day).
 3. Staff: open `/ops` with allowlisted Supabase login; optional `Sync N awaiting`. **Hard-open gate.**
-4. **Care model:** asynchronous chart review. Video (`DAILY_API_KEY` / Twilio) is optional — does not block hard open.
+4. **Care model:** specialty / protocol care is **asynchronous chart review**. Live video (`DAILY_API_KEY` / Twilio) is for **PCP visits only** — does not block hard open for specialty protocols.
 5. Legal: NPP draft shipped; Terms scope updated for full catalog — **counsel must clear before hard open**. Card statement text is `SPRYMD` (see `shared/statementDescriptor.ts` + FAQ).
 6. Dress rehearsal (production): paid → **Complete medical intake** on success page → `patient_intakes` → `/ops` claim → SOAP → **Pharmacy handoff** **or** Decline + refund. Follow `docs/ops/empower-fulfillment-sop.md` and `docs/ops/dress-rehearsal-checklist.md`. **Hard-open gate.**
->>>>>>> ea5ef30 (docs(launch): reframe soft-open as hard-open master checklist)
 7. Smoke: `node scripts/launch-check.mjs` and
    `node scripts/watch-paid-appointment.mjs <sessionId> <appointmentId>`.
 8. Contact: `/contact` and in-app contact forms POST `/api/contact` (Resend → `SUPPORT_INBOX` / support@sprymd.ai) — inbox must be monitored on launch days.
