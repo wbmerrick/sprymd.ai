@@ -147,7 +147,7 @@ export default function OpsQueuePage() {
           );
         } else if (data.launch?.videoReady === false) {
           setLaunchHint(
-            "Cash-pay + ledger are live. Specialty care is async chart review; live video is for PCP visits only (Daily/Twilio keys optional until PCP video is on).",
+            "Cash-pay + ledger are live. Hard open: specialty care is async chart review; live video is for PCP visits only (Daily/Twilio after BAA).",
           );
         } else {
           setLaunchHint(null);

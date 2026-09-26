@@ -1,7 +1,8 @@
-# Soft-launch dress rehearsal (STAR-6)
+# Hard-open dress rehearsal
 
-Run this once on **production** (or a Stripe live-mode sandbox you trust) before inviting real patients.
+Run this once on **production** before declaring SpryMD publicly open for Tennessee cash-pay visits.
 
+Master gates: [hard-open-checklist.md](./hard-open-checklist.md)  
 Companion SOP: [empower-fulfillment-sop.md](./empower-fulfillment-sop.md)
 
 ## Preconditions (already verified in code/env)
@@ -9,11 +10,13 @@ Companion SOP: [empower-fulfillment-sop.md](./empower-fulfillment-sop.md)
 - [x] `GET /api/health` → `ok: true` (Stripe secret + webhook secret + Supabase service role)
 - [x] Clinical migrations applied (`telehealth_clinical`, `intake_and_visits`, `guest_patients_payment_ledger`)
 - [x] Pharmacy handoff columns applied (`appointments.pharmacy_status|notes|sent_at`)
+- [x] Guest post-pay intake API live (`POST /api/intake/guest` — #62)
 - [x] Resend key present (`resendApiKey: true`)
 - [x] Launch smoke: `node scripts/launch-check.mjs` → `asyncLaunchOk: true` (video optional)
 - [ ] Staff can sign into `/ops` with allowlisted Supabase email
 - [ ] Empower / pharmacy transmit channel agreed (portal login, fax, phone) — even if manual
-- [ ] Ship guest post-pay intake API (`POST /api/intake/guest`) — PR #62; prod returns 404 until merge/deploy
+- [ ] Counsel cleared NPP + Terms for public use
+- [ ] `support@sprymd.ai` monitored for launch-day coverage
 
 ## Script (happy path)
 
@@ -26,6 +29,7 @@ Companion SOP: [empower-fulfillment-sop.md](./empower-fulfillment-sop.md)
    - Success page loads
    - Confirmation email arrives (Resend)
    - `/ops` shows the case as **paid**
+   - Card statement will show `SPRYMD`
 7. On success page: **Complete medical intake** (`/intake?appointmentId=&session_id=`) → confirm `patient_intakes` row in ops
 8. Staff: **Claim** → review chart → write brief SOAP note → set **Pharmacy handoff** (`queued` / `sent` / notes)
 9. Either:
@@ -44,7 +48,7 @@ node scripts/launch-check.mjs https://www.sprymd.ai
 node scripts/watch-paid-appointment.mjs <sessionId> <appointmentId>
 ```
 
-## Pass criteria
+## Pass criteria (hard open)
 
 | Check | Pass |
 |-------|------|
@@ -53,9 +57,10 @@ node scripts/watch-paid-appointment.mjs <sessionId> <appointmentId>
 | Email | Patient got payment confirmation |
 | Clinical | Approve→pharmacy handoff **or** decline→refund completed |
 | Honesty | No medication auto-charge appeared on the card |
+| Capacity | Founder/clinician can hit published ~1 business day SLA |
 
 ## After pass
 
-- Soft-open to a small TN circle (friends/family first)
-- Keep Empower SOP as the fulfillment bible until pharmacy API ships
-- Do **not** turn on shop / wearables / med subscriptions until those MOON items are real
+- **Hard open:** site stays public; any TN adult can pay. No invite-only mode.
+- Keep Empower SOP as the fulfillment bible until pharmacy API ships.
+- Do **not** turn on shop / wearables / med subscriptions until those items are product-ready (`FEATURES` flags).

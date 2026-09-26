@@ -38,8 +38,9 @@ async function main() {
       videoTwilio: Boolean(health?.checks?.twilioVideo),
       opsStaffEnv: Boolean(health?.checks?.opsStaffEmailsEnv),
       opsStaffBuiltin: Boolean(health?.checks?.opsStaffBuiltinAllowlist),
-      // Soft launch is async chart review — video keys are optional.
+      // Hard open care model is async chart review — video keys are optional.
       asyncLaunchOk: Boolean(health?.ok) && reconcileRes.status !== 404,
+      hardOpenEngOk: Boolean(health?.ok) && reconcileRes.status !== 404 && opsDemoRes.status === 200,
     },
   };
 
@@ -50,7 +51,7 @@ async function main() {
     report.launchGates.opsDemoOk;
   if (ok && !report.launchGates.videoDaily && !report.launchGates.videoTwilio) {
     console.error(
-      "note: video vendor unset — OK for async soft launch; set DAILY_API_KEY after BAA for live video.",
+      "note: video vendor unset — OK for async hard open; set DAILY_API_KEY after BAA for live video.",
     );
   }
   process.exit(ok ? 0 : 2);
