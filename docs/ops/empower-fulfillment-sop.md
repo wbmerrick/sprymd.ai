@@ -1,6 +1,6 @@
-# Empower + shipping fulfillment SOP (manual soft launch)
+# Empower + shipping fulfillment SOP (manual hard open)
 
-> **Status:** STAR launch playbook — use until Empower API / e-Rx automation ships (MOON).  
+> **Status:** Public-launch playbook — use until Empower API / e-Rx automation ships (MOON).  
 > **Owner:** Founding clinician + whoever is covering `/ops` that day.  
 > **Goal:** Every paid TN visit either gets a clinically appropriate Rx + ship path, or a clear decline + Stripe refund.
 
@@ -36,7 +36,7 @@ Async chart review is the launch care model for specialty protocols (ED, weight 
 3. Mark appointment cancelled / declined per ops UI.
 4. Email patient plainly: not appropriate via telehealth; seek in-person care if needed; 911 for emergencies.
 
-## SLAs (soft launch)
+## SLAs (hard open — public)
 
 | Step | Target |
 |------|--------|
@@ -44,6 +44,8 @@ Async chart review is the launch care model for specialty protocols (ED, weight 
 | Decision (approve/decline) | Within 1 business day of claim |
 | Rx transmit after approve | Same day as approve |
 | Patient “what’s next” email | Within 24h of payment (Resend confirmation already fires; clinical follow-up is human) |
+
+These SLAs are the public promise (FAQ ~1 business day). Do not hard-open without staff coverage that can hit them.
 
 ## Exceptions
 
