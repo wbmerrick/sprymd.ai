@@ -1,0 +1,21 @@
+---
+description: SpryMD repository defaults for Cursor
+alwaysApply: true
+---
+
+- Use Bun for package management and scripts. `bun.lock` is the source of truth and the committed `package-lock.json` is stale, so prefer `~/.bun/bin/bun run <script>` in fresh shells.
+- Common commands:
+  - Dev server: `~/.bun/bin/bun run dev` on `http://localhost:8080/`
+  - Build: `~/.bun/bin/bun run build` or `~/.bun/bin/bun run build:dev`
+  - Lint: `~/.bun/bin/bun run lint`
+  - Unit tests: `~/.bun/bin/bun run test`
+- This repository is a Vite + React + TypeScript single-page app backed by hosted Supabase. There is no local database or backend service to boot before working on frontend flows.
+- Core app structure:
+  - Routes: `src/App.tsx`
+  - Intake funnel: `src/SpryApp.jsx`
+  - Intake data: `src/data/careCatalog.ts`
+  - Intake flow logic: `src/lib/intakeFlow.ts`
+  - Checkout handoff: `src/pages/CashPayCheckout.tsx`
+  - Ops UI: `src/pages/ops/`
+- Ops API work must preserve staff auth requirements in `api/_lib/staffAuth.ts`; `/ops?demo=1` is the demo entrypoint.
+- Keep shared Cursor assets committed under `.cursor/`, but never commit `.cursor/mcp.json` because it is local-only and gitignored.
