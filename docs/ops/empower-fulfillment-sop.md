@@ -8,7 +8,7 @@
 
 Patient completed intake → paid visit fee (Stripe) → appointment `status=paid` in `/ops`.
 
-Async chart review is the launch care model. Live video is optional.
+Async chart review is the launch care model for specialty protocols (ED, weight loss, hair, skin, peptides, NAD+). **Live video is for PCP visits only.**
 
 ## Roles
 

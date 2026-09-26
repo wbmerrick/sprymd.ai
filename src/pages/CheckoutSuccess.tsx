@@ -176,9 +176,10 @@ const CheckoutSuccess = () => {
             </h1>
             <p className="font-body text-muted-foreground text-lg mb-6">
               Thank you. Your <strong>visit fee</strong> has been received
-              {paid ? " and confirmed" : ""}. A Tennessee-licensed clinician will
-              review your intake asynchronously — medication is only prescribed
-              (and billed) if clinically appropriate. You will get a confirmation email shortly.
+              {paid ? " and confirmed" : ""}. Specialty care is reviewed
+              asynchronously; primary-care (PCP) visits may include a live video
+              visit. Medication is only prescribed (and billed) if clinically
+              appropriate. You will get a confirmation email shortly.
             </p>
             {confirming && (
               <p className="font-body text-sm text-muted-foreground mb-4">

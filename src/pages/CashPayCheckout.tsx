@@ -71,6 +71,8 @@ const CashPayCheckout = () => {
               patientEmail={patientEmail}
               patientName={patientName}
               defaultTierId={conditionId ? defaultServiceTierFor(conditionId) : undefined}
+              conditionId={conditionId}
+              treatmentId={treatmentId || undefined}
             />
           </AnimatedSection>
         </div>
