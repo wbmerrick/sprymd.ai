@@ -30,6 +30,8 @@ type CheckoutBody = {
   physicalState?: string;
   cashPayTermsAccepted?: boolean | string;
   telehealthLimitationsAcknowledged?: boolean | string;
+  conditionId?: string;
+  treatmentId?: string;
 };
 
 function affirmed(value: boolean | string | undefined): boolean {
@@ -85,6 +87,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const patientName = body.patientName
     ? String(body.patientName).trim()
     : "";
+  const conditionId = body.conditionId
+    ? String(body.conditionId).trim().toLowerCase()
+    : "";
+  const treatmentId = body.treatmentId
+    ? String(body.treatmentId).trim()
+    : "";
 
   if (!serviceTierId) {
     res.status(400).json({ error: "missing_service_tier_id" });
@@ -130,6 +138,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       amountCents: tier.amountCents,
       currency: tier.currency,
       physicalState: compliance.physicalState,
+      conditionId: conditionId || undefined,
+      treatmentId: treatmentId || undefined,
     });
     appointmentId = ensured.appointmentId;
     patientId = ensured.patientId;
@@ -221,6 +231,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         physical_state: compliance.physicalState.toUpperCase(),
         cash_pay_terms_accepted: "true",
         telehealth_limitations_acknowledged: "true",
+        condition_id: conditionId || "",
+        treatment_id: treatmentId || "",
       },
     });
 

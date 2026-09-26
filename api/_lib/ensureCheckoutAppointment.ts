@@ -10,6 +10,8 @@ export type EnsureCheckoutAppointmentInput = {
   currency?: string;
   physicalState?: string;
   stripeCheckoutSessionId?: string;
+  conditionId?: string;
+  treatmentId?: string;
 };
 
 export type EnsureCheckoutAppointmentResult = {
@@ -79,6 +81,8 @@ export async function ensureCheckoutAppointment(
     if (input.stripeCheckoutSessionId) {
       patch.stripe_checkout_session_id = input.stripeCheckoutSessionId;
     }
+    if (input.conditionId) patch.condition_id = input.conditionId;
+    if (input.treatmentId) patch.treatment_id = input.treatmentId;
 
     const { error: updateError } = await supabase
       .from("appointments")
@@ -144,6 +148,8 @@ export async function ensureCheckoutAppointment(
   if (input.stripeCheckoutSessionId) {
     appointmentRow.stripe_checkout_session_id = input.stripeCheckoutSessionId;
   }
+  if (input.conditionId) appointmentRow.condition_id = input.conditionId;
+  if (input.treatmentId) appointmentRow.treatment_id = input.treatmentId;
 
   const { data: appointment, error: apptError } = await supabase
     .from("appointments")

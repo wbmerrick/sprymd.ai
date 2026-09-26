@@ -29,6 +29,8 @@ export type OpsDetailResponse = {
     providerId: string | null;
     stripeCheckoutSessionId: string | null;
     stripePaymentIntentId?: string | null;
+    conditionId?: string | null;
+    treatmentId?: string | null;
     pharmacyStatus?: string | null;
     pharmacyNotes?: string | null;
     pharmacySentAt?: string | null;

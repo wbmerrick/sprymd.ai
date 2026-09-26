@@ -11,8 +11,9 @@ describe("FAQ soft-launch honesty", () => {
     expect(src).toMatch(/does not auto-charge medication at checkout/i);
   });
 
-  it("describes async chart review, not required video", () => {
-    expect(src).toMatch(/asynchronous/i);
-    expect(src).toMatch(/No scheduled appointment or required video call/i);
+  it("describes async specialty care and PCP video when needed", () => {
+    expect(src).toMatch(/asynchronous chart review/i);
+    expect(src).toMatch(/Primary-care \(PCP\) visits may include a live video/i);
+    expect(src).not.toMatch(/Live video can be added later when clinically useful/i);
   });
 });

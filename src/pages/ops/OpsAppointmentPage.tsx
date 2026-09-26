@@ -15,6 +15,7 @@ import {
   openStripeRefundDeepLink,
   stripeRefundDeepLink,
 } from "@/lib/stripeDashboardLinks";
+import { requiresLiveVideoVisit } from "@/lib/visitModality";
 
 const PRIMARY_BY_STATUS: Record<string, string[]> = {
   paid: ["completed", "cancelled"],
@@ -200,7 +201,9 @@ export default function OpsAppointmentPage() {
       const ok = await patch({ assignSelf: true }, "Assigned to you");
       if (!ok && !demo) return;
     }
-    navigate(withDemo(`/visit/${data.appointment.id}`, demo));
+    const qs = new URLSearchParams({ role: "provider" });
+    if (demo) qs.set("demo", "1");
+    navigate(`/visit/${data.appointment.id}?${qs.toString()}`);
   }
 
   async function syncPayment() {
@@ -328,6 +331,7 @@ export default function OpsAppointmentPage() {
   );
   const age = ageFromDob(patient?.dateOfBirth);
   const isPaid = a.status === "paid";
+  const liveVideo = requiresLiveVideoVisit(a.conditionId);
   const steps = [
     {
       n: 1,
@@ -346,9 +350,11 @@ export default function OpsAppointmentPage() {
     },
     {
       n: 3,
-      label: "SOAP / decision",
+      label: liveVideo ? "Video visit / SOAP" : "SOAP / decision",
       done: a.status === "completed",
-      hint: "Approve Rx path or decline + refund",
+      hint: liveVideo
+        ? "Join video for PCP visits, then document the decision"
+        : "Async chart review — approve Rx path or decline + refund",
     },
     {
       n: 4,
@@ -411,7 +417,11 @@ export default function OpsAppointmentPage() {
           <div className="font-display text-2xl mt-1">
             {money(a.amountCents, a.currency)}
           </div>
-          <div className="text-xs text-white/45 mt-1 capitalize">{a.serviceTier} visit</div>
+          <div className="text-xs text-white/45 mt-1 capitalize">
+            {a.serviceTier} visit
+            {a.conditionId ? ` · ${a.conditionId}` : ""}
+            {liveVideo ? " · live video" : " · async review"}
+          </div>
         </div>
       </div>
 
@@ -439,14 +449,20 @@ export default function OpsAppointmentPage() {
             >
               Open SOAP note
             </Link>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void startVisit()}
-              className="rounded-full border border-white/20 px-4 py-2.5 text-sm hover:bg-white/5 disabled:opacity-50"
-            >
-              Video room (optional)
-            </button>
+            {liveVideo ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void startVisit()}
+                className="rounded-full border border-[#9dba8c]/50 bg-[#9dba8c]/15 px-4 py-2.5 text-sm text-[#d7e6cb] hover:bg-[#9dba8c]/25 disabled:opacity-50"
+              >
+                Join PCP video visit
+              </button>
+            ) : (
+              <p className="w-full text-xs text-white/45 mt-1">
+                Async chart review — live video is for PCP visits only.
+              </p>
+            )}
           </div>
         )}
         {a.status === "awaiting_payment" && !demo && (

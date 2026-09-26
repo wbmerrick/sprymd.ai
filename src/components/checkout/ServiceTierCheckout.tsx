@@ -20,6 +20,9 @@ export type ServiceTierCheckoutProps = {
   patientName?: string;
   /** Tier to preselect (e.g. the funnel picks `protocol_start` for a medication plan). */
   defaultTierId?: ServiceTierId;
+  /** Care catalog condition (e.g. `pcp`, `ed`) — persisted on the appointment. */
+  conditionId?: string;
+  treatmentId?: string;
   onError?: (message: string) => void;
 };
 
@@ -28,6 +31,8 @@ export default function ServiceTierCheckout({
   patientEmail: initialEmail = "",
   patientName: initialName = "",
   defaultTierId,
+  conditionId,
+  treatmentId,
   onError,
 }: ServiceTierCheckoutProps) {
   const [selectedId, setSelectedId] = useState<ServiceTierId>(
@@ -81,6 +86,8 @@ export default function ServiceTierCheckout({
       if (appointmentId) payload.appointmentId = appointmentId;
       if (patientEmail.trim()) payload.patientEmail = patientEmail.trim();
       if (patientName.trim()) payload.patientName = patientName.trim();
+      if (conditionId?.trim()) payload.conditionId = conditionId.trim();
+      if (treatmentId?.trim()) payload.treatmentId = treatmentId.trim();
 
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",

@@ -45,6 +45,12 @@ describe("OpsAppointmentPage", () => {
     expect(screen.getByRole("button", { name: /claim case/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open soap note/i })).toBeInTheDocument();
     expect(screen.getByText(/async review checklist/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/async chart review — live video is for pcp visits only/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /join pcp video visit/i }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText(/launch playbook/i)).toBeInTheDocument();
     expect(screen.getByText(/decline \/ refund/i)).toBeInTheDocument();
     expect(
