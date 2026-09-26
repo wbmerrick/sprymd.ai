@@ -39,8 +39,9 @@ Apply in SQL editor (or `supabase db push`) in order when launching cash-pay vis
 1. `supabase/migrations/20260921_telehealth_clinical.sql`
 2. `supabase/migrations/20260921_intake_and_visits.sql`
 3. `supabase/migrations/20260923_guest_patients_payment_ledger.sql`
+4. `supabase/migrations/20260926_appointments_pharmacy_handoff.sql` (ops pharmacy checklist)
 
-Until these are applied, chart writes return `PGRST205` and checkout still works via Stripe-only
+Until the first three are applied, chart writes return `PGRST205` and checkout still works via Stripe-only
 (with appointment provisioning skipped). Stripe webhook events to enable: `checkout.session.completed`,
 `charge.refunded`, `payment_intent.payment_failed`.
 
