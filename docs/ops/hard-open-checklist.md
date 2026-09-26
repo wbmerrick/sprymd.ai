@@ -38,7 +38,7 @@ Companion docs: [dress-rehearsal-checklist.md](./dress-rehearsal-checklist.md), 
 | H15 | Published SLA commitment matches ops capacity | Founder | **Open** | FAQ already says ~1 business day; staff must hit it |
 | H16 | Re-smoke one live paid visit after any deploy | Eng / Founder | **Open** | Prior smoke done; one more after hard-open cut |
 | H17 | Soft-open / invite-only posture retired | Founder | **N/A → Hard open** | No TN friends-only gate — site is the front door |
-| H18 | Live video (Daily/Twilio) | Eng | Deferred | Not required; async is the care model |
+| H18 | Live video for PCP visits (Daily/Twilio) | Eng | Deferred | Specialty stays async; enable Daily after BAA for PCP only |
 | H19 | GTM / ads conversion container | Eng | Deferred | `dataLayer` already pushes; wire when ads budget exists |
 | H20 | Shop, wearables, med subscriptions, Empower API | Eng | Deferred | Flip `FEATURES` / build MOON work after open |
 

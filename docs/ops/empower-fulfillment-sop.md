@@ -8,7 +8,11 @@
 
 Patient completed intake → paid visit fee (Stripe) → appointment `status=paid` in `/ops`.
 
+<<<<<<< HEAD
 Async chart review is the launch care model for specialty protocols (ED, weight loss, hair, skin, peptides, NAD+). **Live video is for PCP visits only.**
+=======
+Async chart review is the launch care model for specialty protocols. **Live video is for PCP visits only.**
+>>>>>>> fb40025 (docs(launch): note PCP-only video in Empower SOP)
 
 ## Roles
 
