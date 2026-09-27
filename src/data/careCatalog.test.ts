@@ -42,7 +42,7 @@ describe("care catalog integrity", () => {
   });
 
   it("looks up conditions and treatments safely", () => {
-    expect(getCondition("ed")?.name).toBe("Erectile dysfunction");
+    expect(getCondition("ed")?.name).toBe("Men's sexual health");
     expect(getCondition("nope")).toBeUndefined();
     expect(getCondition(null)).toBeUndefined();
     expect(getTreatment("ed", "tada-daily")?.price).toBe(79);

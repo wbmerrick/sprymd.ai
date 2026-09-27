@@ -4,6 +4,7 @@ import { WearableToolbar } from "@/components/dashboard/WearableToolbar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import BrandAtmosphere from "@/components/brand/BrandAtmosphere";
 import { FEATURES } from "@/config/features";
+import { isMasterDashboardEmail, isStaffDashboardEmail } from "@/lib/dashboardRole";
 import { createContext, useContext } from "react";
 import type { UseDashboardDataReturn } from "@/hooks/useDashboardData";
 
@@ -34,10 +35,19 @@ export default function DashboardLayout() {
     return <Navigate to={`/?auth=1&returnTo=${returnTo}`} replace />;
   }
 
+  // Owners → command center; clinical staff → staff workspace.
+  if (isMasterDashboardEmail(data.email)) {
+    return <Navigate to="/master" replace />;
+  }
+  if (isStaffDashboardEmail(data.email)) {
+    return <Navigate to="/staff" replace />;
+  }
+
   return (
     <DashboardContext.Provider value={data}>
       <div
-        className="relative min-h-screen overflow-hidden bg-[#050505] text-zinc-100 font-body"
+        className="relative min-h-screen overflow-hidden bg-[#050505] text-zinc-100"
+        style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
       >
         <BrandAtmosphere plate="hawaiiDawn" variant="wash" />
         <div className="relative z-10">

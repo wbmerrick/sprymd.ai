@@ -14,15 +14,16 @@ export function GreetingHeader({ name }: GreetingHeaderProps) {
         style={{ background: "radial-gradient(circle, rgba(200, 158, 103,0.22), transparent 70%)" }}
         aria-hidden="true"
       />
-      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Your health hub</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">My care</p>
       <h1
         id="dashboard-greeting"
-        className="text-3xl font-semibold tracking-tight text-white sm:text-4xl font-display"
+        className="text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+        style={{ fontFamily: "'Fraunces', Georgia, serif" }}
       >
         {hello}, {first}.
       </h1>
       <p className="max-w-xl text-sm text-zinc-400">
-        See your care plan, orders, goals, and health readings in one place.
+        Stay on protocol — treatments, shipments, and your care team in one place.
       </p>
       <div className="h-px max-w-[7rem] bg-[#C89E67]/70" />
     </section>

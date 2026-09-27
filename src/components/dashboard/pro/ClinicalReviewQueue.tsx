@@ -50,7 +50,7 @@ export function ClinicalReviewQueue({
     setActionLoading(true);
     setFeedback(null);
     try {
-      const res = await requestMoreInfoClinicalCase(caseId, infoPrompt, userEmail || "clinician@sprymd.ai");
+      const res = await requestMoreInfoClinicalCase(caseId, userEmail || "clinician@sprymd.ai", infoPrompt);
       if (res.success) {
         setFeedback({ type: "success", message: res.message });
         setShowInfoInput(null);
@@ -69,7 +69,7 @@ export function ClinicalReviewQueue({
     setActionLoading(true);
     setFeedback(null);
     try {
-      const res = await denyClinicalCase(caseId, denyReason, userEmail || "clinician@sprymd.ai");
+      const res = await denyClinicalCase(caseId, userEmail || "clinician@sprymd.ai", denyReason);
       if (res.success) {
         setFeedback({ type: "success", message: res.message });
         setShowDenyInput(null);

@@ -41,13 +41,8 @@ import {
 } from "@/types/dashboard";
 import { publishVitalsEvent } from "@/lib/vitalsBus";
 import { isMasterEmail } from "@/lib/masterAccount";
-import { dispatchPrescriptionToPharmacy } from "@/lib/pharmacyFulfillment";
-import { syncTreatmentApprovalToDatabase } from "@/lib/supabaseSync";
-import { logPhiAccess } from "@/lib/hipaaCompliance";
 
 const READINGS_CAP = 500;
-
-const CARE_KEY = "sprymd_patient_care_v1";
 
 export type ClinicalCaseStatus = "pending_review" | "needs_info" | "approved" | "denied";
 
@@ -90,6 +85,10 @@ export interface PatientCareRecord {
   updatedAt: string;
 }
 
+/** In-memory care cache — Supabase is source of truth (see patientCareRemote). */
+const careCache = new Map<string, PatientCareRecord>();
+let clinicalReviewCache: ClinicalCase[] = [];
+
 const SUPPORT_TOPICS: SupportTopic[] = [
   { id: "topic_1", title: "Refills & shipping", description: "When to renew, cold-chain, and tracking" },
   { id: "topic_2", title: "Side effects", description: "What is expected vs when to message care" },
@@ -102,15 +101,14 @@ function emailKey(email: string) {
 }
 
 function readAll(): Record<string, PatientCareRecord> {
-  try {
-    return JSON.parse(localStorage.getItem(CARE_KEY) || "{}");
-  } catch {
-    return {};
-  }
+  const out: Record<string, PatientCareRecord> = {};
+  for (const [k, v] of careCache.entries()) out[k] = v;
+  return out;
 }
 
 function writeAll(store: Record<string, PatientCareRecord>) {
-  localStorage.setItem(CARE_KEY, JSON.stringify(store));
+  careCache.clear();
+  for (const [k, v] of Object.entries(store)) careCache.set(k, v);
 }
 
 function emptyCare(email: string): PatientCareRecord {
@@ -246,11 +244,117 @@ export function getPatientCare(email: string): PatientCareRecord {
 
 function saveCare(care: PatientCareRecord): PatientCareRecord {
   const key = emailKey(care.email);
-  const store = readAll();
   const next = { ...care, email: key, updatedAt: new Date().toISOString() };
-  store[key] = next;
-  writeAll(store);
+  careCache.set(key, next);
+  // Persist to Supabase (poll/refresh model — fire and reconcile on next hydrate)
+  void import("@/lib/patientCareRemote")
+    .then(({ persistPatientCareToDb }) => persistPatientCareToDb(next))
+    .catch(() => {
+      /* offline / RLS — cache remains authoritative until next successful hydrate */
+    });
   return next;
+}
+
+/**
+ * Hydrate care from Supabase into memory. Call on dashboard mount and after staff actions.
+ * One-time migrates legacy localStorage `sprymd_patient_care_v1` when present.
+ */
+export async function hydratePatientCare(email: string): Promise<PatientCareRecord> {
+  const key = emailKey(email);
+  if (!key) return emptyCare("");
+  try {
+    const { migrateLegacyLocalCare, fetchPatientCareFromDb } = await import("@/lib/patientCareRemote");
+    await migrateLegacyLocalCare(key);
+    const remote = await fetchPatientCareFromDb(key);
+    careCache.set(key, remote);
+    return remote;
+  } catch {
+    return getPatientCare(key);
+  }
+}
+
+export async function refreshPatientCare(email: string): Promise<PatientCareRecord> {
+  return hydratePatientCare(email);
+}
+
+/** Staff review queue — sync snapshot; refresh via hydrateClinicalReviewQueue. */
+export function getClinicalCasesForReview(_userEmail?: string): ClinicalCase[] {
+  return [...clinicalReviewCache];
+}
+
+export async function hydrateClinicalReviewQueue(): Promise<ClinicalCase[]> {
+  try {
+    const { fetchClinicalCasesForReview } = await import("@/lib/patientCareRemote");
+    clinicalReviewCache = await fetchClinicalCasesForReview();
+  } catch {
+    clinicalReviewCache = [];
+  }
+  return [...clinicalReviewCache];
+}
+
+export async function approveClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "approved");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Case approved. Pharmacy handoff can proceed." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to approve case.",
+    };
+  }
+}
+
+export async function requestMoreInfoClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+  _note?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "needs_info");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Requested more information from the patient." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to update case.",
+    };
+  }
+}
+
+export async function denyClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+  _reason?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "denied");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Case denied." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to deny case.",
+    };
+  }
+}
+
+export async function sendPatientCareMessage(
+  email: string,
+  subject: string,
+  body: string,
+  urgency: import("@/types/dashboard").MessageUrgency = "routine",
+) {
+  const { createThread } = await import("@/lib/messaging");
+  const result = await createThread({ email, subject, body, urgency });
+  await hydratePatientCare(email);
+  return result;
 }
 
 function protocolToTreatment(p: Record<string, unknown>, idx: number): Treatment {
@@ -592,7 +696,7 @@ export function getSignedInEmail(): string | null {
   return getSessionEmail();
 }
 
-export function ensureAccountShell(email: string, name?: string) {
+export async function ensureAccountShell(email: string, name?: string) {
   const key = emailKey(email);
   const existing = getStoredAccount(key);
   if (!existing) {
@@ -605,9 +709,10 @@ export function ensureAccountShell(email: string, name?: string) {
       }),
     );
   }
-  getPatientCare(key);
+  await hydratePatientCare(key);
   if (isMasterEmail(key)) {
     bootstrapMasterCare(key);
+    await hydratePatientCare(key);
   }
 }
 
@@ -1271,322 +1376,4 @@ export async function syncWearableDeviceFromCloud(email: string, deviceId: Weara
   if (sample) publishVitalsEvent({ type: "reading", deviceId, readingId: sample.id, at: sample.recordedAt });
   return saved;
 }
-
-/**
- * Clinician Review Queue: Fetch all pending clinical intake cases across accounts.
- */
-export function getClinicalCasesForReview(userEmail?: string): ClinicalCase[] {
-  const store = readAll();
-  const cases: ClinicalCase[] = [];
-
-  // If user is a master email / clinician, aggregate across all stored accounts
-  const isClinician = isMasterEmail(userEmail);
-  
-  if (isClinician) {
-    for (const email of Object.keys(store)) {
-      const record = store[email];
-      if (record?.clinicalCases?.length) {
-        cases.push(...record.clinicalCases);
-      }
-    }
-  } else if (userEmail) {
-    const key = emailKey(userEmail);
-    const record = store[key];
-    if (record?.clinicalCases?.length) {
-      cases.push(...record.clinicalCases);
-    }
-  }
-
-  return cases.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}
-
-/**
- * Clinician Action: Approve patient intake case, trigger prescription dispatch, and schedule TN next-day delivery.
- */
-export async function approveClinicalCase(
-  caseId: string,
-  reviewerEmail: string = "clinician@sprymd.ai"
-): Promise<{ success: boolean; trackingNumber?: string; message: string }> {
-  const store = readAll();
-  let targetEmail: string | null = null;
-  let targetCase: ClinicalCase | null = null;
-
-  for (const [email, record] of Object.entries(store)) {
-    const c = record.clinicalCases?.find((item) => item.id === caseId);
-    if (c) {
-      targetEmail = email;
-      targetCase = c;
-      break;
-    }
-  }
-
-  if (!targetEmail || !targetCase) {
-    return { success: false, message: "Clinical case not found." };
-  }
-
-  const care = getPatientCare(targetEmail);
-  const now = new Date();
-  
-  // 1. Update case status
-  care.clinicalCases = (care.clinicalCases || []).map((c) =>
-    c.id === caseId
-      ? { ...c, status: "approved" as const, reviewedAt: now.toISOString() }
-      : c
-  );
-
-  // 2. Activate treatment
-  const treatment = care.treatments.find((t) => t.id === targetCase?.treatmentId || t.medicationName === targetCase?.planName);
-  if (treatment) {
-    treatment.status = "active";
-    treatment.refillsRemaining = 3;
-    treatment.startDate = now.toISOString().slice(0, 10);
-    const refillThru = new Date(now);
-    refillThru.setDate(refillThru.getDate() + 90);
-    treatment.refillThroughDate = refillThru.toISOString().slice(0, 10);
-    treatment.dosingInstructions = `Clinician authorized: Take as directed by your physician. Compounded by Empower Pharmacy. Next refill eligible in 28 days.`;
-  }
-
-  // 3. Dispatch to pharmacy API queue (Next-Business-Day TN fulfillment)
-  const pharmacyDispatch = await dispatchPrescriptionToPharmacy({
-    patientEmail: targetEmail,
-    medicationName: targetCase.planName || treatment?.medicationName || "Prescription Protocol",
-    dosage: treatment?.dosage,
-    treatmentId: targetCase.treatmentId,
-  });
-
-  // 4. Update shipment with pharmacy tracking
-  const shipment = care.shipments.find((s) => s.treatmentId === targetCase?.treatmentId || s.medicationName === targetCase?.planName);
-  if (shipment) {
-    shipment.status = "processing";
-    shipment.nextShipmentDate = pharmacyDispatch.estimatedDelivery;
-  } else {
-    care.shipments.unshift({
-      id: `shp_${Date.now()}`,
-      treatmentId: targetCase.treatmentId || `tx_${Date.now()}`,
-      medicationName: targetCase.planName || "Prescription Protocol",
-      nextShipmentDate: pharmacyDispatch.estimatedDelivery,
-      status: "processing",
-      quantity: 1,
-    });
-  }
-
-  // 5. Update transaction status to Paid/Active
-  care.transactions = (care.transactions || []).map((txn) =>
-    txn.status === "Pending review" ? { ...txn, status: "Paid / In Fulfillment" } : txn
-  );
-
-  // 6. Push notifications and secure message
-  pushNotification(care, {
-    icon: "pill",
-    title: "Prescription Approved by Clinician",
-    description: `Your protocol for ${targetCase.planName || "treatment"} was approved and transmitted to Empower Pharmacy. Carrier: ${pharmacyDispatch.carrier}. Estimated delivery: ${pharmacyDispatch.estimatedDelivery}.`,
-  });
-
-  care.messages.unshift({
-    id: `msg_approved_${Date.now()}`,
-    subject: `Treatment Plan Authorized · ${targetCase.planName || "Protocol"}`,
-    preview: `Dr. SpryMD has reviewed your health questionnaire and authorized your protocol. Your shipment is scheduled for ${pharmacyDispatch.estimatedDelivery}. Message here with any titration questions.`,
-    updatedAt: now.toISOString(),
-    status: "no_action",
-  });
-
-  saveCare(care);
-  publishVitalsEvent({ type: "device", deviceId: "care", at: now.toISOString() });
-
-  // Sync to backend DB
-  await syncTreatmentApprovalToDatabase({
-    caseId,
-    treatmentName: targetCase.planName || "Protocol",
-    status: "approved",
-    reviewerEmail,
-  });
-
-  return {
-    success: true,
-    trackingNumber: pharmacyDispatch.trackingNumber,
-    message: `Case approved. Prescription dispatched to Empower Pharmacy queue for Tennessee delivery on ${pharmacyDispatch.estimatedDelivery}.`,
-  };
-}
-
-/**
- * Clinician Action: Request additional health information or labs from patient.
- */
-export async function requestMoreInfoClinicalCase(
-  caseId: string,
-  question: string,
-  reviewerEmail: string = "clinician@sprymd.ai"
-): Promise<{ success: boolean; message: string }> {
-  const store = readAll();
-  let targetEmail: string | null = null;
-  let targetCase: ClinicalCase | null = null;
-
-  for (const [email, record] of Object.entries(store)) {
-    const c = record.clinicalCases?.find((item) => item.id === caseId);
-    if (c) {
-      targetEmail = email;
-      targetCase = c;
-      break;
-    }
-  }
-
-  if (!targetEmail || !targetCase) {
-    return { success: false, message: "Clinical case not found." };
-  }
-
-  const care = getPatientCare(targetEmail);
-  const now = new Date();
-
-  care.clinicalCases = (care.clinicalCases || []).map((c) =>
-    c.id === caseId ? { ...c, status: "needs_info" as const } : c
-  );
-
-  care.messages.unshift({
-    id: `msg_info_${Date.now()}`,
-    subject: `Clinician Question · ${targetCase.planName || "Care Protocol"}`,
-    preview: question || "Your clinician requires clarification regarding your medical intake before authorizing your prescription.",
-    updatedAt: now.toISOString(),
-    status: "action_required",
-  });
-
-  pushNotification(care, {
-    icon: "activity",
-    title: "Clinician clarification needed",
-    description: "Your physician sent a secure message regarding your recent intake questionnaire.",
-  });
-
-  saveCare(care);
-  publishVitalsEvent({ type: "device", deviceId: "care", at: now.toISOString() });
-
-  await syncTreatmentApprovalToDatabase({
-    caseId,
-    treatmentName: targetCase.planName || "Protocol",
-    status: "needs_info",
-    reviewerEmail,
-  });
-
-  return { success: true, message: "Follow-up message sent to patient." };
-}
-
-/**
- * Clinician Action: Decline treatment and issue full refund.
- */
-export async function denyClinicalCase(
-  caseId: string,
-  reason: string,
-  reviewerEmail: string = "clinician@sprymd.ai"
-): Promise<{ success: boolean; message: string }> {
-  const store = readAll();
-  let targetEmail: string | null = null;
-  let targetCase: ClinicalCase | null = null;
-
-  for (const [email, record] of Object.entries(store)) {
-    const c = record.clinicalCases?.find((item) => item.id === caseId);
-    if (c) {
-      targetEmail = email;
-      targetCase = c;
-      break;
-    }
-  }
-
-  if (!targetEmail || !targetCase) {
-    return { success: false, message: "Clinical case not found." };
-  }
-
-  const care = getPatientCare(targetEmail);
-  const now = new Date();
-
-  care.clinicalCases = (care.clinicalCases || []).map((c) =>
-    c.id === caseId
-      ? { ...c, status: "denied" as const, reviewedAt: now.toISOString() }
-      : c
-  );
-
-  const treatment = care.treatments.find((t) => t.id === targetCase?.treatmentId || t.medicationName === targetCase?.planName);
-  if (treatment) {
-    treatment.status = "inactive";
-    treatment.howItWorks = `Declined by clinician: ${reason || "Contraindication detected"}. Full refund processed.`;
-  }
-
-  care.transactions.unshift({
-    id: `txn_refund_${Date.now()}`,
-    date: now.toISOString().slice(0, 10),
-    product: `Full Refund · ${targetCase.planName || "Care Protocol"}`,
-    quantity: 1,
-    amount: 0,
-    status: "Refunded in full",
-  });
-
-  pushNotification(care, {
-    icon: "shield",
-    title: "Intake Review Complete (Refund Processed)",
-    description: `A clinician reviewed your case. Because treatment was not clinically appropriate, your card was not charged and a full refund was issued.`,
-  });
-
-  care.messages.unshift({
-    id: `msg_denied_${Date.now()}`,
-    subject: `Clinical Assessment Summary · ${targetCase.planName || "Care Protocol"}`,
-    preview: `After evaluating your medical questionnaire, our physician determined that this protocol is not clinically appropriate for you at this time (${reason || "safety contraindication"}). You have not been charged.`,
-    updatedAt: now.toISOString(),
-    status: "no_action",
-  });
-
-  saveCare(care);
-  publishVitalsEvent({ type: "device", deviceId: "care", at: now.toISOString() });
-
-  await syncTreatmentApprovalToDatabase({
-    caseId,
-    treatmentName: targetCase.planName || "Protocol",
-    status: "denied",
-    reviewerEmail,
-  });
-
-  return { success: true, message: "Case declined and full refund recorded." };
-}
-
-/**
- * Send secure message from patient to assigned Tennessee clinician.
- */
-export function sendPatientCareMessage(
-  email: string,
-  subject: string,
-  body: string
-): MessageThread {
-  const care = getPatientCare(email);
-  const now = new Date();
-  const threadId = `msg_${Date.now()}`;
-
-  const newThread: MessageThread = {
-    id: threadId,
-    subject: subject.trim() || "Patient Inquiry",
-    preview: body.trim(),
-    updatedAt: now.toISOString(),
-    status: "no_action",
-  };
-
-  care.messages.unshift(newThread);
-
-  logPhiAccess({
-    actorId: email,
-    actorRole: "patient",
-    actorEmail: email,
-    action: "message_physician",
-    patientId: email,
-    resourceType: "message",
-    resourceId: threadId,
-    metadata: { subject },
-  });
-
-  pushNotification(care, {
-    icon: "activity",
-    title: "Message Transmitted to Care Team",
-    description: `Your message "${subject}" was securely delivered to your physician. Expected response within 24 hours.`,
-  });
-
-  saveCare(care);
-  publishVitalsEvent({ type: "device", deviceId: "care", at: now.toISOString() });
-  return newThread;
-}
-
 

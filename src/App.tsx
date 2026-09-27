@@ -16,6 +16,15 @@ import SupportPage from "@/pages/dashboard/SupportPage";
 import OrdersPage from "@/pages/dashboard/OrdersPage";
 import SubscriptionsPage from "@/pages/dashboard/SubscriptionsPage";
 import ProfilePage from "@/pages/dashboard/ProfilePage";
+import StaffDashboardLayout from "@/pages/staff/StaffDashboardLayout";
+import StaffHomePage from "@/pages/staff/StaffHomePage";
+import StaffReviewPage from "@/pages/staff/StaffReviewPage";
+import StaffTeamPage from "@/pages/staff/StaffTeamPage";
+import MasterDashboardLayout from "@/pages/master/MasterDashboardLayout";
+import MasterHomePage from "@/pages/master/MasterHomePage";
+import MasterFinancePage from "@/pages/master/MasterFinancePage";
+import MasterMembersPage from "@/pages/master/MasterMembersPage";
+import MasterAiPage from "@/pages/master/MasterAiPage";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import NPP from "@/pages/NPP";
@@ -65,6 +74,17 @@ const App = () => (
             <Route path="orders" element={<OrdersPage />} />
             <Route path="subscriptions" element={<SubscriptionsPage />} />
             <Route path="profile" element={<ProfilePage />} />
+          </Route>
+          <Route path="/staff" element={<StaffDashboardLayout />}>
+            <Route index element={<StaffHomePage />} />
+            <Route path="team" element={<StaffTeamPage />} />
+            <Route path="review" element={<StaffReviewPage />} />
+          </Route>
+          <Route path="/master" element={<MasterDashboardLayout />}>
+            <Route index element={<MasterHomePage />} />
+            <Route path="finance" element={<MasterFinancePage />} />
+            <Route path="members" element={<MasterMembersPage />} />
+            <Route path="ai" element={<MasterAiPage />} />
           </Route>
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
