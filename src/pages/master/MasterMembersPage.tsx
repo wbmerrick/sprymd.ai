@@ -1,7 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { loadMasterOpsSnapshot, type MasterOpsSnapshot } from "@/lib/masterOps";
 import { formatRelative } from "@/lib/dashboardFormat";
+import { MASTER_CHART, MasterChartPanel } from "@/components/master/MasterChartPanel";
 
 export default function MasterMembersPage() {
   const { email } = useOutletContext<{ email: string }>();
@@ -24,9 +39,21 @@ export default function MasterMembersPage() {
     );
   }, [snap, query]);
 
+  const stripePie = useMemo(() => {
+    if (!snap) return [];
+    const { linked, missing } = snap.members.stripeMix;
+    return [
+      { name: "Stripe linked", value: linked },
+      { name: "Missing id", value: missing },
+    ].filter((d) => d.value > 0);
+  }, [snap]);
+
   if (!snap) {
     return <p className="text-sm text-zinc-500">Loading member log…</p>;
   }
+
+  const hasSignups = snap.members.dailySignups.some((d) => d.count > 0) || snap.members.total > 0;
+  const hasStates = snap.members.byState.length > 0;
 
   return (
     <div className="space-y-8">
@@ -46,6 +73,139 @@ export default function MasterMembersPage() {
         <Stat label="New · 30d" value={String(snap.members.last30d)} />
         <Stat label="Stripe linked" value={String(snap.members.withStripe)} />
       </div>
+
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          <MasterChartPanel
+            title="Membership growth · last 30 days"
+            hint={`${snap.members.last30d} new · ${snap.members.total} total`}
+            isEmpty={!hasSignups}
+            empty="No members yet. Growth will appear here as patients join."
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={snap.members.dailySignups} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="masterMemFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={MASTER_CHART.emerald} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={MASTER_CHART.emerald} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke={MASTER_CHART.grid} vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  minTickGap={28}
+                />
+                <YAxis
+                  tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={36}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  contentStyle={MASTER_CHART.tooltip}
+                  labelStyle={{ color: "#a1a1aa" }}
+                  formatter={(value: number, name: string) => [
+                    value,
+                    name === "cumulative" ? "Total members" : "New that day",
+                  ]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="cumulative"
+                  name="cumulative"
+                  stroke={MASTER_CHART.emerald}
+                  fill="url(#masterMemFill)"
+                  strokeWidth={1.75}
+                  isAnimationActive
+                  animationDuration={500}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  name="count"
+                  stroke={MASTER_CHART.amber}
+                  fill="transparent"
+                  strokeWidth={1.25}
+                  strokeDasharray="4 3"
+                  isAnimationActive
+                  animationDuration={500}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </MasterChartPanel>
+        </div>
+
+        <div className="lg:col-span-2 space-y-4">
+          <MasterChartPanel
+            title="Stripe linkage"
+            hint={`${snap.members.withStripe}/${snap.members.total} linked`}
+            isEmpty={stripePie.length === 0}
+            empty="No members to chart Stripe linkage."
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={stripePie}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={48}
+                  outerRadius={78}
+                  paddingAngle={3}
+                  stroke="transparent"
+                >
+                  {stripePie.map((entry) => (
+                    <Cell
+                      key={entry.name}
+                      fill={entry.name === "Stripe linked" ? MASTER_CHART.emerald : MASTER_CHART.amber}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={MASTER_CHART.tooltip}
+                  labelStyle={{ color: "#a1a1aa" }}
+                  formatter={(value: number, name: string) => [value, name]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </MasterChartPanel>
+        </div>
+      </div>
+
+      <MasterChartPanel
+        title="Members by state"
+        hint="Top states"
+        isEmpty={!hasStates}
+        empty="No state data on member rows yet."
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={snap.members.byState} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid stroke={MASTER_CHART.grid} vertical={false} />
+            <XAxis
+              dataKey="name"
+              tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+              width={28}
+              allowDecimals={false}
+            />
+            <Tooltip
+              contentStyle={MASTER_CHART.tooltip}
+              labelStyle={{ color: "#a1a1aa" }}
+              formatter={(value: number) => [value, "Members"]}
+            />
+            <Bar dataKey="count" fill={MASTER_CHART.emeraldMuted} radius={[4, 4, 0, 0]} maxBarSize={40} />
+          </BarChart>
+        </ResponsiveContainer>
+      </MasterChartPanel>
 
       <input
         value={query}
