@@ -20,6 +20,7 @@ import {
   dismissCareNotification,
   emptyBodyProfile,
   getSignedInEmail,
+  hydratePatientCare,
   importWearableUpload,
   recordWearableReading,
   setWearableEnabled,
@@ -80,15 +81,34 @@ export function useDashboardData() {
     (async () => {
       const session = await restoreCustomerSession();
       if (cancelled) return;
-      setEmail(session?.email || getSignedInEmail());
-      setReady(true);
+      const nextEmail = session?.email || getSignedInEmail();
+      setEmail(nextEmail);
+      if (nextEmail) {
+        try {
+          await hydratePatientCare(nextEmail);
+        } catch {
+          /* cache may stay empty until next refresh */
+        }
+      }
+      if (!cancelled) setReady(true);
     })();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const refresh = useCallback(() => setTick((t) => t + 1), []);
+  const refresh = useCallback(() => {
+    void (async () => {
+      if (email) {
+        try {
+          await hydratePatientCare(email);
+        } catch {
+          /* keep cache */
+        }
+      }
+      setTick((t) => t + 1);
+    })();
+  }, [email]);
 
   const data: DashboardData = useMemo(() => {
     void tick;

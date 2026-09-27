@@ -26,6 +26,10 @@ const LABELS: Record<string, string> = {
   delivered: "Delivered",
   no_action: "No action needed",
   action_required: "Action required",
+  awaiting_staff: "Awaiting care team",
+  awaiting_patient: "Reply needed",
+  open: "Open",
+  closed: "Closed",
   paid: "Paid",
   refunded: "Refunded",
 };
@@ -41,6 +45,10 @@ const STYLES: Record<string, string> = {
   delivered: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
   no_action: "bg-zinc-500/15 text-zinc-300 border-zinc-500/25",
   action_required: "bg-rose-500/15 text-rose-200 border-rose-500/35",
+  awaiting_staff: "bg-amber-500/15 text-amber-200 border-amber-500/30",
+  awaiting_patient: "bg-rose-500/15 text-rose-200 border-rose-500/35",
+  open: "bg-sky-500/15 text-sky-200 border-sky-500/30",
+  closed: "bg-zinc-500/15 text-zinc-400 border-zinc-500/25",
   paid: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
   refunded: "bg-zinc-500/15 text-zinc-400 border-zinc-500/25",
 };

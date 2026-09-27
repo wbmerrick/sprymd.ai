@@ -1599,6 +1599,7 @@ export const footerNavToSlug = {
   "ED": "ed",
   "Hair Loss": "hair-loss",
   "Low Testosterone": "low-testosterone",
+  "Women's Health": "womens-health",
   "Sermorelin": "sermorelin",
   "NAD+ Therapy": "nad-therapy",
   "Primary Care": "primary-care",

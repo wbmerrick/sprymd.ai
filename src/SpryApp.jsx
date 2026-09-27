@@ -37,8 +37,14 @@ import {
   updateCustomerProfile,
 } from "./lib/customerAccounts";
 import { FEATURES } from "./config/features";
+import { COMPANY, companyTelHref } from "./config/company";
+import { pharmacyFulfillmentCopy, pharmacyShortCopy } from "./config/pharmacy";
+import { audienceBadgeLabel, getFooterCarePlanLabels, getGridServices } from "./config/services";
 import { recordRefillCheckout } from "./lib/patientCareStore";
+import { postAuthDashboardPath } from "./lib/dashboardRole";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
+import TrustBadges from "./components/TrustBadges";
+import PaymentTrust from "./components/PaymentTrust";
 import { FONT_BODY, FONT_DISPLAY, SPRY_MD_COLOR } from "./brand/tokens";
 import { conditions } from "./data/careCatalog";
 import { careEduPages, conditionToEduSlug } from "./data/careEduPages";
@@ -419,6 +425,7 @@ const conditionGraphics = {
   nad: imgMarketplaceHero,
   lowt: imgMarketplaceHero,
   mentalhealth: imgMarketplaceHero,
+  womenshealth: imgMarketplaceHero,
   pcp: imgMarketplaceHero,
 };
 
@@ -753,6 +760,9 @@ const isKnownCarePageSlug = (slug) => Boolean(slug && (careEduPages[slug] || foo
 const SHOP_STACK_SLUGS = new Set(["supplements", "devices", "sleep"]);
 
 const Landing = ({ go }) => {
+  const [audienceFilter, setAudienceFilter] = useState("all");
+  const gridServices = getGridServices(audienceFilter);
+
   return (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
@@ -853,6 +863,12 @@ const Landing = ({ go }) => {
             <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
               <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
             </div>
+            <div className="spry-rise mt-4" style={{ animationDelay: "0.24s" }}>
+              <PaymentTrust variant="dark" />
+            </div>
+            <div className="spry-rise mt-3" style={{ animationDelay: "0.26s" }}>
+              <TrustBadges variant="dark" />
+            </div>
             <div className="spry-rise flex flex-wrap gap-y-2 mt-6" style={{ animationDelay: "0.28s", columnGap: 28 }}>
               {["Zero judgment", "100% confidential", "Discreet, unmarked packaging"].map((item) => (
                 <div key={item} className="inline-flex items-center gap-2">
@@ -867,11 +883,42 @@ const Landing = ({ go }) => {
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
               Start your visit
             </span>
-            <h2 className="display" style={{ fontSize: 22, fontWeight: 650, color: C.ink, marginTop: 8, marginBottom: 16 }}>
+            <h2 className="display" style={{ fontSize: 22, fontWeight: 650, color: C.ink, marginTop: 8, marginBottom: 12 }}>
               What can we help you with?
             </h2>
+            <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filter care options by audience">
+              {[
+                { id: "all", label: "All" },
+                { id: "men", label: "Men" },
+                { id: "women", label: "Women" },
+              ].map((chip) => {
+                const active = audienceFilter === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setAudienceFilter(chip.id)}
+                    className="focus-ring mono"
+                    aria-pressed={active}
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      fontWeight: 600,
+                      padding: "6px 12px",
+                      borderRadius: 999,
+                      border: `1px solid ${active ? C.accent : C.line}`,
+                      background: active ? C.signalDim : C.bg,
+                      color: active ? C.accent : C.inkSoft,
+                    }}
+                  >
+                    {chip.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.values(conditions).filter((cond) => !["lowt", "mentalhealth", "pcp"].includes(cond.id)).map((cond) => {
+              {gridServices.map(({ condition: cond, audience }) => {
                 const Icon = cond.icon;
                 return (
                   <button
@@ -879,16 +926,22 @@ const Landing = ({ go }) => {
                     onClick={() => openCareEdu(go, cond.id)}
                     className="spry-tile focus-ring text-left rounded-2xl p-4"
                     style={{ background: C.bg }}
+                    aria-label={`${cond.name} — ${audienceBadgeLabel(audience)}. Learn more`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 38, height: 38, background: C.signalDim, border: `1px solid ${C.line}` }}>
-                        <Icon size={18} color={C.accent} />
+                        <Icon size={18} color={C.accent} aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
                         <div style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{cond.name}</div>
-                        {cond.fromPrice && (
-                          <div style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo if approved</div>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: C.accent, fontWeight: 600 }}>
+                            {audienceBadgeLabel(audience)}
+                          </span>
+                          {cond.fromPrice && (
+                            <span style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo if approved</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45, marginTop: 10 }}>{cond.tagline}</p>
@@ -921,7 +974,7 @@ const Landing = ({ go }) => {
           {[
             { n: "01", t: "Choose the type of care you want to receive.", d: "Then answer a short, private intake questionnaire that focuses on any contraindications to that particular treatment." },
             { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case to make sure the treatment is safe." },
-            { n: "03", t: "Treatment shipped", d: "Once treatment is approved, your prescription is filled by our pharmacy partner, discreetly packaged, and shipped to your door. Timing depends on medication and carrier — qualifying Tennessee orders may be eligible for next-business-day delivery." },
+            { n: "03", t: "Treatment shipped", d: `${pharmacyFulfillmentCopy()} Timing depends on medication and carrier — qualifying Tennessee orders may be eligible for next-business-day delivery.` },
           ].map((s) => (
             <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
@@ -939,7 +992,7 @@ const Landing = ({ go }) => {
     {/* Protocols */}
     <section id="landing-conditions" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
+        <div className="flex items-end justify-between mb-8 flex-wrap gap-4">
           <div>
             <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Care options</span>
             <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
@@ -950,11 +1003,47 @@ const Landing = ({ go }) => {
             Every plan is checked by a licensed doctor before anything is sent to you.
           </p>
         </div>
+        <div className="mb-6 space-y-3">
+          <PaymentTrust variant="dark" />
+          <TrustBadges variant="dark" />
+        </div>
+        <div className="flex flex-wrap gap-2 mb-6" role="group" aria-label="Filter care options by audience">
+          {[
+            { id: "all", label: "All" },
+            { id: "men", label: "Men" },
+            { id: "women", label: "Women" },
+          ].map((chip) => {
+            const active = audienceFilter === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setAudienceFilter(chip.id)}
+                className="focus-ring mono"
+                aria-pressed={active}
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                  borderRadius: 999,
+                  border: `1px solid ${active ? C.accent : C.line}`,
+                  background: active ? C.signalDim : C.bg,
+                  color: active ? C.accent : C.inkSoft,
+                }}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
         <div data-conditions-grid className="grid md:grid-cols-2 gap-3 md:gap-4">
-          {Object.values(conditions).filter((cond) => !["pcp", "lowt", "mentalhealth"].includes(cond.id)).map((cond, i) => (
+          {gridServices.map(({ condition: cond, audience }, i) => (
             <ConditionCard
               key={cond.id}
               condition={cond}
+              audience={audience}
               onClick={() => openCareEdu(go, cond.id)}
               delay={i * 0.06}
             />
@@ -990,6 +1079,10 @@ const Landing = ({ go }) => {
             <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Get my doctor</Btn>
             <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">See care options</Btn>
           </div>
+          <div className="mt-5 space-y-3">
+            <PaymentTrust variant="dark" />
+            <TrustBadges variant="dark" />
+          </div>
         </div>
         <div className="md:col-span-6">
           <div className="instrument-panel rounded-2xl overflow-hidden">
@@ -1006,6 +1099,9 @@ const Landing = ({ go }) => {
               <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Choose a plan</div>
               <div className="display" style={{ fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: 600, color: C.ink, lineHeight: 1.2, marginTop: 8 }}>
                 Online Provider Visits start at $100
+              </div>
+              <div className="mt-3">
+                <PaymentTrust variant="dark" />
               </div>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {[
@@ -1247,19 +1343,26 @@ const Landing = ({ go }) => {
   );
 };
 
-const ConditionCard = ({ condition, onClick, delay }) => {
+const ConditionCard = ({ condition, audience, onClick, delay }) => {
   const [hover, setHover] = useState(false);
+  const audienceLabel = audience ? audienceBadgeLabel(audience) : null;
 
   return (
     <button onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       className="anim-fadeUp focus-ring text-left p-7 md:p-8 transition-all duration-300 group relative overflow-hidden"
-      style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
+      style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}
+      aria-label={`${condition.name}${audienceLabel ? ` — ${audienceLabel}` : ""}`}>
       <div className="absolute inset-y-0 left-0 w-px transition-all" style={{ background: C.accent, opacity: hover ? 1 : 0, boxShadow: hover ? `0 0 24px ${C.accent}` : "none" }} />
-      <div className="flex items-start justify-end mb-8 relative">
+      <div className="flex items-start justify-between mb-8 relative gap-3">
+        {audienceLabel ? (
+          <span className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: C.accent, fontWeight: 600 }}>
+            {audienceLabel}
+          </span>
+        ) : <span />}
         <div style={{ transform: hover ? "translateX(4px)" : "none", transition: "transform 0.3s" }}>
-          <ArrowRight size={18} color={hover ? C.accent : C.muted} strokeWidth={1.5} />
+          <ArrowRight size={18} color={hover ? C.accent : C.muted} strokeWidth={1.5} aria-hidden="true" />
         </div>
       </div>
       <h3 className="display relative" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
@@ -1304,7 +1407,7 @@ const MiniProduct = ({ p, onClick }) => {
 };
 
 const footerColumns = [
-  { h: "Care plans", l: ["Weight Loss", "ED", "Low Testosterone", "Sermorelin", "NAD+ Therapy", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+  { h: "Care plans", l: getFooterCarePlanLabels() },
   {
     h: FEATURES.enableShop ? "Shop" : "Pharmacy",
     l: FEATURES.enableShop
@@ -1314,13 +1417,15 @@ const footerColumns = [
   { h: "Company", l: ["About", "Doctors", "Press", "Contact"] },
 ];
 
-const Footer = ({ go }) => (
+const Footer = ({ go }) => {
+  const telHref = companyTelHref();
+  return (
   <footer className="px-6 md:px-12 py-12" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
-    <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
+    <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
       <div>
         <Logo onClick={() => go("landing")} />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
-          Modern medicine, made for men and women. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
+          Modern medicine, made for men and women. Licensed telehealth for patients in {COMPANY.AREA_SERVED}. Not for emergencies.
         </p>
       </div>
       {footerColumns.map((col) => (
@@ -1344,9 +1449,26 @@ const Footer = ({ go }) => (
           </div>
         </div>
       ))}
+      <div>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase", marginBottom: 16 }}>Contact</div>
+        <address style={{ fontStyle: "normal", fontSize: 13, color: C.inkSoft, lineHeight: 1.55 }}>
+          <div style={{ marginBottom: 10 }}>{COMPANY.ADDRESS}</div>
+          {telHref ? (
+            <a href={telHref} className="focus-ring block" style={{ color: C.accent, textDecoration: "none", marginBottom: 8 }} aria-label={`Call ${COMPANY.PHONE}`}>
+              {COMPANY.PHONE}
+            </a>
+          ) : (
+            <div style={{ marginBottom: 8 }}>{COMPANY.PHONE}</div>
+          )}
+          <a href={`mailto:${COMPANY.SUPPORT_EMAIL}`} className="focus-ring block" style={{ color: C.accent, textDecoration: "none", marginBottom: 8 }}>
+            {COMPANY.SUPPORT_EMAIL}
+          </a>
+          <div style={{ fontSize: 12, color: C.muted }}>{COMPANY.SUPPORT_HOURS}</div>
+        </address>
+      </div>
     </div>
     <div className="max-w-7xl mx-auto mt-12 pt-8 flex justify-between items-center flex-wrap gap-3" style={{ borderTop: `1px solid ${C.line}` }}>
-      <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 SPRYMD INC.</span>
+      <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 {COMPANY.LEGAL_NAME.toUpperCase()}</span>
       <div className="flex flex-wrap gap-4">
         {[{ label: "Terms", href: "/terms" }, { label: "Privacy", href: "/privacy" }, { label: "NPP", href: "/npp" }, { label: "FAQ", href: "/faq" }].map((l) => (
           <a key={l.href} href={l.href} className="mono" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</a>
@@ -1355,7 +1477,8 @@ const Footer = ({ go }) => (
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 const RichText = ({ text }) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -1699,6 +1822,12 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const opsReturn =
     typeof returnTo === "string" &&
     (returnTo === "/ops" || returnTo.startsWith("/ops/") || returnTo.startsWith("/ops?"));
+  const staffOrMasterReturn =
+    typeof returnTo === "string" &&
+    (returnTo === "/staff" ||
+      returnTo.startsWith("/staff/") ||
+      returnTo === "/master" ||
+      returnTo.startsWith("/master/"));
   const [mode, setMode] = useState(opsReturn ? "signup" : "signin");
   const [email, setEmail] = useState(() => {
     try {
@@ -1789,16 +1918,22 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
         onAuthSuccess(hydrateUser(result.profile));
       }
 
-      // Ops APIs require a Supabase Bearer token — local-only accounts cannot call /api/ops/*.
-      if (opsReturn && result.provider === "local") {
+      // Ops / staff / master need a live Supabase session.
+      if ((opsReturn || staffOrMasterReturn) && result.provider === "local") {
         setError(
-          "Ops needs a clinical Supabase login. Create the account again (or confirm email), then sign in with the same password.",
+          "Clinical workspaces need a Supabase login. Create the account again (or confirm email), then sign in with the same password.",
         );
         setLoading(false);
         return;
       }
 
-      go(returnTo || "dashboard", { justLoggedIn: true });
+      const authedEmail = result.profile?.email || email;
+      const defaultDest = postAuthDashboardPath(authedEmail);
+      const rt = returnTo || defaultDest;
+      go(rt === "dashboard" || rt === "account" || !rt ? defaultDest : rt, {
+        justLoggedIn: true,
+        email: authedEmail,
+      });
     } catch (err) {
       resolveAnim();
       setError(err?.message || "Unable to authenticate. Try again.");
@@ -3016,7 +3151,7 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
                 {recommended.note}{" "}
                 {conditionId === "pcp"
                   ? "Includes ongoing clinician support, secure messaging, and care coordination once your visit is completed."
-                  : "If approved, compounded at our pharmacy partner and shipped discreetly. Medication is billed separately after clinician approval — not at this visit checkout."}
+                  : `${pharmacyShortCopy()} Medication is billed separately after clinician approval — not at this visit checkout.`}
               </p>
               <div className="mt-8 space-y-2">
                 {(conditionId === "pcp"
@@ -3485,8 +3620,8 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const openPatientDashboard = () => {
-    navigate("/dashboard");
+  const openPatientDashboard = (emailHint) => {
+    navigate(postAuthDashboardPath(emailHint || user?.email));
     window.scrollTo(0, 0);
   };
 
@@ -3531,9 +3666,9 @@ export default function App() {
       requireAuth(target === "dashboard" || target === "account" ? "account" : target, p);
       return;
     }
-    // Patient account dashboard (React Router)
-    if (target === "account" || target === "dashboard") {
-      openPatientDashboard();
+    // Role-based workspace: /master, /staff, or /dashboard
+    if (target === "account" || target === "dashboard" || target === "staff" || target === "master") {
+      openPatientDashboard(p.email || user?.email);
       return;
     }
     if (target === "intake") {
