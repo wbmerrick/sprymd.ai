@@ -1,7 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { formatUsd, loadMasterOpsSnapshot, type MasterOpsSnapshot } from "@/lib/masterOps";
 import { formatRelative } from "@/lib/dashboardFormat";
+import { MASTER_CHART, MasterChartPanel } from "@/components/master/MasterChartPanel";
+
+const EVENT_COLORS = ["#34d399", "#10b981", "#6ee7b7", "#a7f3d0", "#059669", "#047857"];
 
 export default function MasterFinancePage() {
   const { email } = useOutletContext<{ email: string }>();
@@ -11,9 +26,29 @@ export default function MasterFinancePage() {
     void loadMasterOpsSnapshot(email).then(setSnap);
   }, [email]);
 
+  const revenueSeries = useMemo(() => {
+    if (!snap) return [];
+    return snap.finance.dailyRevenue.map((d) => ({
+      ...d,
+      dollars: Math.round(d.cents / 100),
+    }));
+  }, [snap]);
+
+  const eventSeries = useMemo(() => {
+    if (!snap) return [];
+    return snap.finance.byEventType.map((e) => ({
+      name: e.name.replace(/_/g, " "),
+      dollars: Math.round((e.cents || 0) / 100),
+      count: e.count,
+    }));
+  }, [snap]);
+
   if (!snap) {
     return <p className="text-sm text-zinc-500">Loading finance telemetry…</p>;
   }
+
+  const hasRevenue = snap.finance.dailyRevenue.some((d) => d.cents > 0);
+  const hasEvents = eventSeries.length > 0;
 
   return (
     <div className="space-y-8">
@@ -33,6 +68,103 @@ export default function MasterFinancePage() {
         <Card label="Last 7 days" value={formatUsd(snap.finance.last7dCents)} />
         <Card label="Last 30 days" value={formatUsd(snap.finance.last30dCents)} />
         <Card label="Avg ticket" value={formatUsd(snap.finance.avgTicketCents)} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          <MasterChartPanel
+            title="Revenue · last 30 days"
+            hint={`${formatUsd(snap.finance.last30dCents)} in window`}
+            isEmpty={!hasRevenue}
+            empty="No payment events in the last 30 days. Confirm Stripe webhooks are delivering."
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={revenueSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="masterRevFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={MASTER_CHART.emerald} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={MASTER_CHART.emerald} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke={MASTER_CHART.grid} vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  minTickGap={28}
+                />
+                <YAxis
+                  tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={44}
+                  tickFormatter={(v: number) => `$${v}`}
+                />
+                <Tooltip
+                  contentStyle={MASTER_CHART.tooltip}
+                  labelStyle={{ color: "#a1a1aa" }}
+                  formatter={(value: number, _name, item) => [
+                    formatUsd((item?.payload?.cents as number) || value * 100),
+                    "Revenue",
+                  ]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="dollars"
+                  stroke={MASTER_CHART.emerald}
+                  fill="url(#masterRevFill)"
+                  strokeWidth={1.75}
+                  isAnimationActive
+                  animationDuration={500}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </MasterChartPanel>
+        </div>
+
+        <div className="lg:col-span-2">
+          <MasterChartPanel
+            title="By event type"
+            hint={`${snap.finance.paymentEvents} events`}
+            isEmpty={!hasEvents}
+            empty="No payment event types to chart yet."
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={eventSeries} layout="vertical" margin={{ top: 4, right: 12, left: 4, bottom: 4 }}>
+                <CartesianGrid stroke={MASTER_CHART.grid} horizontal={false} />
+                <XAxis
+                  type="number"
+                  tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v: number) => `$${v}`}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  width={96}
+                  tick={{ fill: MASTER_CHART.tick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={MASTER_CHART.tooltip}
+                  labelStyle={{ color: "#a1a1aa" }}
+                  formatter={(value: number, _name, item) => [
+                    `${formatUsd(value * 100)} · ${item?.payload?.count ?? 0} events`,
+                    "Amount",
+                  ]}
+                />
+                <Bar dataKey="dollars" radius={[0, 4, 4, 0]} maxBarSize={18}>
+                  {eventSeries.map((_, i) => (
+                    <Cell key={eventSeries[i].name} fill={EVENT_COLORS[i % EVENT_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </MasterChartPanel>
+        </div>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-white/10">

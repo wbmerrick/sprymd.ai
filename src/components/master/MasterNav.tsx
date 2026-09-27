@@ -5,6 +5,7 @@ import {
   Landmark,
   Users,
   Sparkles,
+  Home,
   Inbox,
   MessageSquare,
   Stethoscope,
@@ -21,6 +22,7 @@ const PRIMARY = [
 ] as const;
 
 const CLINICAL = [
+  { to: "/staff", label: "SpryMD STAFF home", end: true, icon: Home },
   { to: "/staff", label: "Patient inbox", icon: Inbox },
   { to: "/staff/team", label: "Team chat", icon: MessageSquare },
   { to: "/staff/review", label: "Chart review", icon: Stethoscope },
@@ -83,9 +85,17 @@ export function MasterNav({ name, email, initials }: MasterNavProps) {
             <span className="mx-1 h-4 w-px bg-white/10" aria-hidden />
             {CLINICAL.map((item) => (
               <NavLink
-                key={item.to}
+                key={item.label}
                 to={item.to}
-                className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+                end={"end" in item ? item.end : false}
+                className={({ isActive }) =>
+                  cn(
+                    "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                    isActive
+                      ? "bg-white/10 text-white"
+                      : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200",
+                  )
+                }
               >
                 <item.icon className="h-3.5 w-3.5" />
                 {item.label}
@@ -120,7 +130,7 @@ export function MasterNav({ name, email, initials }: MasterNavProps) {
       >
         {[...PRIMARY, ...CLINICAL].map((item) => (
           <NavLink
-            key={item.to}
+            key={item.label}
             to={item.to}
             end={"end" in item ? item.end : false}
             className={({ isActive }) =>

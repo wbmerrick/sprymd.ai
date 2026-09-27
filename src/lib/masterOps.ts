@@ -23,6 +23,29 @@ export interface PaymentRow {
   patientId: string | null;
 }
 
+export interface DailyPoint {
+  /** YYYY-MM-DD */
+  date: string;
+  /** Short label for axis (e.g. "Mar 12") */
+  label: string;
+}
+
+export interface FinanceDailyPoint extends DailyPoint {
+  cents: number;
+  count: number;
+}
+
+export interface MemberDailyPoint extends DailyPoint {
+  count: number;
+  cumulative: number;
+}
+
+export interface NamedCount {
+  name: string;
+  count: number;
+  cents?: number;
+}
+
 export interface MasterOpsSnapshot {
   generatedAt: string;
   members: {
@@ -31,6 +54,11 @@ export interface MasterOpsSnapshot {
     last30d: number;
     withStripe: number;
     rows: MemberRow[];
+    /** New signups per day for the last 30 days + running total */
+    dailySignups: MemberDailyPoint[];
+    /** Top states by member count */
+    byState: NamedCount[];
+    stripeMix: { linked: number; missing: number };
   };
   finance: {
     grossCents: number;
@@ -39,6 +67,10 @@ export interface MasterOpsSnapshot {
     last7dCents: number;
     last30dCents: number;
     recent: PaymentRow[];
+    /** Revenue (cents) and event count per day for the last 30 days */
+    dailyRevenue: FinanceDailyPoint[];
+    /** Totals by payment event type */
+    byEventType: NamedCount[];
   };
   clinical: {
     appointments: number;
@@ -62,6 +94,87 @@ function daysAgo(n: number): Date {
 
 function inLastDays(iso: string, n: number): boolean {
   return new Date(iso).getTime() >= daysAgo(n).getTime();
+}
+
+function dayKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function dayLabel(key: string): string {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** Contiguous last-N calendar days ending today (local). */
+function lastNDayKeys(n: number): string[] {
+  const keys: string[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    keys.push(dayKey(daysAgo(i)));
+  }
+  return keys;
+}
+
+function buildFinanceDaily(payments: PaymentRow[], days = 30): FinanceDailyPoint[] {
+  const keys = lastNDayKeys(days);
+  const map = new Map(keys.map((k) => [k, { cents: 0, count: 0 }]));
+  for (const p of payments) {
+    const k = dayKey(new Date(p.createdAt));
+    const bucket = map.get(k);
+    if (!bucket) continue;
+    bucket.cents += p.amountCents || 0;
+    bucket.count += 1;
+  }
+  return keys.map((date) => {
+    const b = map.get(date)!;
+    return { date, label: dayLabel(date), cents: b.cents, count: b.count };
+  });
+}
+
+function buildMemberDaily(members: MemberRow[], days = 30): MemberDailyPoint[] {
+  const keys = lastNDayKeys(days);
+  const map = new Map(keys.map((k) => [k, 0]));
+  for (const m of members) {
+    const k = dayKey(new Date(m.createdAt));
+    if (map.has(k)) map.set(k, (map.get(k) || 0) + 1);
+  }
+  // Baseline = members who joined before the window
+  const windowStart = daysAgo(days - 1);
+  windowStart.setHours(0, 0, 0, 0);
+  let cumulative = members.filter((m) => new Date(m.createdAt).getTime() < windowStart.getTime()).length;
+  return keys.map((date) => {
+    const count = map.get(date) || 0;
+    cumulative += count;
+    return { date, label: dayLabel(date), count, cumulative };
+  });
+}
+
+function buildByState(members: MemberRow[], limit = 8): NamedCount[] {
+  const tallies = new Map<string, number>();
+  for (const m of members) {
+    const state = (m.state || "").trim().toUpperCase() || "Unknown";
+    tallies.set(state, (tallies.get(state) || 0) + 1);
+  }
+  return [...tallies.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+function buildByEventType(payments: PaymentRow[]): NamedCount[] {
+  const tallies = new Map<string, { count: number; cents: number }>();
+  for (const p of payments) {
+    const name = p.eventType || "unknown";
+    const cur = tallies.get(name) || { count: 0, cents: 0 };
+    cur.count += 1;
+    cur.cents += p.amountCents || 0;
+    tallies.set(name, cur);
+  }
+  return [...tallies.entries()]
+    .map(([name, v]) => ({ name, count: v.count, cents: v.cents }))
+    .sort((a, b) => (b.cents || 0) - (a.cents || 0));
 }
 
 export function formatUsd(cents: number): string {
@@ -143,14 +256,19 @@ export async function loadMasterOpsSnapshot(ownerEmail: string): Promise<MasterO
     alerts.push("Over half of members lack a Stripe customer id — billing linkage may be incomplete.");
   }
 
+  const withStripe = members.filter((m) => Boolean(m.stripeCustomerId)).length;
+
   const snapshot: MasterOpsSnapshot = {
     generatedAt,
     members: {
       total: members.length,
       last7d: members.filter((m) => inLastDays(m.createdAt, 7)).length,
       last30d: members.filter((m) => inLastDays(m.createdAt, 30)).length,
-      withStripe: members.filter((m) => Boolean(m.stripeCustomerId)).length,
+      withStripe,
       rows: members,
+      dailySignups: buildMemberDaily(members, 30),
+      byState: buildByState(members),
+      stripeMix: { linked: withStripe, missing: members.length - withStripe },
     },
     finance: {
       grossCents,
@@ -160,6 +278,8 @@ export async function loadMasterOpsSnapshot(ownerEmail: string): Promise<MasterO
       last7dCents,
       last30dCents,
       recent: recentPayments.slice(0, 25),
+      dailyRevenue: buildFinanceDaily(recentPayments, 30),
+      byEventType: buildByEventType(recentPayments),
     },
     clinical: {
       appointments: appointmentRows.length,
