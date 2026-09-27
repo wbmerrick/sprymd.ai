@@ -1,12 +1,10 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MasterNav } from "@/components/master/MasterNav";
-import {
-  restoreCustomerSession,
-  getSessionEmail,
-  getStoredAccount,
-} from "@/lib/customerAccounts";
+import { getStoredAccount } from "@/lib/customerAccounts";
+import { resolveClinicalAuthSession } from "@/lib/clinicalSession";
 import { isMasterDashboardEmail, isStaffDashboardEmail } from "@/lib/dashboardRole";
+import { ensureProviderRow } from "@/lib/messaging";
 
 function initials(name: string, email: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -23,9 +21,18 @@ export default function MasterDashboardLayout() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const session = await restoreCustomerSession();
+      const session = await resolveClinicalAuthSession();
       if (cancelled) return;
-      setEmail(session?.email || getSessionEmail());
+      if (session) {
+        setEmail(session.email);
+        const account = getStoredAccount(session.email);
+        await ensureProviderRow({
+          email: session.email,
+          name: account?.name || "Owner",
+        });
+      } else {
+        setEmail(null);
+      }
       setReady(true);
     })();
     return () => {
@@ -48,7 +55,12 @@ export default function MasterDashboardLayout() {
 
   if (!email) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/?auth=1&returnTo=${returnTo}`} replace />;
+    return (
+      <Navigate
+        to={`/?auth=1&mode=signin&returnTo=${returnTo}`}
+        replace
+      />
+    );
   }
 
   if (!isMasterDashboardEmail(email)) {

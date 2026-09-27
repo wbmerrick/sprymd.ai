@@ -2,12 +2,10 @@ import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import BrandAtmosphere from "@/components/brand/BrandAtmosphere";
 import { StaffNav } from "@/components/staff/StaffNav";
-import {
-  restoreCustomerSession,
-  getSessionEmail,
-  getStoredAccount,
-} from "@/lib/customerAccounts";
+import { getStoredAccount } from "@/lib/customerAccounts";
+import { resolveClinicalAuthSession } from "@/lib/clinicalSession";
 import { isStaffDashboardEmail } from "@/lib/dashboardRole";
+import { ensureProviderRow } from "@/lib/messaging";
 
 function initials(name: string, email: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -24,9 +22,18 @@ export default function StaffDashboardLayout() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const session = await restoreCustomerSession();
+      const session = await resolveClinicalAuthSession();
       if (cancelled) return;
-      setEmail(session?.email || getSessionEmail());
+      if (session) {
+        setEmail(session.email);
+        const account = getStoredAccount(session.email);
+        await ensureProviderRow({
+          email: session.email,
+          name: account?.name || undefined,
+        });
+      } else {
+        setEmail(null);
+      }
       setReady(true);
     })();
     return () => {
@@ -49,7 +56,12 @@ export default function StaffDashboardLayout() {
 
   if (!email) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/?auth=1&returnTo=${returnTo}`} replace />;
+    return (
+      <Navigate
+        to={`/?auth=1&mode=signin&returnTo=${returnTo}`}
+        replace
+      />
+    );
   }
 
   if (!isStaffDashboardEmail(email)) {
