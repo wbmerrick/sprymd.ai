@@ -269,10 +269,22 @@ export async function signInCustomer({ email, password }) {
       } catch {
         /* chart tables may not exist until migrations are applied */
       }
+      try {
+        const { isClinicianEmail } = await import("@/lib/masterAccount");
+        if (isClinicianEmail(key)) {
+          const { ensureProviderRow } = await import("@/lib/messaging");
+          await ensureProviderRow({ email: key, name: profile.name });
+        } else {
+          const { ensurePatientRow } = await import("@/lib/messaging");
+          await ensurePatientRow({ email: key, name: profile.name });
+        }
+      } catch {
+        /* messaging tables may not exist until migrations are applied */
+      }
       setSessionEmail(key);
       try {
         const { ensureAccountShell } = await import("@/lib/patientCareStore");
-        ensureAccountShell(key, profile?.name);
+        await ensureAccountShell(key, profile?.name);
       } catch {
         /* ignore */
       }
