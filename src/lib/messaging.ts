@@ -400,7 +400,13 @@ export async function replyToThread(
 
   if (role === "staff") {
     const provider = await ensureProviderRow({ email: user.email || undefined });
-    if (!provider) return { ok: false, error: "Staff access required." };
+    if (!provider) {
+      return {
+        ok: false,
+        error:
+          "Staff access required — sign in with a live SpryMD Auth clinical account (local-only login cannot access the inbox).",
+      };
+    }
   } else {
     const patient = await ensurePatientRow({ email: user.email || undefined });
     if (!patient) return { ok: false, error: "Patient profile required." };

@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   BodyGoal,
   BodyGoalMetric,
   BodyProfile,
@@ -41,6 +41,9 @@ import {
 } from "@/types/dashboard";
 import { publishVitalsEvent } from "@/lib/vitalsBus";
 import { isMasterEmail } from "@/lib/masterAccount";
+import { dispatchPrescriptionToPharmacy } from "@/lib/pharmacyFulfillment";
+import { syncTreatmentApprovalToDatabase } from "@/lib/supabaseSync";
+import { logPhiAccess } from "@/lib/hipaaCompliance";
 
 const READINGS_CAP = 500;
 
@@ -85,7 +88,7 @@ export interface PatientCareRecord {
   updatedAt: string;
 }
 
-/** In-memory care cache — Supabase is source of truth (see patientCareRemote). */
+/** In-memory care cache â€” Supabase is source of truth (see patientCareRemote). */
 const careCache = new Map<string, PatientCareRecord>();
 let clinicalReviewCache: ClinicalCase[] = [];
 
@@ -246,11 +249,11 @@ function saveCare(care: PatientCareRecord): PatientCareRecord {
   const key = emailKey(care.email);
   const next = { ...care, email: key, updatedAt: new Date().toISOString() };
   careCache.set(key, next);
-  // Persist to Supabase (poll/refresh model — fire and reconcile on next hydrate)
+  // Persist to Supabase (poll/refresh model â€” fire and reconcile on next hydrate)
   void import("@/lib/patientCareRemote")
     .then(({ persistPatientCareToDb }) => persistPatientCareToDb(next))
     .catch(() => {
-      /* offline / RLS — cache remains authoritative until next successful hydrate */
+      /* offline / RLS â€” cache remains authoritative until next successful hydrate */
     });
   return next;
 }
@@ -277,7 +280,7 @@ export async function refreshPatientCare(email: string): Promise<PatientCareReco
   return hydratePatientCare(email);
 }
 
-/** Staff review queue — sync snapshot; refresh via hydrateClinicalReviewQueue. */
+/** Staff review queue â€” sync snapshot; refresh via hydrateClinicalReviewQueue. */
 export function getClinicalCasesForReview(_userEmail?: string): ClinicalCase[] {
   return [...clinicalReviewCache];
 }
@@ -487,7 +490,7 @@ export function recordSubscriptionCheckout(input: {
     dosingInstructions:
       "Pending clinician review. Exact dose and titration schedule will be confirmed before the first shipment.",
     storage: input.plan.chilled
-      ? "Refrigerate after arrival (36–46°F). Do not freeze."
+      ? "Refrigerate after arrival (36â€“46Â°F). Do not freeze."
       : "Store at room temperature unless the label says otherwise.",
     howItWorks: "Your intake was submitted for chart review. Medication ships only after a clinician approves.",
     sideEffects: [],
@@ -507,7 +510,7 @@ export function recordSubscriptionCheckout(input: {
   care.transactions.unshift({
     id: `txn_${Date.now()}`,
     date: now.toISOString().slice(0, 10),
-    product: `${input.plan.name} · subscription`,
+    product: `${input.plan.name} Â· subscription`,
     quantity: 1,
     amount: input.plan.price,
     status: "Pending review",
@@ -524,7 +527,7 @@ export function recordSubscriptionCheckout(input: {
   });
   care.messages.unshift({
     id: `msg_${Date.now()}`,
-    subject: `Intake received · ${input.plan.name}`,
+    subject: `Intake received Â· ${input.plan.name}`,
     preview: "A SpryMD clinician will review your case before any prescription is issued.",
     updatedAt: now.toISOString(),
     status: "no_action",
@@ -532,7 +535,7 @@ export function recordSubscriptionCheckout(input: {
   pushNotification(care, {
     icon: "pill",
     title: "Case submitted for clinician review",
-    description: `${input.plan.name} is pending approval. You’ll be notified when it’s reviewed.`,
+    description: `${input.plan.name} is pending approval. Youâ€™ll be notified when itâ€™s reviewed.`,
   });
   care.shipments.unshift({
     id: `shp_${Date.now()}`,
@@ -584,7 +587,7 @@ export function recordConsultRequest(input: {
     id: `case_${Date.now()}`,
     email,
     conditionId: input.conditionId,
-    planName: `Clinician call · ${label}`,
+    planName: `Clinician call Â· ${label}`,
     intake: {
       ...(input.answers || {}),
       consult_requested: true,
@@ -598,7 +601,7 @@ export function recordConsultRequest(input: {
   });
   care.messages.unshift({
     id: `msg_${Date.now()}`,
-    subject: `Clinician call requested · ${label}`,
+    subject: `Clinician call requested Â· ${label}`,
     preview: `We'll call ${input.phone}${input.bestTime ? ` (${input.bestTime})` : ""} to talk through your answers before any treatment decision.`,
     updatedAt: now,
     status: "no_action",
@@ -618,7 +621,7 @@ export function recordCartCheckout(input: {
 }) {
   const email = emailKey(input.email);
   const care = getPatientCare(email);
-  const label = input.items.map((i) => `${i.name} ×${i.qty}`).join(", ") || "Marketplace order";
+  const label = input.items.map((i) => `${i.name} Ã—${i.qty}`).join(", ") || "Marketplace order";
   care.transactions.unshift({
     id: `txn_${Date.now()}`,
     date: new Date().toISOString().slice(0, 10),
@@ -666,7 +669,7 @@ export function recordRefillCheckout(input: {
   care.transactions.unshift({
     id: `txn_${Date.now()}`,
     date: now.toISOString().slice(0, 10),
-    product: `Refill request · ${input.items.map((i) => i.name).join(", ")}`,
+    product: `Refill request Â· ${input.items.map((i) => i.name).join(", ")}`,
     quantity: input.items.length,
     amount: input.total,
     status: "Pending review",
@@ -685,7 +688,7 @@ export function recordRefillCheckout(input: {
   });
   saveCare(care);
   addCustomerOrder(email, {
-    label: `Refill request · ${input.items.map((i) => i.name).join(", ")}`,
+    label: `Refill request Â· ${input.items.map((i) => i.name).join(", ")}`,
     mode: "refill",
     total: input.total,
   });
@@ -746,10 +749,10 @@ export function setWearableSyncMode(email: string, deviceId: WearableKind, syncM
       icon: "activity",
       title:
         syncMode === "continuous"
-          ? `${device.name} · continuous monitoring on`
+          ? `${device.name} Â· continuous monitoring on`
           : syncMode === "sync"
-            ? `${device.name} · sync enabled`
-            : `${device.name} · manual upload`,
+            ? `${device.name} Â· sync enabled`
+            : `${device.name} Â· manual upload`,
       description:
         syncMode === "continuous"
           ? "Readings will stream into your dashboard when the device is in range."
@@ -877,7 +880,7 @@ export function importWearableUpload(
 function formatReadingValue(r: Pick<WearableReading, "value" | "unit" | "secondaryValue" | "secondaryUnit">) {
   const primary = `${r.value}${r.unit ? ` ${r.unit}` : ""}`;
   if (r.secondaryValue != null) {
-    return `${primary} · ${r.secondaryValue}${r.secondaryUnit ? ` ${r.secondaryUnit}` : ""}`;
+    return `${primary} Â· ${r.secondaryValue}${r.secondaryUnit ? ` ${r.secondaryUnit}` : ""}`;
   }
   return primary;
 }
@@ -972,7 +975,7 @@ function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
     case "bp_monitor":
       return { ...base, metric: "Blood pressure", value: 118 + Math.round(Math.random() * 10), unit: "mmHg", secondaryValue: 74 + Math.round(Math.random() * 6), secondaryUnit: "mmHg", note: "Systolic / diastolic" };
     case "pulse_oximeter":
-      return { ...base, metric: "SpO₂", value: 96 + Math.round(Math.random() * 3), unit: "%", secondaryValue: 62 + Math.round(Math.random() * 12), secondaryUnit: "bpm" };
+      return { ...base, metric: "SpOâ‚‚", value: 96 + Math.round(Math.random() * 3), unit: "%", secondaryValue: 62 + Math.round(Math.random() * 12), secondaryUnit: "bpm" };
     case "smart_scale":
       return { ...base, metric: "Weight", value: Number((165 + Math.random() * 4).toFixed(1)), unit: "lb", secondaryValue: Number((22 + Math.random() * 2).toFixed(1)), secondaryUnit: "%" };
     case "cpap":
@@ -1022,7 +1025,7 @@ function applyReadingToBodyProfile(care: PatientCareRecord, reading: Pick<Wearab
   });
 }
 
-/** Quiet continuous tick — no notification spam. */
+/** Quiet continuous tick â€” no notification spam. */
 export function appendContinuousTick(email: string, deviceId: WearableKind) {
   const care = getPatientCare(email);
   const device = (care.wearableDevices || []).find((d) => d.id === deviceId);
@@ -1369,11 +1372,12 @@ export async function syncWearableDeviceFromCloud(email: string, deviceId: Weara
     icon: "activity",
     title: `${providerName} cloud sync`,
     description: sample
-      ? `${sample.metric}: ${formatReadingValue(sample)} · ${liveApi ? "live OEM API" : "sandbox cloud"}`
+      ? `${sample.metric}: ${formatReadingValue(sample)} Â· ${liveApi ? "live OEM API" : "sandbox cloud"}`
       : "No new readings.",
   });
   const saved = saveCare(next);
   if (sample) publishVitalsEvent({ type: "reading", deviceId, readingId: sample.id, at: sample.recordedAt });
   return saved;
 }
+
 

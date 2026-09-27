@@ -200,7 +200,13 @@ export async function createStaffTeamThread(input: {
   if (!body) return { ok: false, error: "Message body is required." };
 
   const me = await ensureProviderRow({ email: input.email });
-  if (!me) return { ok: false, error: "Staff access required." };
+  if (!me) {
+    return {
+      ok: false,
+      error:
+        "Staff access required — sign in with a live SpryMD Auth clinical account (local-only login cannot send team messages).",
+    };
+  }
 
   const urgency = normalizeUrgency(input.urgency);
   const now = new Date().toISOString();
@@ -242,7 +248,13 @@ export async function replyStaffTeamThread(
   if (!text) return { ok: false, error: "Message body is required." };
 
   const me = await ensureProviderRow({ email });
-  if (!me) return { ok: false, error: "Staff access required." };
+  if (!me) {
+    return {
+      ok: false,
+      error:
+        "Staff access required — sign in with a live SpryMD Auth clinical account (local-only login cannot send team messages).",
+    };
+  }
 
   const { error: msgErr } = await supabase.from("staff_messages").insert({
     thread_id: threadId,
