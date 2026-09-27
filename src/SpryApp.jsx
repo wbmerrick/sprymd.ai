@@ -476,6 +476,8 @@ const Logo = ({ color = C.ink, size = 22, onClick, className = "" }) => {
       </span>
     </>
   );
+  // Always prefer a real control when a home handler is provided so the
+  // top-left mark is clickable on intake, plan, checkout, and related views.
   if (onClick) {
     return (
       <button
@@ -572,7 +574,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
     { label: "How it works", view: "how" },
     { label: "Care options", view: "landing-conditions" },
     ...(FEATURES.enableShop ? [{ label: "Shop", view: "marketplace" }] : []),
-    { label: "Quick Refills", view: "refills" },
+    { label: "Refills", view: "refills" },
     ...(user ? [{ label: "Dashboard", view: "dashboard" }] : []),
   ];
   const goNav = (view) => {
@@ -613,22 +615,6 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <span className="spry-desktop-only">
-            <button
-              type="button"
-              onClick={() => goNav("refills")}
-              className="focus-ring rounded-lg px-3.5 py-2 text-xs font-semibold transition-all hover:opacity-80 inline-flex items-center gap-1.5"
-              style={{
-                background: dark ? "rgba(255,255,255,0.08)" : C.bgAlt,
-                color: fg,
-                border: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.line}`,
-              }}
-              title="Quick Refills"
-            >
-              <RefreshCw size={13} strokeWidth={2} color={C.accent} />
-              <span>Quick Refills</span>
-            </button>
-          </span>
           <span className="spry-desktop-only">
             <Btn size="sm" onClick={() => goNav("landing-conditions")}>Start your visit</Btn>
           </span>
@@ -706,22 +692,19 @@ const QuickRefillsCTA = ({ onClick, variant = "hero" }) => {
   if (variant === "compact") {
     return (
       <button onClick={onClick}
-        type="button"
-        className="focus-ring inline-flex items-center gap-2 px-4 py-2.5 rounded-full transition-all hover:translate-y-[-1px]"
-        style={{ background: "transparent", color: C.ink, border: `1px solid ${C.line}`, fontSize: 13, fontWeight: 600, letterSpacing: "0.02em" }}>
-        <RefreshCw size={14} strokeWidth={2} color={C.accent} />
-        <span>Quick Refills</span>
+        className="focus-ring inline-flex items-center gap-3 px-5 py-3 rounded-full transition-all hover:translate-y-[-1px]"
+        style={{ background: "transparent", color: C.ink, border: `1px solid ${C.line}`, fontSize: 14, fontWeight: 600, letterSpacing: "0.02em" }}>
+        <RefreshCw size={16} strokeWidth={2} color={C.accent} />Refills
       </button>
     );
   }
   return (
     <button onClick={onClick}
-      type="button"
-      className="focus-ring group inline-flex items-center gap-3 px-6 py-4 rounded-full transition-all hover:translate-y-[-1px]"
-      style={{ background: C.paper, color: C.ink, fontSize: 15, fontWeight: 600, letterSpacing: "0.01em", border: `1px solid ${C.line}` }}>
+      className="focus-ring group inline-flex items-center gap-3 px-7 py-4 rounded-full transition-all hover:translate-y-[-1px]"
+      style={{ background: C.paper, color: C.ink, fontSize: 15, fontWeight: 600, letterSpacing: "0.02em", border: `1px solid ${C.line}` }}>
       <RefreshCw size={18} strokeWidth={2} color={C.accent} />
-      <span>Quick refills</span>
-      <ArrowRight size={16} strokeWidth={2} className="group-hover:translate-x-1 transition-transform opacity-70 group-hover:opacity-100" />
+      Quick refills
+      <ArrowRight size={16} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
     </button>
   );
 };
@@ -760,15 +743,6 @@ const StickyVisitBar = ({ go }) => {
           <span className="spry-desktop-only" style={{ fontSize: 13, color: C.inkSoft }}>
             Private visits, reviewed by licensed doctors.
           </span>
-          <button
-            type="button"
-            onClick={() => go("refills")}
-            className="focus-ring text-xs font-semibold px-3 py-1.5 rounded-full transition-all inline-flex items-center gap-1.5 hover:opacity-80"
-            style={{ color: C.ink, background: C.paper, border: `1px solid ${C.line}` }}
-          >
-            <RefreshCw size={12} color={C.accent} strokeWidth={2} />
-            <span>Quick refills</span>
-          </button>
           <Btn size="sm" icon={ArrowRight} onClick={() => go("landing-conditions")}>Start your visit</Btn>
         </div>
       </div>
@@ -825,11 +799,24 @@ const Landing = ({ go }) => {
             opacity: 1,
           }}
         >
-          <div className="inline-flex items-center justify-center gap-3 md:gap-4">
-            <LogoMark size="0.84em" color={C.ink} style={{ verticalAlign: "middle" }} />
-            <span>SpryMD</span>
-          </div>
-          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8 }}>
+          <span className="relative inline-block">
+            <span
+              aria-hidden="true"
+              className="absolute pointer-events-none"
+              style={{
+                inset: "-0.15em -0.35em",
+                borderRadius: 999,
+                background: "rgba(9,14,11,0.55)",
+                filter: "blur(18px)",
+                zIndex: 0,
+              }}
+            />
+            <span className="relative inline-flex items-center justify-center gap-3 md:gap-4" style={{ opacity: 1 }}>
+              <LogoMark size="0.84em" color={C.ink} style={{ verticalAlign: "middle" }} />
+              <span>Spry<span className="spry-md">MD</span></span>
+            </span>
+          </span>
+          <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink, opacity: 1 }}>
             Feel better. Stay stronger. Live longer.
           </div>
         </div>
@@ -880,7 +867,6 @@ const Landing = ({ go }) => {
             </div>
             <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
               <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
-              <QuickRefillsCTA onClick={() => go("refills")} />
             </div>
             <div className="spry-rise mt-4" style={{ animationDelay: "0.24s" }}>
               <PaymentTrust variant="dark" />
@@ -3572,17 +3558,6 @@ export default function App() {
             : returnTo;
       setParams({ returnTo: target });
       setView("signin");
-      window.history.replaceState({}, "", "/");
-      return;
-    }
-    const cond = qs.get("condition") || qs.get("intake");
-    if (cond && conditions[cond]) {
-      const initialAnswers = {};
-      const pref = qs.get("pref");
-      if (pref === "injection") initialAnswers.preference = "Injections — daily subcutaneous kit";
-      if (pref === "tablet" || pref === "oral") initialAnswers.preference = "Mint Dissolvable Tablets — needle-free daily ODT";
-      setParams({ condition: cond, initialAnswers });
-      setView("intake");
       window.history.replaceState({}, "", "/");
       return;
     }

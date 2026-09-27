@@ -5,11 +5,11 @@ import { COMPANY, companyTelHref } from "@/config/company";
 const Footer = () => {
   const telHref = companyTelHref();
   return (
-    <footer className="bg-navy-deep py-12 px-4 md:px-8 border-t border-white/10">
+    <footer className="bg-navy-deep py-12 px-4 md:px-8">
       <div className="section-container">
         <div className="flex flex-col md:flex-row justify-between gap-8">
-          <div className="space-y-2">
-            <p className="font-display text-primary-foreground text-xl font-bold">
+          <div>
+            <p className="font-display text-primary-foreground text-lg font-semibold mb-2">
               Spry<span style={{ color: SPRY_MD_COLOR }}>MD</span>.ai
             </p>
             <p className="font-body text-primary-foreground/50 text-sm max-w-md">
@@ -30,7 +30,7 @@ const Footer = () => {
               <div className="mt-1 text-primary-foreground/50">{COMPANY.SUPPORT_HOURS}</div>
             </address>
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 items-start text-xs">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 items-start">
             {[
               { to: "/terms", label: "Terms of Service" },
               { to: "/privacy", label: "Privacy Policy" },
