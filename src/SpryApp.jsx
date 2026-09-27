@@ -2796,18 +2796,9 @@ const Intake = ({ conditionId, treatmentId, go, persist = true }) => {
                     {value === opt && <Check size={12} strokeWidth={3} color={C.primary} />}
                   </div>
                 </button>
-                <Btn onClick={handleAdvance} disabled={!canAdvance} size="lg" icon={ArrowRight}>
-                  Accept & Begin Intake
-                </Btn>
-              </div>
+              ))}
             </div>
-          ) : (
-            <div>
-              <div className="mb-8">
-                <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>{condition.name}</span>
-                <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.1, fontWeight: 400, color: C.ink, marginTop: 12 }}>{current.title}</h2>
-                {current.sub && <p style={{ fontSize: 15, color: C.inkSoft, marginTop: 12, lineHeight: 1.55 }}>{current.sub}</p>}
-              </div>
+          )}
 
           {current.type === "multi" && (
             <div className="space-y-3" role="group" aria-label={current.title}>

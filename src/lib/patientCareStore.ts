@@ -43,6 +43,7 @@ import { publishVitalsEvent } from "@/lib/vitalsBus";
 import { isMasterEmail } from "@/lib/masterAccount";
 import { dispatchPrescriptionToPharmacy } from "@/lib/pharmacyFulfillment";
 import { syncTreatmentApprovalToDatabase } from "@/lib/supabaseSync";
+import { logPhiAccess } from "@/lib/hipaaCompliance";
 
 const READINGS_CAP = 500;
 
