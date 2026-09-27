@@ -50,7 +50,7 @@ export function ClinicalReviewQueue({
     setActionLoading(true);
     setFeedback(null);
     try {
-      const res = await requestMoreInfoClinicalCase(caseId, infoPrompt, userEmail || "clinician@sprymd.ai");
+      const res = await requestMoreInfoClinicalCase(caseId, userEmail || "clinician@sprymd.ai", infoPrompt);
       if (res.success) {
         setFeedback({ type: "success", message: res.message });
         setShowInfoInput(null);
@@ -69,7 +69,7 @@ export function ClinicalReviewQueue({
     setActionLoading(true);
     setFeedback(null);
     try {
-      const res = await denyClinicalCase(caseId, denyReason, userEmail || "clinician@sprymd.ai");
+      const res = await denyClinicalCase(caseId, userEmail || "clinician@sprymd.ai", denyReason);
       if (res.success) {
         setFeedback({ type: "success", message: res.message });
         setShowDenyInput(null);
@@ -151,7 +151,7 @@ export function ClinicalReviewQueue({
                     </span>
                     {hasNitrateFlag && (
                       <span className="rounded bg-rose-500/20 px-1.5 py-0.5 text-[10px] font-bold text-rose-300 border border-rose-500/40">
-                        ??? Nitrate Alert
+                        ⚠ Nitrate Alert
                       </span>
                     )}
                   </div>
@@ -305,7 +305,7 @@ export function ClinicalReviewQueue({
                   <div className="flex items-center gap-2">
                     <Pill className="h-3.5 w-3.5 text-zinc-400" />
                     <span className="text-zinc-200 font-medium">{rc.planName || "Treatment Plan"}</span>
-                    <span className="text-zinc-500">?? {rc.email}</span>
+                    <span className="text-zinc-500">· {rc.email}</span>
                   </div>
                   <span
                     className={cn(
