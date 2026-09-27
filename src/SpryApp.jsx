@@ -41,6 +41,7 @@ import { COMPANY, companyTelHref } from "./config/company";
 import { pharmacyFulfillmentCopy, pharmacyShortCopy } from "./config/pharmacy";
 import { audienceBadgeLabel, getFooterCarePlanLabels, getGridServices } from "./config/services";
 import { recordRefillCheckout } from "./lib/patientCareStore";
+import { postAuthDashboardPath } from "./lib/dashboardRole";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
 import TrustBadges from "./components/TrustBadges";
 import PaymentTrust from "./components/PaymentTrust";
@@ -1821,6 +1822,12 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const opsReturn =
     typeof returnTo === "string" &&
     (returnTo === "/ops" || returnTo.startsWith("/ops/") || returnTo.startsWith("/ops?"));
+  const staffOrMasterReturn =
+    typeof returnTo === "string" &&
+    (returnTo === "/staff" ||
+      returnTo.startsWith("/staff/") ||
+      returnTo === "/master" ||
+      returnTo.startsWith("/master/"));
   const [mode, setMode] = useState(opsReturn ? "signup" : "signin");
   const [email, setEmail] = useState(() => {
     try {
@@ -1911,16 +1918,22 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
         onAuthSuccess(hydrateUser(result.profile));
       }
 
-      // Ops APIs require a Supabase Bearer token — local-only accounts cannot call /api/ops/*.
-      if (opsReturn && result.provider === "local") {
+      // Ops / staff / master need a live Supabase session.
+      if ((opsReturn || staffOrMasterReturn) && result.provider === "local") {
         setError(
-          "Ops needs a clinical Supabase login. Create the account again (or confirm email), then sign in with the same password.",
+          "Clinical workspaces need a Supabase login. Create the account again (or confirm email), then sign in with the same password.",
         );
         setLoading(false);
         return;
       }
 
-      go(returnTo || "dashboard", { justLoggedIn: true });
+      const authedEmail = result.profile?.email || email;
+      const defaultDest = postAuthDashboardPath(authedEmail);
+      const rt = returnTo || defaultDest;
+      go(rt === "dashboard" || rt === "account" || !rt ? defaultDest : rt, {
+        justLoggedIn: true,
+        email: authedEmail,
+      });
     } catch (err) {
       resolveAnim();
       setError(err?.message || "Unable to authenticate. Try again.");
@@ -3607,8 +3620,8 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const openPatientDashboard = () => {
-    navigate("/dashboard");
+  const openPatientDashboard = (emailHint) => {
+    navigate(postAuthDashboardPath(emailHint || user?.email));
     window.scrollTo(0, 0);
   };
 
@@ -3653,9 +3666,9 @@ export default function App() {
       requireAuth(target === "dashboard" || target === "account" ? "account" : target, p);
       return;
     }
-    // Patient account dashboard (React Router)
-    if (target === "account" || target === "dashboard") {
-      openPatientDashboard();
+    // Role-based workspace: /master, /staff, or /dashboard
+    if (target === "account" || target === "dashboard" || target === "staff" || target === "master") {
+      openPatientDashboard(p.email || user?.email);
       return;
     }
     if (target === "intake") {
