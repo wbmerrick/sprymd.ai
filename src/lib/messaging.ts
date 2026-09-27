@@ -109,6 +109,19 @@ export async function ensurePatientRow(profile?: {
   const email = (profile?.email || user.email || "").trim().toLowerCase();
   if (!email) return null;
 
+  // Prefer RPC: claims guest checkout rows (null user_id) that RLS otherwise hides.
+  const { data: claimedId, error: claimErr } = await supabase.rpc("claim_or_create_patient", {
+    p_email: email,
+    p_full_name: profile?.name || "",
+    p_date_of_birth: profile?.dob || null,
+    p_phone: profile?.phone || "",
+  });
+
+  if (!claimErr && claimedId) {
+    return { patientId: String(claimedId), userId: user.id };
+  }
+
+  // Fallback for environments without the RPC yet.
   const { data: existing } = await supabase
     .from("patients")
     .select("id")
@@ -117,28 +130,6 @@ export async function ensurePatientRow(profile?: {
 
   if (existing?.id) {
     return { patientId: existing.id, userId: user.id };
-  }
-
-  const { data: byEmail } = await supabase
-    .from("patients")
-    .select("id, user_id")
-    .eq("email", email)
-    .maybeSingle();
-
-  if (byEmail?.id) {
-    if (!byEmail.user_id) {
-      await supabase
-        .from("patients")
-        .update({
-          user_id: user.id,
-          full_name: profile?.name || undefined,
-          date_of_birth: profile?.dob || undefined,
-          phone: profile?.phone || undefined,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", byEmail.id);
-    }
-    return { patientId: byEmail.id, userId: user.id };
   }
 
   const { data: inserted, error } = await supabase
@@ -154,7 +145,7 @@ export async function ensurePatientRow(profile?: {
     .single();
 
   if (error || !inserted?.id) {
-    console.warn("ensurePatientRow failed:", error?.message);
+    console.warn("ensurePatientRow failed:", claimErr?.message || error?.message);
     return null;
   }
   return { patientId: inserted.id, userId: user.id };
