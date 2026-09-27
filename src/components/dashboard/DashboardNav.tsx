@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Bell, LogOut, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SPRY_MD_COLOR } from "@/brand/tokens";
 import type { DashboardUser } from "@/types/dashboard";
 import { signOutCustomer } from "@/lib/customerAccounts";
 import {
@@ -14,27 +13,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+/** Patient nav — ordered around staying on protocol + reaching the care team. */
 const NAV_GROUPS = [
   {
-    label: "Care",
+    label: "My care",
     items: [
-      { to: "/dashboard", label: "Home", end: true },
-      { to: "/dashboard/goals", label: "Goals", end: false },
+      { to: "/dashboard", label: "Overview", end: true },
+      { to: "/dashboard/goals", label: "Treatments", end: false },
+      { to: "/dashboard/support", label: "Messages", end: false },
     ],
   },
   {
-    label: "Orders",
+    label: "Delivery",
     items: [
       { to: "/dashboard/orders", label: "Shipments", end: false },
-      { to: "/dashboard/subscriptions", label: "Subscriptions", end: false },
+      { to: "/dashboard/subscriptions", label: "Billing", end: false },
     ],
   },
   {
     label: "Account",
-    items: [
-      { to: "/dashboard/support", label: "Support", end: false },
-      { to: "/dashboard/profile", label: "Profile", end: false },
-    ],
+    items: [{ to: "/dashboard/profile", label: "Profile", end: false }],
   },
 ] as const;
 
@@ -64,8 +62,8 @@ export function DashboardNav({ user, unreadCount }: DashboardNavProps) {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#050505]/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-3 py-3 md:px-5">
         <div className="flex min-w-0 items-center gap-6">
-          <Link to="/" className="shrink-0 font-semibold tracking-tight text-white font-display">
-            Spry<span style={{ color: SPRY_MD_COLOR }}>MD</span>
+          <Link to="/" className="shrink-0 font-semibold tracking-tight text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+            Spry<span className="text-[#1EC8A5]">MD</span>
           </Link>
           <nav aria-label="Patient account" className="hidden items-center gap-6 md:flex">
             {NAV_GROUPS.map((group) => (

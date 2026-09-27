@@ -1,5 +1,5 @@
 declare module "@/lib/customerAccounts" {
-  export function getStoredAccount(email: string): any;
+  export function getStoredAccount(email: string): any | null;
   export function upsertStoredAccount(account: any): any;
   export function setSessionEmail(email: string): void;
   export function getSessionEmail(): string | null;

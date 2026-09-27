@@ -5,14 +5,14 @@ export function QuickLinksFooter() {
   const tiles = [
     {
       to: "/dashboard/goals",
-      title: "Manage goals",
-      description: "Review care plans and refill dates",
+      title: "My treatments",
+      description: "Protocols, refill windows, and care goals",
       icon: Target,
     },
     {
       to: "/dashboard/support",
-      title: "Help center",
-      description: "Messages, topics, and care support",
+      title: "Ask my care team",
+      description: "Secure messages with urgency — routine, soon, or urgent",
       icon: LifeBuoy,
     },
   ];

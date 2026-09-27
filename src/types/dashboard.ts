@@ -50,7 +50,16 @@ export interface Subscription {
   autoshipEnabled: boolean;
 }
 
-export type MessageThreadStatus = "no_action" | "action_required";
+export type MessageThreadStatus =
+  | "no_action"
+  | "action_required"
+  | "open"
+  | "awaiting_staff"
+  | "awaiting_patient"
+  | "closed";
+
+/** Patient-selected urgency for care-team messaging (never for true emergencies). */
+export type MessageUrgency = "routine" | "soon" | "urgent";
 
 export interface MessageThread {
   id: string;
@@ -58,6 +67,7 @@ export interface MessageThread {
   preview: string;
   updatedAt: string;
   status: MessageThreadStatus;
+  urgency?: MessageUrgency;
 }
 
 export interface Transaction {

@@ -1,19 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const fromMock = vi.fn();
+const rpcMock = vi.fn();
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: (...args: unknown[]) => fromMock(...args),
+    rpc: (...args: unknown[]) => rpcMock(...args),
   },
 }));
 
 describe("bootstrapClinicalPatient", () => {
   beforeEach(() => {
     fromMock.mockReset();
+    rpcMock.mockReset();
   });
 
-  it("returns existing patient for user_id", async () => {
+  it("returns existing patient for user_id via claim RPC when already linked", async () => {
     fromMock.mockReturnValueOnce({
       select: () => ({
         eq: () => ({
@@ -21,6 +24,8 @@ describe("bootstrapClinicalPatient", () => {
         }),
       }),
     });
+    rpcMock.mockResolvedValueOnce({ data: "p-existing", error: null });
+
     const { bootstrapClinicalPatient } = await import("./bootstrapClinicalPatient");
     const result = await bootstrapClinicalPatient({
       userId: "u1",
@@ -29,34 +34,15 @@ describe("bootstrapClinicalPatient", () => {
     expect(result).toEqual({ patientId: "p-existing", linkedGuest: false });
   });
 
-  it("links a guest row (null user_id) to the auth user", async () => {
-    fromMock
-      .mockReturnValueOnce({
-        select: () => ({
-          eq: () => ({
-            maybeSingle: async () => ({ data: null, error: null }),
-          }),
+  it("claims a guest row through claim_or_create_patient", async () => {
+    fromMock.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({ data: null, error: null }),
         }),
-      })
-      .mockReturnValueOnce({
-        select: () => ({
-          ilike: () => ({
-            maybeSingle: async () => ({
-              data: { id: "guest-1", user_id: null },
-              error: null,
-            }),
-          }),
-        }),
-      })
-      .mockReturnValueOnce({
-        update: () => ({
-          eq: () => ({
-            select: () => ({
-              single: async () => ({ data: { id: "guest-1" }, error: null }),
-            }),
-          }),
-        }),
-      });
+      }),
+    });
+    rpcMock.mockResolvedValueOnce({ data: "guest-1", error: null });
 
     const { bootstrapClinicalPatient } = await import("./bootstrapClinicalPatient");
     const result = await bootstrapClinicalPatient({
@@ -65,5 +51,9 @@ describe("bootstrapClinicalPatient", () => {
       fullName: "Guest",
     });
     expect(result).toEqual({ patientId: "guest-1", linkedGuest: true });
+    expect(rpcMock).toHaveBeenCalledWith(
+      "claim_or_create_patient",
+      expect.objectContaining({ p_email: "guest@example.com" }),
+    );
   });
 });

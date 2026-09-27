@@ -47,8 +47,6 @@ import { logPhiAccess } from "@/lib/hipaaCompliance";
 
 const READINGS_CAP = 500;
 
-const CARE_KEY = "sprymd_patient_care_v1";
-
 export type ClinicalCaseStatus = "pending_review" | "needs_info" | "approved" | "denied";
 
 export interface ClinicalCase {
@@ -90,6 +88,10 @@ export interface PatientCareRecord {
   updatedAt: string;
 }
 
+/** In-memory care cache — Supabase is source of truth (see patientCareRemote). */
+const careCache = new Map<string, PatientCareRecord>();
+let clinicalReviewCache: ClinicalCase[] = [];
+
 const SUPPORT_TOPICS: SupportTopic[] = [
   { id: "topic_1", title: "Refills & shipping", description: "When to renew, cold-chain, and tracking" },
   { id: "topic_2", title: "Side effects", description: "What is expected vs when to message care" },
@@ -102,15 +104,14 @@ function emailKey(email: string) {
 }
 
 function readAll(): Record<string, PatientCareRecord> {
-  try {
-    return JSON.parse(localStorage.getItem(CARE_KEY) || "{}");
-  } catch {
-    return {};
-  }
+  const out: Record<string, PatientCareRecord> = {};
+  for (const [k, v] of careCache.entries()) out[k] = v;
+  return out;
 }
 
 function writeAll(store: Record<string, PatientCareRecord>) {
-  localStorage.setItem(CARE_KEY, JSON.stringify(store));
+  careCache.clear();
+  for (const [k, v] of Object.entries(store)) careCache.set(k, v);
 }
 
 function emptyCare(email: string): PatientCareRecord {
@@ -246,11 +247,117 @@ export function getPatientCare(email: string): PatientCareRecord {
 
 function saveCare(care: PatientCareRecord): PatientCareRecord {
   const key = emailKey(care.email);
-  const store = readAll();
   const next = { ...care, email: key, updatedAt: new Date().toISOString() };
-  store[key] = next;
-  writeAll(store);
+  careCache.set(key, next);
+  // Persist to Supabase (poll/refresh model — fire and reconcile on next hydrate)
+  void import("@/lib/patientCareRemote")
+    .then(({ persistPatientCareToDb }) => persistPatientCareToDb(next))
+    .catch(() => {
+      /* offline / RLS — cache remains authoritative until next successful hydrate */
+    });
   return next;
+}
+
+/**
+ * Hydrate care from Supabase into memory. Call on dashboard mount and after staff actions.
+ * One-time migrates legacy localStorage `sprymd_patient_care_v1` when present.
+ */
+export async function hydratePatientCare(email: string): Promise<PatientCareRecord> {
+  const key = emailKey(email);
+  if (!key) return emptyCare("");
+  try {
+    const { migrateLegacyLocalCare, fetchPatientCareFromDb } = await import("@/lib/patientCareRemote");
+    await migrateLegacyLocalCare(key);
+    const remote = await fetchPatientCareFromDb(key);
+    careCache.set(key, remote);
+    return remote;
+  } catch {
+    return getPatientCare(key);
+  }
+}
+
+export async function refreshPatientCare(email: string): Promise<PatientCareRecord> {
+  return hydratePatientCare(email);
+}
+
+/** Staff review queue — sync snapshot; refresh via hydrateClinicalReviewQueue. */
+export function getClinicalCasesForReview(_userEmail?: string): ClinicalCase[] {
+  return [...clinicalReviewCache];
+}
+
+export async function hydrateClinicalReviewQueue(): Promise<ClinicalCase[]> {
+  try {
+    const { fetchClinicalCasesForReview } = await import("@/lib/patientCareRemote");
+    clinicalReviewCache = await fetchClinicalCasesForReview();
+  } catch {
+    clinicalReviewCache = [];
+  }
+  return [...clinicalReviewCache];
+}
+
+export async function approveClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "approved");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Case approved. Pharmacy handoff can proceed." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to approve case.",
+    };
+  }
+}
+
+export async function requestMoreInfoClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+  _note?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "needs_info");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Requested more information from the patient." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to update case.",
+    };
+  }
+}
+
+export async function denyClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+  _reason?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "denied");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Case denied." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to deny case.",
+    };
+  }
+}
+
+export async function sendPatientCareMessage(
+  email: string,
+  subject: string,
+  body: string,
+  urgency: import("@/types/dashboard").MessageUrgency = "routine",
+) {
+  const { createThread } = await import("@/lib/messaging");
+  const result = await createThread({ email, subject, body, urgency });
+  await hydratePatientCare(email);
+  return result;
 }
 
 function protocolToTreatment(p: Record<string, unknown>, idx: number): Treatment {
@@ -592,7 +699,7 @@ export function getSignedInEmail(): string | null {
   return getSessionEmail();
 }
 
-export function ensureAccountShell(email: string, name?: string) {
+export async function ensureAccountShell(email: string, name?: string) {
   const key = emailKey(email);
   const existing = getStoredAccount(key);
   if (!existing) {
@@ -605,9 +712,10 @@ export function ensureAccountShell(email: string, name?: string) {
       }),
     );
   }
-  getPatientCare(key);
+  await hydratePatientCare(key);
   if (isMasterEmail(key)) {
     bootstrapMasterCare(key);
+    await hydratePatientCare(key);
   }
 }
 

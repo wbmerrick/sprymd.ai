@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedSection from "@/components/AnimatedSection";
 import { STATEMENT_DESCRIPTOR_DISPLAY } from "@shared/statementDescriptor";
+import { pharmacyFulfillmentCopy } from "@/config/pharmacy";
 import { applyHead, faqJsonLd } from "@/lib/seo";
 
 interface FAQItem {
@@ -24,7 +25,7 @@ const faqGroups: FAQGroup[] = [
       { q: "How is this different from going to my regular doctor?", a: "Instead of scheduling, waiting, and having an uncomfortable conversation, you complete a thorough health intake online. Your physician reviews the same information they'd collect in-office and makes the same clinical decision — with complete privacy." },
       { q: "Is this a video visit?", a: "Most SpryMD care is asynchronous chart review — you complete a thorough intake; a Tennessee-licensed physician reviews it and messages you with the plan. No scheduled video call for specialty protocols (ED, weight loss, hair, skin, peptides, NAD+). Primary-care (PCP) visits may include a live video visit when clinically appropriate." },
       { q: "What states do you serve?", a: "We currently serve patients located in Tennessee. We are working to expand to additional states." },
-      { q: "What can SpryMD help with?", a: "Care options on the platform include erectile dysfunction (including Wingman), weight loss, hair loss, skin care, sermorelin, NAD+ therapy, and primary-care style visits where offered. Availability of any protocol is always subject to clinician judgment." },
+      { q: "What can SpryMD help with?", a: "Care options on the platform include men's sexual health (including Wingman), low testosterone, women's health, weight loss, hair loss, skin care, anxiety & depression, sermorelin, NAD+ therapy, and primary-care style visits where offered. Availability of any protocol is always subject to clinician judgment." },
     ],
   },
   {
@@ -67,7 +68,7 @@ const faqGroups: FAQGroup[] = [
   {
     label: "Shipping",
     items: [
-      { q: "Where does my medication come from?", a: "When prescribed, medication is filled by a licensed pharmacy partner (including compounding pharmacies when that formulation is required) and shipped discreetly to you." },
+      { q: "Where does my medication come from?", a: pharmacyFulfillmentCopy() },
       { q: "How long does shipping take?", a: "After a prescription is approved and transmitted, most orders ship within 1–2 business days and arrive shortly after. Timing depends on the medication, pharmacy, weather, and carrier. Tennessee next-business-day delivery applies only when the order qualifies under our published delivery terms." },
     ],
   },
