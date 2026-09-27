@@ -27,7 +27,7 @@ export type CareEduPage = {
   group: "protocols";
 };
 
-/** Maps care-catalog condition ids → educational page slugs. */
+/** Maps care-catalog condition ids → educational / care page slugs. */
 export const conditionToEduSlug: Partial<Record<ConditionId, string>> = {
   weightloss: "weight-loss",
   ed: "ed",
@@ -35,6 +35,11 @@ export const conditionToEduSlug: Partial<Record<ConditionId, string>> = {
   skincare: "skin",
   sermorelin: "sermorelin",
   nad: "nad-therapy",
+  /** Footer protocol pages (footerPages.js) until migrated into careEduPages. */
+  lowt: "low-testosterone",
+  mentalhealth: "anxiety-depression",
+  pcp: "primary-care",
+  womenshealth: "womens-health",
 };
 
 export const careEduPages: Record<string, CareEduPage> = {
@@ -509,6 +514,77 @@ export const careEduPages: Record<string, CareEduPage> = {
               {
                 q: "How quickly will I receive my medication?",
                 a: "Most approved prescriptions are processed and shipped within 24 to 48 hours.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    group: "protocols",
+  },
+
+  /**
+   * TODO: Replace this placeholder with counsel-approved women's health education
+   * (indications, protocols, FAQs) before promoting Women's Health in ads.
+   */
+  "womens-health": {
+    slug: "womens-health",
+    title: "Women's Health — Clinician-Guided Care",
+    navLabel: "Women's Health",
+    eyebrow: "Women's Health by spryMD.ai",
+    tagline:
+      "Private telehealth for women's health goals — a licensed clinician reviews every case before treatment.",
+    fromPrice: "75",
+    ctaLabel: "Start Your SpryMD Consultation",
+    ctaTarget: "intake",
+    conditionId: "womenshealth",
+    highlights: [
+      "**Private intake:** Complete a short questionnaire on your schedule",
+      "**Licensed review:** A U.S.-licensed clinician evaluates safety and fit",
+      "**Clear pricing:** One visit fee before any medication is considered",
+      "**Discreet shipping:** If prescribed, medication ships unmarked to your door",
+    ],
+    sections: [
+      {
+        title: "Care built around you",
+        blocks: [
+          {
+            type: "p",
+            // TODO: Expand with specific women's health offerings once protocols are finalized.
+            text: "SpryMD women's health is a clinician-supervised pathway for patients who want private, judgment-free care without a waiting room. Complete a short intake, pay a one-time visit fee, and a licensed provider reviews whether treatment is appropriate for you.",
+          },
+        ],
+      },
+      {
+        title: "Get Started in 3 Simple Steps",
+        blocks: [
+          {
+            type: "ol",
+            items: [
+              "**Quick Clinical Intake** — Share goals and health history in a private questionnaire.",
+              "**Visit fee + licensed review** — A U.S.-licensed clinician reviews your case. Medication is never auto-charged at checkout.",
+              "**Fast, Discreet Delivery** — If prescribed, medication is filled by a licensed pharmacy partner and shipped unmarked. Medication billing is coordinated separately after approval.",
+            ],
+          },
+        ],
+      },
+      {
+        title: "Frequently Asked Questions",
+        blocks: [
+          {
+            type: "faq",
+            items: [
+              {
+                q: "Is this for women only?",
+                a: "Yes — this pathway is designed for women's health goals. Other SpryMD care options serve men, women, or both, and each card is labeled accordingly.",
+              },
+              {
+                q: "Do I need insurance?",
+                a: "No. SpryMD is cash-pay with transparent visit pricing. You see the visit fee before you pay.",
+              },
+              {
+                q: "Will I definitely get a prescription?",
+                a: "No. A clinician only authorizes treatment when it is safe and clinically appropriate. If you are not a candidate, you will be told why.",
               },
             ],
           },

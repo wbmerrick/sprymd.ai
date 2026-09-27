@@ -6,6 +6,8 @@
  * tags in sync as the router (or SpryApp's internal views) change.
  */
 
+import { COMPANY, companyTelHref, isConfigured } from "@/config/company";
+
 export const SITE_URL = "https://www.sprymd.ai";
 export const SITE_NAME = "SpryMD";
 export const DEFAULT_TITLE = "SpryMD — Telehealth for Tennessee. Feel better. Stay strong.";
@@ -119,7 +121,7 @@ export function applyHead(meta: HeadMeta = {}): void {
 
 /** Site-wide organization graph. Mirrors the static block in index.html. */
 export function organizationJsonLd(): JsonLd {
-  return {
+  const graph: JsonLd = {
     "@context": "https://schema.org",
     "@type": ["MedicalBusiness", "Organization"],
     "@id": `${SITE_URL}/#organization`,
@@ -129,11 +131,34 @@ export function organizationJsonLd(): JsonLd {
     logo: `${SITE_URL}/icons/icon-512.png`,
     image: DEFAULT_OG_IMAGE,
     description: DEFAULT_DESCRIPTION,
-    email: "support@sprymd.ai",
-    areaServed: { "@type": "State", name: "Tennessee" },
+    email: COMPANY.SUPPORT_EMAIL,
+    areaServed: { "@type": "State", name: COMPANY.AREA_SERVED },
     founder: { "@type": ["Physician", "Person"], name: "Dr. William Merrick, DO", honorificSuffix: "DO" },
     availableService: { "@type": "MedicalProcedure", name: "Telehealth consultation", procedureType: "Noninvasive" },
   };
+
+  const tel = companyTelHref();
+  if (tel) graph.telephone = tel.replace(/^tel:/, "");
+
+  if (isConfigured(COMPANY.ADDRESS)) {
+    // Best-effort parse: "Street, City, ST ZIP" — refine when real address is set.
+    const parts = COMPANY.ADDRESS.split(",").map((p) => p.trim());
+    const street = parts[0] || COMPANY.ADDRESS;
+    const city = parts[1] || "";
+    const stateZip = (parts[2] || "").split(/\s+/).filter(Boolean);
+    const region = stateZip[0] || "";
+    const postal = stateZip.slice(1).join(" ") || "";
+    graph.address = {
+      "@type": "PostalAddress",
+      streetAddress: street,
+      addressLocality: city || undefined,
+      addressRegion: region || undefined,
+      postalCode: postal || undefined,
+      addressCountry: "US",
+    };
+  }
+
+  return graph;
 }
 
 export function faqJsonLd(items: { question: string; answer: string }[]): JsonLd {

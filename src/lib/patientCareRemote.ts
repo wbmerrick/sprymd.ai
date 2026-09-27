@@ -346,7 +346,7 @@ export async function persistPatientCareToDb(care: PatientCareRecord): Promise<{
           title: n.title,
           description: n.description || "",
           dismissed: false,
-          created_at: n.createdAt,
+          created_at: n.timestamp || new Date().toISOString(),
         });
       }
     }
