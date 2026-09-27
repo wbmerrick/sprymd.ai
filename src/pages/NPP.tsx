@@ -1,82 +1,157 @@
 import AnimatedSection from "@/components/AnimatedSection";
 
+/**
+ * HIPAA Notice of Privacy Practices for SpryMD telehealth.
+ * Privacy Officer contact aligns with the site footer (privacy@sprymd.ai).
+ * Have counsel review before relying on this as the operative NPP.
+ */
 const NPP = () => (
-  <main className="min-h-screen bg-off-white">
-    <section className="bg-navy py-20 px-4 text-center">
-      <div className="section-container max-w-4xl">
-        <h1 className="font-display text-primary-foreground text-3xl md:text-5xl font-bold mb-3">
-          Notice of Privacy Practices
-        </h1>
-        <p className="font-body text-primary-foreground/75 text-sm md:text-base max-w-2xl mx-auto">
-          THIS NOTICE DESCRIBES HOW MEDICAL INFORMATION ABOUT YOU MAY BE USED AND DISCLOSED AND HOW YOU CAN GET ACCESS TO THIS INFORMATION. PLEASE REVIEW IT CAREFULLY.
-        </p>
-      </div>
+  <main>
+    <section className="bg-navy py-24 px-4 text-center">
+      <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold">
+        Notice of Privacy Practices
+      </h1>
     </section>
 
     <section className="section-padding bg-card py-12 md:py-16">
       <div className="section-container max-w-3xl">
         <AnimatedSection>
-          <div className="prose prose-sm font-body text-muted-foreground max-w-none space-y-6 text-navy">
-            <div className="bg-muted/40 border border-border rounded-xl p-4 text-xs leading-relaxed text-muted-foreground">
-              <p><strong>Effective Date:</strong> March 27, 2026</p>
-              <p><strong>Covered Entities & Practice Group:</strong> SpryMD Telehealth Tennessee P.C. & affiliated licensed medical providers (collectively, "SpryMD," "we," "our," or "us").</p>
-              <p><strong>Privacy Officer Contact:</strong> <a href="mailto:privacy@sprymd.ai" className="text-primary underline">privacy@sprymd.ai</a> · (615) 802-7779 · 414 Union Street, Suite 1900, Nashville, TN 37219</p>
-            </div>
-
-            <h2 className="text-xl font-bold text-navy mt-8 mb-2">1. Our Legal Duty</h2>
+          <div className="prose prose-sm font-body text-muted-foreground max-w-none">
+            <p className="text-lg font-medium text-navy mb-4">Effective Date: September 24, 2026</p>
             <p>
-              We are required by the Health Insurance Portability and Accountability Act of 1996 (HIPAA) and applicable state laws to maintain the privacy and security of your Protected Health Information ("PHI"). We are also required to provide you with this Notice of Privacy Practices explaining our legal duties and privacy practices with respect to PHI, and to notify affected individuals following a breach of unsecured PHI.
+              This Notice of Privacy Practices (<strong>"Notice"</strong>) describes how medical
+              information about you may be used and disclosed and how you can get access to this
+              information. Please review it carefully.
+            </p>
+            <p>
+              SpryMD Inc. and affiliated clinical entities that deliver telehealth through SpryMD.ai
+              (collectively, <strong>"SpryMD," "we," "us,"</strong> or <strong>"our"</strong>)
+              create and maintain protected health information (<strong>"PHI"</strong>) when you
+              receive care. This Notice applies to PHI we maintain in connection with telehealth
+              visits, clinical intake, prescribing, and related care coordination for patients
+              physically located in licensed states (currently Tennessee).
             </p>
 
-            <h2 className="text-xl font-bold text-navy mt-8 mb-2">2. How We May Use and Disclose Your PHI</h2>
-            <p>We may use and disclose your PHI for treatment, payment, and healthcare operations without your written authorization in the following ways:</p>
-            
-            <ul className="list-disc pl-6 space-y-2 text-sm">
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">Our responsibilities</h2>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>We are required by law to maintain the privacy and security of your PHI.</li>
+              <li>We must provide you with this Notice of our legal duties and privacy practices.</li>
+              <li>We must follow the terms of the Notice that is currently in effect.</li>
               <li>
-                <strong>Treatment:</strong> We use your health intake questionnaire, symptom reports, vital readings, and medical history to evaluate your clinical eligibility, make diagnoses, formulate treatment protocols, and prescribe medications. We share PHI with our dispensing pharmacy partner (Empower Pharmacy) to fulfill and ship your prescriptions.
-              </li>
-              <li>
-                <strong>Payment (100% Direct Cash-Pay):</strong> Because SpryMD operates on a 100% direct-to-consumer cash-pay basis, we do not bill commercial health insurers, Medicare, or Medicaid. We process payment directly through secure, PCI-DSS compliant payment gateways (Stripe) to bill your credit card and generate itemized cash-pay receipts with clinician NPI.
-              </li>
-              <li>
-                <strong>Healthcare Operations:</strong> We use your PHI to evaluate the quality of care provided by our clinicians, conduct clinical audits, maintain secure electronic health records, and continuously improve platform safety.
-              </li>
-              <li>
-                <strong>Business Associates:</strong> We share PHI with trusted third-party vendors (such as cloud hosting, pharmacy dispensing partners, and encrypted database providers) who have executed formal HIPAA Business Associate Agreements (BAAs) pledging to safeguard your data.
+                We will notify you promptly if a breach occurs that may have compromised the privacy
+                or security of your PHI, as required by law.
               </li>
             </ul>
 
-            <h2 className="text-xl font-bold text-navy mt-8 mb-2">3. Uses & Disclosures Requiring Your Specific Authorization</h2>
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">How we may use and disclose PHI</h2>
+            <p className="font-semibold text-navy mt-4">Treatment</p>
             <p>
-              We will never sell your PHI, use your PHI for third-party marketing, or share psychotherapy notes without your explicit written authorization. You may revoke any authorization in writing at any time.
+              We may use and share your PHI to provide, coordinate, or manage your care — for
+              example, clinician review of your intake, video or messaging visits, prescribing, and
+              coordination with pharmacies or laboratories involved in your care.
+            </p>
+            <p className="font-semibold text-navy mt-4">Payment</p>
+            <p>
+              We may use and share PHI to obtain payment for services, including cash-pay checkout,
+              claim processing if applicable, and billing support with payment processors that
+              handle card transactions (payment card data is processed by our payment provider and
+              is not stored as clinical chart text).
+            </p>
+            <p className="font-semibold text-navy mt-4">Health care operations</p>
+            <p>
+              We may use and share PHI for quality improvement, clinician training, audit,
+              compliance, customer support related to your visit, and operating secure telehealth
+              systems (including video vendors under a Business Associate Agreement when required).
+            </p>
+            <p className="font-semibold text-navy mt-4">As required or permitted by law</p>
+            <p>
+              We may disclose PHI when required by law, for public health activities, health
+              oversight, judicial or administrative proceedings, law enforcement in limited
+              circumstances, to avert a serious threat to health or safety, and for other purposes
+              permitted or required under HIPAA and applicable Tennessee law.
+            </p>
+            <p className="font-semibold text-navy mt-4">With your authorization</p>
+            <p>
+              Other uses and disclosures not described in this Notice will be made only with your
+              written authorization. You may revoke an authorization in writing at any time, except
+              to the extent we have already relied on it.
             </p>
 
-            <h2 className="text-xl font-bold text-navy mt-8 mb-2">4. Your Health Information Rights</h2>
-            <p>Under HIPAA and Tennessee medical privacy laws, you have the following rights regarding your PHI:</p>
-            <ul className="list-disc pl-6 space-y-2 text-sm">
-              <li><strong>Right to Inspect & Copy:</strong> You have the right to inspect and obtain an electronic or paper copy of your medical chart, intake responses, and billing history. You can view your active records anytime in your SpryMD patient portal or email us.</li>
-              <li><strong>Right to Request Amendments:</strong> If you believe information in your chart is inaccurate or incomplete, you may submit a written request for an amendment.</li>
-              <li><strong>Right to an Accounting of Disclosures:</strong> You have the right to request an accounting of disclosures of your PHI made outside of treatment, payment, and healthcare operations.</li>
-              <li><strong>Right to Request Restrictions:</strong> You have the right to request restrictions on how we use or disclose your PHI. Because you pay out-of-pocket in full (cash-pay), we will never disclose your care records to a health insurance plan without your written instruction.</li>
-              <li><strong>Right to Confidential Communications:</strong> You have the right to request that we communicate with you via specific secure channels (e.g. encrypted in-app messaging or private email).</li>
-              <li><strong>Right to a Paper Copy:</strong> You may request a paper copy of this Notice at any time.</li>
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">Your rights</h2>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <strong>Access.</strong> You may ask to see or get an electronic or paper copy of
+                your medical record and other PHI we maintain about you.
+              </li>
+              <li>
+                <strong>Amend.</strong> You may ask us to correct PHI you believe is incorrect or
+                incomplete.
+              </li>
+              <li>
+                <strong>Accounting of disclosures.</strong> You may ask for a list of certain
+                disclosures we made of your PHI.
+              </li>
+              <li>
+                <strong>Request restrictions.</strong> You may ask us to limit how we use or share
+                PHI for treatment, payment, or operations. We are not required to agree in every
+                case.
+              </li>
+              <li>
+                <strong>Confidential communications.</strong> You may ask us to contact you in a
+                specific way (for example, a particular email or phone number).
+              </li>
+              <li>
+                <strong>Paper copy of this Notice.</strong> You may ask for a paper copy of this
+                Notice at any time, even if you agreed to receive it electronically.
+              </li>
+              <li>
+                <strong>Choose someone to act for you.</strong> If you have given someone medical
+                power of attorney or if someone is your legal guardian, that person may exercise
+                your rights and make choices about your PHI.
+              </li>
             </ul>
 
-            <h2 className="text-xl font-bold text-navy mt-8 mb-2">5. State of Tennessee Specific Disclosures</h2>
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">Complaints</h2>
             <p>
-              Under Tennessee Code Annotated § 63-6-241 and § 63-9-123, telehealth medical consultations conducted for patients located in Tennessee are governed by the Tennessee Board of Medical Examiners and Board of Osteopathic Examination. Prescriptions issued by SpryMD clinicians comply with Tennessee electronic prescribing mandates and controlled substance restrictions.
+              If you believe your privacy rights have been violated, you may file a complaint with
+              us or with the U.S. Department of Health and Human Services Office for Civil Rights.
+              We will not retaliate against you for filing a complaint.
+            </p>
+            <p className="mt-2">
+              HHS OCR complaint portal:{" "}
+              <a
+                href="https://www.hhs.gov/hipaa/filing-a-complaint/index.html"
+                className="text-navy underline underline-offset-2"
+                target="_blank"
+                rel="noreferrer"
+              >
+                hhs.gov/hipaa/filing-a-complaint
+              </a>
             </p>
 
-            <h2 className="text-xl font-bold text-navy mt-8 mb-2">6. Complaints & Privacy Officer Contact</h2>
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">Privacy Officer contact</h2>
             <p>
-              If you believe your privacy rights have been violated, you may file a complaint with our Privacy Officer or with the Secretary of the U.S. Department of Health and Human Services (HHS) Office for Civil Rights. <strong>We will never retaliate against you for filing a complaint.</strong>
+              SpryMD Inc.
+              <br />
+              Attn: Privacy Officer
+              <br />
+              Email:{" "}
+              <a href="mailto:privacy@sprymd.ai" className="text-navy underline underline-offset-2">
+                privacy@sprymd.ai
+              </a>
+              <br />
+              Website:{" "}
+              <a href="https://www.sprymd.ai" className="text-navy underline underline-offset-2">
+                www.sprymd.ai
+              </a>
             </p>
-            <div className="bg-muted/40 p-4 rounded-xl border border-border text-xs space-y-1">
-              <p className="font-bold text-navy">SpryMD Privacy Officer</p>
-              <p>SpryMD Telehealth Tennessee P.C.</p>
-              <p>414 Union Street, Suite 1900, Nashville, TN 37219</p>
-              <p>Phone: (615) 802-7779 · Email: <a href="mailto:privacy@sprymd.ai" className="text-primary underline">privacy@sprymd.ai</a></p>
-            </div>
+
+            <h2 className="text-xl font-bold text-navy mt-8 mb-3">Changes to this Notice</h2>
+            <p>
+              We may change the terms of this Notice at any time. The new Notice will be effective
+              for all PHI we maintain at that time. The current Notice will be posted on SpryMD.ai
+              with the effective date above.
+            </p>
           </div>
         </AnimatedSection>
       </div>

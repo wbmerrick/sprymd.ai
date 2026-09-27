@@ -10,7 +10,7 @@ export default function SubscriptionsPage() {
     <div className="space-y-8">
       <header className="space-y-2">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Orders</p>
-        <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h1 className="text-3xl font-semibold text-white font-display">
           Subscriptions
         </h1>
         <p className="text-sm text-zinc-400">
@@ -30,8 +30,7 @@ export default function SubscriptionsPage() {
                 <div>
                   <Link
                     to={`/dashboard/goals/${sub.treatmentId}`}
-                    className="text-lg font-medium text-white hover:text-[#C89E67]"
-                    style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+                    className="text-lg font-medium text-white hover:text-[#C89E67] font-display"
                   >
                     {tx?.medicationName || "Treatment"}
                   </Link>

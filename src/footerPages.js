@@ -1565,7 +1565,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "**[PLACEHOLDER: Brand asset download link — to be added]**"
+            "text": "A public brand-kit download will be linked here when assets are finalized. Until then, email press@sprymd.ai for approved logo files."
           }
         ]
       },

@@ -1,8 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import RouteSeo from "@/components/RouteSeo";
+import SkipToContent from "@/components/SkipToContent";
 // @ts-ignore - JSX single-file marketing app
 import SpryApp from "./SpryApp.jsx";
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
@@ -19,24 +22,41 @@ import NPP from "@/pages/NPP";
 import About from "@/pages/About";
 import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
-import Quiz from "@/pages/Quiz";
-import Checkout from "@/pages/Checkout";
-import Confirmed from "@/pages/Confirmed";
-import SermorelinPage from "@/pages/Sermorelin";
+import CashPayCheckout from "@/pages/CashPayCheckout";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import IntakePage from "@/pages/Intake";
+import ProviderNotePage from "@/pages/ProviderNote";
+import VisitRoomPage from "@/pages/VisitRoom";
+import OpsLayout from "@/pages/ops/OpsLayout";
+import OpsQueuePage from "@/pages/ops/OpsQueuePage";
+import OpsAppointmentPage from "@/pages/ops/OpsAppointmentPage";
 import OAuthAuthorizePage from "@/pages/oauth/AuthorizePage";
 import OAuthCallbackPage from "@/pages/oauth/CallbackPage";
+import NotFound from "@/pages/NotFound";
 import { FEATURES } from "@/config/features";
 
 const queryClient = new QueryClient();
+
+/** SPA route awareness for Vercel Speed Insights (Vite/React, not Next.js). */
+function AppSpeedInsights() {
+  const { pathname } = useLocation();
+  return <SpeedInsights route={pathname} />;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AppSpeedInsights />
+        <SkipToContent />
+        <RouteSeo />
         <Routes>
           <Route path="/" element={<SpryApp />} />
+          {/* Legacy CTA target (Navbar/About/FAQ) — opens the care options on the homepage. */}
+          <Route path="/quiz" element={<Navigate to="/?view=start" replace />} />
+          <Route path="/care/:slug" element={<SpryApp />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHomePage />} />
             <Route path="goals" element={<GoalsPage />} />
@@ -52,10 +72,15 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/quiz" element={<Quiz />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/confirmed" element={<Confirmed />} />
-          <Route path="/sermorelin" element={<SermorelinPage />} />
+          <Route path="/checkout" element={<CashPayCheckout />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/intake" element={<IntakePage />} />
+          <Route path="/provider/notes" element={<ProviderNotePage />} />
+          <Route path="/visit/:appointmentId" element={<VisitRoomPage />} />
+          <Route path="/ops" element={<OpsLayout />}>
+            <Route index element={<OpsQueuePage />} />
+            <Route path=":appointmentId" element={<OpsAppointmentPage />} />
+          </Route>
           {FEATURES.enableDeviceDashboard ? (
             <>
               <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
@@ -67,7 +92,7 @@ const App = () => (
               <Route path="/oauth/callback" element={<Navigate to="/dashboard" replace />} />
             </>
           )}
-          <Route path="*" element={<SpryApp />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

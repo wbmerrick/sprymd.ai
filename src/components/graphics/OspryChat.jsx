@@ -10,20 +10,20 @@ const STARTERS = [
 
 function replyFor(input) {
   const q = input.toLowerCase();
+  if (q.includes("price") || q.includes("cost") || q.includes("how much") || q.includes("pricing")) {
+    return "Today you pay a one-time clinician visit fee (about $75–$99 depending on the visit type). Plan prices shown as from $X/mo are what treatment would cost if a clinician approves — medication is not auto-charged at checkout. Soft launch is cash-pay visit first; meds are coordinated after approval.";
+  }
   if (q.includes("pcp") || q.includes("primary") || q.includes("doctor")) {
-    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Plans start at $120/mo. Tap Get my doctor, or Start your confidential visit and choose Your doctor.";
+    return "Yes — you can make SpryMD your main doctor for checkups, labs, and messages. Start with a clinician visit (cash-pay), then membership or follow-up plans are offered when clinically appropriate. Tap Start your confidential visit and choose Your doctor.";
   }
   if (q.includes("how") || q.includes("work") || q.includes("system")) {
-    return "Three steps: choose care → a licensed clinician reviews your case → treatment ships when approved and filled. Eligible Tennessee orders can move next business day after the 2:00 p.m. CT weekday cutoff. No waiting room.";
+    return "Three steps: choose care → pay a one-time visit fee and complete intake → a licensed Tennessee clinician reviews your case. Treatment ships only when approved and filled. Eligible Tennessee orders can move next business day after the 2:00 p.m. CT weekday cutoff.";
   }
   if (q.includes("protocol") || q.includes("fit") || q.includes("start") || q.includes("treat") || q.includes("plan")) {
     return "Pick the area you want help with — weight, hormones, focus, sleep, performance, or your main doctor. Every plan is built around you and signed by a licensed doctor.";
   }
-  if (q.includes("price") || q.includes("cost") || q.includes("how much")) {
-    return "Care plans start from $25–$149/mo depending on what you need. Weight-loss plans are adjusted by a doctor; main-doctor membership starts at $120/mo. Shipping is included when medicine is prescribed.";
-  }
   if (q.includes("refill")) {
-    return "Sign in for Quick Refills — only for medicine you already have. New care starts with a short form.";
+    return "Sign in and open Refills to request a clinician review for medicine already on your chart. Soft launch does not auto-charge cards for refills — we confirm payment after approval. New care starts with a short visit.";
   }
   return "I'm iSpry — SpryMD's care helper. Ask about care plans, how Spry works, pricing, your doctor, or refills. For medical decisions, a licensed doctor still signs every plan.";
 }
@@ -380,7 +380,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
               letterSpacing: "0.06em",
               textTransform: "uppercase",
               cursor: "pointer",
-              fontFamily: "var(--font-mono), ui-monospace, monospace",
+              fontFamily: "var(--font-body)",
             }}
           >
             Start your confidential visit <ArrowRight size={14} />

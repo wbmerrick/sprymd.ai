@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import NotFound from "./pages/NotFound";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
@@ -10,6 +11,7 @@ import {
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
 import BrandAtmosphere from "./components/brand/BrandAtmosphere";
+import SlideToConfirm from "./components/auth/SlideToConfirm";
 import { brandPlates } from "./assets/brand/catalog";
 import imgFounder from "./assets/brand/founder-dr-merrick.jpg";
 
@@ -43,6 +45,39 @@ import {
 } from "./lib/patientCareStore";
 import { syncIntakeToDatabase } from "./lib/supabaseSync";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
+import { FONT_BODY, FONT_DISPLAY, SPRY_MD_COLOR } from "./brand/tokens";
+import { conditions } from "./data/careCatalog";
+import { careEduPages, conditionToEduSlug } from "./data/careEduPages";
+import { applyHead } from "./lib/seo";
+import {
+  ADULT_NO,
+  ADULT_YES,
+  CRISIS_LINE_NUMBER,
+  ELIGIBILITY_ADULT_KEY,
+  ELIGIBILITY_STATE_KEY,
+  EMERGENCY_NUMBER,
+  buildIntakeSteps,
+  canAdvanceStep,
+  checkoutPath,
+  clearIntakeProgress,
+  compoundFieldError,
+  dobError,
+  eligibilityBlockReason,
+  findDisqualifier,
+  isKnownCondition,
+  loadIntakeProgress,
+  recommendTreatment,
+  safetyFlags,
+  saveCheckoutSelection,
+  saveIntakeProgress,
+  stepCrisisHits,
+  stepDisqualifiers,
+  stepUrgentHits,
+  timeLeftLabel,
+  toggleMultiOption,
+} from "./lib/intakeFlow";
+import { isValidEmail, isValidPhone, persistFunnelCase, submitConsultRequest } from "./lib/caseSubmission";
+import { US_STATES } from "../shared/usStates";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand tokens — "Clinical Zen": high-end wellness retreat × modern clinic.
@@ -62,6 +97,7 @@ const C = {
   accentSoft: "rgba(200, 158, 103, 0.78)",
   accentDeep: "#96703F",
   signalDim: "rgba(200, 158, 103, 0.16)",
+  md: SPRY_MD_COLOR,    // light green — SpryMD wordmark "MD"
   slate: "#5C7E9E",     // slate blue — secondary informational accent
   navy: "#5C7E9E",      // legacy key — now slate blue
   line: "#263129",      // green-tinted hairlines
@@ -72,19 +108,29 @@ const C = {
 };
 
 const fonts = {
-  display: "'Fraunces', 'Georgia', 'Times New Roman', serif",
-  body: "'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-  mono: "'DM Sans', 'Helvetica Neue', sans-serif",
+  display: FONT_DISPLAY,
+  body: FONT_BODY,
+  /** Label/eyebrow style — same face as body, tighter tracking via .mono */
+  mono: FONT_BODY,
 };
 
 const FontInjector = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,400..700&display=swap');
     :root {
+      --font-display: ${fonts.display};
+      --font-body: ${fonts.body};
       --font-mono: ${fonts.body};
       --spry-accent: ${C.accent};
       --spry-bg: ${C.bg};
       --spry-ink: ${C.ink};
+      --spry-md: ${C.md};
+    }
+    .spry-md {
+      color: var(--spry-md) !important;
+      opacity: 1 !important;
+      -webkit-text-stroke: 0.4px rgba(9, 14, 11, 0.45);
+      paint-order: stroke fill;
+      text-shadow: 0 0 12px rgba(9, 14, 11, 0.35);
     }
     * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { background: ${C.bg}; color: ${C.ink}; }
@@ -93,7 +139,7 @@ const FontInjector = () => (
       background-image:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
         radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
-        linear-gradient(180deg, rgba(12,18,15,0.30), rgba(12,18,15,0.55)),
+        linear-gradient(180deg, rgba(12,18,15,0.48), rgba(12,18,15,0.62)),
         url("/brand/sprymd-tn-ridge.webp");
       background-size: auto, auto, auto, cover;
       background-position: center, center, center, center 40%;
@@ -139,7 +185,11 @@ const FontInjector = () => (
     .anim-slideRight { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-slideLeft { animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .anim-pulse { animation: pulse 2s ease-in-out infinite; }
-    .spry-rise { animation: spryRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes spryBrandIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .spry-brand-in { animation: spryBrandIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; opacity: 1; }
     .ken-burns { animation: kenBurns 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .signal-underline { display: inline-block; position: relative; }
     .signal-underline::after {
@@ -234,7 +284,7 @@ const FontInjector = () => (
     .spry-desktop-only { display: none; }
     @media (min-width: 768px) { .spry-desktop-only { display: inline-flex; } }
     @media (prefers-reduced-motion: reduce) {
-      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .earth-distant, .spry-attn {
+      .orbit-spin, .orbit-spin-slow, .orbit-spin-rev, .telemetry-track, .scan-line, .breath-glow, .ken-burns, .spry-rise, .spry-brand-in, .earth-distant, .spry-attn {
         animation: none !important;
       }
       .spry-btn, .spry-btn-icon, .spry-tile, .spry-tile-arrow, .spry-sticky-bar { transition: none !important; }
@@ -263,206 +313,7 @@ const FontInjector = () => (
 //  • Hair Restore MFK 60 mL = $56.84 + $15 = $72 → $89 retail (60-day = $44.50/mo equiv)
 // Hims tirzepatide $299 → $499/mo, Ro Body $499/mo. SpryMD beats both.
 // ─────────────────────────────────────────────────────────────────────────────
-const conditions = {
-  weightloss: {
-    id: "weightloss", name: "Weight loss",
-    tagline: "Lose weight with a real doctor watching your plan.",
-    description: "Safe weight-loss medicine chosen for you. A doctor checks your answers, then we ship care to your door.",
-    icon: Scale, accent: "#C89E67", fromPrice: "200",
-    treatments: [
-      { id: "tirz-mid", name: "Tirzepatide Injection", sub: "5–10 mg / weekly · titrated", price: 279, chilled: true,
-        note: "Dual GIP/GLP-1 agonism. The strongest agent we offer — direct alternative to compounded Mounjaro/Zepbound.",
-        compareAt: 499, comparePeer: "Hims & Ro Body", badge: "Most prescribed" },
-      { id: "sema-std", name: "Semaglutide Injection", sub: "0.5–1 mg / weekly · titrated", price: 199, chilled: true,
-        note: "GLP-1 receptor agonist. The original blockbuster, now compounded for affordability.",
-        compareAt: 299, comparePeer: "Hims" },
-      { id: "tirz-odt", name: "Tirzepatide ODT", sub: "3–5 mg / daily microdose · oral dissolve", price: 229, chilled: false,
-        note: "No needles. No refrigeration. Daily microdose protocol via oral dissolve tablet.", badge: "No-needle" },
-      { id: "sema-odt", name: "Semaglutide ODT", sub: "2–5 mg / daily microdose · oral dissolve", price: 179, chilled: false,
-        note: "Same active ingredient as the injection, in a once-daily melt-in-mouth format." },
-      { id: "tirz-hi", name: "Tirzepatide High-Dose", sub: "10–15 mg / weekly · maintenance", price: 549, chilled: true,
-        note: "For patients who have titrated through and need a higher dose for sustained loss." },
-      { id: "bella", name: "Bella Metabolic Stack", sub: "Bupropion / Phentermine / Topiramate / Naltrexone / B12 · daily oral", price: 149, chilled: false,
-        note: "Five-agent oral compound for patients who can't or won't use injectables. Lower-cost alternative." },
-    ],
-  },
-  ed: {
-    id: "ed", name: "Men's sexual health",
-    tagline: "Feel confident again — daily or when you need it.",
-    description: "Simple treatments for erectile health. Private questions. A doctor reviews your case before anything ships.",
-    icon: Flame, accent: "#C89E67", fromPrice: "65",
-    treatments: [
-      { id: "sild-prn", name: "Sildenafil 50mg PRN", sub: "10 doses / month · as needed", price: 69, chilled: false,
-        note: "The standard. Onset 30–60 min. Most cost-effective entry.", compareAt: 89, comparePeer: "Hims" },
-      { id: "tada-daily", name: "Tadalafil 5mg Daily", sub: "30 doses / month · once daily", price: 79, chilled: false,
-        note: "Steady-state. Ready when you are. No timing.", badge: "Most popular" },
-      { id: "sild-odt", name: "Sildenafil ODT", sub: "60 mg · 10 doses / month · fast melt", price: 99, chilled: false,
-        note: "Oral dissolve. No water needed. Onset ~15 min — half the time of swallowed tablets." },
-      { id: "tada-odt", name: "Tadalafil ODT Daily", sub: "6 mg · 30 doses / month · oral dissolve", price: 99, chilled: false,
-        note: "Daily ODT for spontaneity without the swallowed pill." },
-      { id: "combo", name: "Hard Mint Combo ODT", sub: "Sildenafil 55 + Tadalafil 12.5 mg · 10 doses", price: 119, chilled: false,
-        note: "For patients who don't fully respond to monotherapy. Faster onset of sildenafil + duration of tadalafil.",
-        badge: "Strongest single-dose" },
-      { id: "climax", name: "Climax Combo ODT", sub: "Tadalafil 12 mg + Oxytocin 100 IU · 10 doses", price: 149, chilled: false,
-        note: "Premium tier. Adds oxytocin for emotional/sensory enhancement on top of erection support." },
-    ],
-  },
-  hairloss: {
-    id: "hairloss", name: "Hair loss",
-    tagline: "Slow hair loss and help hair grow back.",
-    description: "Proven hair treatments. Pick what fits you. A doctor makes sure it is safe for you.",
-    icon: Sparkles, accent: "#C89E67", fromPrice: "40",
-    treatments: [
-      { id: "fin", name: "Finasteride 1mg Oral", sub: "30 tablets / month", price: 25, chilled: false,
-        note: "DHT blockade. The gold-standard first-line treatment.", compareAt: 32, comparePeer: "Hims" },
-      { id: "fin-min", name: "Finasteride + Oral Minoxidil", sub: "Fin 1mg + Min 2.5mg · daily", price: 49, chilled: false,
-        note: "Combines DHT blockade with vasodilation. Two pills become one." },
-      { id: "topical-mfk", name: "Hair Restore MFK Topical", sub: "Minoxidil 5% / Fin 0.3% / Ketoconazole 2%", price: 89, chilled: false,
-        note: "Three-agent topical. Avoids systemic absorption of finasteride.", badge: "Most popular topical" },
-      { id: "topical-extreme", name: "Hair Restore Extreme Topical", sub: "Min 5% / Dut 0.1% / Fin 0.1% / Tret 0.01% / Keto 2%", price: 109, chilled: false,
-        note: "Five-in-one. Maximum-strength compound — for patients who've plateaued on simpler regimens." },
-      { id: "topical-combo-cap", name: "Biotin / Fin / Min Capsule", sub: "5 / 1.25 / 2.5 mg · daily", price: 79, chilled: false,
-        note: "Three actives in one daily oral capsule. Simplest possible regimen." },
-    ],
-  },
-  skincare: {
-    id: "skincare", name: "Skin care",
-    tagline: "Clearer, healthier-looking skin.",
-    description: "Doctor-guided skin treatments for aging, acne, and tone — made for your goals.",
-    icon: Leaf, accent: "#C89E67", fromPrice: "100",
-    treatments: [
-      { id: "tret-mild", name: "Tretinoin TAAN Mild", sub: "Tret 0.03% / Azelaic 4% / Niacinamide 4% · 30 g", price: 59, chilled: false,
-        note: "Compounded for tolerability. Three-active complex for texture, tone, and brightening.", badge: "Best for first-timers" },
-      { id: "tret-strong", name: "Tretinoin TAAN Strong", sub: "Tret 0.045% / Azelaic 4% / Niacinamide 4% · 30 g", price: 69, chilled: false,
-        note: "For patients already tolerant to retinoids. Maximum anti-aging strength." },
-      { id: "acne-ultra", name: "Acne Ultra Gel", sub: "Clindamycin 1% / Niacinamide 4% / Tretinoin 0.02%", price: 69, chilled: false,
-        note: "Three-mechanism acne treatment — antimicrobial + anti-inflammatory + retinoid." },
-      { id: "acne-extreme", name: "Acne Extreme Gel", sub: "Clinda / Dapsone / Niacinamide / Tretinoin", price: 79, chilled: false,
-        note: "Four-active formula for moderate-severe inflammatory acne." },
-      { id: "antiaging-vita", name: "Anti-Aging Vita Gel", sub: "Niacinamide 4% / Tretinoin 0.03% / Vitamin C 5%", price: 79, chilled: false,
-        note: "Retinoid + Vitamin C in one stable compound — usually impossible OTC." },
-    ],
-  },
-  sermorelin: {
-    id: "sermorelin", name: "Sermorelin",
-    tagline: "Recover faster. Sleep deeper. Build lean muscle.",
-    description: "Peptide therapy that helps your body make more of its own growth hormone. A doctor reviews your goals and history before anything ships.",
-    icon: Dna, accent: "#C89E67", fromPrice: "149",
-    treatments: [
-      { id: "serm-std", name: "Sermorelin Injections", sub: "5 mL vial (2 mg/mL) · nightly subQ kit", price: 149, chilled: true,
-        note: "Prescription Sermorelin option for a simple, once-daily routine. Subcutaneous injection kit and 1-month supply included.",
-        compareAt: 249, comparePeer: "Hone", badge: "Most prescribed" },
-      { id: "serm-odt", name: "Mint Dissolvable Tablets", sub: "1000 mcg / dose · daily oral dissolve", price: 149, chilled: false,
-        note: "Needle-free alternative that dissolves under the tongue for convenient daily use. Same active ingredient as injectable format.",
-        badge: "Most popular" },
-      { id: "serm-gly", name: "Sermorelin + Glycine Injection", sub: "Enhanced nightly blend · subQ", price: 199, chilled: true,
-        note: "Sermorelin paired with glycine to support deeper sleep architecture and a stronger nighttime GH release.", badge: "Best for sleep" },
-      { id: "serm-hi", name: "Sermorelin High-Dose", sub: "500 mcg / nightly · titrated · subQ", price: 249, chilled: true,
-        note: "For patients who have plateaued on standard dosing. Clinician-titrated with scheduled follow-up." },
-    ],
-  },
-  nad: {
-    id: "nad", name: "NAD+ therapy", planLabel: "NAD+ therapy",
-    tagline: "Recharge your cells. Fight fatigue and brain fog.",
-    description: "NAD+ supports cellular energy, focus, and healthy aging. A doctor tailors the dose and form to you before anything ships.",
-    icon: Zap, accent: "#C89E67", fromPrice: "149",
-    treatments: [
-      { id: "nad-inj", name: "NAD+ Injection", sub: "100 mg / 2–3× weekly · subQ", price: 249, chilled: true,
-        note: "Direct NAD+ restoration for energy metabolism, mental clarity, and cellular repair. The most effective at-home format.",
-        compareAt: 299, comparePeer: "AgelessRx", badge: "Most prescribed" },
-      { id: "nad-hi", name: "NAD+ High-Dose Injection", sub: "200 mg / 2–3× weekly · subQ", price: 349, chilled: true,
-        note: "Accelerated protocol for deeper fatigue, heavy training loads, or longevity optimization.", badge: "Maximum strength" },
-      { id: "nad-spray", name: "NAD+ Nasal Spray", sub: "300 mg/mL · daily", price: 149, chilled: false,
-        note: "Needle-free daily NAD+ support. Gentler intensity than injections and easy to travel with.", badge: "No-needle" },
-    ],
-  },
-  lowt: {
-    id: "lowt", name: "Low energy & hormones",
-    tagline: "Get your energy and drive back.",
-    description: "Care for low testosterone and low energy. Labs when needed. A doctor guides every step.",
-    icon: Droplets, accent: "#C89E67", fromPrice: "99",
-    treatments: [
-      { id: "t-cyp", name: "Testosterone Cypionate", sub: "100–200 mg / weekly · injectable", price: 149, chilled: false,
-        note: "Gold-standard TRT. Clinician-titrated weekly injections with scheduled follow-up labs.", badge: "Most prescribed", compareAt: 199, comparePeer: "Hims" },
-      { id: "enclo", name: "Enclomiphene", sub: "12.5–25 mg / daily · oral", price: 129, chilled: false,
-        note: "Raises endogenous testosterone while preserving fertility. Ideal if you're not ready for exogenous T.", badge: "Fertility-preserving" },
-      { id: "t-cream", name: "Testosterone Cream", sub: "50–100 mg / daily · topical", price: 119, chilled: false,
-        note: "Transdermal application. Steady levels without needles. Compounded for absorption." },
-      { id: "t-hcg", name: "TRT + HCG Stack", sub: "Testosterone cypionate + HCG · weekly", price: 199, chilled: false,
-        note: "Exogenous T with HCG support to maintain testicular function and fertility markers.", badge: "Complete protocol" },
-      { id: "t-boost", name: "Low-T Optimization Pack", sub: "Enclomiphene + Anastrozole PRN · monthly", price: 99, chilled: false,
-        note: "Entry protocol for borderline levels. Oral only. Includes aromatase control as needed." },
-    ],
-  },
-  mentalhealth: {
-    id: "mentalhealth", name: "Mood & focus",
-    tagline: "Feel calmer. Think clearer.",
-    description: "Private help for anxiety, depression, and stress. A doctor checks in and stays with you.",
-    icon: Brain, accent: "#C89E67", fromPrice: "35",
-    treatments: [
-      { id: "sertraline", name: "Sertraline", sub: "25–100 mg / daily · SSRI", price: 39, chilled: false,
-        note: "First-line for depression and anxiety. Broad evidence base, flexible titration.", badge: "Most prescribed", compareAt: 55, comparePeer: "Hims" },
-      { id: "escitalopram", name: "Escitalopram", sub: "5–20 mg / daily · SSRI", price: 39, chilled: false,
-        note: "Cleaner SSRI profile. Often preferred for generalized anxiety with fewer interactions." },
-      { id: "bupropion", name: "Bupropion XL", sub: "150–300 mg / daily · NDRI", price: 49, chilled: false,
-        note: "Activating antidepressant. Strong fit when energy, focus, or sexual side effects are a concern.", badge: "Energy-forward" },
-      { id: "buspirone", name: "Buspirone", sub: "7.5–15 mg / 2–3× daily · anxiolytic", price: 35, chilled: false,
-        note: "Non-sedating anxiety treatment. No dependence risk. Pairs well with SSRIs." },
-      { id: "fluoxetine", name: "Fluoxetine", sub: "10–40 mg / daily · SSRI", price: 35, chilled: false,
-        note: "Long half-life SSRI. Helpful for depression with obsessive features or missed-dose forgiveness." },
-    ],
-  },
-  pcp: {
-    id: "pcp", name: "Your doctor",
-    tagline: "A doctor you can message any day.",
-    description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
-    icon: UserCheck, accent: "#C89E67",     fromPrice: "120",
-    treatments: [
-      { id: "pcp-acute", name: "Spry Primary Care · Acute Insight", sub: "1 visit + anytime messaging for 1 month", price: 120, chilled: false,
-        note: "Comprehensive medical intake, licensed physician consultation, prescription routing if clinically appropriate, and 30 days of direct anytime messaging.", badge: "Most popular", compareAt: 175, comparePeer: "Urgent Care" },
-      { id: "pcp-yearly", name: "Yearly Checkup", sub: "1 visit + full blood work (yearly labs) + anytime messaging", price: 250, chilled: false,
-        note: "Complete annual wellness visit with full blood work (yearly labs: metabolic panel, CBC, lipids, and biomarkers) plus anytime clinician messaging.", badge: "Best value", compareAt: 350, comparePeer: "Traditional PCP" },
-      { id: "pcp-two-acute", name: "Two Adults · Acute Insight", sub: "Spry Primary Care for Two Adults · 1 visit each + anytime messaging", price: 180, chilled: false,
-        note: "Shared household care for two adults. Includes 1 visit per adult and 30 days of anytime messaging for both.", badge: "Two Adults" },
-      { id: "pcp-two-yearly", name: "Two Adults · Yearly Checkups", sub: "Spry Primary Care for Two Adults · 2 visits + full blood work for both", price: 470, chilled: false,
-        note: "Complete annual wellness for two adults with comprehensive yearly labs (blood work for both) plus continuous messaging support.", badge: "Two Adults" },
-      { id: "pcp-monthly-vip", name: "Monthly Doctor-Initiated Visits", sub: "Spry Primary Care at its finest · proactive monthly physician calls", price: 500, chilled: false,
-        note: "Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.", badge: "SpryMD Finest" },
-    ],
-  },
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock Empower Rx History — what a logged-in patient sees in Quick Refills
-// In production: GET https://api.empowerpharmacy.com/v1/patients/{id}/prescriptions
-// Wholesale costs are NEVER exposed client-side; only marginated retail.
-// ─────────────────────────────────────────────────────────────────────────────
-const mockRxHistory = [
-  { rxId: "EMP-294817", name: "Tirzepatide Injection", strength: "8 mg/2 mL · grapeseed oil",
-    sig: "Inject 0.25 mL (10 units) subQ once weekly", lastFilled: "Mar 14, 2026", refills: 5, refillsUsed: 1,
-    price: 279, chilled: true, category: "Weight Loss", icon: Scale, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 28 },
-  { rxId: "EMP-294112", name: "Tadalafil ODT", strength: "6 mg · oral dissolve",
-    sig: "Dissolve one tablet under tongue daily", lastFilled: "Apr 02, 2026", refills: 11, refillsUsed: 0,
-    price: 99, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-291003", name: "Hair Restore MFK Topical", strength: "Minoxidil 5% / Fin 0.3% / Ketoconazole 2% · 60 mL",
-    sig: "Apply 1 mL to scalp twice daily", lastFilled: "Feb 28, 2026", refills: 5, refillsUsed: 2,
-    price: 89, chilled: false, category: "Hair Loss", icon: Sparkles, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 60 },
-  { rxId: "EMP-289445", name: "Tretinoin TAAN Mild Cream", strength: "Tret 0.03% / Azelaic 4% / Niac 4% · 30 g",
-    sig: "Apply pea-sized amount nightly", lastFilled: "Mar 22, 2026", refills: 11, refillsUsed: 1,
-    price: 59, chilled: false, category: "Dermatology", icon: Leaf, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-285332", name: "Sildenafil 50mg", strength: "50 mg · 10 tablets",
-    sig: "Take one tablet 30–60 min before activity", lastFilled: "Apr 18, 2026", refills: 5, refillsUsed: 0,
-    price: 69, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-281109", name: "Methylene Blue Capsule", strength: "10 mg · cognition / mitochondrial support",
-    sig: "Take one capsule each morning", lastFilled: "Mar 30, 2026", refills: 2, refillsUsed: 1,
-    price: 79, chilled: false, category: "Longevity", icon: Zap, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-];
+// Catalog (conditions + plans) lives in ./data/careCatalog.ts.
 
 const rxIconFor = (rx) => {
   const cat = (rx?.category || "").toLowerCase();
@@ -577,113 +428,7 @@ const conditionGraphics = {
   pcp: imgMarketplaceHero,
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Intake schemas
-// ─────────────────────────────────────────────────────────────────────────────
-const intakes = {
-  weightloss: [
-    { key: "height_weight", type: "compound", title: "Tell us your height and weight.", sub: "We'll use this to calculate your BMI and dosing.",
-      fields: [
-        { key: "feet", label: "Feet", type: "number", placeholder: "5" },
-        { key: "inches", label: "Inches", type: "number", placeholder: "10" },
-        { key: "weight", label: "Weight (lbs)", type: "number", placeholder: "210" },
-      ] },
-    { key: "goal", type: "single", title: "What's your goal?", options: ["Lose 10–25 lbs", "Lose 25–50 lbs", "Lose 50–100 lbs", "Lose 100+ lbs", "Maintain after weight loss"] },
-    { key: "diabetes", type: "single", title: "Have you been diagnosed with type 2 diabetes?", options: ["Yes", "No", "Pre-diabetes / borderline A1C"] },
-    { key: "thyroid_history", type: "multi", title: "Do any of these apply to you or close family?", sub: "Required safety screening for GLP-1 therapy.",
-      options: ["Medullary thyroid carcinoma (MTC)", "Multiple endocrine neoplasia type 2 (MEN-2)", "History of pancreatitis", "Active gallbladder disease", "None of the above"],
-      disqualify: ["Medullary thyroid carcinoma (MTC)", "Multiple endocrine neoplasia type 2 (MEN-2)"] },
-    { key: "previous", type: "single", title: "Have you tried weight loss medication before?", options: ["Never", "Yes — GLP-1 (semaglutide / tirzepatide)", "Yes — phentermine or other", "Yes — multiple"] },
-    { key: "preference", type: "single", title: "Injection or oral?", options: ["Injection — strongest results", "Oral / dissolvable — no needles", "Open to either, recommend for me"] },
-  ],
-  ed: [
-    { key: "age", type: "single", title: "What's your age range?", options: ["18–29", "30–39", "40–49", "50–59", "60–69", "70+"] },
-    { key: "frequency", type: "single", title: "How often does ED occur?", options: ["Almost every time", "Most of the time", "Sometimes", "Rarely"] },
-    { key: "onset", type: "single", title: "When did you first notice it?", options: ["Within the last 6 months", "6–24 months ago", "More than 2 years ago"] },
-    { key: "cardiac", type: "multi", title: "Do any of these apply?", sub: "PDE5 inhibitors require cardiovascular screening.",
-      options: ["Heart attack within the last 6 months", "Stroke within the last 6 months", "Currently taking nitrates (nitroglycerin, isosorbide)", "Currently taking riociguat", "Severe heart failure", "None of the above"],
-      disqualify: ["Currently taking nitrates (nitroglycerin, isosorbide)", "Currently taking riociguat", "Heart attack within the last 6 months", "Stroke within the last 6 months"] },
-    { key: "bp", type: "single", title: "Is your blood pressure controlled?", options: ["Yes, normal or controlled on meds", "Borderline / unsure", "No, uncontrolled", "I don't know my BP"] },
-    { key: "preference", type: "single", title: "How would you prefer to take it?", options: ["As needed, before activity", "Daily — I want to be ready anytime", "Fast-melt ODT — no swallowing", "Not sure — recommend for me"] },
-  ],
-  hairloss: [
-    { key: "pattern", type: "single", title: "Where are you losing hair?", options: ["Receding hairline (temples)", "Thinning crown", "Both hairline and crown", "Diffuse thinning all over", "Just monitoring early signs"] },
-    { key: "duration", type: "single", title: "How long has this been happening?", options: ["Less than 1 year", "1–3 years", "3–5 years", "More than 5 years"] },
-    { key: "family", type: "single", title: "Family history of hair loss?", options: ["Yes — father's side", "Yes — mother's side", "Yes — both sides", "No"] },
-    { key: "tried", type: "multi", title: "What have you tried?", options: ["Topical minoxidil (Rogaine)", "Oral finasteride", "Topical finasteride", "Hair vitamins / biotin", "Nothing yet"] },
-    { key: "concerns", type: "single", title: "Concerns about side effects?", options: ["No concerns", "Worried about sexual side effects", "Worried about systemic effects", "Tell me more"] },
-  ],
-  skincare: [
-    { key: "concern", type: "single", title: "What's the primary concern?", options: ["Fine lines, texture, anti-aging", "Active acne or breakouts", "Dark spots / hyperpigmentation", "Dullness, uneven tone", "All of the above"] },
-    { key: "skintype", type: "single", title: "Skin type?", options: ["Oily", "Dry", "Combination", "Sensitive", "Not sure"] },
-    { key: "routine", type: "single", title: "How would you describe your current routine?", options: ["Just soap and water", "Cleanser + moisturizer", "Already use actives (retinol, AHAs)", "Inconsistent"] },
-    { key: "sensitivity", type: "single", title: "Have you used tretinoin or retinol before?", options: ["Yes — tolerated well", "Yes — irritated my skin", "No, never", "Not sure"] },
-    { key: "sun", type: "single", title: "Daily sunscreen use?", options: ["Every day", "Most days", "Sometimes", "Rarely"] },
-  ],
-  sermorelin: [
-    { key: "goal", type: "multi", title: "What do you want sermorelin to help with?", sub: "Select all that apply.",
-      options: ["Faster recovery from training", "Deeper sleep", "Lean muscle / body composition", "Energy and vitality", "Healthy aging"] },
-    { key: "age", type: "single", title: "What's your age range?", options: ["18–29", "30–39", "40–49", "50–59", "60+"] },
-    { key: "screening", type: "multi", title: "Do any of these apply to you?", sub: "Required safety screening for growth-hormone peptide therapy.",
-      options: ["Active cancer diagnosis or treatment", "History of pituitary tumor or brain lesion", "Untreated thyroid disorder", "Type 2 diabetes", "None of the above"],
-      disqualify: ["Active cancer diagnosis or treatment", "History of pituitary tumor or brain lesion"] },
-    { key: "experience", type: "single", title: "Have you used peptide or growth hormone therapy before?",
-      options: ["Never", "Yes — sermorelin or similar peptides", "Yes — HGH", "Currently using something"] },
-    { key: "preference", type: "single", title: "Which treatment format do you prefer?",
-      options: ["Injections — daily subcutaneous kit", "Mint Dissolvable Tablets — needle-free daily ODT", "Sleep-focused blend (with Glycine)", "Not sure — recommend for me"] },
-  ],
-  nad: [
-    { key: "goal", type: "multi", title: "What are you hoping NAD+ helps with?", sub: "Select all that apply.",
-      options: ["Low energy / fatigue", "Brain fog / focus", "Recovery and performance", "Healthy aging / longevity", "General wellness"] },
-    { key: "duration", type: "single", title: "How long have you felt this way?",
-      options: ["Less than 3 months", "3–12 months", "More than a year", "Just optimizing — no specific issue"] },
-    { key: "screening", type: "multi", title: "Do any of these apply to you?", sub: "Required safety screening for NAD+ therapy.",
-      options: ["Active cancer diagnosis or treatment", "Severe kidney or liver disease", "Currently on dialysis", "None of the above"],
-      disqualify: ["Active cancer diagnosis or treatment", "Severe kidney or liver disease", "Currently on dialysis"] },
-    { key: "experience", type: "single", title: "Have you tried NAD+ before?",
-      options: ["Never", "Oral supplements (NMN / NR)", "IV NAD+ at a clinic", "At-home injections"] },
-    { key: "preference", type: "single", title: "How would you prefer to take it?",
-      options: ["Injection — most effective", "Nasal spray — no needles", "Not sure — recommend for me"] },
-  ],
-  lowt: [
-    { key: "symptoms", type: "multi", title: "Which symptoms are you experiencing?", sub: "Select all that apply.",
-      options: ["Low energy / fatigue", "Reduced libido", "Difficulty building muscle", "Brain fog / poor focus", "Mood changes / irritability", "Weight gain around the midsection", "None of the above"] },
-    { key: "labs", type: "single", title: "Have you had testosterone labs in the last 12 months?", options: ["Yes — confirmed low T", "Yes — borderline / low-normal", "Yes — but I don't remember the number", "No — I need labs ordered"] },
-    { key: "age", type: "single", title: "What's your age range?", options: ["18–29", "30–39", "40–49", "50–59", "60–69", "70+"] },
-    { key: "fertility", type: "single", title: "Is preserving fertility important right now?", options: ["Yes — planning children", "Maybe in the next few years", "No — not a concern"] },
-    { key: "prostate", type: "multi", title: "Do any of these apply?", sub: "Required safety screening for testosterone therapy.",
-      options: ["History of prostate cancer", "Active untreated sleep apnea", "Hematocrit above 54%", "Breast cancer history", "I'm not sure I want a full endocrine panel ran to check all of my hormone levels and any other tests that may be relevant to how my hormone functions.", "None of the above"],
-      disqualify: ["History of prostate cancer", "Breast cancer history", "Hematocrit above 54%"] },
-    { key: "preference", type: "single", title: "How would you prefer to treat?", options: ["Weekly injection — most effective", "Daily oral — no needles", "Topical cream", "Not sure — recommend for me"] },
-  ],
-  mentalhealth: [
-    { key: "primary", type: "single", title: "What's your primary concern?", options: ["Anxiety / worry", "Depression / low mood", "Both anxiety and depression", "Stress and burnout", "Not sure — I just don't feel like myself"] },
-    { key: "duration", type: "single", title: "How long have you been feeling this way?", options: ["Less than 2 weeks", "2 weeks – 3 months", "3–12 months", "More than a year"] },
-    { key: "severity", type: "single", title: "How much is this affecting daily life?", options: ["Mild — manageable but annoying", "Moderate — interfering with work or relationships", "Significant — hard to function most days"] },
-    { key: "tried", type: "multi", title: "What have you tried before?",
-      options: ["Talk therapy / counseling", "SSRI or SNRI medication", "Bupropion or Wellbutrin", "Benzodiazepines (Xanax, Ativan)", "Nothing yet", "Other / herbal supplements"] },
-    { key: "crisis", type: "multi", title: "Safety check — do any of these apply right now?", sub: "We take this seriously. Honest answers help us care for you safely.",
-      options: ["Thoughts of harming yourself", "Plan or intent to act on those thoughts", "Recent psychiatric hospitalization", "None of the above"],
-      disqualify: ["Thoughts of harming yourself", "Plan or intent to act on those thoughts", "Recent psychiatric hospitalization"] },
-    { key: "preference", type: "single", title: "What matters most in a medication?", options: ["Proven for anxiety", "Proven for depression", "Less sexual side effects / more energy", "Something gentle to start", "Not sure — recommend for me"] },
-  ],
-  pcp: [
-    { key: "reason", type: "single", title: "Why are you looking for a new primary care doctor?", options: ["I don't currently have a PCP", "My current doctor is hard to reach", "I want everything in one digital place", "I need help coordinating specialists", "Moving / changing insurance"] },
-    { key: "needs", type: "multi", title: "What do you need from your PCP?",
-      options: ["Annual wellness visits", "Lab ordering and review", "Chronic condition management", "Referrals to specialists", "Same-day messaging for acute issues", "Prescription renewals"] },
-    { key: "conditions", type: "multi", title: "Any ongoing conditions we should know about?",
-      options: ["High blood pressure", "High cholesterol", "Diabetes / prediabetes", "Thyroid disorder", "Asthma / allergies", "None of the above"] },
-    { key: "household", type: "single", title: "Who needs coverage?", options: ["Just me", "Me and a partner / two adults", "Not sure yet"] },
-    { key: "preference", type: "single", title: "Which care tier fits best?", options: [
-      "Spry Primary Care · Acute Insight ($120)",
-      "Yearly Checkup with full blood work ($250)",
-      "Two Adults · Acute Insight ($180)",
-      "Two Adults · Yearly Checkups with blood work ($470)",
-      "Monthly Doctor-Initiated Visits ($500)",
-      "Not sure — recommend for me"
-    ] },
-  ],
-};
+// Intake schemas live in ./data/careCatalog.ts (shared with unit tests and /checkout).
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Atoms
@@ -713,7 +458,7 @@ const Tag = ({ children, color, fg }) => (
 );
 
 const LogoMark = ({ color = C.ink, size = 22, style = {}, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className} style={style}>
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className} style={style} aria-hidden="true">
     <path d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     <path d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z" fill={C.accent} stroke="#000" strokeWidth="1.2" strokeLinejoin="round" paintOrder="stroke" />
     <path d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15" fill="none" stroke="#000" strokeWidth="0.4" strokeLinecap="round" />
@@ -721,14 +466,29 @@ const LogoMark = ({ color = C.ink, size = 22, style = {}, className = "" }) => (
   </svg>
 );
 
-const Logo = ({ color = C.ink, size = 22 }) => (
-  <div className="flex items-center gap-2.5">
-    <LogoMark color={color} size={size} />
-    <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span style={{ fontWeight: 500, opacity: 0.55 }}>MD</span>
-    </span>
-  </div>
-);
+const Logo = ({ color = C.ink, size = 22, onClick, className = "" }) => {
+  const mark = (
+    <>
+      <LogoMark color={color} size={size} />
+      <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
+        Spry<span className="spry-md">MD</span>
+      </span>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`focus-ring flex items-center gap-2.5 rounded transition-opacity hover:opacity-80 ${className}`.trim()}
+        aria-label="SpryMD home"
+      >
+        {mark}
+      </button>
+    );
+  }
+  return <div className={`flex items-center gap-2.5 ${className}`.trim()}>{mark}</div>;
+};
 
 const inputStyle = { background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 12, fontSize: 15, color: C.ink, fontFamily: fonts.body };
 
@@ -762,7 +522,7 @@ const DeliveryBar = ({ onClick, glass = false }) => {
       onClick={onClick}
       className={`w-full px-4 md:px-12 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${onClick ? "focus-ring" : ""}`}
       style={{
-        background: glass ? "rgba(9,14,11,0.38)" : C.paper,
+        background: glass ? "rgba(9,14,11,0.58)" : C.paper,
         borderBottom: `1px solid ${C.line}`,
         color: C.ink,
         cursor: onClick ? "pointer" : "default",
@@ -823,7 +583,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
     <header className="relative w-full px-6 md:px-12 py-5"
       style={{
         borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.12)" : C.lineSoft}`,
-        background: glass ? "rgba(9,14,11,0.28)" : undefined,
+        background: glass ? "rgba(9,14,11,0.62)" : undefined,
         backdropFilter: glass ? "blur(12px)" : undefined,
       }}>
       <div className="flex items-center justify-between gap-3">
@@ -839,7 +599,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
           >
             {menuOpen ? <X size={18} strokeWidth={1.75} /> : <Menu size={18} strokeWidth={1.75} />}
           </button>
-          <button onClick={() => goNav("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
+          <Logo color={fg} onClick={() => goNav("landing")} />
         </div>
         <nav className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
@@ -994,7 +754,7 @@ const StickyVisitBar = ({ go }) => {
       }}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between gap-3" style={{ paddingTop: 10, paddingBottom: 10 }}>
-        <Logo size={18} />
+        <Logo size={18} onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <span className="spry-desktop-only" style={{ fontSize: 13, color: C.inkSoft }}>
             Private visits, reviewed by licensed doctors.
@@ -1018,48 +778,17 @@ const StickyVisitBar = ({ go }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
+const openCareEdu = (go, conditionId) => {
+  const slug = conditionToEduSlug[conditionId];
+  if (slug) go("page", { slug });
+  else go("intake", { condition: conditionId });
+};
+
+const carePageUrl = (slug) => `/care/${encodeURIComponent(slug)}`;
+const isKnownCarePageSlug = (slug) => Boolean(slug && (careEduPages[slug] || footerPages[slug]));
+const SHOP_STACK_SLUGS = new Set(["supplements", "devices", "sleep"]);
+
 const Landing = ({ go }) => {
-  // Hover-preview of the next page (intake) — fades in the longer you hover.
-  const [preview, setPreview] = useState(null); // { id, rect }
-  const [previewLive, setPreviewLive] = useState(false);
-  const [intakeOverlay, setIntakeOverlay] = useState(null); // condition id shown in front of landing
-  const previewHideTimer = useRef(null);
-
-  const canHoverPreview = () =>
-    typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover)").matches;
-
-  const clearPreviewTimer = () => {
-    if (previewHideTimer.current) { clearTimeout(previewHideTimer.current); previewHideTimer.current = null; }
-  };
-  const showPreview = (id, e) => {
-    if (!canHoverPreview()) return;
-    clearPreviewTimer();
-    setPreview({ id, rect: e.currentTarget.getBoundingClientRect() });
-    setPreviewLive(true);
-  };
-  const keepPreview = clearPreviewTimer;
-  const releasePreview = () => {
-    clearPreviewTimer();
-    previewHideTimer.current = setTimeout(() => {
-      setPreviewLive(false);
-      previewHideTimer.current = setTimeout(() => setPreview(null), 300);
-    }, 200);
-  };
-  useEffect(() => () => clearPreviewTimer(), []);
-
-  const openIntakeOverlay = () => {
-    if (!preview) return;
-    setIntakeOverlay(preview.id);
-    clearPreviewTimer();
-    setPreviewLive(false);
-    setPreview(null);
-  };
-  const overlayGo = (target, p = {}) => {
-    setIntakeOverlay(null);
-    if (target === "landing") return; // closing the overlay keeps you on this page
-    go(target, p);
-  };
-
   return (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
@@ -1068,14 +797,19 @@ const Landing = ({ go }) => {
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.42) 0%, rgba(9,14,11,0.12) 50%, rgba(9,14,11,0.04) 100%)" }}
+        style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.55) 0%, rgba(9,14,11,0.38) 50%, rgba(9,14,11,0.30) 100%)" }}
+      />
+      {/* Darken the bright sky behind the centered SpryMD wordmark */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 75% 42% at 50% 12%, rgba(9,14,11,0.72) 0%, rgba(9,14,11,0.38) 45%, transparent 72%)" }}
       />
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.14 }}>
         <SignalField density={28} interactive={false} />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
         <div
-          className="spry-rise display"
+          className="spry-brand-in display"
           style={{
             animationDelay: "0.02s",
             fontSize: "clamp(46px, 7.2vw, 82px)",
@@ -1084,6 +818,7 @@ const Landing = ({ go }) => {
             color: C.ink,
             textAlign: "center",
             marginBottom: 40,
+            opacity: 1,
           }}
         >
           <div className="inline-flex items-center justify-center gap-3 md:gap-4">
@@ -1166,9 +901,7 @@ const Landing = ({ go }) => {
                 return (
                   <button
                     key={cond.id}
-                    onClick={() => go("intake", { condition: cond.id })}
-                    onMouseEnter={(e) => showPreview(cond.id, e)}
-                    onMouseLeave={releasePreview}
+                    onClick={() => openCareEdu(go, cond.id)}
                     className="spry-tile focus-ring text-left rounded-2xl p-4"
                     style={{ background: C.bg }}
                   >
@@ -1179,13 +912,13 @@ const Landing = ({ go }) => {
                       <div className="min-w-0">
                         <div style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{cond.name}</div>
                         {cond.fromPrice && (
-                          <div style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo</div>
+                          <div style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo if approved</div>
                         )}
                       </div>
                     </div>
                     <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45, marginTop: 10 }}>{cond.tagline}</p>
                     <span className="inline-flex items-center gap-1.5 mt-3" style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>
-                      Start intake <span className="spry-tile-arrow"><ArrowRight size={14} /></span>
+                      Learn more <span className="spry-tile-arrow"><ArrowRight size={14} /></span>
                     </span>
                   </button>
                 );
@@ -1213,7 +946,7 @@ const Landing = ({ go }) => {
           {[
             { n: "01", t: "Choose the type of care you want to receive.", d: "Then answer a short, private intake questionnaire that focuses on any contraindications to that particular treatment." },
             { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case to make sure the treatment is safe." },
-            { n: "03", t: "Treatment shipped", d: "Once treatment is approved, your prescription will be filled by our pharmacy, discreetly packaged and shipped within 24 hours for next-day delivery." },
+            { n: "03", t: "Treatment shipped", d: "Once treatment is approved, your prescription is filled by our pharmacy partner, discreetly packaged, and shipped to your door. Timing depends on medication and carrier — qualifying Tennessee orders may be eligible for next-business-day delivery." },
           ].map((s) => (
             <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
@@ -1247,10 +980,8 @@ const Landing = ({ go }) => {
             <ConditionCard
               key={cond.id}
               condition={cond}
-              onClick={() => go("intake", { condition: cond.id })}
+              onClick={() => openCareEdu(go, cond.id)}
               delay={i * 0.06}
-              onHoverStart={(e) => showPreview(cond.id, e)}
-              onHoverEnd={releasePreview}
             />
           ))}
         </div>
@@ -1293,135 +1024,65 @@ const Landing = ({ go }) => {
                 <div className="rounded-lg flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
                   <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
                 </div>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Doctor care online</span>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Spry Primary Care</span>
               </div>
             </div>
             <div className="p-7 md:p-8 relative z-10">
-              <div className="flex items-baseline justify-between gap-2">
-                <div>
-                  <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Plans from</div>
-                  <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
-                    $120<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
-                  </div>
-                </div>
-                <Tag color={C.signalDim} fg={C.accent}>5 Care Tiers</Tag>
+              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Choose a plan</div>
+              <div className="display" style={{ fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: 600, color: C.ink, lineHeight: 1.2, marginTop: 8 }}>
+                Online Provider Visits start at $100
               </div>
-
-              <div className="mt-6 space-y-3.5">
-                {/* Tier 1: Acute Insight */}
-                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
-                  <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Spry Primary Care · Acute Insight</span>
-                        <Tag color={C.signalDim} fg={C.accent}>Most popular</Tag>
-                      </div>
-                      <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>$120 · 1 visit + anytime messaging for 1 month</p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                {[
+                  {
+                    id: "pcp-acute",
+                    t: "Acute Insight — meant for acute issues/complaints",
+                    d: "$100 · 1 visit + anytime messaging for 1 month",
+                    two: "$180 · Acute Insight for two adults",
+                    tag: "Most popular",
+                    span: false,
+                  },
+                  {
+                    id: "pcp-yearly",
+                    t: "Yearly Checkup",
+                    d: "$250 · 1 visit + full blood work (yearly labs) + anytime messaging",
+                    two: "$470 · Yearly Checkups for two adults",
+                    tag: "Best value",
+                    span: false,
+                  },
+                  {
+                    id: "pcp-monthly",
+                    t: "Monthly Doctor-Initiated Visits",
+                    d: "$500 · Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.",
+                    two: null,
+                    tag: null,
+                    span: true,
+                  },
+                ].map((tier) => (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => go("intake", { condition: "pcp", treatmentId: tier.id })}
+                    className={`text-left rounded-2xl p-4 transition-all focus:outline-none ${tier.span ? "col-span-2" : ""}`}
+                    style={{
+                      background: C.bgAlt,
+                      border: `1px solid ${tier.tag ? C.accent : C.line}`,
+                      boxShadow: tier.tag ? `0 0 0 1px ${C.accent}33` : "none",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{tier.t}</span>
+                      {tier.tag && <Tag color={C.signalDim} fg={C.accent}>{tier.tag}</Tag>}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => go("intake", { condition: "pcp", initialAnswers: { preference: "Spry Primary Care · Acute Insight ($120)" } })}
-                      className="focus-ring rounded-full px-4 py-2 text-xs font-semibold transition-all inline-flex items-center gap-1.5 flex-shrink-0 hover:scale-[1.02]"
-                      style={{ background: C.accent, color: C.bg }}
-                    >
-                      <span>Select · $120</span>
-                      <ArrowRight size={13} strokeWidth={2.5} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Tier 2: Yearly Checkup */}
-                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
-                  <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Yearly Checkup</span>
-                        <Tag color={C.signalDim} fg={C.accent}>Best value</Tag>
-                      </div>
-                      <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>$250 · 1 visit + full blood work (yearly labs) + anytime messaging</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => go("intake", { condition: "pcp", initialAnswers: { preference: "Yearly Checkup with full blood work ($250)" } })}
-                      className="focus-ring rounded-full px-4 py-2 text-xs font-semibold transition-all inline-flex items-center gap-1.5 flex-shrink-0 hover:scale-[1.02]"
-                      style={{ background: C.paper, color: C.ink, border: `1px solid ${C.accent}` }}
-                    >
-                      <span>Select · $250</span>
-                      <ArrowRight size={13} strokeWidth={2.5} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Tier 3: Two Adults */}
-                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
-                  <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
-                    <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Spry Primary Care Cost for Two Adults</span>
-                    <Tag color="rgba(255,255,255,0.08)" fg={C.inkSoft}>Couples & Household</Tag>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3 pt-2.5" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-                    <div className="p-3 rounded-lg flex flex-col justify-between gap-2.5" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
-                      <div>
-                        <div className="flex items-baseline justify-between">
-                          <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Acute Insight</span>
-                          <span className="display" style={{ fontSize: 16, fontWeight: 600, color: C.accent }}>$180</span>
-                        </div>
-                        <p style={{ fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 1.35 }}>2 adults · 1 visit each + anytime messaging for 1 month</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => go("intake", { condition: "pcp", initialAnswers: { household: "Me and a partner / two adults", preference: "Two Adults · Acute Insight ($180)" } })}
-                        className="focus-ring rounded-lg px-3 py-1.5 text-xs font-semibold transition-all inline-flex items-center justify-center gap-1 w-full hover:opacity-90"
-                        style={{ background: "rgba(200, 158, 103, 0.15)", color: C.accent, border: `1px solid ${C.accent}` }}
-                      >
-                        <span>Select · $180</span>
-                        <ArrowRight size={12} />
-                      </button>
-                    </div>
-
-                    <div className="p-3 rounded-lg flex flex-col justify-between gap-2.5" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
-                      <div>
-                        <div className="flex items-baseline justify-between">
-                          <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Yearly Checkups</span>
-                          <span className="display" style={{ fontSize: 16, fontWeight: 600, color: C.accent }}>$470</span>
-                        </div>
-                        <p style={{ fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 1.35 }}>2 adults · full blood work (yearly labs) + anytime messaging</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => go("intake", { condition: "pcp", initialAnswers: { household: "Me and a partner / two adults", preference: "Two Adults · Yearly Checkups with blood work ($470)" } })}
-                        className="focus-ring rounded-lg px-3 py-1.5 text-xs font-semibold transition-all inline-flex items-center justify-center gap-1 w-full hover:opacity-90"
-                        style={{ background: "rgba(200, 158, 103, 0.15)", color: C.accent, border: `1px solid ${C.accent}` }}
-                      >
-                        <span>Select · $470</span>
-                        <ArrowRight size={12} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tier 4: Monthly Doctor-Initiated Visits */}
-                <div className="p-4 rounded-xl transition-all" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.lineSoft}` }}>
-                  <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Monthly Doctor-Initiated Visits</span>
-                        <Tag color={C.signalDim} fg={C.accent}>SpryMD Finest</Tag>
-                      </div>
-                      <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45 }}>
-                        $500 · Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => go("intake", { condition: "pcp", initialAnswers: { preference: "Monthly Doctor-Initiated Visits ($500)" } })}
-                      className="focus-ring rounded-full px-4 py-2 text-xs font-semibold transition-all inline-flex items-center gap-1.5 flex-shrink-0 hover:scale-[1.02]"
-                      style={{ background: C.paper, color: C.ink, border: `1px solid ${C.accent}` }}
-                    >
-                      <span>Select · $500</span>
-                      <ArrowRight size={13} strokeWidth={2.5} />
-                    </button>
-                  </div>
-                </div>
+                    <span style={{ fontSize: 13, color: C.inkSoft, display: "block", lineHeight: 1.5 }}>{tier.d}</span>
+                    {tier.two && (
+                      <span style={{ fontSize: 12, color: C.muted, display: "block", lineHeight: 1.45, marginTop: 8 }}>{tier.two}</span>
+                    )}
+                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 600, display: "inline-block", marginTop: 12 }}>
+                      Start intake →
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -1471,20 +1132,19 @@ const Landing = ({ go }) => {
         </div>
         <div className="md:col-span-6">
           <div className="rounded-3xl overflow-hidden" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
-            <div className="relative">
+            <div>
               <img
                 src={imgFounder}
                 alt="Dr. William Merrick, DO — founder of SpryMD"
                 className="w-full"
-                style={{ display: "block", aspectRatio: "1 / 0.92", objectFit: "cover", objectPosition: "center 32%" }}
+                style={{ display: "block", width: "100%", height: "auto", objectFit: "contain" }}
               />
-              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 140, background: "linear-gradient(180deg, transparent, rgba(9,14,11,0.92))" }} />
-              <div className="absolute inset-x-0 bottom-0 p-6 md:p-7">
+              <div className="px-6 md:px-7 pt-5 pb-1">
                 <div className="display" style={{ fontSize: 24, fontWeight: 600, color: C.ink }}>Dr. William Merrick, DO</div>
                 <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 2 }}>Founder · Practicing hospitalist · Tennessee</div>
               </div>
             </div>
-            <div className="p-6 md:p-7">
+            <div className="p-6 md:p-7 pt-4">
               <p className="display" style={{ fontSize: 17, lineHeight: 1.5, color: C.inkSoft, fontStyle: "italic" }}>
                 &ldquo;The doctor reviewing your case has heard it all before — and took an oath to
                 help, not to judge.&rdquo;
@@ -1585,10 +1245,10 @@ const Landing = ({ go }) => {
       <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.18 }}>
         <SignalField density={28} interactive={false} />
       </div>
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.10) 0%, rgba(9,14,11,0.42) 74%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(9,14,11,0.48) 0%, rgba(9,14,11,0.62) 74%)" }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24 }}>
-          Spry<span style={{ color: C.accent }}>MD</span>
+        <div className="display" style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 700, marginBottom: 24, opacity: 1 }}>
+          Spry<span className="spry-md">MD</span>
         </div>
         <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 52px)", lineHeight: 1.12, fontWeight: 650, color: C.ink }}>
           A real doctor is with you every step.
@@ -1608,45 +1268,17 @@ const Landing = ({ go }) => {
     </section>
 
     <Footer go={go} />
-
-    {preview && (
-      <IntakePreview
-        key={preview.id}
-        conditionId={preview.id}
-        anchorRect={preview.rect}
-        live={previewLive}
-        onKeep={keepPreview}
-        onRelease={releasePreview}
-        onOpen={openIntakeOverlay}
-      />
-    )}
-
-    {intakeOverlay && (
-      <div
-        className="fixed inset-0 anim-fadeIn"
-        style={{ zIndex: 98, background: "rgba(16,11,6,0.55)", backdropFilter: "blur(3px)" }}
-        onClick={() => setIntakeOverlay(null)}
-      >
-        <div
-          className="absolute overflow-y-auto overscroll-contain"
-          style={{ inset: "min(4vw, 36px)", borderRadius: 18, background: C.bg, boxShadow: "0 40px 100px rgba(9,14,11,0.45)", border: `1px solid ${C.line}` }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Intake key={intakeOverlay} conditionId={intakeOverlay} go={overlayGo} />
-        </div>
-      </div>
-    )}
   </div>
   );
 };
 
-const ConditionCard = ({ condition, onClick, delay, onHoverStart, onHoverEnd }) => {
+const ConditionCard = ({ condition, onClick, delay }) => {
   const [hover, setHover] = useState(false);
-  
+
   return (
     <button onClick={onClick}
-      onMouseEnter={(e) => { setHover(true); onHoverStart?.(e); }}
-      onMouseLeave={() => { setHover(false); onHoverEnd?.(); }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       className="anim-fadeUp focus-ring text-left p-7 md:p-8 transition-all duration-300 group relative overflow-hidden"
       style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
       <div className="absolute inset-y-0 left-0 w-px transition-all" style={{ background: C.accent, opacity: hover ? 1 : 0, boxShadow: hover ? `0 0 24px ${C.accent}` : "none" }} />
@@ -1658,71 +1290,12 @@ const ConditionCard = ({ condition, onClick, delay, onHoverStart, onHoverEnd }) 
       <h3 className="display relative" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
       <p className="relative" style={{ fontSize: 14, color: C.inkSoft, marginBottom: 20, lineHeight: 1.5 }}>{condition.tagline}</p>
       <div className="flex items-center justify-between relative" style={{ borderTop: `1px solid ${C.lineSoft}`, paddingTop: 14 }}>
-        <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>From</span>
+        <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>From · if approved</span>
         <span className="display" style={{ fontSize: 22, fontWeight: 600, color: C.ink }}>
           ${condition.fromPrice}<span style={{ fontSize: 12, color: C.muted, fontWeight: 500, marginLeft: 4 }}>/mo</span>
         </span>
       </div>
     </button>
-  );
-};
-
-// Floating preview of the next page (the treatment's intake questionnaire).
-// Opacity ramps up the longer you hover; mouse-out fades it away; clicking it
-// opens the real intake in front of the page you were hovering on.
-const IntakePreview = ({ conditionId, anchorRect, live, onKeep, onRelease, onOpen }) => {
-  const [ramp, setRamp] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setRamp(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
-  const condition = conditions[conditionId];
-  const W = 380, H = 500, M = 16, BAR = 36;
-  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-  let left = anchorRect.right + M;
-  if (left + W > vw - M) left = anchorRect.left - M - W;
-  if (left < M) left = Math.min(Math.max(M, anchorRect.left + anchorRect.width / 2 - W / 2), Math.max(M, vw - M - W));
-  const top = Math.min(Math.max(M, anchorRect.top + anchorRect.height / 2 - H / 2), Math.max(M, vh - M - H));
-  const scale = W / 1280;
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={`Open ${condition.name} intake`}
-      onMouseEnter={onKeep}
-      onMouseLeave={onRelease}
-      onClick={onOpen}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
-      className="fixed cursor-pointer focus-ring"
-      style={{
-        left, top, width: W, height: H, zIndex: 95,
-        opacity: live && ramp ? 1 : 0,
-        transition: live ? "opacity 2.8s linear" : "opacity 0.25s ease",
-        borderRadius: 14, overflow: "hidden",
-        background: C.bg, border: `1px solid ${C.line}`,
-        boxShadow: "0 24px 64px rgba(24,16,8,0.3)",
-      }}
-    >
-      <div className="flex items-center justify-between px-3" style={{ height: BAR, background: C.bgAlt, borderBottom: `1px solid ${C.lineSoft}` }}>
-        <div className="flex items-center gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="rounded-full" style={{ width: 8, height: 8, background: C.line }} />
-          ))}
-        </div>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, fontWeight: 600 }}>
-          {condition.name} intake
-        </span>
-        <span style={{ fontSize: 11, fontWeight: 700, color: C.accent }}>Click to open</span>
-      </div>
-      <div style={{ width: W, height: H - BAR, overflow: "hidden" }}>
-        <div aria-hidden="true" style={{ width: 1280, height: (H - BAR) / scale, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
-          <Intake key={conditionId} conditionId={conditionId} go={() => {}} />
-        </div>
-      </div>
-    </div>
   );
 };
 
@@ -1770,7 +1343,7 @@ const Footer = ({ go }) => (
   <footer className="px-6 md:px-12 py-12" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
       <div>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
           Modern medicine, made for men and women. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
         </p>
@@ -1823,9 +1396,121 @@ const RichText = ({ text }) => {
   );
 };
 
+const FaqBlock = ({ items }) => {
+  const [open, setOpen] = useState(0);
+  return (
+    <div className="space-y-2" style={{ marginTop: 4 }}>
+      {items.map((item, ii) => {
+        const isOpen = open === ii;
+        return (
+          <div key={ii} style={{ border: `1px solid ${C.lineSoft}`, borderRadius: 12, background: C.bgAlt, overflow: "hidden" }}>
+            <button
+              type="button"
+              className="focus-ring w-full text-left flex items-start justify-between gap-4 px-4 py-3.5"
+              onClick={() => setOpen(isOpen ? -1 : ii)}
+              aria-expanded={isOpen}
+              style={{ background: "transparent", border: "none", color: C.ink }}
+            >
+              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>{item.q}</span>
+              <span className="mono flex-shrink-0" style={{ fontSize: 18, color: C.accent, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
+            </button>
+            {isOpen && (
+              <div className="px-4 pb-4" style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft }}>
+                <RichText text={item.a} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const ContactFormInline = () => {
+  const [status, setStatus] = useState("idle"); // idle | loading | sent | error
+  const [error, setError] = useState("");
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setStatus("loading");
+    const fd = new FormData(e.currentTarget);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: String(fd.get("name") || ""),
+          email: String(fd.get("email") || ""),
+          topic: String(fd.get("topic") || "General"),
+          message: String(fd.get("message") || ""),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        setError(data.message || "We couldn't send that. Email support@sprymd.ai.");
+        setStatus("error");
+        return;
+      }
+      setStatus("sent");
+      e.currentTarget.reset();
+    } catch {
+      setError("Network error. Please email support@sprymd.ai.");
+      setStatus("error");
+    }
+  };
+
+  if (status === "sent") {
+    return (
+      <div className="pt-4 space-y-3" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+        <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink }}>Message sent</h2>
+        <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.55 }}>
+          Thanks — we got it. For emergencies call 911. You can also reach us at support@sprymd.ai.
+        </p>
+        <Btn type="button" variant="secondary" onClick={() => setStatus("idle")}>Send another</Btn>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+      <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
+      <form className="space-y-4" onSubmit={onSubmit}>
+        {[
+          { id: "name", label: "Name", type: "text" },
+          { id: "email", label: "Email", type: "email" },
+          { id: "topic", label: "Topic", type: "text" },
+        ].map((f) => (
+          <Field key={f.id} label={f.label}>
+            <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
+          </Field>
+        ))}
+        <Field label="Message">
+          <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
+        </Field>
+        {error && <p role="alert" style={{ fontSize: 14, color: C.danger || "#CE6B5D" }}>{error}</p>}
+        <Btn type="submit" icon={Send} disabled={status === "loading"}>
+          {status === "loading" ? "Sending…" : "Send message"}
+        </Btn>
+      </form>
+    </div>
+  );
+};
+
 const FooterPage = ({ slug, go, cartCount, user }) => {
-  const page = footerPages[slug];
+  const page = careEduPages[slug] || footerPages[slug];
   const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+
+  useEffect(() => {
+    if (!page) return;
+    applyHead({
+      pageTitle: page.title,
+      description: page.tagline || page.title,
+      path: careEduPages[slug] ? `/care/${slug}` : `/`,
+      noindex: !careEduPages[slug],
+    });
+  }, [page, slug]);
+
   if (!page || (!FEATURES.enableShop && shopStackSlugs.has(slug))) {
     return (
       <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
@@ -1880,20 +1565,30 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
             style={{ fontSize: 11, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", background: "transparent", border: "none", padding: 0 }}>
             ← SpryMD
           </button>
-          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase", marginBottom: 14 }}>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: careEduPages[slug] ? "none" : "uppercase", marginBottom: 14, fontWeight: 700 }}>
             {page.eyebrow}
           </div>
           <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.02, fontWeight: 600, color: C.ink, marginBottom: 16 }}>
             {page.title}
           </h1>
-          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: 28 }}>
+          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: page.highlights?.length ? 22 : 28 }}>
             {page.tagline}
           </p>
+          {page.highlights?.length > 0 && (
+            <ul className="space-y-3 mb-8" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {page.highlights.map((item, ii) => (
+                <li key={ii} className="flex gap-3" style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>
+                  <Check size={16} color={C.accent} strokeWidth={2.25} style={{ marginTop: 3, flexShrink: 0 }} />
+                  <span><RichText text={item} /></span>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="flex flex-wrap items-center gap-3">
             <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
             {page.fromPrice && (
-              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.12em", color: C.muted, textTransform: "uppercase" }}>
-                From ${page.fromPrice}/mo
+              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: C.muted, textTransform: "uppercase" }}>
+                From ${page.fromPrice}/mo if approved · visit fee at checkout
               </span>
             )}
           </div>
@@ -1940,38 +1635,50 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
                       </ol>
                     );
                   }
+                  if (block.type === "table") {
+                    return (
+                      <div key={bi} className="overflow-x-auto" style={{ border: `1px solid ${C.line}`, borderRadius: 14 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                          <thead>
+                            <tr style={{ background: C.bgAlt }}>
+                              {block.headers.map((h, hi) => (
+                                <th key={hi} className="text-left px-4 py-3" style={{ color: C.ink, fontWeight: 650, borderBottom: `1px solid ${C.line}` }}>
+                                  {h}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {block.rows.map((row, ri) => (
+                              <tr key={ri}>
+                                {row.map((cell, ci) => (
+                                  <td key={ci} className="px-4 py-3 align-top" style={{ color: ci === 0 ? C.ink : C.inkSoft, fontWeight: ci === 0 ? 600 : 400, borderBottom: ri < block.rows.length - 1 ? `1px solid ${C.lineSoft}` : "none" }}>
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  }
+                  if (block.type === "faq") {
+                    return <FaqBlock key={bi} items={block.items} />;
+                  }
                   return null;
                 })}
               </div>
             </div>
           ))}
 
-          {slug === "contact" && (
-            <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
-              <form
-                className="space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  alert("Thanks — this demo form does not send yet. Email support@sprymd.ai.");
-                }}
-              >
-                {[
-                  { id: "name", label: "Name", type: "text" },
-                  { id: "email", label: "Email", type: "email" },
-                  { id: "topic", label: "Topic", type: "text" },
-                ].map((f) => (
-                  <Field key={f.id} label={f.label}>
-                    <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
-                  </Field>
-                ))}
-                <Field label="Message">
-                  <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
-                </Field>
-                <Btn type="submit" icon={Send}>Send message</Btn>
-              </form>
+          {page.conditionId && (
+            <div className="pt-2">
+              <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
             </div>
           )}
+
+          {slug === "contact" && <ContactFormInline />}
         </div>
       </section>
       <Footer go={go} />
@@ -2014,8 +1721,17 @@ const authThemes = {
 };
 
 const SignIn = ({ go, returnTo, onAuthSuccess }) => {
-  const [mode, setMode] = useState("signin");
-  const [email, setEmail] = useState("");
+  const opsReturn =
+    typeof returnTo === "string" &&
+    (returnTo === "/ops" || returnTo.startsWith("/ops/") || returnTo.startsWith("/ops?"));
+  const [mode, setMode] = useState(opsReturn ? "signup" : "signin");
+  const [email, setEmail] = useState(() => {
+    try {
+      return localStorage.getItem("sprymd_guest_checkout_email") || "";
+    } catch {
+      return "";
+    }
+  });
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
@@ -2034,8 +1750,10 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   const T = authThemes[theme];
   const isLight = theme === "light";
 
+  // Adults only: the intake already asks, but the account is the hard gate.
+  const dobProblem = mode === "signup" ? dobError(dob) : null;
   const canSubmit = email.includes("@") && password.length >= 8 &&
-    (mode === "signin" || (name.trim().length > 0 && dob.length >= 8));
+    (mode === "signin" || (name.trim().length > 0 && dob.length >= 8 && !dobProblem));
 
   const toggleTheme = () => {
     setTheme((prev) => {
@@ -2052,8 +1770,12 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  // Login launches only after the slide-to-confirm completes (not via Enter/submit click).
+  const handleFormSubmit = (e) => {
     e.preventDefault();
+  };
+
+  const launchAuth = async () => {
     if (!canSubmit || loading) return;
     setLoading(true);
     setError("");
@@ -2077,11 +1799,30 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
       if (mode === "signup") {
         onAuthSuccess(hydrateUser(result.profile));
         if (result.needsEmailConfirm) {
-          setNotice("Account created. Check your email to confirm — you can keep using your account now.");
+          setNotice(
+            opsReturn
+              ? "Account created — confirm the email link, then sign in to open Ops. Clinician APIs need a live Supabase session."
+              : "Account created. Check your email to confirm — you can keep using your account now.",
+          );
+          if (opsReturn) {
+            setMode("signin");
+            setLoading(false);
+            return;
+          }
         }
       } else {
         onAuthSuccess(hydrateUser(result.profile));
       }
+
+      // Ops APIs require a Supabase Bearer token — local-only accounts cannot call /api/ops/*.
+      if (opsReturn && result.provider === "local") {
+        setError(
+          "Ops needs a clinical Supabase login. Create the account again (or confirm email), then sign in with the same password.",
+        );
+        setLoading(false);
+        return;
+      }
+
       go(returnTo || "dashboard", { justLoggedIn: true });
     } catch (err) {
       resolveAnim();
@@ -2114,9 +1855,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: T.bg, color: T.ink, transition: "background 0.25s ease, color 0.25s ease" }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${T.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home">
-          <Logo color={T.ink} />
-        </button>
+        <Logo color={T.ink} onClick={() => go("landing")} />
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -2140,16 +1879,22 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 
           <div className="mb-8">
             <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {opsReturn
+                ? (mode === "signin" ? "Staff sign in" : "Staff account")
+                : (mode === "signin" ? "Sign in" : "Create account")}
             </p>
             <p style={{ fontSize: 15, color: T.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
-              {mode === "signin"
-                ? "Open your care plan, prescriptions, and orders."
-                : "One email. Your care plan stays private to you."}
+              {opsReturn
+                ? (mode === "signin"
+                  ? "Use your allowlisted clinician email to open the ops queue."
+                  : "First login after cutover: create your account with the allowlisted staff email, then open Ops.")
+                : (mode === "signin"
+                  ? "Open your care plan, prescriptions, and orders."
+                  : "One email. Your care plan stays private to you.")}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-4">
             {mode === "signup" && (
               <>
                 <div>
@@ -2157,8 +1902,11 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full legal name" className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
                 </div>
                 <div>
-                  <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Date of birth</label>
-                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="focus-ring w-full p-4" style={themedInput} disabled={loading} />
+                  <label htmlFor="signup-dob" className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Date of birth</label>
+                  <input id="signup-dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={new Date().toISOString().slice(0, 10)}
+                    aria-invalid={!!dobProblem} aria-describedby={dobProblem ? "signup-dob-error" : undefined}
+                    className="focus-ring w-full p-4" style={{ ...themedInput, borderColor: dobProblem ? C.destructive : T.line }} disabled={loading} />
+                  {dobProblem && <p id="signup-dob-error" role="alert" style={{ fontSize: 13, color: C.destructive, marginTop: 8, lineHeight: 1.45 }}>{dobProblem}</p>}
                 </div>
               </>
             )}
@@ -2168,7 +1916,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
             </div>
             <div>
               <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: T.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={themedInput} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
+              <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); if (error) setError(""); }} placeholder="At least 8 characters" className="focus-ring w-full p-4" style={themedInput} autoComplete={mode === "signin" ? "current-password" : "new-password"} disabled={loading} />
             </div>
 
             {error && (
@@ -2184,10 +1932,20 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
               </div>
             )}
 
-            <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
-              {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                       : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
-            </Btn>
+            <SlideToConfirm
+              key={mode}
+              label={mode === "signin" ? "Slide to sign in" : "Slide to create account"}
+              loadingLabel={mode === "signin" ? "Signing in…" : "Creating account…"}
+              disabled={!canSubmit}
+              loading={loading}
+              onConfirm={launchAuth}
+              accent={C.accent}
+              accentDeep={C.accentDeep}
+              trackBg={T.inputBg}
+              trackBorder={T.line}
+              ink={T.ink}
+              muted={T.muted}
+            />
 
             <div className="flex items-center gap-2 justify-center pt-1">
               <Lock size={11} color={T.muted} />
@@ -2210,17 +1968,11 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Quick Refills — Empower medication database query for this patient
+// Soft-launch refill UI — request clinician review; no fake Empower API or card capture.
 // ─────────────────────────────────────────────────────────────────────────────
 const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   const [filter, setFilter] = useState("All");
-  const [loaded, setLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 700);
-    return () => clearTimeout(t);
-  }, []);
 
   const rxs = user?.rxHistory || [];
   const categories = ["All", ...Array.from(new Set(rxs.map((r) => r.category)))];
@@ -2237,7 +1989,7 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded"><Logo /></button>
+        <Logo onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <span style={{ fontSize: 13, color: C.inkSoft }}>
             <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.08em" }}>HI,</span>{" "}
@@ -2260,71 +2012,67 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
           </h1>
           <div className="flex items-center gap-4 flex-wrap">
             <p style={{ fontSize: 15, color: C.inkSoft, maxWidth: 580, lineHeight: 1.55 }}>
-              Pulled live from the Empower medication database. Select what you need refilled — we'll e-prescribe and ship the same day. Your health record updates automatically.
+              Request a refill for medicine already on your SpryMD chart. A clinician confirms appropriateness first — then we coordinate payment and pharmacy shipping. Soft launch does not auto-charge cards here.
             </p>
           </div>
           <div className="mt-6 flex items-center gap-3 flex-wrap">
-            <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} active Rx</Tag>
-            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: SpryMD Clinician</Tag>
-            <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />gethealthy.com synced</Tag>
+            <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} on file</Tag>
+            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Clinician review before ship</Tag>
+            <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />No auto-charge at request</Tag>
           </div>
         </div>
       </section>
 
-      <section className="px-6 md:px-12 py-4 sticky top-0 z-10" style={{ background: C.bg, borderTop: `1px solid ${C.lineSoft}`, borderBottom: `1px solid ${C.lineSoft}` }}>
-        <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
-            {categories.map((cat) => (
-              <button key={cat} onClick={() => setFilter(cat)}
-                className="focus-ring px-4 py-2 rounded-full transition-all whitespace-nowrap"
-                style={{ background: filter === cat ? C.ink : "transparent", color: filter === cat ? C.paper : C.ink,
-                  border: `1px solid ${filter === cat ? C.ink : C.line}`, fontSize: 13, fontWeight: 500 }}>
-                {cat}
-              </button>
-            ))}
-          </div>
-          <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search prescriptions..."
-            className="focus-ring px-4 py-2 rounded-full text-sm"
-            style={{ background: C.bgAlt, border: `1px solid ${C.line}`, color: C.ink, minWidth: 200, fontFamily: fonts.body }} />
-        </div>
-      </section>
-
-      {!loaded && (
-        <section className="px-6 md:px-12 py-20">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center mb-6">
-              <RefreshCw size={32} color={C.accent} strokeWidth={1.5} className="anim-spin" />
+      {rxs.length > 0 && (
+        <section className="px-6 md:px-12 py-4 sticky top-0 z-10" style={{ background: C.bg, borderTop: `1px solid ${C.lineSoft}`, borderBottom: `1px solid ${C.lineSoft}` }}>
+          <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
+              {categories.map((cat) => (
+                <button key={cat} onClick={() => setFilter(cat)}
+                  className="focus-ring px-4 py-2 rounded-full transition-all whitespace-nowrap"
+                  style={{ background: filter === cat ? C.ink : "transparent", color: filter === cat ? C.paper : C.ink,
+                    border: `1px solid ${filter === cat ? C.ink : C.line}`, fontSize: 13, fontWeight: 500 }}>
+                  {cat}
+                </button>
+              ))}
             </div>
-            <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 8 }}>
-              Querying Empower medication database…
-            </h3>
-            <p style={{ fontSize: 13, color: C.muted, fontFamily: fonts.mono, letterSpacing: "0.05em" }}>
-              GET /api/v1/patients/{user.email.split("@")[0]}/prescriptions
-            </p>
+            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search prescriptions..."
+              className="focus-ring px-4 py-2 rounded-full text-sm"
+              style={{ background: C.bgAlt, border: `1px solid ${C.line}`, color: C.ink, minWidth: 200, fontFamily: fonts.body }} />
           </div>
         </section>
       )}
 
-      {loaded && (
-        <section className="px-6 md:px-12 py-8 pb-32">
-          <div className="max-w-7xl mx-auto space-y-3">
-            {filtered.map((rx, i) => (
-              <RxRow key={rx.rxId} rx={rx} inCart={isInCart(rx.rxId)}
-                onAdd={() => addRefill(rx)} onRemove={() => removeRefill(rx.rxId)} delay={i * 0.04} />
-            ))}
-            {filtered.length === 0 && (
-              <div className="text-center py-20"><p style={{ color: C.muted, fontSize: 15 }}>No prescriptions match those filters.</p></div>
-            )}
-          </div>
-        </section>
-      )}
+      <section className="px-6 md:px-12 py-8 pb-32">
+        <div className="max-w-7xl mx-auto space-y-3">
+          {rxs.length === 0 ? (
+            <div className="text-center py-16 px-4 rounded-3xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <p style={{ color: C.ink, fontSize: 18, fontWeight: 500, marginBottom: 8 }}>No prescriptions on file yet</p>
+              <p style={{ color: C.inkSoft, fontSize: 14, lineHeight: 1.55, maxWidth: 420, margin: "0 auto 24px" }}>
+                Start a clinician visit to get a plan reviewed. After a prescription is approved and filled, you can request refills here.
+              </p>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your visit</Btn>
+            </div>
+          ) : (
+            <>
+              {filtered.map((rx, i) => (
+                <RxRow key={rx.rxId} rx={rx} inCart={isInCart(rx.rxId)}
+                  onAdd={() => addRefill(rx)} onRemove={() => removeRefill(rx.rxId)} delay={i * 0.04} />
+              ))}
+              {filtered.length === 0 && (
+                <div className="text-center py-20"><p style={{ color: C.muted, fontSize: 15 }}>No prescriptions match those filters.</p></div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
       {cartCount > 0 && (
         <button onClick={() => go("refill-checkout")}
           className="anim-fadeUp focus-ring fixed bottom-6 right-6 px-6 py-4 rounded-full flex items-center gap-3 shadow-lg transition-transform hover:-translate-y-0.5"
           style={{ background: C.accent, color: "#fff", zIndex: 30 }}>
           <Send size={16} strokeWidth={2} />
-          <span style={{ fontSize: 14, fontWeight: 500 }}>E-Prescribe {cartCount} · ${cartTotal.toFixed(2)}</span>
+          <span style={{ fontSize: 14, fontWeight: 500 }}>Request review · {cartCount} · ~${cartTotal.toFixed(2)}</span>
           <ArrowRight size={16} />
         </button>
       )}
@@ -2387,42 +2135,25 @@ const RxRow = ({ rx, inCart, onAdd, onRemove, delay }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Refill checkout — separate flow (Stripe → gethealthy.com → Empower e-Rx)
+// Soft-launch refill request — no fake card capture; clinician confirms before pay/ship.
 // ─────────────────────────────────────────────────────────────────────────────
 const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
-  const [card, setCard] = useState("");
-  const [exp, setExp] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [zip, setZip] = useState("");
-  const [shipping, setShipping] = useState("standard");
   const [processing, setProcessing] = useState(false);
+  const [note, setNote] = useState("");
 
-  const formatCard = (v) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-  const formatExp = (v) => {
-    const digits = v.replace(/\D/g, "").slice(0, 4);
-    if (digits.length <= 2) return digits;
-    return digits.slice(0, 2) + " / " + digits.slice(2);
-  };
-
-  const hasChilled = refillCart.some((i) => i.chilled);
   const subtotal = refillCart.reduce((s, i) => s + i.price, 0);
-  const shippingCost = shipping === "overnight" ? (hasChilled ? 41 : 33) : (hasChilled ? 20 : 15);
-  const tax = subtotal * 0.0875;
-  const total = subtotal + shippingCost + tax;
-
-  const canSubmit = card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5;
 
   const submit = () => {
-    if (!canSubmit) return;
+    if (!refillCart.length || processing) return;
     setProcessing(true);
-    setTimeout(() => onComplete(), 1500);
+    setTimeout(() => onComplete(), 600);
   };
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <button onClick={() => go("refills")} className="focus-ring rounded-full p-1 hover:opacity-60">
           <X size={20} color={C.ink} strokeWidth={1.5} />
         </button>
@@ -2431,72 +2162,43 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
       <div className="px-6 md:px-12 py-12">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
           <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Refill Checkout</span>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Refill request</span>
             <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 8, color: C.ink }}>
-              E-prescribe & <Mark>ship</Mark>.
+              Ask for a <Mark>clinician review</Mark>.
             </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55, maxWidth: 460 }}>
-              Once paid, we transmit your prescriptions to Empower Pharmacy and update your record at gethealthy.com automatically.
+            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55, maxWidth: 480 }}>
+              Soft launch does not charge a card on this screen. Submit the request, a Tennessee-licensed clinician confirms it is appropriate, then we coordinate payment and pharmacy shipping with you — clearly, before anything ships.
             </p>
 
-            <div className="mb-8">
-              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 12, fontWeight: 500 }}>Shipping</label>
-              <div className="grid grid-cols-2 gap-3">
-                {[{ id: "standard", label: "2nd Day Express", days: hasChilled ? "1–2 days · refrigerated" : "1–2 days", price: hasChilled ? 20 : 15 },
-                  { id: "overnight", label: "Eligible TN next-business-day", days: hasChilled ? "After fill · refrigerated" : "After approval and fill", price: hasChilled ? 41 : 33 }].map((s) => (
-                  <button key={s.id} onClick={() => setShipping(s.id)}
-                    className="focus-ring text-left p-4 rounded-xl transition-all"
-                    style={{ background: shipping === s.id ? C.primary : C.paper, color: shipping === s.id ? C.paper : C.ink,
-                      border: `1px solid ${shipping === s.id ? C.primary : C.line}` }}>
-                    <div style={{ fontSize: 14, fontWeight: 500 }}>{s.label}</div>
-                    <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>{s.days}</div>
-                    <div className="display" style={{ fontSize: 18, fontWeight: 500, marginTop: 8 }}>${s.price}</div>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-4">
-                <DeliveryDetailsCard />
-              </div>
-            </div>
-
             <div className="space-y-5">
-              <Field label="Cardholder name">
-                <input value={user.name} readOnly className="focus-ring w-full p-4" style={{ ...inputStyle, opacity: 0.7 }} />
+              <Field label="Account email">
+                <input value={user.email} readOnly className="focus-ring w-full p-4" style={{ ...inputStyle, opacity: 0.7 }} />
               </Field>
-              <div>
-                <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Card information</label>
-                <div className="rounded-xl overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                  <input value={card} onChange={(e) => setCard(formatCard(e.target.value))} placeholder="1234 1234 1234 1234"
-                    className="focus-ring w-full p-4"
-                    style={{ ...inputStyle, border: "none", borderBottom: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                  <div className="flex">
-                    <input value={exp} onChange={(e) => setExp(formatExp(e.target.value))} placeholder="MM / YY"
-                      className="focus-ring flex-1 p-4"
-                      style={{ ...inputStyle, border: "none", borderRight: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                    <input value={cvc} onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="CVC"
-                      className="focus-ring flex-1 p-4"
-                      style={{ ...inputStyle, border: "none", borderRadius: 0, background: "transparent" }} />
-                  </div>
-                </div>
-              </div>
-              <Field label="ZIP / Postal code">
-                <input value={zip} onChange={(e) => setZip(e.target.value.slice(0, 10))} placeholder="38201" className="focus-ring w-full p-4" style={inputStyle} />
+              <Field label="Optional note for your clinician">
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value.slice(0, 500))}
+                  placeholder="Dose change, side effects, timing preferences…"
+                  rows={4}
+                  className="focus-ring w-full p-4"
+                  style={{ ...inputStyle, resize: "vertical", minHeight: 110 }}
+                />
               </Field>
 
-              <Btn onClick={submit} disabled={!canSubmit || processing} size="lg" className="w-full" icon={!processing ? Send : null}>
-                {processing ? <span className="anim-pulse">Processing...</span> : `Pay $${total.toFixed(2)} & e-prescribe`}
+              <Btn onClick={submit} disabled={!refillCart.length || processing} size="lg" className="w-full" icon={!processing ? Send : null}>
+                {processing ? <span className="anim-pulse">Submitting…</span> : "Submit refill request"}
               </Btn>
 
               <div className="flex items-center justify-center gap-2">
                 <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>STRIPE · NCPDP-COMPLIANT E-RX</span>
+                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>NO CARD CHARGE ON THIS STEP</span>
               </div>
             </div>
           </div>
 
           <div>
             <div className="p-8 rounded-3xl sticky top-8" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 24 }}>Refill summary</h3>
+              <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 24 }}>Request summary</h3>
 
               <div className="space-y-4 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
                 {refillCart.map((rx) => {
@@ -2517,14 +2219,13 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
               </div>
 
               <div className="space-y-2 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
-                <Row label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
-                <Row label={`Shipping (${shipping === "overnight" ? "Overnight" : "2-Day"}${hasChilled ? " · refrigerated" : ""})`} value={`$${shippingCost.toFixed(2)}`} />
-                <Row label="Tax (est.)" value={`$${tax.toFixed(2)}`} />
+                <Row label="Estimated med total (if approved)" value={`$${subtotal.toFixed(2)}`} />
+                <Row label="Charged today" value="$0.00" />
               </div>
 
               <div className="flex items-baseline justify-between">
-                <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>Total</span>
-                <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
+                <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>Due now</span>
+                <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>$0</span>
               </div>
 
               <div className="mt-6 p-4 rounded-xl" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
@@ -2533,7 +2234,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
                   <div>
                     <div style={{ fontSize: 12, color: C.ink, fontWeight: 500, marginBottom: 4 }}>What happens next</div>
                     <div style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.5 }}>
-                      Health record updated at gethealthy.com → e-Rx transmitted to Empower → discreet shipment within {shipping === "overnight" ? "24 hours" : "48 hours"}.
+                      Clinician reviews your chart → we confirm payment with you → pharmacy fulfills and ships discreetly. Eligible Tennessee orders may qualify for next-business-day delivery after approval and fill.
                     </div>
                   </div>
                 </div>
@@ -2546,8 +2247,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Refill Success — animated webhook + e-prescribe pipeline
+// Soft-launch refill success — request queued, not “meds on the way”
 // ─────────────────────────────────────────────────────────────────────────────
 const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const [stage, setStage] = useState(0);
@@ -2555,9 +2255,9 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   useEffect(() => {
     const stages = [
       { delay: 0, stage: 0 },
-      { delay: 1200, stage: 1 },
-      { delay: 2600, stage: 2 },
-      { delay: 4000, stage: 3 },
+      { delay: 900, stage: 1 },
+      { delay: 1800, stage: 2 },
+      { delay: 2700, stage: 3 },
     ];
     const timers = stages.map((s) => setTimeout(() => setStage(s.stage), s.delay));
     return () => timers.forEach(clearTimeout);
@@ -2568,13 +2268,13 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const steps = [
     { title: "Refill request recorded", sub: "Saved to your SpryMD account · pending clinician confirmation", icon: Lock },
     { title: "Chart flagged for review", sub: "A clinician will confirm appropriateness before pharmacy release", icon: FileText },
-    { title: "Queued for fulfillment", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} will release after approval`, icon: Send },
+    { title: "Payment & fulfillment next", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} — we confirm payment with you only after approval`, icon: Send },
   ];
 
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
@@ -2585,10 +2285,10 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
               {stage >= 3 ? <Check size={32} color={C.paper} strokeWidth={2} /> : <RefreshCw size={28} color={C.primary} strokeWidth={1.75} className="anim-spin" />}
             </div>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>
-              {stage >= 3 ? "Refill complete" : "Processing your refill..."}
+              {stage >= 3 ? "Request submitted" : "Queuing your request…"}
             </span>
             <h1 className="display" style={{ fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 16 }}>
-              {stage >= 3 ? <>Your meds are <Mark>on the way</Mark>.</> : <>Hang tight, <Mark>working...</Mark></>}
+              {stage >= 3 ? <>We&rsquo;ll <Mark>confirm next</Mark>.</> : <>Hang tight, <Mark>saving…</Mark></>}
             </h1>
           </div>
 
@@ -2623,17 +2323,17 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
               <div className="rounded-2xl p-6 mb-6" style={{ background: C.primary, color: C.paper }}>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div>
-                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Order #SR-29481</span>
+                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Refill request</span>
                     <div className="display" style={{ fontSize: 24, fontWeight: 500, marginTop: 4 }}>
-                      ${total.toFixed(2)} · {refillCart.length} prescription{refillCart.length > 1 ? "s" : ""}
+                      ~${total.toFixed(2)} · {refillCart.length} item{refillCart.length > 1 ? "s" : ""} · $0 charged today
                     </div>
                   </div>
                   <Tag color="rgba(255,255,255,0.1)" fg={C.paper}>
-                    <Truck size={10} style={{ display: "inline", marginRight: 4 }} />Tracking sent to email
+                    <Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Pending clinician review
                   </Tag>
                 </div>
                 <p style={{ fontSize: 13, color: "rgba(248,244,234,0.75)", lineHeight: 1.55 }}>
-                  Empower will dispense and ship within 24–48 hours. You'll get tracking once the package leaves the facility. Refrigerated items ship in insulated cold-chain packaging.
+                  Nothing ships until a clinician approves and you confirm payment. Questions? Email support@sprymd.ai — we aim to reply within one business day.
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 flex-wrap">
@@ -2893,56 +2593,83 @@ const Account = ({ user, go, onSignOut, onUpdateUser }) => {
 const Dashboard = Account;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Safety panels — shown the moment a self-harm or cardiac answer is selected
+// ─────────────────────────────────────────────────────────────────────────────
+const CrisisPanel = ({ compact = false }) => (
+  <div role="alert" aria-live="assertive" data-testid="crisis-panel" className="rounded-2xl"
+    style={{ background: "rgba(206,107,93,0.12)", border: `1px solid ${C.destructive}`, padding: compact ? 16 : 24 }}>
+    <div className="flex items-start gap-3">
+      <AlertCircle size={22} strokeWidth={1.75} color={C.destructive} style={{ flexShrink: 0, marginTop: 2 }} />
+      <div>
+        <p style={{ fontSize: compact ? 15 : 17, fontWeight: 600, color: C.ink, lineHeight: 1.4 }}>
+          If you are in danger or thinking about harming yourself, get help right now.
+        </p>
+        <p style={{ fontSize: 14, color: C.inkSoft, marginTop: 8, lineHeight: 1.55 }}>
+          Call or text <strong style={{ color: C.ink }}>{CRISIS_LINE_NUMBER}</strong> (Suicide &amp; Crisis Lifeline, 24/7, free and confidential),
+          or call <strong style={{ color: C.ink }}>{EMERGENCY_NUMBER}</strong> if you may act on these thoughts. SpryMD is not an emergency service
+          and cannot start medication online for this — a clinician needs to talk with you first.
+        </p>
+        <div className="flex flex-wrap gap-2 mt-4">
+          <a href={`tel:${CRISIS_LINE_NUMBER}`} className="spry-btn spry-btn--primary focus-ring inline-flex items-center gap-2" style={{ padding: "10px 16px", fontSize: 14, textDecoration: "none" }}>
+            Call {CRISIS_LINE_NUMBER}
+          </a>
+          <a href={`sms:${CRISIS_LINE_NUMBER}`} className="spry-btn spry-btn--secondary focus-ring inline-flex items-center gap-2" style={{ padding: "10px 16px", fontSize: 14, textDecoration: "none" }}>
+            Text {CRISIS_LINE_NUMBER}
+          </a>
+          <a href={`tel:${EMERGENCY_NUMBER}`} className="spry-btn spry-btn--secondary focus-ring inline-flex items-center gap-2" style={{ padding: "10px 16px", fontSize: 14, textDecoration: "none" }}>
+            Call {EMERGENCY_NUMBER}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const EmergencyNote = ({ children }) => (
+  <div role="note" data-testid="emergency-note" className="flex items-start gap-3 rounded-2xl p-4"
+    style={{ background: "rgba(217,164,65,0.10)", border: `1px solid ${C.warn}` }}>
+    <AlertCircle size={18} strokeWidth={1.75} color={C.warn} style={{ flexShrink: 0, marginTop: 2 }} />
+    <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55 }}>{children}</p>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Intake
 // ─────────────────────────────────────────────────────────────────────────────
-const Intake = ({ conditionId, initialAnswers = {}, go }) => {
+const Intake = ({ conditionId, treatmentId, go, persist = true }) => {
   const condition = conditions[conditionId];
-  const questions = intakes[conditionId];
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState(initialAnswers || {});
+  const steps = buildIntakeSteps(conditionId);
+  const [saved] = useState(() => (persist ? loadIntakeProgress(conditionId) : null));
+  const [step, setStep] = useState(saved?.step ?? 0);
+  const [answers, setAnswers] = useState(() => ({
+    ...(saved?.answers || {}),
+    ...(treatmentId ? { treatmentId } : {}),
+  }));
   const [direction, setDirection] = useState("forward");
+  const [resumed, setResumed] = useState(!!saved && saved.step > 0);
 
-  const totalSteps = 1 + questions.length;
-  const isConsentsStep = step === 0;
-  const isLast = step === totalSteps - 1;
-  const current = isConsentsStep ? null : questions[step - 1];
-  const value = current ? answers[current.key] : null;
+  useEffect(() => {
+    if (persist) saveIntakeProgress({ conditionId, step, answers });
+  }, [persist, conditionId, step, answers]);
 
-  const canAdvance = (() => {
-    if (isConsentsStep) {
-      return !!answers.consentTelehealth && !!answers.consentCashPay && !!answers.consentHipaa;
-    }
-    if (!current) return false;
-    if (current.type === "single") return !!value;
-    if (current.type === "multi") return Array.isArray(value) && value.length > 0;
-    if (current.type === "compound") return current.fields.every((f) => answers[f.key]);
-    return false;
-  })();
+  const isLast = step === steps.length - 1;
+  const current = steps[step];
+  const value = answers[current.key];
+  const canAdvance = canAdvanceStep(current, answers);
+  const eligibilityBlock = current.type === "eligibility" ? eligibilityBlockReason(answers) : null;
+  const disqualifiersHere = stepDisqualifiers(current, answers);
+  const crisisHere = stepCrisisHits(current, answers);
+  const urgentHere = stepUrgentHits(current, answers);
 
   const handleAdvance = () => {
     if (!canAdvance) return;
-    if (isLast) {
-      let disqualified = null;
-      questions.forEach((q) => {
-        if (q.disqualify && Array.isArray(answers[q.key])) {
-          const hit = answers[q.key].find((a) => q.disqualify.includes(a));
-          if (hit) disqualified = hit;
-        }
-      });
-      const finalAnswers = {
-        ...answers,
-        consents: {
-          telehealthConsent: !!answers.consentTelehealth,
-          cashPayAgreement: !!answers.consentCashPay,
-          hipaaConsent: !!answers.consentHipaa,
-          timestamp: new Date().toISOString(),
-        },
-      };
-      go("plan", { condition: conditionId, answers: finalAnswers, disqualified });
-    } else {
+    if (!isLast) {
       setDirection("forward");
       setStep(step + 1);
+      return;
     }
+    const disqualifier = findDisqualifier(steps, answers);
+    go("plan", { condition: conditionId, answers, disqualified: disqualifier?.option ?? null, safety: safetyFlags(steps, answers) });
   };
 
   const handleBack = () => {
@@ -2950,29 +2677,35 @@ const Intake = ({ conditionId, initialAnswers = {}, go }) => {
     else { setDirection("back"); setStep(step - 1); }
   };
 
-  const setAnswer = (key, val) => setAnswers((a) => ({ ...a, [key]: val }));
-  const progress = ((step + 1) / totalSteps) * 100;
+  const startOver = () => {
+    clearIntakeProgress(conditionId);
+    setAnswers(treatmentId ? { treatmentId } : {});
+    setDirection("back");
+    setStep(0);
+    setResumed(false);
+  };
 
-  // Reassure the patient: this is fast. ~20 seconds per remaining question.
-  const remainingSeconds = (totalSteps - step) * 20;
-  const timeLeftLabel = isLast
-    ? "Last question"
-    : remainingSeconds <= 60
-      ? "Under a minute left"
-      : `Just ${Math.ceil(remainingSeconds / 60)} minutes left`;
+  const setAnswer = (key, val) => setAnswers((a) => ({ ...a, [key]: val }));
+  const progress = ((step + 1) / steps.length) * 100;
+  const timeLeft = timeLeftLabel(step, steps.length);
+
+  const optionStyle = (selected) => ({
+    background: selected ? C.primary : C.paper, color: selected ? C.bg : C.ink,
+    border: `1px solid ${selected ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500,
+  });
 
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <div className="text-right">
             <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em", display: "block" }}>
-              {String(step + 1).padStart(2, "0")} / {String(totalSteps).padStart(2, "0")}
+              {String(step + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
             </span>
-            <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>{timeLeftLabel}</span>
+            <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>{timeLeft}</span>
           </div>
-          <button onClick={() => go("landing")} className="focus-ring rounded-full p-1 hover:opacity-60 transition-opacity">
+          <button onClick={() => go("landing")} aria-label="Close intake and return home" className="focus-ring rounded-full p-1 hover:opacity-60 transition-opacity">
             <X size={20} color={C.ink} strokeWidth={1.5} />
           </button>
         </div>
@@ -2998,64 +2731,70 @@ const Intake = ({ conditionId, initialAnswers = {}, go }) => {
 
       <div className="flex-1 flex items-start md:items-center justify-center px-6 md:px-12 py-12 md:py-16">
         <div key={step} className={direction === "forward" ? "anim-slideRight" : "anim-slideLeft"} style={{ width: "100%", maxWidth: 640 }}>
-          {isConsentsStep ? (
+          {resumed && (
+            <div data-testid="intake-resumed" className="flex flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-3 mb-6"
+              style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
+              <span style={{ fontSize: 13, color: C.inkSoft }}>Picked up where you left off.</span>
+              <button type="button" onClick={startOver} className="focus-ring rounded" style={{ fontSize: 13, color: C.accent, fontWeight: 600 }}>Start over</button>
+            </div>
+          )}
+
+          <div className="mb-8">
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>{condition.name}</span>
+            <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.1, fontWeight: 400, color: C.ink, marginTop: 12 }}>{current.title}</h2>
+            {current.sub && <p style={{ fontSize: 15, color: C.inkSoft, marginTop: 12, lineHeight: 1.55 }}>{current.sub}</p>}
+          </div>
+
+          {current.type === "eligibility" && (
             <div className="space-y-6">
               <div>
-                <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>
-                  {condition.name} · Mandatory Onboarding Consents
-                </span>
-                <h2 className="display" style={{ fontSize: "clamp(26px, 4vw, 38px)", lineHeight: 1.15, fontWeight: 400, color: C.ink, marginTop: 12 }}>
-                  Tennessee Telehealth, Cash-Pay & Privacy Agreement
-                </h2>
-                <p style={{ fontSize: 14, color: C.inkSoft, marginTop: 12, lineHeight: 1.6 }}>
-                  Under Tennessee Department of Health telehealth regulations and our direct-to-consumer model, please review and actively agree to the following mandatory terms to begin your intake.
-                </p>
+                <label htmlFor="intake-state" className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                  State where you are physically located right now
+                </label>
+                <select id="intake-state" value={answers[ELIGIBILITY_STATE_KEY] || ""} onChange={(e) => setAnswer(ELIGIBILITY_STATE_KEY, e.target.value)}
+                  className="focus-ring w-full p-4"
+                  style={{ ...inputStyle, borderRadius: 16, fontSize: 16, appearance: "auto" }}>
+                  <option value="">Select a state</option>
+                  {US_STATES.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+                </select>
               </div>
+              <fieldset>
+                <legend className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8 }}>Are you 18 or older?</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[ADULT_YES, ADULT_NO].map((opt) => {
+                    const selected = answers[ELIGIBILITY_ADULT_KEY] === opt;
+                    return (
+                      <button key={opt} type="button" aria-pressed={selected} onClick={() => setAnswer(ELIGIBILITY_ADULT_KEY, opt)}
+                        className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all" style={optionStyle(selected)}>
+                        <span>{opt}</span>
+                        {selected && <Check size={14} strokeWidth={3} color={C.bg} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+              {eligibilityBlock && (
+                <div role="alert" data-testid="eligibility-block" className="rounded-2xl p-5" style={{ background: C.paper, border: `1px solid ${C.warn}` }}>
+                  <p style={{ fontSize: 15, color: C.ink, lineHeight: 1.55 }}>{eligibilityBlock}</p>
+                  <div className="mt-4">
+                    <Btn onClick={() => go("landing")} variant="secondary">Return home</Btn>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
-              <div className="space-y-4 rounded-2xl p-5" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                {/* 1. Tennessee Telehealth Consent */}
-                <label className="flex items-start gap-3.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={!!answers.consentTelehealth}
-                    onChange={(e) => setAnswer("consentTelehealth", e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded text-[#C89E67] focus:ring-[#C89E67]"
-                  />
-                  <span style={{ fontSize: 13, color: C.ink, lineHeight: 1.55 }}>
-                    <strong>Tennessee Telehealth Informed Consent:</strong> I consent to receive asynchronous clinical evaluation by a Tennessee-licensed physician. I understand that SpryMD is not an emergency room or acute crisis service. In an acute emergency, I will dial 911 immediately.
-                  </span>
-                </label>
-
-                {/* 2. Direct Cash-Pay Agreement */}
-                <label className="flex items-start gap-3.5 cursor-pointer pt-3" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-                  <input
-                    type="checkbox"
-                    checked={!!answers.consentCashPay}
-                    onChange={(e) => setAnswer("consentCashPay", e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded text-[#C89E67] focus:ring-[#C89E67]"
-                  />
-                  <span style={{ fontSize: 13, color: C.ink, lineHeight: 1.55 }}>
-                    <strong>100% Direct Cash-Pay Agreement:</strong> I understand that SpryMD is strictly self-pay. No insurance claims (commercial, Medicare, Medicaid) are billed or routed through third-party RCM networks. I am solely responsible for consultation and medication charges.
-                  </span>
-                </label>
-
-                {/* 3. HIPAA & Terms */}
-                <label className="flex items-start gap-3.5 cursor-pointer pt-3" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-                  <input
-                    type="checkbox"
-                    checked={!!answers.consentHipaa}
-                    onChange={(e) => setAnswer("consentHipaa", e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded text-[#C89E67] focus:ring-[#C89E67]"
-                  />
-                  <span style={{ fontSize: 13, color: C.ink, lineHeight: 1.55 }}>
-                    <strong>Notice of Privacy Practices & Terms:</strong> I have reviewed and agree to the <a href="/terms" target="_blank" style={{ color: C.accent, textDecoration: "underline" }}>Terms of Service</a>, <a href="/privacy" target="_blank" style={{ color: C.accent, textDecoration: "underline" }}>Privacy Policy</a>, and <a href="/npp" target="_blank" style={{ color: C.accent, textDecoration: "underline" }}>Notice of Privacy Practices (NPP)</a>.
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between pt-4">
-                <button onClick={handleBack} className="focus-ring inline-flex items-center gap-2 px-4 py-2 rounded-full transition-opacity hover:opacity-60" style={{ color: C.inkSoft, fontSize: 14 }}>
-                  <ArrowLeft size={16} strokeWidth={1.75} />Back
+          {current.type === "single" && (
+            <div className="space-y-3" role="group" aria-label={current.title}>
+              {current.options.map((opt) => (
+                <button key={opt} type="button" aria-pressed={value === opt} onClick={() => setAnswer(current.key, opt)}
+                  className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all" style={optionStyle(value === opt)}>
+                  <span>{opt}</span>
+                  <div className="rounded-full flex items-center justify-center"
+                    style={{ width: 22, height: 22, border: `1.5px solid ${value === opt ? C.paper : C.line}`,
+                      background: value === opt ? C.paper : "transparent" }}>
+                    {value === opt && <Check size={12} strokeWidth={3} color={C.primary} />}
+                  </div>
                 </button>
                 <Btn onClick={handleAdvance} disabled={!canAdvance} size="lg" icon={ArrowRight}>
                   Accept & Begin Intake
@@ -3070,76 +2809,157 @@ const Intake = ({ conditionId, initialAnswers = {}, go }) => {
                 {current.sub && <p style={{ fontSize: 15, color: C.inkSoft, marginTop: 12, lineHeight: 1.55 }}>{current.sub}</p>}
               </div>
 
-              {current.type === "single" && (
-                <div className="space-y-3">
-                  {current.options.map((opt) => (
-                    <button key={opt} onClick={() => setAnswer(current.key, opt)}
-                      className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
-                      style={{ background: value === opt ? C.primary : C.paper, color: value === opt ? C.bg : C.ink,
-                        border: `1px solid ${value === opt ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
-                      <span>{opt}</span>
-                      <div className="rounded-full flex items-center justify-center"
-                        style={{ width: 22, height: 22, border: `1.5px solid ${value === opt ? C.paper : C.line}`,
-                          background: value === opt ? C.paper : "transparent" }}>
-                        {value === opt && <Check size={12} strokeWidth={3} color={C.primary} />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {current.type === "multi" && (
-                <div className="space-y-3">
-                  {current.options.map((opt) => {
-                    const checked = Array.isArray(value) && value.includes(opt);
-                    return (
-                      <button key={opt}
-                        onClick={() => {
-                          const cur = Array.isArray(value) ? value : [];
-                          let next;
-                          if (opt.toLowerCase().includes("none of the above")) next = checked ? [] : [opt];
-                          else {
-                            const filtered = cur.filter((c) => !c.toLowerCase().includes("none of the above"));
-                            next = checked ? filtered.filter((c) => c !== opt) : [...filtered, opt];
-                          }
-                          setAnswer(current.key, next);
-                        }}
-                        className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all"
-                        style={{ background: checked ? C.primary : C.paper, color: checked ? C.bg : C.ink,
-                          border: `1px solid ${checked ? C.primary : C.line}`, borderRadius: 16, fontSize: 15, fontWeight: 500 }}>
-                        <span style={{ flex: 1, paddingRight: 16, lineHeight: 1.45 }}>{opt}</span>
-                        <div className="flex items-center justify-center flex-shrink-0"
-                          style={{ width: 22, height: 22, border: `1.5px solid ${checked ? C.paper : C.line}`,
-                            background: checked ? C.paper : "transparent", borderRadius: 6 }}>
-                          {checked && <Check size={12} strokeWidth={3} color={C.primary} />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {current.type === "compound" && (
-                <div className="grid grid-cols-3 gap-3">
-                  {current.fields.map((f) => (
-                    <div key={f.key}>
-                      <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8 }}>{f.label}</label>
-                      <input type={f.type} value={answers[f.key] || ""} onChange={(e) => setAnswer(f.key, e.target.value)} placeholder={f.placeholder}
-                        className="focus-ring w-full p-4"
-                        style={{ background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 16, fontSize: 18, color: C.ink, fontFamily: fonts.body, fontWeight: 500 }} />
+          {current.type === "multi" && (
+            <div className="space-y-3" role="group" aria-label={current.title}>
+              {current.options.map((opt) => {
+                const checked = Array.isArray(value) && value.includes(opt);
+                return (
+                  <button key={opt} type="button" aria-pressed={checked}
+                    onClick={() => setAnswer(current.key, toggleMultiOption(current, Array.isArray(value) ? value : [], opt))}
+                    className="focus-ring w-full text-left flex items-center justify-between p-5 transition-all" style={optionStyle(checked)}>
+                    <span style={{ flex: 1, paddingRight: 16, lineHeight: 1.45 }}>{opt}</span>
+                    <div className="flex items-center justify-center flex-shrink-0"
+                      style={{ width: 22, height: 22, border: `1.5px solid ${checked ? C.paper : C.line}`,
+                        background: checked ? C.paper : "transparent", borderRadius: 6 }}>
+                      {checked && <Check size={12} strokeWidth={3} color={C.primary} />}
                     </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between mt-12">
-                <button onClick={handleBack} className="focus-ring inline-flex items-center gap-2 px-4 py-2 rounded-full transition-opacity hover:opacity-60" style={{ color: C.inkSoft, fontSize: 14 }}>
-                  <ArrowLeft size={16} strokeWidth={1.75} />Back
-                </button>
-                <Btn onClick={handleAdvance} disabled={!canAdvance} size="lg" icon={ArrowRight}>{isLast ? "See my plan" : "Continue"}</Btn>
-              </div>
+                  </button>
+                );
+              })}
             </div>
           )}
+
+          {current.type === "compound" && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {current.fields.map((f) => {
+                const raw = answers[f.key] || "";
+                const error = compoundFieldError(f, raw);
+                const inputId = `intake-${current.key}-${f.key}`;
+                return (
+                  <div key={f.key}>
+                    <label htmlFor={inputId} className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8 }}>{f.label}</label>
+                    <input id={inputId} type={f.type} inputMode="decimal" min={f.min} max={f.max} value={raw} onChange={(e) => setAnswer(f.key, e.target.value)} placeholder={f.placeholder}
+                      aria-invalid={!!error} aria-describedby={error ? `${inputId}-error` : undefined}
+                      className="focus-ring w-full p-4"
+                      style={{ background: C.bgAlt, border: `1px solid ${error ? C.destructive : C.line}`, borderRadius: 16, fontSize: 18, color: C.ink, fontFamily: fonts.body, fontWeight: 500 }} />
+                    {error && <p id={`${inputId}-error`} role="alert" style={{ fontSize: 12, color: C.destructive, marginTop: 6, lineHeight: 1.4 }}>{error}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {crisisHere.length > 0 && (
+            <div className="mt-6"><CrisisPanel compact /></div>
+          )}
+          {crisisHere.length === 0 && urgentHere.length > 0 && (
+            <div className="mt-6">
+              <EmergencyNote>
+                If you have chest pain, trouble breathing, or stroke symptoms right now, call <strong style={{ color: C.ink }}>{EMERGENCY_NUMBER}</strong>. These answers mean a clinician must speak with you before any prescription.
+              </EmergencyNote>
+            </div>
+          )}
+          {disqualifiersHere.length > 0 && crisisHere.length === 0 && urgentHere.length === 0 && (
+            <div className="mt-6">
+              <EmergencyNote>
+                Because of this answer we can't prescribe through an online-only visit. Finish the remaining questions so a clinician has the full picture, then request a call.
+              </EmergencyNote>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-12">
+            <button type="button" onClick={handleBack} className="focus-ring inline-flex items-center gap-2 px-4 py-2 rounded-full transition-opacity hover:opacity-60" style={{ color: C.inkSoft, fontSize: 14 }}>
+              <ArrowLeft size={16} strokeWidth={1.75} />Back
+            </button>
+            <Btn onClick={handleAdvance} disabled={!canAdvance} size="lg" icon={ArrowRight}>{isLast ? "See my options" : "Continue"}</Btn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+// Disqualified intake → request a clinician call. Captures contact details and
+// records the request (device + chart when signed in) before confirming.
+// ─────────────────────────────────────────────────────────────────────────────
+const CONSULT_TIMES = ["Any time", "Morning (8am–12pm CT)", "Afternoon (12pm–5pm CT)", "Evening (5pm–8pm CT)"];
+
+const ConsultRequest = ({ conditionId, answers, disqualified, safety, go, user }) => {
+  const condition = conditions[conditionId];
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [bestTime, setBestTime] = useState(CONSULT_TIMES[0]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const crisis = !!safety?.crisis;
+  const urgent = !!safety?.urgent;
+  const canSubmit = name.trim().length > 1 && isValidEmail(email) && isValidPhone(phone) && !submitting;
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const contact = { name: name.trim(), email: email.trim().toLowerCase(), phone: phone.trim(), bestTime };
+      const outcome = await submitConsultRequest({ conditionId, answers: answers || {}, disqualifier: disqualified, crisis, contact });
+      clearIntakeProgress(conditionId);
+      go("consult-requested", { condition: conditionId, contact, crisis, storedWhere: outcome.storedWhere });
+    } catch {
+      setError("We couldn't save your request. Please try again, or email support@sprymd.ai.");
+      setSubmitting(false);
+    }
+  };
+
+  const field = (label, id, input) => (
+    <div>
+      <label htmlFor={id} className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>{label}</label>
+      {input}
+    </div>
+  );
+
+  return (
+    <div className="anim-fadeIn min-h-screen px-6 md:px-12 py-12" style={{ background: C.bg }}>
+      <div className="max-w-2xl mx-auto pt-6 md:pt-12">
+        <Logo onClick={() => go("landing")} />
+        {crisis && <div className="mt-8"><CrisisPanel /></div>}
+        {!crisis && urgent && (
+          <div className="mt-8">
+            <EmergencyNote>
+              If you have chest pain, trouble breathing, or stroke symptoms right now, call <strong style={{ color: C.ink }}>{EMERGENCY_NUMBER}</strong> or go to the nearest emergency department.
+            </EmergencyNote>
+          </div>
+        )}
+        <div className="mt-8 p-6 md:p-10 rounded-3xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+          <div className="inline-flex items-center justify-center mb-6 rounded-full p-3" style={{ background: "hsl(38, 92%, 95%)" }}>
+            <AlertCircle size={28} strokeWidth={1.5} color={C.warn} />
+          </div>
+          <span className="mono" style={{ display: "block", fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>{condition.name}</span>
+          <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 36px)", fontWeight: 400, color: C.ink, marginTop: 10, marginBottom: 16 }}>We need to talk first.</h2>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, marginBottom: 16 }}>
+            Because you answered <strong style={{ color: C.ink }}>{disqualified}</strong>, this treatment can't be prescribed through an online-only visit. A SpryMD clinician needs to talk with you directly before any decision is made.
+          </p>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, marginBottom: 28 }}>
+            Leave your details and a clinician will call you. There is no charge for this call and nothing is prescribed or shipped until a clinician decides treatment is safe and appropriate.
+          </p>
+
+          <form onSubmit={submit} className="space-y-5" data-testid="consult-request-form">
+            {field("Full name", "consult-name", <input id="consult-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Your name" className="focus-ring w-full p-4" style={inputStyle} disabled={submitting} />)}
+            {field("Email", "consult-email", <input id="consult-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} disabled={submitting} />)}
+            {field("Mobile phone", "consult-phone", <input id="consult-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" inputMode="tel" placeholder="(615) 555-0100" className="focus-ring w-full p-4" style={inputStyle} disabled={submitting} />)}
+            {field("Best time to call", "consult-time", (
+              <select id="consult-time" value={bestTime} onChange={(e) => setBestTime(e.target.value)} className="focus-ring w-full p-4" style={{ ...inputStyle, appearance: "auto" }} disabled={submitting}>
+                {CONSULT_TIMES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            ))}
+            {phone && !isValidPhone(phone) && <p role="alert" style={{ fontSize: 13, color: C.destructive }}>Enter a 10-digit US mobile number.</p>}
+            {error && <p role="alert" style={{ fontSize: 13, color: C.destructive }}>{error}</p>}
+            <div className="flex gap-3 flex-wrap pt-2">
+              <Btn type="submit" disabled={!canSubmit} size="lg">{submitting ? <span className="anim-pulse">Saving…</span> : "Request a clinician call"}</Btn>
+              <Btn onClick={() => go("landing")} size="lg" variant="ghost">Return home</Btn>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -3147,101 +2967,65 @@ const Intake = ({ conditionId, initialAnswers = {}, go }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Plan view — Empower-aligned subscriptions with compareAt vs Hims/Ro
+// Consult requested — honest confirmation with the next step spelled out
 // ─────────────────────────────────────────────────────────────────────────────
-const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
+const ConsultRequested = ({ contact, crisis, storedWhere, go }) => (
+  <div className="anim-fadeIn min-h-screen flex flex-col items-center justify-center px-6 py-12 text-center" style={{ background: C.bg }}>
+    <div className="anim-fadeUp max-w-xl w-full">
+      {crisis && <div className="mb-8 text-left"><CrisisPanel /></div>}
+      <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
+        <Check size={32} color={C.paper} strokeWidth={2} />
+      </div>
+      <span className="mono" style={{ display: "block", fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Call requested</span>
+      <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 56px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 16, marginBottom: 20 }}>
+        We'll call <Mark>{contact?.phone || "you"}</Mark>.
+      </h1>
+      <p style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.55, marginBottom: 12 }}>
+        A SpryMD clinician will call within one business day{contact?.bestTime && contact.bestTime !== CONSULT_TIMES[0] ? `, ${contact.bestTime.charAt(0).toLowerCase()}${contact.bestTime.slice(1)}` : ""}. We'll also email {contact?.email || "you"} to confirm.
+      </p>
+      <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginBottom: 32 }}>
+        {storedWhere === "chart"
+          ? "Your answers are on your SpryMD chart for the clinician to review before the call."
+          : "Your answers are saved to your SpryMD account on this device. Sign in with the same email to see them in your dashboard."}{" "}
+        If you don't hear from us, email <strong style={{ color: C.ink }}>support@sprymd.ai</strong>. If anything feels urgent, call {EMERGENCY_NUMBER}.
+      </p>
+      <div className="flex items-center justify-center gap-3 flex-wrap">
+        <Btn onClick={() => go("landing")} size="lg">Back to home</Btn>
+      </div>
+    </div>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plan view — the options a clinician may consider, then hand off to Stripe
+// ─────────────────────────────────────────────────────────────────────────────
+const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, user }) => {
   const condition = conditions[conditionId];
   const planGraphic = conditionGraphics[conditionId] || imgMarketplaceHero;
 
   if (disqualified) {
-    return (
-      <div className="anim-fadeIn min-h-screen px-6 md:px-12 py-12" style={{ background: C.bg }}>
-        <div className="max-w-2xl mx-auto pt-12">
-          <Logo />
-          <div className="mt-12 p-10 rounded-3xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-            <div className="inline-flex items-center justify-center mb-6 rounded-full p-3" style={{ background: "hsl(38, 92%, 95%)" }}>
-              <AlertCircle size={28} strokeWidth={1.5} color={C.warn} />
-            </div>
-            <h2 className="display" style={{ fontSize: 36, fontWeight: 400, color: C.ink, marginBottom: 16 }}>We need to talk first.</h2>
-            <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, marginBottom: 24 }}>
-              Based on your answer regarding <strong>{disqualified}</strong>, this medication isn't appropriate to prescribe through an asynchronous visit. A SpryMD clinician would like to speak with you directly.
-            </p>
-            <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, marginBottom: 32 }}>
-              We'll route your case for a synchronous consult — no charge until we determine whether treatment is safe and appropriate.
-            </p>
-            <div className="flex gap-3 flex-wrap">
-              <Btn onClick={() => go("success", { consult: true })} size="lg">Request a clinician call</Btn>
-              <Btn onClick={() => go("landing")} size="lg" variant="ghost">Return home</Btn>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ConsultRequest conditionId={conditionId} answers={answers} disqualified={disqualified} safety={safety} go={go} user={user} />;
   }
 
-  let recommended = condition.treatments[0];
-  const pref = answers?.preference;
-  if (conditionId === "weightloss" && pref) {
-    if (pref.includes("Oral")) recommended = condition.treatments.find((t) => t.id === "tirz-odt") || recommended;
-    else if (pref.includes("Injection")) recommended = condition.treatments.find((t) => t.id === "tirz-mid") || recommended;
-  }
-  if (conditionId === "ed" && pref) {
-    if (pref.includes("Daily")) recommended = condition.treatments.find((t) => t.id === "tada-daily") || recommended;
-    else if (pref.includes("Fast-melt")) recommended = condition.treatments.find((t) => t.id === "sild-odt") || recommended;
-    else if (pref.includes("As needed")) recommended = condition.treatments.find((t) => t.id === "sild-prn") || recommended;
-  }
-  if (conditionId === "sermorelin" && pref) {
-    if (pref.includes("Tablet") || pref.includes("Dissolvable") || pref.includes("ODT") || pref.includes("needle-free")) recommended = condition.treatments.find((t) => t.id === "serm-odt") || recommended;
-    else if (pref.includes("Sleep-focused") || pref.includes("Glycine")) recommended = condition.treatments.find((t) => t.id === "serm-gly") || recommended;
-    else if (pref.includes("High-Dose") || pref.includes("Maximum")) recommended = condition.treatments.find((t) => t.id === "serm-hi") || recommended;
-    else if (pref.includes("Injection") || pref.includes("Standard")) recommended = condition.treatments.find((t) => t.id === "serm-std") || recommended;
-    else if (answers?.goal?.includes?.("Deeper sleep")) recommended = condition.treatments.find((t) => t.id === "serm-gly") || recommended;
-  }
-  if (conditionId === "nad" && pref) {
-    if (pref.includes("Nasal spray")) recommended = condition.treatments.find((t) => t.id === "nad-spray") || recommended;
-    else if (pref.includes("Injection")) recommended = condition.treatments.find((t) => t.id === "nad-inj") || recommended;
-  }
-  if (conditionId === "lowt" && pref) {
-    if (pref.includes("injection") || pref.includes("Injection")) recommended = condition.treatments.find((t) => t.id === "t-cyp") || recommended;
-    else if (pref.includes("oral") || pref.includes("Oral")) recommended = condition.treatments.find((t) => t.id === "enclo") || recommended;
-    else if (pref.includes("cream") || pref.includes("Cream") || pref.includes("Topical")) recommended = condition.treatments.find((t) => t.id === "t-cream") || recommended;
-    else if (answers?.fertility?.includes("Yes") || answers?.fertility?.includes("Maybe")) {
-      recommended = condition.treatments.find((t) => t.id === "enclo") || recommended;
-    }
-  }
-  if (conditionId === "mentalhealth" && pref) {
-    if (pref.includes("anxiety") && !pref.includes("depression")) recommended = condition.treatments.find((t) => t.id === "escitalopram") || recommended;
-    else if (pref.includes("depression") && !pref.includes("anxiety")) recommended = condition.treatments.find((t) => t.id === "sertraline") || recommended;
-    else if (pref.includes("energy") || pref.includes("sexual")) recommended = condition.treatments.find((t) => t.id === "bupropion") || recommended;
-    else if (pref.includes("gentle")) recommended = condition.treatments.find((t) => t.id === "buspirone") || recommended;
-  }
-  if (conditionId === "pcp" && pref) {
-    if (pref.includes("500") || pref.includes("Doctor-Initiated") || pref.includes("Monthly")) recommended = condition.treatments.find((t) => t.id === "pcp-monthly-vip") || recommended;
-    else if (pref.includes("470") || (pref.includes("Two Adults") && (pref.includes("Yearly") || pref.includes("blood") || pref.includes("labs")))) recommended = condition.treatments.find((t) => t.id === "pcp-two-yearly") || recommended;
-    else if (pref.includes("180") || (pref.includes("Two Adults") && (pref.includes("Acute") || pref.includes("Insight")))) recommended = condition.treatments.find((t) => t.id === "pcp-two-acute") || recommended;
-    else if (pref.includes("250") || pref.includes("Yearly") || pref.includes("blood") || pref.includes("labs")) recommended = condition.treatments.find((t) => t.id === "pcp-yearly") || recommended;
-    else if (pref.includes("120") || pref.includes("Acute")) recommended = condition.treatments.find((t) => t.id === "pcp-acute") || recommended;
-    else if (answers?.household?.includes("partner") || answers?.household?.includes("two adults")) recommended = condition.treatments.find((t) => t.id === "pcp-two-acute") || recommended;
-  }
-
+  const recommended = recommendTreatment(conditionId, answers || {});
   const alternatives = condition.treatments.filter((t) => t.id !== recommended.id);
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo /><Tag>Plan ready</Tag>
+        <Logo onClick={() => go("landing")} /><Tag>Options ready</Tag>
       </div>
 
       <div className="px-6 md:px-12 py-12 md:py-16">
         <div className="max-w-5xl mx-auto">
           <div className="anim-fadeUp mb-12">
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>Reviewed and ready</span>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: condition.accent, textTransform: "uppercase", fontWeight: 500 }}>Your options</span>
             <h1 className="display" style={{ fontSize: "clamp(38px, 6vw, 72px)", lineHeight: 1, fontWeight: 400, color: C.ink, marginTop: 16 }}>
-              Your <Mark>{condition.planLabel || condition.name.toLowerCase()}</Mark><br />treatment plan.
+              Your <Mark>{condition.planLabel || condition.name.toLowerCase()}</Mark><br />care options.
             </h1>
             <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 16, maxWidth: 600, lineHeight: 1.5 }}>
-              Based on your answers, you're a good fit for the care plan below. A licensed doctor will review your case before any prescription is issued.
+              Based on your answers, these are the treatments a clinician may consider for you. A licensed Tennessee doctor reviews your intake before anything is prescribed — a prescription is never guaranteed.
             </p>
           </div>
           <div className="anim-fadeUp rounded-3xl overflow-hidden mb-8 relative" style={{ border: `1px solid ${C.line}` }}>
@@ -3249,14 +3033,14 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
             <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.72) 0%, rgba(9,14,11,0.2) 100%)" }} />
             <div className="absolute left-6 right-6 bottom-6">
               <span className="mono" style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.78)", textTransform: "uppercase" }}>Care pathway</span>
-              <p style={{ color: "#fff", fontSize: 20, marginTop: 8, lineHeight: 1.2 }}>{condition.name} plan personalized to your intake.</p>
+              <p style={{ color: "#fff", fontSize: 20, marginTop: 8, lineHeight: 1.2 }}>{condition.name} options matched to your intake.</p>
             </div>
           </div>
 
           <div className="anim-fadeUp grid md:grid-cols-12 gap-6 p-6 md:p-10 rounded-3xl mb-8" style={{ background: C.primary, color: C.paper, animationDelay: "0.1s" }}>
             <div className="md:col-span-7">
               <div className="flex items-center gap-2 flex-wrap">
-                <Tag color="rgba(255,255,255,0.1)" fg={C.paper}>Top recommendation</Tag>
+                <Tag color="rgba(255,255,255,0.1)" fg={C.paper}>Suggested starting point</Tag>
                 {recommended.badge && <Tag color={C.accent} fg={C.paper}>{recommended.badge}</Tag>}
                 {recommended.chilled && <Tag color="rgba(255,255,255,0.1)" fg={C.paper}><Snowflake size={9} style={{ display: "inline", marginRight: 3 }} />Refrigerated</Tag>}
               </div>
@@ -3265,13 +3049,13 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
               <p style={{ fontSize: 15, marginTop: 24, opacity: 0.85, lineHeight: 1.55 }}>
                 {recommended.note}{" "}
                 {conditionId === "pcp"
-                  ? "Includes ongoing clinician support, secure messaging, and care coordination."
-                  : "Compounded at Empower Pharmacy. Free shipping. Includes ongoing clinician support and dose adjustments."}
+                  ? "Includes ongoing clinician support, secure messaging, and care coordination once your visit is completed."
+                  : "If approved, compounded at our pharmacy partner and shipped discreetly. Medication is billed separately after clinician approval — not at this visit checkout."}
               </p>
               <div className="mt-8 space-y-2">
                 {(conditionId === "pcp"
-                  ? ["Unlimited secure messaging", "Annual wellness visit", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
-                  : ["Free shipping, every refill", "Message your clinician anytime", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
+                  ? ["Secure messaging after your visit", "Clinician-led care plan", "Cancel future care anytime", "Tennessee-licensed physician review"]
+                  : ["Discreet shipping when prescribed", "Message your care team after your visit", "Cancel future care anytime", "Tennessee-licensed physician review"]
                 ).map((b) => (
                   <div key={b} className="flex items-center gap-2">
                     <Check size={14} strokeWidth={2} color={C.accentSoft} />
@@ -3294,12 +3078,15 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
                       <Tag color={C.accent} fg={C.paper}>SAVE ${recommended.compareAt - recommended.price} VS {recommended.comparePeer.toUpperCase()}</Tag>
                     </div>
                   )}
-                  <p style={{ fontSize: 12, opacity: 0.6, marginTop: 12 }}>Billed monthly. No commitment. Cancel anytime.</p>
+                  <p style={{ fontSize: 12, opacity: 0.6, marginTop: 12 }}>Plan price if a clinician approves treatment. Soft launch bills medication separately — not at this checkout. Cancel future care anytime.</p>
                 </div>
-                <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to checkout</Btn>
-                <div className="flex items-center justify-center gap-2 mt-4">
+                <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to visit checkout</Btn>
+                <p style={{ fontSize: 12, opacity: 0.75, marginTop: 12, lineHeight: 1.45, textAlign: "center" }}>
+                  Next: pay the one-time visit fee securely with Stripe. The ${recommended.price}/mo plan price is charged only after a clinician approves treatment — not at this checkout.
+                </p>
+                <div className="flex items-center justify-center gap-2 mt-3">
                   <Lock size={12} color={C.accentSoft} />
-                  <span className="mono" style={{ fontSize: 10, opacity: 0.7, letterSpacing: "0.1em" }}>SECURE · STRIPE</span>
+                  <span className="mono" style={{ fontSize: 10, opacity: 0.7, letterSpacing: "0.1em" }}>SECURE · STRIPE CHECKOUT</span>
                 </div>
               </div>
             </div>
@@ -3332,7 +3119,7 @@ const Plan = ({ conditionId, answers, disqualified, go, onSelectPlan }) => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
-            {[{ i: ShieldCheck, t: "Clinician-reviewed", d: "Every prescription is signed by a licensed provider in your state." },
+            {[{ i: ShieldCheck, t: "Clinician-reviewed", d: "Every prescription is signed by a Tennessee-licensed provider after reviewing your intake." },
               { i: Truck, t: "Eligible TN delivery", d: TN_DELIVERY.heroShort },
               { i: Stethoscope, t: "Ongoing support", d: "Message your care team anytime through the app." }].map((b) => (
               <div key={b.t} className="p-6 rounded-2xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
@@ -3547,206 +3334,60 @@ const CartDrawer = ({ cart, onClose, removeFromCart, addToCart, onCheckout }) =>
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Subscription / Cart Checkout — auth hold; fulfillment after clinician review
+// Payment is never collected in-app. The plan screen hands off to the
+// Stripe-backed /checkout route (see src/pages/CashPayCheckout.tsx).
 // ─────────────────────────────────────────────────────────────────────────────
-const Checkout = ({ mode, plan, condition, cart, go, onComplete, user }) => {
-  const [email, setEmail] = useState(user?.email || "");
-  const [card, setCard] = useState("");
-  const [exp, setExp] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [zip, setZip] = useState("");
-  const [name, setName] = useState(user?.name || "");
-  const [processing, setProcessing] = useState(false);
-  const [consent, setConsent] = useState(false);
-
-  const isSubscription = mode === "subscription";
-  const cartTotal = cart ? cart.reduce((s, i) => s + i.price * i.qty, 0) : 0;
-  const subtotal = isSubscription ? plan.price : cartTotal;
-  const shipping = isSubscription ? 0 : cartTotal >= 50 ? 0 : 7;
-  const tax = subtotal * 0.0875;
-  const total = subtotal + shipping + tax;
-
-  const formatCard = (v) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-  const formatExp = (v) => {
-    const digits = v.replace(/\D/g, "").slice(0, 4);
-    if (digits.length <= 2) return digits;
-    return digits.slice(0, 2) + " / " + digits.slice(2);
-  };
-
-  const canSubmit = email.includes("@") && card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5 && name.trim().length > 0 && consent;
-
-  const handleSubmit = () => {
-    if (!canSubmit) return;
-    setProcessing(true);
-    setTimeout(() => onComplete({ email, name }), 1200);
-  };
-
-  return (
-    <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
-      <DeliveryBar />
-      <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
-        <button onClick={() => go(isSubscription ? "plan" : "marketplace")} className="focus-ring rounded-full p-1 hover:opacity-60">
-          <X size={20} color={C.ink} strokeWidth={1.5} />
-        </button>
-      </div>
-
-      <div className="px-6 md:px-12 py-12">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
-          <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>Checkout</span>
-            <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 16, color: C.ink }}>
-              Almost <Mark>there</Mark>.
-            </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 28, lineHeight: 1.55, maxWidth: 480 }}>
-              {isSubscription
-                ? "Your case goes to clinician review before any prescription ships. Card authorization is held until approval."
-                : "Your order is saved to your SpryMD account. Authorization is held until fulfillment is confirmed."}
-            </p>
-
-            <div className="space-y-6">
-              <Field label="Email"><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="focus-ring w-full p-4" style={inputStyle} /></Field>
-              <Field label="Cardholder name"><input value={name} onChange={(e) => setName(e.target.value)} placeholder="As it appears on card" className="focus-ring w-full p-4" style={inputStyle} /></Field>
-              <div>
-                <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Card information</label>
-                <div className="rounded-xl overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                  <input value={card} onChange={(e) => setCard(formatCard(e.target.value))} placeholder="1234 1234 1234 1234" className="focus-ring w-full p-4" style={{ ...inputStyle, border: "none", borderBottom: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                  <div className="flex">
-                    <input value={exp} onChange={(e) => setExp(formatExp(e.target.value))} placeholder="MM / YY" className="focus-ring flex-1 p-4" style={{ ...inputStyle, border: "none", borderRight: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                    <input value={cvc} onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="CVC" className="focus-ring flex-1 p-4" style={{ ...inputStyle, border: "none", borderRadius: 0, background: "transparent" }} />
-                  </div>
-                </div>
-              </div>
-              <Field label="ZIP / Postal code"><input value={zip} onChange={(e) => setZip(e.target.value.slice(0, 10))} placeholder="38201" className="focus-ring w-full p-4" style={inputStyle} /></Field>
-
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1" />
-                <span style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.5 }}>
-                  I agree to the <a href="/terms" style={{ color: C.accent }}>Terms</a>, <a href="/privacy" style={{ color: C.accent }}>Privacy Policy</a>, and <a href="/npp" style={{ color: C.accent }}>NPP</a>, and I understand a clinician must approve treatment before medication ships.
-                </span>
-              </label>
-
-              <Btn onClick={handleSubmit} disabled={!canSubmit || processing} size="lg" className="w-full" icon={!processing ? Lock : null}>
-                {processing ? <span className="anim-pulse">Submitting…</span> : isSubscription ? `Submit case · $${total.toFixed(2)} auth hold` : `Place order · $${total.toFixed(2)}`}
-              </Btn>
-              {/* Normalizing micro-copy at the point of friction */}
-              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-                {[
-                  { icon: Heart, label: "Zero judgment" },
-                  { icon: Lock, label: "100% confidential" },
-                  { icon: Package, label: "Discreet, unmarked packaging" },
-                ].map(({ icon: TrustIcon, label }) => (
-                  <span key={label} className="inline-flex items-center gap-1.5">
-                    <TrustIcon size={12} color={C.accent} strokeWidth={2} />
-                    <span style={{ fontSize: 12, color: C.inkSoft }}>{label}</span>
-                  </span>
-                ))}
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>ENCRYPTED · CLINICIAN REVIEW BEFORE FULFILLMENT</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className="p-8 rounded-3xl sticky top-8" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 24 }}>Order summary</h3>
-
-              {isSubscription ? (
-                <div className="pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <Tag color={C.bgAlt}>Pending clinician review</Tag>
-                      <div style={{ fontSize: 17, fontWeight: 500, color: C.ink, marginTop: 8 }}>{plan.name}</div>
-                      <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{plan.sub}</div>
-                      <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 8 }}>For: <strong>{conditions[condition].name}</strong></div>
-                    </div>
-                    <span className="display" style={{ fontSize: 20, fontWeight: 500, color: C.ink }}>${plan.price}/mo</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
-                  {cart.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <div key={item.id} className="flex gap-3 items-center">
-                        <div className="rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: item.image ? C.bg : item.color, width: 56, height: 56 }}>
-                          {item.image
-                            ? <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
-                            : <Icon size={20} color={C.paper} strokeWidth={1.25} />}
-                        </div>
-                        <div className="flex-1">
-                          <div style={{ fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{item.name}</div>
-                          <div style={{ fontSize: 11, color: C.muted }}>Qty {item.qty}</div>
-                        </div>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: C.ink }}>${(item.price * item.qty).toFixed(2)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className="space-y-2 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
-                <Row label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
-                <Row label="Shipping" value={shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`} />
-                <Row label="Tax (est.)" value={`$${tax.toFixed(2)}`} />
-              </div>
-
-              <div className="flex items-baseline justify-between mb-2">
-                <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{isSubscription ? "Today" : "Total"}</span>
-                <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
-              </div>
-              {isSubscription && <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4, marginTop: 8 }}>Then ${plan.price}/mo after clinician approval. Cancel anytime in your account.</p>}
-              <div className="mt-6">
-                <DeliveryDetailsCard />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Subscription/Cart success
-const Success = ({ mode, plan, consult, go }) => (
-  <div className="anim-fadeIn min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: C.bg }}>
-    <div className="anim-fadeUp max-w-xl">
-      <div className="rounded-2xl overflow-hidden mb-7" style={{ border: `1px solid ${C.line}` }}>
-        <img src={brandPlates.care.src} alt="" className="w-full h-40 object-cover" />
-      </div>
-      <div className="inline-flex items-center justify-center mb-8 rounded-full" style={{ background: C.primary, width: 72, height: 72 }}>
-        <Check size={32} color={C.paper} strokeWidth={2} />
-      </div>
-      <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>
-        {consult ? "Consult requested" : mode === "subscription" ? "Case submitted" : "Order recorded"}
-      </span>
-      <h1 className="display" style={{ fontSize: "clamp(40px, 6vw, 64px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 16, marginBottom: 24 }}>
-        {consult ? <>We'll be in <Mark>touch</Mark>.</> : <>Saved to your <Mark>account</Mark>.</>}
-      </h1>
-      <p style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.55, marginBottom: 40 }}>
-        {consult
-          ? "A clinician will reach out within 24 hours to schedule a brief synchronous consult."
-          : mode === "subscription"
-          ? `Your intake for ${plan?.name || "treatment"} is queued for clinician review. Nothing ships until a prescription is signed. Track status anytime in your account.`
-          : "Your order is on your account. You’ll get updates by email as fulfillment progresses."}
-      </p>
-      <div className="flex items-center justify-center gap-3 flex-wrap">
-        <Btn onClick={() => go("dashboard")} size="lg" variant="dark">Open dashboard</Btn>
-        <Btn onClick={() => go("landing")} size="lg" variant="ghost">Back to home</Btn>
-      </div>
-    </div>
-  </div>
-);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // App root
 // ─────────────────────────────────────────────────────────────────────────────
+// The intake and plan screens get a real URL (/?view=intake&condition=ed) so a
+// refresh resumes the saved answers and the browser Back button walks
+// plan → intake → landing instead of leaving the site.
+const funnelUrl = (view, condition) => `/?${new URLSearchParams({ view, condition }).toString()}`;
+
+const PERSIST_TIMEOUT_MS = 2500;
+const withTimeout = (promise, ms = PERSIST_TIMEOUT_MS) =>
+  Promise.race([promise, new Promise((resolve) => window.setTimeout(() => resolve(null), ms))]);
+
+/** Rebuild the plan-screen params from the saved intake, or null if incomplete. */
+const planParamsFromProgress = (condition) => {
+  const saved = loadIntakeProgress(condition);
+  const steps = buildIntakeSteps(condition);
+  if (!saved || !steps.length || !steps.every((s) => canAdvanceStep(s, saved.answers))) return null;
+  const disqualifier = findDisqualifier(steps, saved.answers);
+  return {
+    condition,
+    answers: saved.answers,
+    disqualified: disqualifier?.option ?? null,
+    safety: safetyFlags(steps, saved.answers),
+  };
+};
+
+/** Funnel view named in the URL (/?view=intake|plan&condition=…), or null. */
+const readFunnelFromUrl = () => {
+  if (typeof window === "undefined") return null;
+  const qs = new URLSearchParams(window.location.search);
+  const requested = qs.get("view");
+  const condition = qs.get("condition");
+  if ((requested !== "intake" && requested !== "plan") || !isKnownCondition(condition)) return null;
+  const treatmentId = qs.get("treatmentId") || null;
+  if (requested === "plan") {
+    const planParams = planParamsFromProgress(condition);
+    if (planParams) return { view: "plan", condition, treatmentId, params: planParams };
+  }
+  return { view: "intake", condition, treatmentId, params: { condition, treatmentId } };
+};
+
 export default function App() {
   const navigate = useNavigate();
-  const [view, setView] = useState("landing");
-  const [params, setParams] = useState({});
+  const location = useLocation();
+  const routeParams = useParams();
+  const careSlugFromRoute = routeParams.slug;
+  // Start on the funnel step named in the URL so a refresh doesn't flash the landing page.
+  const [initialFunnel] = useState(readFunnelFromUrl);
+  const [view, setView] = useState(initialFunnel?.view ?? "landing");
+  const [params, setParams] = useState(initialFunnel?.params ?? {});
   const [cart, setCart] = useState([]);
   const [refillCart, setRefillCart] = useState([]);
   const [user, setUser] = useState(null);
@@ -3764,13 +3405,51 @@ export default function App() {
     return () => { cancelled = true; };
   }, []);
 
-  // Deep-link: /?auth=1&returnTo=... or /?view=marketplace&filter=Devices
+  const showFunnelView = (target, condition, extra = {}) => {
+    if (target === "plan") {
+      const planParams = planParamsFromProgress(condition);
+      if (planParams) {
+        setParams(planParams);
+        setView("plan");
+        return "plan";
+      }
+    }
+    setParams({ condition, treatmentId: extra.treatmentId || null });
+    setView("intake");
+    return "intake";
+  };
+
+  // Deep-links: /care/:slug, /?auth=1&returnTo=…, /?view=marketplace&filter=Devices,
+  // /?view=start (care options), /?view=intake|plan&condition=<id> (also /quiz).
   useEffect(() => {
     if (!authReady) return;
+    if (careSlugFromRoute) {
+      if (!FEATURES.enableShop && SHOP_STACK_SLUGS.has(careSlugFromRoute)) {
+        setView("landing");
+        setParams({});
+        navigate("/", { replace: true });
+        return;
+      }
+      if (isKnownCarePageSlug(careSlugFromRoute)) {
+        setParams({ slug: careSlugFromRoute });
+        setView("page");
+        return;
+      }
+      // /care/:slug matches any string; unknown slugs must 404 — do not leave the homepage mounted.
+      setParams({ slug: careSlugFromRoute });
+      setView("notfound");
+      return;
+    }
     const qs = new URLSearchParams(window.location.search);
     if (qs.get("auth") === "1") {
       const returnTo = qs.get("returnTo") || "dashboard";
-      const target = returnTo.startsWith("/dashboard") || returnTo === "account" ? "dashboard" : returnTo;
+      // Absolute paths (/ops, /dashboard/…) stay intact for router navigate after sign-in.
+      const target =
+        returnTo.startsWith("/")
+          ? returnTo
+          : returnTo === "account"
+            ? "dashboard"
+            : returnTo;
       setParams({ returnTo: target });
       setView("signin");
       window.history.replaceState({}, "", "/");
@@ -3796,12 +3475,58 @@ export default function App() {
         setView("landing");
       }
       window.history.replaceState({}, "", "/");
+      return;
     }
-  }, [authReady]);
+    if (deepView === "start") {
+      window.history.replaceState({}, "", "/");
+      go("landing-conditions");
+      return;
+    }
+    if (initialFunnel) {
+      // View/params were already initialised from the URL; just seed the history
+      // entry so Back/Forward can restore it.
+      const { view: shown, condition, treatmentId } = initialFunnel;
+      window.history.replaceState({ spryView: shown, condition, treatmentId }, "", funnelUrl(shown, condition));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authReady, careSlugFromRoute, location.pathname]);
+
+  // Browser Back / Forward between landing ⇄ intake ⇄ plan.
+  useEffect(() => {
+    const onPopState = (event) => {
+      const state = event.state || {};
+      if ((state.spryView === "intake" || state.spryView === "plan") && isKnownCondition(state.condition)) {
+        showFunnelView(state.spryView, state.condition, { treatmentId: state.treatmentId || null });
+      } else {
+        setParams({});
+        setView("landing");
+      }
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const pushFunnelUrl = (target, condition, extra = {}) => {
+    const url = funnelUrl(target, condition);
+    const state = { spryView: target, condition, ...extra };
+    const current = `${window.location.pathname}${window.location.search}`;
+    if (current === url) window.history.replaceState(state, "", url);
+    else window.history.pushState(state, "", url);
+  };
+
+  const clearFunnelUrl = () => {
+    if (window.location.pathname.startsWith("/care/")) {
+      navigate("/", { replace: true });
+      return;
+    }
+    if (window.location.search) window.history.replaceState({}, "", "/");
+  };
 
   const requireAuth = (target, extra = {}) => {
     setParams({ returnTo: target, ...extra });
     setView("signin");
+    clearFunnelUrl();
     window.scrollTo(0, 0);
   };
 
@@ -3813,6 +3538,7 @@ export default function App() {
   const go = (target, p = {}) => {
     if (target === "landing-conditions") {
       setView("landing");
+      clearFunnelUrl();
       setTimeout(() => {
         const el = document.getElementById("landing-conditions");
         if (!el) return;
@@ -3833,7 +3559,15 @@ export default function App() {
     }
     if (target === "how") {
       setView("landing");
+      clearFunnelUrl();
       setTimeout(() => { const el = document.getElementById("how"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
+      return;
+    }
+    // Router paths from auth returnTo (e.g. /ops, /dashboard/profile)
+    if (typeof target === "string" && target.startsWith("/")) {
+      navigate(target);
+      clearFunnelUrl();
+      window.scrollTo(0, 0);
       return;
     }
     // Auth gates — account + refills require a signed-in customer
@@ -3847,23 +3581,51 @@ export default function App() {
       openPatientDashboard();
       return;
     }
-    if (target === "intake") { setParams({ condition: p.condition, initialAnswers: p.initialAnswers || {} }); setView("intake"); window.scrollTo(0, 0); return; }
-    if (target === "plan") { setParams({ ...params, ...p }); setView("plan"); window.scrollTo(0, 0); return; }
+    if (target === "intake") {
+      if (!isKnownCondition(p.condition)) { go("landing-conditions"); return; }
+      setParams({ condition: p.condition, treatmentId: p.treatmentId || null });
+      setView("intake");
+      pushFunnelUrl("intake", p.condition, { treatmentId: p.treatmentId || null });
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "plan") {
+      const condition = p.condition || params.condition;
+      setParams({ ...params, ...p });
+      setView("plan");
+      pushFunnelUrl("plan", condition);
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (target === "consult-requested") {
+      setParams({ ...params, ...p });
+      setView("consult-requested");
+      clearFunnelUrl();
+      window.scrollTo(0, 0);
+      return;
+    }
     if (target === "page") {
-      const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
-      if (!FEATURES.enableShop && shopStackSlugs.has(p.slug)) {
+      if (!FEATURES.enableShop && SHOP_STACK_SLUGS.has(p.slug)) {
         setView("landing");
+        clearFunnelUrl();
         window.scrollTo(0, 0);
         return;
       }
       setParams({ slug: p.slug });
-      setView("page");
+      if (isKnownCarePageSlug(p.slug)) {
+        setView("page");
+        navigate(carePageUrl(p.slug));
+      } else {
+        setView("notfound");
+        navigate(carePageUrl(p.slug), { replace: true });
+      }
       window.scrollTo(0, 0);
       return;
     }
     if (target === "marketplace") {
       if (!FEATURES.enableShop) {
         setView("landing");
+        clearFunnelUrl();
         window.scrollTo(0, 0);
         return;
       }
@@ -3872,42 +3634,31 @@ export default function App() {
       window.scrollTo(0, 0);
       return;
     }
-    if (target === "checkout-cart") {
-      if (!FEATURES.enableShop) {
-        setView("landing");
-        window.scrollTo(0, 0);
-        return;
-      }
-      if (!user) {
-        requireAuth("checkout", { mode: "cart" });
-        return;
-      }
-      setParams({ mode: "cart" });
-      setView("checkout");
-      window.scrollTo(0, 0);
+    // Card details are never collected in-app. Plan checkout hands off to the
+    // Stripe-backed /checkout route; the dormant marketplace cart has no
+    // payment path yet, so it returns to the landing page.
+    if (target === "checkout") {
+      startCheckout(p.plan || params.plan);
       return;
     }
-    if (target === "checkout") {
-      if (!user && !p.justLoggedIn) {
-        requireAuth("checkout", { ...params, ...p });
-        return;
-      }
-      setParams({ ...params, ...p, mode: p.mode || params.mode || "subscription" });
-      setView("checkout");
+    if (target === "checkout-cart") {
+      setView("landing");
+      clearFunnelUrl();
       window.scrollTo(0, 0);
       return;
     }
     if (target === "refill-checkout") { setView("refill-checkout"); window.scrollTo(0, 0); return; }
     if (target === "refill-success") { setView("refill-success"); window.scrollTo(0, 0); return; }
-    if (target === "success") { setParams({ ...params, ...p }); setView("success"); window.scrollTo(0, 0); return; }
     if (target === "signin") {
       setParams({ returnTo: p.returnTo || params.returnTo || "dashboard", ...p });
       setView("signin");
+      clearFunnelUrl();
       window.scrollTo(0, 0);
       return;
     }
     setParams({ ...params, ...p });
     setView(target);
+    clearFunnelUrl();
     window.scrollTo(0, 0);
   };
 
@@ -3930,15 +3681,27 @@ export default function App() {
   const addRefill = (rx) => setRefillCart((c) => (c.find((i) => i.rxId === rx.rxId) ? c : [...c, rx]));
   const removeRefill = (rxId) => setRefillCart((c) => c.filter((i) => i.rxId !== rxId));
 
-  const onSelectPlan = (plan) => {
-    if (!user) {
-      requireAuth("checkout", { plan, mode: "subscription", condition: params.condition, answers: params.answers });
+  /**
+   * Plan chosen → record the intake (device + chart when signed in) and hand
+   * off to the Stripe-backed /checkout route. No account is required first;
+   * Stripe collects the payment details.
+   */
+  const startCheckout = async (plan) => {
+    const conditionId = params.condition;
+    if (!plan || !isKnownCondition(conditionId)) {
+      go("landing-conditions");
       return;
     }
-    setParams({ ...params, plan, mode: "subscription" });
-    setView("checkout");
+    const answers = params.answers || {};
+    saveCheckoutSelection({ conditionId, treatmentId: plan.id, answers, email: user?.email });
+    await withTimeout(
+      persistFunnelCase({ kind: "plan_selected", conditionId, answers, treatmentId: plan.id, crisis: !!params.safety?.crisis }).catch(() => null),
+    );
+    navigate(checkoutPath(conditionId, plan.id, user?.email));
     window.scrollTo(0, 0);
   };
+
+  const onSelectPlan = (plan) => { void startCheckout(plan); };
 
   const onAuthSuccess = (u) => {
     setUser(hydrateUser(u));
@@ -3957,51 +3720,9 @@ export default function App() {
     setRefillCart([]);
     setView("landing");
     setParams({});
+    clearFunnelUrl();
+    navigate("/");
     window.scrollTo(0, 0);
-  };
-
-  const completeCheckout = async (checkoutMeta = {}) => {
-    const email = (user?.email || checkoutMeta.email || "").toLowerCase();
-    if (!email) {
-      requireAuth("checkout", { ...params });
-      return;
-    }
-    ensureAccountShell(email, checkoutMeta.name || user?.name);
-    if (params.mode === "subscription" && params.plan) {
-      recordSubscriptionCheckout({
-        email,
-        plan: params.plan,
-        conditionId: params.condition,
-        conditionName: conditions[params.condition]?.name,
-        answers: params.answers,
-      });
-
-      // Persist to Supabase backend database
-      await syncIntakeToDatabase({
-        email,
-        name: checkoutMeta.name || user?.name,
-        conditionId: params.condition,
-        conditionName: conditions[params.condition]?.name,
-        answers: params.answers || {},
-        plan: params.plan,
-        consents: params.answers?.consents || {
-          telehealthConsent: true,
-          cashPayAgreement: true,
-          hipaaConsent: true,
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } else if (params.mode === "cart") {
-      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-      recordCartCheckout({
-        email,
-        items: cart.map((i) => ({ name: i.name, qty: i.qty, price: i.price, productId: i.id })),
-        total,
-      });
-    }
-    setUser(hydrateUser(updateCustomerProfile(email, { name: checkoutMeta.name || user?.name })));
-    if (params.mode === "cart") setCart([]);
-    go("success", { mode: params.mode });
   };
 
   const completeRefillCheckout = () => {
@@ -4032,21 +3753,22 @@ export default function App() {
       {view === "landing" ? <BrandAtmosphere plate="tn" variant="site" locked objectPosition="center 40%" /> : null}
 
       {view === "landing" && (
-        <div className="relative z-10">
+        <div id="main-content" className="relative z-10">
           <DeliveryBar onClick={() => go("how")} glass />
           <Header go={go} cartCount={cartCount} user={user} glass />
           <Landing go={go} />
         </div>
       )}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
-      {view === "intake" && <Intake conditionId={params.condition} initialAnswers={params.initialAnswers} go={go} />}
-      {view === "plan" && <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} go={go} onSelectPlan={onSelectPlan} />}
-      {FEATURES.enableShop && view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
-      {view === "checkout" && !(params.mode === "cart" && !FEATURES.enableShop) && (
-        <Checkout mode={params.mode} plan={params.plan} condition={params.condition} cart={cart} go={go} user={user}
-          onComplete={completeCheckout} />
+      {view === "notfound" && <NotFound />}
+      {view === "intake" && isKnownCondition(params.condition) && (
+        <Intake key={params.condition} conditionId={params.condition} treatmentId={params.treatmentId} go={go} />
       )}
-      {view === "success" && <Success mode={params.mode} plan={params.plan} consult={params.consult} go={go} />}
+      {view === "plan" && isKnownCondition(params.condition) && (
+        <Plan conditionId={params.condition} answers={params.answers} disqualified={params.disqualified} safety={params.safety} go={go} onSelectPlan={onSelectPlan} user={user} />
+      )}
+      {view === "consult-requested" && <ConsultRequested contact={params.contact} crisis={params.crisis} storedWhere={params.storedWhere} go={go} />}
+      {FEATURES.enableShop && view === "marketplace" && <Marketplace go={go} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} cartCount={cartCount} user={user} initialFilter={params.filter || "All"} />}
       {view === "signin" && <SignIn go={go} returnTo={params.returnTo} onAuthSuccess={onAuthSuccess} />}
       {view === "refills" && user && <Refills user={user} go={go} refillCart={refillCart} addRefill={addRefill} removeRefill={removeRefill} />}
       {view === "refill-checkout" && user && <RefillCheckout user={user} refillCart={refillCart} go={go} onComplete={completeRefillCheckout} />}

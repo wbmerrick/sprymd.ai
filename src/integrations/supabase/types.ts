@@ -9,284 +9,286 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      patient_profiles: {
+      patients: {
         Row: {
-          id: string;
-          email: string;
-          full_name: string;
-          dob: string | null;
-          phone: string;
-          address: Json;
-          created_at: string;
-          updated_at: string;
-        };
+          id: string
+          user_id: string
+          email: string
+          full_name: string
+          date_of_birth: string | null
+          phone: string | null
+          state_of_residence: string | null
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id: string;
-          email: string;
-          full_name?: string;
-          dob?: string | null;
-          phone?: string;
-          address?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
+          id?: string
+          user_id: string
+          email: string
+          full_name?: string
+          date_of_birth?: string | null
+          phone?: string | null
+          state_of_residence?: string | null
+          created_at?: string
+          updated_at?: string
+        }
         Update: {
-          id?: string;
-          email?: string;
-          full_name?: string;
-          dob?: string | null;
-          phone?: string;
-          address?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      treatments: {
+          id?: string
+          user_id?: string
+          email?: string
+          full_name?: string
+          date_of_birth?: string | null
+          phone?: string | null
+          state_of_residence?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      providers: {
         Row: {
-          id: string;
-          user_id: string;
-          medication_name: string;
-          dosage: string;
-          goal: string;
-          category: string;
-          start_date: string;
-          refill_through_date: string | null;
-          status: "active" | "pending" | "expiring_soon" | "inactive";
-          refills_remaining: number;
-          dosing_instructions: string | null;
-          storage: string | null;
-          how_it_works: string | null;
-          side_effects: Json;
-          troubleshooting: string | null;
-          warnings: string | null;
-          created_at: string;
-        };
+          id: string
+          user_id: string
+          email: string
+          full_name: string
+          npi: string | null
+          license_states: string[]
+          specialty: string | null
+          active: boolean
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          medication_name: string;
-          dosage?: string;
-          goal?: string;
-          category?: string;
-          start_date?: string;
-          refill_through_date?: string | null;
-          status?: "active" | "pending" | "expiring_soon" | "inactive";
-          refills_remaining?: number;
-          dosing_instructions?: string | null;
-          storage?: string | null;
-          how_it_works?: string | null;
-          side_effects?: Json;
-          troubleshooting?: string | null;
-          warnings?: string | null;
-          created_at?: string;
-        };
+          id?: string
+          user_id: string
+          email: string
+          full_name?: string
+          npi?: string | null
+          license_states?: string[]
+          specialty?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          medication_name?: string;
-          dosage?: string;
-          goal?: string;
-          category?: string;
-          start_date?: string;
-          refill_through_date?: string | null;
-          status?: "active" | "pending" | "expiring_soon" | "inactive";
-          refills_remaining?: number;
-          dosing_instructions?: string | null;
-          storage?: string | null;
-          how_it_works?: string | null;
-          side_effects?: Json;
-          troubleshooting?: string | null;
-          warnings?: string | null;
-          created_at?: string;
-        };
-      };
-      orders: {
+          id?: string
+          user_id?: string
+          email?: string
+          full_name?: string
+          npi?: string | null
+          license_states?: string[]
+          specialty?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_patient_assignments: {
         Row: {
-          id: string;
-          user_id: string;
-          treatment_id: string | null;
-          label: string;
-          mode: "subscription" | "cart" | "refill";
-          total: number;
-          status: "pending_review" | "approved" | "payment_pending" | "paid" | "fulfilled" | "cancelled";
-          created_at: string;
-        };
+          id: string
+          provider_id: string
+          patient_id: string
+          active: boolean
+          assigned_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          treatment_id?: string | null;
-          label: string;
-          mode: "subscription" | "cart" | "refill";
-          total?: number;
-          status?: "pending_review" | "approved" | "payment_pending" | "paid" | "fulfilled" | "cancelled";
-          created_at?: string;
-        };
+          id?: string
+          provider_id: string
+          patient_id: string
+          active?: boolean
+          assigned_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          treatment_id?: string | null;
-          label?: string;
-          mode?: "subscription" | "cart" | "refill";
-          total?: number;
-          status?: "pending_review" | "approved" | "payment_pending" | "paid" | "fulfilled" | "cancelled";
-          created_at?: string;
-        };
-      };
-      subscriptions: {
+          id?: string
+          provider_id?: string
+          patient_id?: string
+          active?: boolean
+          assigned_at?: string
+        }
+        Relationships: []
+      }
+      appointments: {
         Row: {
-          id: string;
-          user_id: string;
-          treatment_id: string;
-          price: number;
-          billing_cadence: string;
-          next_charge_date: string | null;
-          autoship_enabled: boolean;
-          created_at: string;
-        };
+          id: string
+          patient_id: string
+          provider_id: string | null
+          service_tier: string
+          amount_cents: number
+          currency: string
+          status: string
+          scheduled_at: string | null
+          paid_at: string | null
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          treatment_id: string;
-          price: number;
-          billing_cadence?: string;
-          next_charge_date?: string | null;
-          autoship_enabled?: boolean;
-          created_at?: string;
-        };
+          id?: string
+          patient_id: string
+          provider_id?: string | null
+          service_tier: string
+          amount_cents: number
+          currency?: string
+          status?: string
+          scheduled_at?: string | null
+          paid_at?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          treatment_id?: string;
-          price?: number;
-          billing_cadence?: string;
-          next_charge_date?: string | null;
-          autoship_enabled?: boolean;
-          created_at?: string;
-        };
-      };
-      shipments: {
+          id?: string
+          patient_id?: string
+          provider_id?: string | null
+          service_tier?: string
+          amount_cents?: number
+          currency?: string
+          status?: string
+          scheduled_at?: string | null
+          paid_at?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      consultation_notes: {
         Row: {
-          id: string;
-          user_id: string;
-          treatment_id: string | null;
-          medication_name: string;
-          next_shipment_date: string | null;
-          status: "scheduled" | "processing" | "shipped" | "delivered";
-          quantity: number;
-          created_at: string;
-        };
+          id: string
+          appointment_id: string
+          patient_id: string
+          provider_id: string
+          subjective: string | null
+          objective: string | null
+          assessment: string | null
+          plan: string | null
+          private_to_provider: boolean
+          status: string
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          treatment_id?: string | null;
-          medication_name: string;
-          next_shipment_date?: string | null;
-          status?: "scheduled" | "processing" | "shipped" | "delivered";
-          quantity?: number;
-          created_at?: string;
-        };
+          id?: string
+          appointment_id: string
+          patient_id: string
+          provider_id: string
+          subjective?: string | null
+          objective?: string | null
+          assessment?: string | null
+          plan?: string | null
+          private_to_provider?: boolean
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          treatment_id?: string | null;
-          medication_name?: string;
-          next_shipment_date?: string | null;
-          status?: "scheduled" | "processing" | "shipped" | "delivered";
-          quantity?: number;
-          created_at?: string;
-        };
-      };
-      notifications: {
+          id?: string
+          appointment_id?: string
+          patient_id?: string
+          provider_id?: string
+          subjective?: string | null
+          objective?: string | null
+          assessment?: string | null
+          plan?: string | null
+          private_to_provider?: boolean
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      patient_intakes: {
         Row: {
-          id: string;
-          user_id: string;
-          icon: string;
-          title: string;
-          description: string;
-          dismissed: boolean;
-          created_at: string;
-        };
+          id: string
+          patient_id: string
+          appointment_id: string | null
+          chief_complaints: string[]
+          chief_complaint_detail: string
+          past_medical_history: string[]
+          past_medical_history_notes: string
+          allergy_status: string
+          allergy_disclosure: string
+          answers: Json
+          status: string
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          icon?: string;
-          title: string;
-          description?: string;
-          dismissed?: boolean;
-          created_at?: string;
-        };
+          id?: string
+          patient_id: string
+          appointment_id?: string | null
+          chief_complaints?: string[]
+          chief_complaint_detail?: string
+          past_medical_history?: string[]
+          past_medical_history_notes?: string
+          allergy_status?: string
+          allergy_disclosure?: string
+          answers?: Json
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          icon?: string;
-          title?: string;
-          description?: string;
-          dismissed?: boolean;
-          created_at?: string;
-        };
-      };
-      clinical_cases: {
+          id?: string
+          patient_id?: string
+          appointment_id?: string | null
+          chief_complaints?: string[]
+          chief_complaint_detail?: string
+          past_medical_history?: string[]
+          past_medical_history_notes?: string
+          allergy_status?: string
+          allergy_disclosure?: string
+          answers?: Json
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      visit_sessions: {
         Row: {
-          id: string;
-          user_id: string;
-          treatment_id: string | null;
-          condition_id: string | null;
-          intake: Json;
-          plan: Json;
-          status: "pending_review" | "needs_info" | "approved" | "denied";
-          created_at: string;
-          reviewed_at: string | null;
-        };
+          id: string
+          appointment_id: string
+          patient_joined_at: string | null
+          provider_joined_at: string | null
+          both_joined_at: string | null
+          ended_at: string | null
+          duration_seconds: number
+          video_vendor: string
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          treatment_id?: string | null;
-          condition_id?: string | null;
-          intake?: Json;
-          plan?: Json;
-          status?: "pending_review" | "needs_info" | "approved" | "denied";
-          created_at?: string;
-          reviewed_at?: string | null;
-        };
+          id?: string
+          appointment_id: string
+          patient_joined_at?: string | null
+          provider_joined_at?: string | null
+          both_joined_at?: string | null
+          ended_at?: string | null
+          duration_seconds?: number
+          video_vendor?: string
+          created_at?: string
+          updated_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          treatment_id?: string | null;
-          condition_id?: string | null;
-          intake?: Json;
-          plan?: Json;
-          status?: "pending_review" | "needs_info" | "approved" | "denied";
-          created_at?: string;
-          reviewed_at?: string | null;
-        };
-      };
-      message_threads: {
-        Row: {
-          id: string;
-          user_id: string;
-          subject: string;
-          preview: string;
-          status: "no_action" | "action_required";
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          subject: string;
-          preview?: string;
-          status?: "no_action" | "action_required";
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          subject?: string;
-          preview?: string;
-          status?: "no_action" | "action_required";
-          updated_at?: string;
-        };
-      };
-    };
+          id?: string
+          appointment_id?: string
+          patient_joined_at?: string | null
+          provider_joined_at?: string | null
+          both_joined_at?: string | null
+          ended_at?: string | null
+          duration_seconds?: number
+          video_vendor?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
     Views: {
       [_ in never]: never;
     };

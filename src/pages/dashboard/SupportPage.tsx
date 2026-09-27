@@ -38,25 +38,12 @@ export default function SupportPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Account & Care</p>
-          <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
-            Physician Messaging & Support
-          </h1>
-          <p className="text-sm text-zinc-400">
-            Send HIPAA-encrypted messages directly to your Tennessee physician or browse clinical guidance.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setComposing(!composing)}
-          className="flex items-center gap-2 rounded-xl bg-[#C89E67] px-4 py-2.5 text-xs font-semibold text-[#0C120F] shadow-sm hover:bg-[#B0854F] transition-all"
-        >
-          <MessageSquarePlus className="h-4 w-4" />
-          {composing ? "Close Composer" : "Message My Physician"}
-        </button>
+      <header className="space-y-2">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Account</p>
+        <h1 className="text-3xl font-semibold text-white font-display">
+          Support
+        </h1>
+        <p className="text-sm text-zinc-400">Message your care team or browse common topics.</p>
       </header>
 
       {sentSuccess && (
@@ -132,15 +119,15 @@ export default function SupportPage() {
       </div>
 
       <section aria-labelledby="messages-heading" className="space-y-3">
-        <h2 id="messages-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
-          Message History
+        <h2 id="messages-heading" className="text-lg font-semibold text-white font-display">
+          Messages
         </h2>
         <MessagesList messages={filtered} />
       </section>
 
       <section aria-labelledby="topics-heading" className="space-y-3">
-        <h2 id="topics-heading" className="text-lg font-semibold text-white" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
-          Popular Care Topics
+        <h2 id="topics-heading" className="text-lg font-semibold text-white font-display">
+          Popular topics
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {supportTopics.map((t) => (

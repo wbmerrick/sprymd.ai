@@ -7,6 +7,11 @@ import { recordSubscriptionCheckout, ensureAccountShell } from "@/lib/patientCar
 import { syncIntakeToDatabase } from "@/lib/supabaseSync";
 import { getSessionEmail } from "@/lib/customerAccounts";
 
+/**
+ * Legacy marketing checkout mock — not routed. Live payments use CashPayCheckout
+ * (/checkout) for one-time visit fees only. Kept honest so it cannot reintroduce
+ * monthly-subscription-includes-meds language if wired again.
+ */
 const Checkout = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -114,85 +119,26 @@ const Checkout = () => {
     <main className="min-h-screen bg-off-white py-24 px-4">
       <div className="section-container max-w-5xl">
         <AnimatedSection>
-          <div className="mb-8 text-center md:text-left">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              <Lock className="w-3.5 h-3.5" /> 100% Direct Cash-Pay Checkout
-            </span>
-            <h1 className="font-display text-navy text-3xl md:text-4xl font-bold">
-              Complete Your SpryMD Consultation
-            </h1>
-            <p className="font-body text-muted-foreground text-sm mt-1 max-w-2xl">
-              All plans include physician chart review, Tennessee-licensed e-prescribing, Empower Pharmacy fulfillment, and continuous provider messaging. Zero insurance required.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-12 gap-8">
-            {/* Left Col: Plan Selector & Order Summary */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="card-base p-6">
-                <h2 className="font-display text-navy text-xl font-bold mb-4 flex items-center justify-between">
-                  <span>Select Care Protocol</span>
-                  <span className="text-xs font-normal text-muted-foreground">Tennessee Telehealth</span>
-                </h2>
-
-                <div className="space-y-2.5 mb-6">
-                  {Object.values(CASH_PAY_PLANS).map((p) => {
-                    const isSelected = selectedPlanKey === p.id;
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setSelectedPlanKey(p.id)}
-                        className={`w-full text-left p-3.5 rounded-xl border-2 transition-all flex items-center justify-between ${
-                          isSelected
-                            ? "border-primary bg-primary/10 text-navy shadow-sm font-semibold"
-                            : "border-gray-light text-muted-foreground hover:border-gray-300"
-                        }`}
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-navy">{p.name}</p>
-                          <p className="text-[11px] text-muted-foreground">{p.category}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-navy">${p.priceMonthly}</p>
-                          <p className="text-[10px] text-muted-foreground">/month</p>
-                        </div>
-                      </button>
-                    );
-                  })}
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="card-base">
+              <h2 className="font-display text-navy text-2xl font-bold mb-6">Your Visit Summary</h2>
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between font-body text-navy">
+                  <span>Clinician visit fee</span>
+                  <span className="font-semibold">$75.00</span>
                 </div>
-
-                <div className="h-px bg-gray-light my-4" />
-
-                <div className="space-y-2.5 text-xs text-navy">
-                  <div className="flex justify-between">
-                    <span>Physician Consultation & Chart Review</span>
-                    <span className="font-semibold text-emerald-600">Included</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Empower Pharmacy Fulfillment</span>
-                    <span className="font-semibold text-emerald-600">Included</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tennessee Next-Business-Day Delivery</span>
-                    <span className="font-semibold text-emerald-600">Included</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Unlimited Secure Provider Messaging</span>
-                    <span className="font-semibold text-emerald-600">Included</span>
-                  </div>
-                  <div className="h-px bg-gray-light my-3" />
-                  <div className="flex justify-between text-base font-bold text-navy pt-1">
-                    <span>Total Cash-Pay Rate</span>
-                    <span className="text-primary">${plan.priceMonthly}.00/mo</span>
-                  </div>
+                <div className="flex justify-between font-body text-muted-foreground">
+                  <span>Medication (if approved)</span>
+                  <span>Billed separately</span>
                 </div>
-
-                <div className="mt-6 rounded-xl bg-muted/60 p-3.5 border border-border text-[11px] text-muted-foreground leading-relaxed">
-                  <p className="font-semibold text-navy mb-1 flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-primary" /> 100% Direct Cash-Pay Guarantee
-                  </p>
-                  If our board-certified physician determines that telehealth or medication is not clinically safe for you, your authorization hold is released immediately and you receive a 100% full refund.
+                <div className="flex justify-between font-body text-muted-foreground">
+                  <span>Secure messaging after visit</span>
+                  <span>Included with visit</span>
+                </div>
+                <div className="h-px bg-gray-light" />
+                <div className="flex justify-between font-body text-navy text-lg font-bold">
+                  <span>Due today</span>
+                  <span>$75.00 one-time</span>
                 </div>
 
                 <button
@@ -205,26 +151,38 @@ const Checkout = () => {
                 </button>
               </div>
 
-              {/* HSA/FSA Receipt Preview */}
-              {showReceipt && (
-                <div className="card-base p-5 border border-primary/30 bg-primary/5 text-xs text-navy space-y-3">
-                  <div className="flex items-start justify-between border-b border-primary/20 pb-2">
-                    <div>
-                      <p className="font-bold text-sm text-navy">{receipt.providerDetails.clinicName}</p>
-                      <p className="text-[11px] text-muted-foreground">{receipt.providerDetails.address}</p>
-                      <p className="text-[11px] text-muted-foreground">NPI: {receipt.providerDetails.npi} · Phone: {receipt.providerDetails.phone}</p>
-                    </div>
-                    <span className="font-mono text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded">
-                      {receipt.receiptNumber}
-                    </span>
-                  </div>
-                  <div className="space-y-1 text-[11px]">
-                    <p><strong>Patient:</strong> {receipt.patientName} ({receipt.patientEmail})</p>
-                    <p><strong>Item:</strong> {receipt.planName} (Direct Telehealth Consultation & Prescription)</p>
-                    <p><strong>Amount Paid:</strong> ${receipt.amount}.00 via {receipt.paymentMethod}</p>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground italic border-t border-primary/10 pt-2 leading-relaxed">
-                    {receipt.disclaimer}
+              <ul className="space-y-2 mb-6">
+                {["Real physician review", "Prescription only if appropriate", "Discreet delivery when prescribed", "No medication auto-charge at checkout"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 font-body text-sm text-navy">
+                    <Check className="w-4 h-4 text-green flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex items-center gap-4 text-xs font-body text-muted-foreground border-t border-gray-light pt-4">
+                <div className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> HIPAA Secure</div>
+                <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> SSL Encrypted</div>
+                <span>Licensed Physician</span>
+              </div>
+            </div>
+
+            <div className="card-base">
+              <h2 className="font-display text-navy text-2xl font-bold mb-6">Secure Checkout</h2>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="font-body text-navy text-sm font-medium mb-1 block">Email</label>
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    className="w-full rounded-xl border-2 border-gray-light p-3 font-body text-navy focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <div className="bg-muted rounded-xl p-6 text-center">
+                  <p className="font-body text-muted-foreground text-sm">
+                    Use the live cash-pay checkout for Stripe payments.
                   </p>
                 </div>
               )}
@@ -346,6 +304,23 @@ const Checkout = () => {
                   </div>
                 </form>
               </div>
+
+              <Link to="/checkout" className="btn-primary w-full text-center">
+                Continue to visit checkout →
+              </Link>
+
+              <p className="font-body text-muted-foreground text-xs mt-4 text-center">
+                You pay a one-time clinician visit fee today. Medication plan prices are charged only after clinician approval, coordinated separately.
+              </p>
+
+              <div className="flex items-center justify-center gap-2 mt-4 text-xs font-body text-muted-foreground">
+                <Lock className="w-3.5 h-3.5" />
+                256-bit SSL encryption. Powered by Stripe.
+              </div>
+
+              <p className="font-body text-muted-foreground text-[11px] mt-4 italic text-center">
+                SpryMD provides telehealth consultations. Prescription issuance is at physician discretion. This is not a substitute for emergency care.
+              </p>
             </div>
           </div>
         </AnimatedSection>

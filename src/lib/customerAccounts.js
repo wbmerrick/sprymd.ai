@@ -206,6 +206,20 @@ export async function signUpCustomer({ email, password, name, dob }) {
     /* ignore care bootstrap errors during auth */
   }
 
+  if (supabaseUser?.id) {
+    try {
+      const { bootstrapClinicalPatient } = await import("@/lib/bootstrapClinicalPatient");
+      await bootstrapClinicalPatient({
+        userId: supabaseUser.id,
+        email: key,
+        fullName: profile.name,
+        dateOfBirth: dob || undefined,
+      });
+    } catch {
+      /* chart tables may not exist until migrations are applied */
+    }
+  }
+
   if (supabaseUser) {
     return {
       profile,
@@ -245,6 +259,16 @@ export async function signInCustomer({ email, password }) {
       });
       // Keep / refresh local verifier so future sessions work offline of Auth.
       upsertStoredAccount({ ...profile, passwordHash: stored.passwordHash || passwordHash });
+      try {
+        const { bootstrapClinicalPatient } = await import("@/lib/bootstrapClinicalPatient");
+        await bootstrapClinicalPatient({
+          userId: data.user.id,
+          email: key,
+          fullName: profile.name,
+        });
+      } catch {
+        /* chart tables may not exist until migrations are applied */
+      }
       setSessionEmail(key);
       try {
         const { ensureAccountShell } = await import("@/lib/patientCareStore");

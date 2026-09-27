@@ -455,6 +455,57 @@ export function recordSubscriptionCheckout(input: {
   return care;
 }
 
+/**
+ * Record a "request a clinician call" from a disqualified intake. The case is
+ * flagged `needs_info` so it is distinguishable from a plan awaiting approval,
+ * and the patient gets a message + notification describing the next step.
+ */
+export function recordConsultRequest(input: {
+  email: string;
+  conditionId?: string;
+  conditionName?: string;
+  disqualifier: string;
+  crisis?: boolean;
+  phone: string;
+  bestTime?: string;
+  answers?: Record<string, unknown>;
+}) {
+  const email = emailKey(input.email);
+  const care = getPatientCare(email);
+  const now = new Date().toISOString();
+  const label = input.conditionName || "care";
+
+  care.clinicalCases.unshift({
+    id: `case_${Date.now()}`,
+    email,
+    conditionId: input.conditionId,
+    planName: `Clinician call · ${label}`,
+    intake: {
+      ...(input.answers || {}),
+      consult_requested: true,
+      disqualifier: input.disqualifier,
+      crisis: !!input.crisis,
+      phone: input.phone,
+      best_time_to_call: input.bestTime || "",
+    },
+    status: "needs_info",
+    createdAt: now,
+  });
+  care.messages.unshift({
+    id: `msg_${Date.now()}`,
+    subject: `Clinician call requested · ${label}`,
+    preview: `We'll call ${input.phone}${input.bestTime ? ` (${input.bestTime})` : ""} to talk through your answers before any treatment decision.`,
+    updatedAt: now,
+    status: "no_action",
+  });
+  pushNotification(care, {
+    icon: "pill",
+    title: "Clinician call requested",
+    description: `Your ${label.toLowerCase()} answers need a live conversation first. Expect a call within one business day.`,
+  });
+  return saveCare(care);
+}
+
 export function recordCartCheckout(input: {
   email: string;
   items: { name: string; qty: number; price: number; productId?: string }[];
@@ -491,8 +542,6 @@ export function recordRefillCheckout(input: {
   const email = emailKey(input.email);
   const care = getPatientCare(email);
   const now = new Date();
-  const shipDate = new Date(now);
-  shipDate.setDate(shipDate.getDate() + 2);
 
   for (const item of input.items) {
     const treatmentId =
@@ -503,8 +552,8 @@ export function recordRefillCheckout(input: {
       id: `shp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       treatmentId,
       medicationName: item.name,
-      nextShipmentDate: shipDate.toISOString().slice(0, 10),
-      status: "processing",
+      nextShipmentDate: null,
+      status: "scheduled",
       quantity: 1,
     });
   }
@@ -512,7 +561,7 @@ export function recordRefillCheckout(input: {
   care.transactions.unshift({
     id: `txn_${Date.now()}`,
     date: now.toISOString().slice(0, 10),
-    product: `Refill · ${input.items.map((i) => i.name).join(", ")}`,
+    product: `Refill request · ${input.items.map((i) => i.name).join(", ")}`,
     quantity: input.items.length,
     amount: input.total,
     status: "Pending review",
@@ -520,18 +569,18 @@ export function recordRefillCheckout(input: {
   care.messages.unshift({
     id: `msg_${Date.now()}`,
     subject: "Refill request received",
-    preview: "Your refill request is queued for clinician confirmation before pharmacy release.",
+    preview: "Your refill request is queued for clinician confirmation. We will confirm payment before pharmacy release.",
     updatedAt: now.toISOString(),
     status: "no_action",
   });
   pushNotification(care, {
     icon: "truck",
     title: "Refill requested",
-    description: "We’ll confirm with your clinician, then release to pharmacy fulfillment.",
+    description: "A clinician will confirm appropriateness, then we coordinate payment and pharmacy fulfillment.",
   });
   saveCare(care);
   addCustomerOrder(email, {
-    label: `Refill · ${input.items.map((i) => i.name).join(", ")}`,
+    label: `Refill request · ${input.items.map((i) => i.name).join(", ")}`,
     mode: "refill",
     total: input.total,
   });

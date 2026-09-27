@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SPRY_MD_COLOR } from "@/brand/tokens";
 
 const Footer = () => {
   return (
@@ -6,7 +7,9 @@ const Footer = () => {
       <div className="section-container">
         <div className="flex flex-col md:flex-row justify-between gap-8">
           <div className="space-y-2">
-            <p className="font-display text-primary-foreground text-xl font-bold">SpryMD.ai</p>
+            <p className="font-display text-primary-foreground text-xl font-bold">
+              Spry<span style={{ color: SPRY_MD_COLOR }}>MD</span>.ai
+            </p>
             <p className="font-body text-primary-foreground/70 text-xs max-w-md leading-relaxed">
               SpryMD Telehealth Tennessee P.C. · 414 Union Street, Suite 1900, Nashville, TN 37219<br />
               Direct: (615) 802-SPRY / (615) 802-7779 · Email: support@sprymd.ai
