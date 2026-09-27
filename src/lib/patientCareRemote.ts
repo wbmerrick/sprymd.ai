@@ -158,28 +158,30 @@ export async function fetchPatientCareFromDb(email: string): Promise<PatientCare
   const subscriptions: Subscription[] = (subsRes.data || []).map((r) => ({
     id: String(r.id),
     treatmentId: String(r.treatment_id || ""),
-    medicationName: treatments.find((t) => t.id === r.treatment_id)?.medicationName || "Protocol",
     price: Number(r.price || 0),
     billingCadence: String(r.billing_cadence || "Monthly"),
-    nextChargeDate: r.next_charge_date ? String(r.next_charge_date) : undefined,
+    nextChargeDate: r.next_charge_date
+      ? String(r.next_charge_date)
+      : new Date().toISOString().slice(0, 10),
     autoshipEnabled: Boolean(r.autoship_enabled),
   }));
 
   const shipments: Shipment[] = (shipsRes.data || []).map((r) => ({
     id: String(r.id),
-    treatmentId: r.treatment_id ? String(r.treatment_id) : undefined,
+    treatmentId: String(r.treatment_id || ""),
     medicationName: String(r.medication_name || ""),
-    nextShipmentDate: r.next_shipment_date ? String(r.next_shipment_date) : undefined,
+    nextShipmentDate: r.next_shipment_date ? String(r.next_shipment_date) : null,
     status: (r.status as Shipment["status"]) || "scheduled",
     quantity: Number(r.quantity || 1),
   }));
 
   const notifications: NotificationItem[] = (notesRes.data || []).map((r) => ({
     id: String(r.id),
-    icon: (r.icon as NotificationItem["icon"]) || "pill",
+    icon: String(r.icon || "pill"),
     title: String(r.title || ""),
     description: String(r.description || ""),
-    createdAt: String(r.created_at || new Date().toISOString()),
+    timestamp: String(r.created_at || new Date().toISOString()),
+    dismissed: false,
   }));
 
   const clinicalCases: ClinicalCase[] = (casesRes.data || []).map((r) => ({
