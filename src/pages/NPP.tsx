@@ -12,7 +12,8 @@ const NPP = () => (
         Notice of Privacy Practices
       </h1>
     </section>
-    <section className="section-padding bg-card">
+
+    <section className="section-padding bg-card py-12 md:py-16">
       <div className="section-container max-w-3xl">
         <AnimatedSection>
           <div className="prose prose-sm font-body text-muted-foreground max-w-none">

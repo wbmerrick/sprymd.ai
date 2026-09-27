@@ -383,7 +383,7 @@ export const footerPages = {
     "navLabel": "Sermorelin",
     "eyebrow": "PROTOCOLS",
     "tagline": "Peptide therapy for recovery, sleep, and lean mass.",
-    "fromPrice": "199",
+    "fromPrice": "149",
     "ctaLabel": "Begin protocol",
     "ctaTarget": "intake",
     "conditionId": "sermorelin",
@@ -393,11 +393,11 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Sermorelin is a growth-hormone-releasing hormone (GHRH) analog. Instead of replacing growth hormone directly, it prompts your pituitary to produce more of its own — preserving the body's natural pulse and feedback loops."
+            "text": "Sermorelin is a growth-hormone-releasing hormone (GHRH) analog. Instead of replacing growth hormone directly with synthetic HGH, it encourages your pituitary gland to produce more of its own natural growth hormone — safely, gradually, and in harmony with your body's feedback loops."
           },
           {
             "type": "p",
-            "text": "Patients use sermorelin for deeper sleep, faster recovery from training, improved body composition, and healthy aging. Every protocol is reviewed by a licensed clinician and compounded by Empower Pharmacy — nightly subcutaneous injection, shipped cold to your door."
+            "text": "Patients use sermorelin to boost energy, build lean muscle mass, sleep deeper, and accelerate recovery. Every protocol is reviewed by a licensed clinician and prepared by licensed U.S. compounding pharmacies in both subcutaneous injection and needle-free mint dissolvable tablet formats."
           }
         ]
       },
@@ -407,10 +407,10 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "Men noticing slower recovery, lighter sleep, or declining lean mass with age",
-              "Patients who want a physiologic alternative to direct HGH replacement",
-              "Athletes and high-output professionals optimizing recovery and sleep quality",
-              "Anyone seeking clinician-supervised peptide therapy — not gray-market vials"
+              "Adults experiencing age-related vitality declines, slower workout recovery, or lighter sleep",
+              "Patients seeking a natural alternative to synthetic human growth hormone (HGH)",
+              "Individuals wanting either once-daily subcutaneous injections or convenient under-the-tongue dissolvable tablets",
+              "Anyone wanting 100% online clinician review and discreet doorstep pharmacy shipping"
             ]
           }
         ]
@@ -421,11 +421,11 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "Licensed clinician review of your goals, history, and screening answers",
-              "Protocol selection — standard nightly, sleep-focused blend, or high-dose titration",
-              "Compounded sermorelin from Empower Pharmacy, shipped cold and discreet",
-              "Dose titration and secure messaging with your care team",
-              "Cancel or pause anytime"
+              "Personalized treatment plan reviewed by licensed medical clinicians",
+              "Subcutaneous injection kit (5 mL vial 2mg/mL) or Mint Dissolvable Tablets (1000mcg/dose)",
+              "Medication prepared and shipped directly from licensed U.S. pharmacies",
+              "Ongoing medical support and secure clinical messaging",
+              "FSA / HSA eligible, cancel or pause anytime"
             ]
           }
         ]
@@ -436,9 +436,9 @@ export const footerPages = {
           {
             "type": "ol",
             "items": [
-              "**Assess** — Complete a short intake covering goals, age, medical history, and required safety screening.",
-              "**Clinician review** — A licensed provider confirms peptide therapy is appropriate and selects your starting protocol.",
-              "**Optimize** — Nightly subQ injection before bed. Adjust dose with your clinician as results and labs indicate."
+              "**Complete Intake** — Submit a short, 100% online health questionnaire for your provider to review.",
+              "**Provider Review** — A licensed clinician determines whether Sermorelin therapy is appropriate for you.",
+              "**Free, Rush Delivery** — Once approved, your medication and supplies ship discreetly to your door."
             ]
           }
         ]
@@ -449,9 +449,10 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "**Sermorelin Injection** — 200–300 mcg nightly subQ. The standard protocol for recovery, sleep, and body composition.",
-              "**Sermorelin + Glycine** — Enhanced nightly blend supporting deeper sleep architecture and GH release.",
-              "**Sermorelin High-Dose** — 500 mcg nightly, clinician-titrated for patients who have plateaued on standard dosing."
+              "**Sermorelin Injections ($149/mo)** — One 5 mL vial (2mg/mL) with subcutaneous injection kit included. 1-month supply (approx. 25–30 injections).",
+              "**Mint Dissolvable Tablets ($149/mo)** — Needle-free daily oral dissolve tablets (1000mcg/dose) that dissolve under the tongue.",
+              "**Sermorelin + Glycine Injection ($199/mo)** — Enhanced nightly blend supporting deeper sleep architecture and nighttime GH release.",
+              "**Sermorelin High-Dose ($249/mo)** — 500 mcg nightly, clinician-titrated for sustained recovery."
             ]
           }
         ]
@@ -461,7 +462,7 @@ export const footerPages = {
         "blocks": [
           {
             "type": "p",
-            "text": "Sermorelin is not prescribed to patients with an active cancer diagnosis or a history of pituitary tumor. We screen for thyroid disorders and diabetes, which can affect response. Treatment is declined when history or findings do not support therapy. SpryMD is not emergency care — call 911 for any acute medical emergency."
+            "text": "Sermorelin is not prescribed to patients with an active cancer diagnosis or a history of pituitary tumors. We screen for thyroid disorders and diabetes. Treatment is declined when clinical findings do not support therapy. SpryMD is not emergency care — call 911 for any acute medical emergency."
           }
         ]
       }
@@ -565,7 +566,7 @@ export const footerPages = {
     "navLabel": "Primary Care",
     "eyebrow": "PROTOCOLS",
     "tagline": "Your dedicated Spry clinician.",
-    "fromPrice": "49",
+    "fromPrice": "120",
     "ctaLabel": "Begin protocol",
     "ctaTarget": "intake",
     "conditionId": "pcp",
@@ -632,10 +633,10 @@ export const footerPages = {
           {
             "type": "ul",
             "items": [
-              "**Spry Primary Care** — Full PCP membership with annual wellness, chronic care management, referrals, and unlimited secure messaging.",
-              "**PCP + Annual Labs** — Primary Care membership plus comprehensive annual labs — lipids, A1C, CBC, and hormone panel as indicated.",
-              "**PCP Essentials** — Lighter plan with messaging and as-needed visits. For patients who already have specialists.",
-              "**Household Primary Care** — Shared membership for up to two adults. Same clinician continuity for you and a partner."
+              "**Spry Primary Care · Acute Insight ($120)** — 1 visit + anytime messaging for 1 month.",
+              "**Yearly Checkup ($250)** — 1 visit + full blood work (yearly labs) + anytime messaging.",
+              "**Spry Primary Care for Two Adults ($180 Acute Insight / $470 Yearly Checkups)** — Shared care options for two adults.",
+              "**Monthly Doctor-Initiated Visits ($500)** — Spry Primary Care at its finest. Your doctor calls you once a month to check on you and your wellbeing."
             ]
           }
         ]
@@ -1465,19 +1466,11 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "### Mailing address"
+            "text": "### Practice & Mailing Address"
           },
           {
             "type": "p",
-            "text": "Privacy correspondence is handled by email. For written notices:"
-          },
-          {
-            "type": "p",
-            "text": "SpryMD Inc. Attn: Privacy Officer — privacy@sprymd.ai — United States"
-          },
-          {
-            "type": "p",
-            "text": "A physical mailing address will be published here once the registered office is confirmed."
+            "text": "SpryMD Telehealth Tennessee P.C. · 414 Union Street, Suite 1900, Nashville, TN 37219 · Phone: (615) 802-SPRY / (615) 802-7779"
           }
         ]
       },

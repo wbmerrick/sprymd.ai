@@ -29,7 +29,7 @@ const faqGroups: FAQGroup[] = [
     ],
   },
   {
-    label: "The Consultation",
+    label: "Pricing, Billing & Cash-Pay Model",
     items: [
       { q: "What happens after I pay?", a: "Today you pay a one-time clinician visit fee securely with Stripe. Your intake is already complete (or you finish it right after). A Tennessee-licensed physician reviews your case — usually within one business day. You'll get a confirmation email for the payment, then a follow-up when the clinical review is done." },
       { q: "Will I definitely get a prescription?", a: "Not necessarily. Prescriptions are issued only when clinically appropriate. If treatment isn't right for you, your physician will explain why. Visit-fee refunds follow our clinical and billing policy when you are not a candidate." },
@@ -37,7 +37,7 @@ const faqGroups: FAQGroup[] = [
     ],
   },
   {
-    label: "Treatment and Medication",
+    label: "Prescriptions & Pharmacy Fulfillment",
     items: [
       { q: "What medications do you prescribe?", a: "Depending on your care option and clinical fit, protocols can include PDE5 inhibitors for ED (including combination formulations when appropriate), GLP-1 / dual-agonist weight-loss therapies, hair and skin compounds, and clinician-supervised peptide or NAD+ protocols. Your physician recommends what is safest and most effective for you — or declines when it isn't." },
       { q: "For ED, what's daily vs as-needed?", a: "Daily tadalafil is taken every day so you're ready without planning. As-needed options are taken before activity. Combination protocols (like Wingman) aim for both fast onset and a longer window when clinically appropriate." },
@@ -47,7 +47,7 @@ const faqGroups: FAQGroup[] = [
     ],
   },
   {
-    label: "Privacy and Security",
+    label: "Privacy, HIPAA & Security",
     items: [
       { q: "Is my information private?", a: "Your health information is treated as protected health information under applicable law and stored with industry-standard security. We will never sell your health information." },
       { q: "How does billing appear on my statement?", a: `Your charge appears discreetly as ${STATEMENT_DESCRIPTOR_DISPLAY} (some banks add a short merchant prefix). No mention of ED, men's health, or medications.` },
@@ -80,13 +80,17 @@ const FAQAccordion = ({ items }: { items: FAQItem[] }) => {
   return (
     <div className="space-y-3">
       {items.map((faq, i) => (
-        <div key={i} className="card-base p-0 overflow-hidden">
+        <div key={i} className="card-base p-0 overflow-hidden border border-gray-light">
           <button
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            className="w-full flex items-center justify-between p-5 text-left"
+            className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors"
           >
-            <span className="font-display text-navy font-semibold pr-4">{faq.q}</span>
-            <ChevronDown className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${openIndex === i ? "rotate-180" : ""}`} />
+            <span className="font-display text-navy font-semibold text-base pr-4">{faq.q}</span>
+            <ChevronDown
+              className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${
+                openIndex === i ? "rotate-180" : ""
+              }`}
+            />
           </button>
           <AnimatePresence>
             {openIndex === i && (
@@ -96,7 +100,9 @@ const FAQAccordion = ({ items }: { items: FAQItem[] }) => {
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5">{faq.a}</p>
+                <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5 border-t border-gray-light/50 pt-3">
+                  {faq.a}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -123,24 +129,30 @@ const FAQ = () => {
     <section className="bg-navy py-24 px-4 text-center">
       <div className="section-container">
         <AnimatedSection>
-          <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="font-body text-primary-foreground/70 text-xl">Everything you want to know — answered honestly.</p>
+          <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-3">
+            Frequently Asked Questions
+          </h1>
+          <p className="font-body text-primary-foreground/75 text-base md:text-lg max-w-2xl mx-auto">
+            Everything you need to know about SpryMD direct cash-pay telehealth, Tennessee fulfillment, and clinical oversight.
+          </p>
         </AnimatedSection>
       </div>
     </section>
 
-    <section className="section-padding bg-card">
+    <section className="section-padding bg-card py-12 md:py-16">
       <div className="section-container max-w-3xl space-y-10">
         {faqGroups.map((group, i) => (
           <AnimatedSection key={i} delay={i * 0.05}>
-            <span className="inline-block font-body font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4 text-2xl">{group.label}</span>
+            <span className="inline-block font-body font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full mb-3 text-xs uppercase tracking-wider">
+              {group.label}
+            </span>
             <FAQAccordion items={group.items} />
           </AnimatedSection>
         ))}
       </div>
     </section>
 
-    <section className="section-padding bg-off-white text-center">
+    <section className="section-padding bg-off-white text-center py-12">
       <div className="section-container max-w-xl">
         <AnimatedSection>
           <h2 className="section-headline">Still have questions?</h2>

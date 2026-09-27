@@ -42,8 +42,9 @@ const Contact = () => {
         <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
         <p className="font-body text-primary-foreground/70 text-lg">We aim to reply within one business day.</p>
       </section>
-      <section className="section-padding bg-card">
-        <div className="section-container max-w-lg">
+
+      <section className="section-padding bg-card py-12 md:py-16">
+        <div className="section-container max-w-5xl">
           <AnimatedSection>
             <div className="card-base">
               {sent ? (
