@@ -50,7 +50,16 @@ export interface Subscription {
   autoshipEnabled: boolean;
 }
 
-export type MessageThreadStatus = "no_action" | "action_required";
+export type MessageThreadStatus =
+  | "no_action"
+  | "action_required"
+  | "open"
+  | "awaiting_staff"
+  | "awaiting_patient"
+  | "closed";
+
+/** Patient-selected urgency for care-team messaging (never for true emergencies). */
+export type MessageUrgency = "routine" | "soon" | "urgent";
 
 export interface MessageThread {
   id: string;
@@ -58,6 +67,7 @@ export interface MessageThread {
   preview: string;
   updatedAt: string;
   status: MessageThreadStatus;
+  urgency?: MessageUrgency;
 }
 
 export interface Transaction {
@@ -230,6 +240,20 @@ export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetId[] = [
   "shipments",
 ];
 
+export type ClinicalCaseStatus = "pending_review" | "needs_info" | "approved" | "denied";
+
+export interface ClinicalCase {
+  id: string;
+  email: string;
+  treatmentId?: string;
+  conditionId?: string;
+  planName?: string;
+  intake?: Record<string, unknown>;
+  status: ClinicalCaseStatus;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
 export interface DashboardData {
   user: DashboardUser;
   treatments: Treatment[];
@@ -243,5 +267,6 @@ export interface DashboardData {
   wearableReadings: WearableReading[];
   bodyProfile: BodyProfile;
   bodyGoals: BodyGoal[];
+  clinicalCases?: ClinicalCase[];
   dashboardLayout?: DashboardLayoutConfig;
 }
