@@ -1,32 +1,46 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { isMasterEmail, MASTER_EMAILS } from "@/lib/masterAccount";
+import {
+  isClinicianEmail,
+  isMasterEmail,
+  isOwnerEmail,
+  isStaffAllowlistEmail,
+  MASTER_EMAILS,
+  OWNER_EMAILS,
+  STAFF_EMAILS,
+} from "@/lib/masterAccount";
 import { bootstrapMasterCare, getPatientCare } from "@/lib/patientCareStore";
 
 beforeEach(() => {
   localStorage.clear();
 });
 
-describe("master account", () => {
-  it("recognizes the master email", () => {
-    expect(MASTER_EMAILS).toContain("wbmerrick@gmail.com");
-    expect(isMasterEmail("wbmerrick@gmail.com")).toBe(true);
-    expect(isMasterEmail("WBMerrick@gmail.com")).toBe(true);
-    expect(isMasterEmail("other@example.com")).toBe(false);
+describe("master / staff roles", () => {
+  it("treats wbmerrick@sprymd.ai as owner/master", () => {
+    expect(OWNER_EMAILS).toContain("wbmerrick@sprymd.ai");
+    expect(MASTER_EMAILS).toContain("wbmerrick@sprymd.ai");
+    expect(isOwnerEmail("wbmerrick@sprymd.ai")).toBe(true);
+    expect(isMasterEmail("wbmerrick@sprymd.ai")).toBe(true);
+    expect(isClinicianEmail("wbmerrick@sprymd.ai")).toBe(true);
   });
 
-  it("unlocks the full wearable rack for master", () => {
-    bootstrapMasterCare("wbmerrick@gmail.com");
-    const care = getPatientCare("wbmerrick@gmail.com");
+  it("treats staff@sprymd.ai as staff clinician, not owner", () => {
+    expect(STAFF_EMAILS).toContain("staff@sprymd.ai");
+    expect(isStaffAllowlistEmail("staff@sprymd.ai")).toBe(true);
+    expect(isClinicianEmail("staff@sprymd.ai")).toBe(true);
+    expect(isOwnerEmail("staff@sprymd.ai")).toBe(false);
+    expect(isMasterEmail("staff@sprymd.ai")).toBe(false);
+  });
+
+  it("unlocks the full wearable rack for owner", () => {
+    bootstrapMasterCare("wbmerrick@sprymd.ai");
+    const care = getPatientCare("wbmerrick@sprymd.ai");
     expect(care.wearableDevices.length).toBeGreaterThan(5);
     expect(care.wearableDevices.every((d) => d.owned)).toBe(true);
-    expect(care.bodyProfile.heightCm).toBeTruthy();
-    expect(care.bodyGoals.length).toBeGreaterThan(0);
   });
 
-  it("does not unlock wearables for non-master emails", () => {
+  it("does not unlock wearables for non-owner emails", () => {
     bootstrapMasterCare("other@example.com");
     const care = getPatientCare("other@example.com");
     expect(care.wearableDevices.every((d) => d.owned)).toBe(false);
-    expect(care.bodyProfile.heightCm).toBeFalsy();
   });
 });

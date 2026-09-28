@@ -243,6 +243,8 @@ export async function signUpCustomer({ email, password, name, dob }) {
 export async function signInCustomer({ email, password }) {
   const key = emailKey(email);
   const passwordHash = await hashPassword(password, key);
+  const { isClinicianEmail } = await import("@/lib/masterAccount");
+  const clinician = isClinicianEmail(key);
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -269,17 +271,40 @@ export async function signInCustomer({ email, password }) {
       } catch {
         /* chart tables may not exist until migrations are applied */
       }
+      try {
+        if (clinician) {
+          const { ensureProviderRow } = await import("@/lib/messaging");
+          await ensureProviderRow({ email: key, name: profile.name });
+        } else {
+          const { ensurePatientRow } = await import("@/lib/messaging");
+          await ensurePatientRow({ email: key, name: profile.name });
+        }
+      } catch {
+        /* messaging tables may not exist until migrations are applied */
+      }
       setSessionEmail(key);
       try {
         const { ensureAccountShell } = await import("@/lib/patientCareStore");
-        ensureAccountShell(key, profile?.name);
+        await ensureAccountShell(key, profile?.name);
       } catch {
         /* ignore */
       }
       return { profile, provider: "supabase" };
     }
-  } catch {
-    // Fall through to local per-email account
+  } catch (authErr) {
+    // Clinician tools require RLS-backed Auth — never pretend local-only worked.
+    if (clinician) {
+      const msg = String(authErr?.message || "").toLowerCase();
+      const err = new Error(
+        msg.includes("invalid") || msg.includes("credentials")
+          ? "Clinical sign-in failed. Use your SpryMD Auth password (e.g. wbmerrick@sprymd.ai), or Create account once for this email on the clinical project."
+          : "Staff and owner workspaces need a live SpryMD Auth session. Sign in with your clinical account — local-only login cannot access messaging.",
+      );
+      err.code = "clinical_auth_required";
+      err.cause = authErr;
+      throw err;
+    }
+    // Fall through to local per-email account for patients only
   }
 
   const profile = await signInLocalAccount({ email: key, password });

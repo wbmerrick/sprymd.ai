@@ -31,8 +31,7 @@ export function WearableReadings({ readings }: WearableReadingsProps) {
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C89E67]">Home devices</p>
           <h2
             id="wearable-readings-heading"
-            className="mt-1 text-2xl font-semibold tracking-tight text-white"
-            style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+            className="mt-1 text-2xl font-semibold tracking-tight text-white font-display"
           >
             Wearable readings
           </h2>
@@ -81,7 +80,7 @@ export function WearableReadings({ readings }: WearableReadingsProps) {
                       {r.source}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-lg font-semibold tracking-tight text-[#C89E67]" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+                  <p className="mt-0.5 text-lg font-semibold tracking-tight text-[#C89E67] font-display">
                     {formatValue(r)}
                   </p>
                   <p className="text-xs text-zinc-500">

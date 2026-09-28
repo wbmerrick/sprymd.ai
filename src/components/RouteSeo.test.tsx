@@ -31,4 +31,15 @@ describe("RouteSeo", () => {
     expect(document.title).toBe("Frequently Asked Questions | SpryMD");
     expect(document.head.querySelector('meta[name="robots"]')).toBeNull();
   });
+
+  it("injects organization JSON-LD on the homepage", () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <RouteSeo />
+      </MemoryRouter>,
+    );
+    const ld = document.getElementById("seo-page-jsonld");
+    expect(ld?.textContent).toMatch(/MedicalBusiness/);
+    expect(ld?.textContent).toMatch(/Tennessee/);
+  });
 });

@@ -86,19 +86,37 @@ function mockSupabase(state: {
     api.update = (payload: Row) => {
       mode = "update";
       updatePayload = payload;
-      return {
-        eq: async (col: string, val: unknown) => {
-          const list =
-            table === "patients"
-              ? patients
-              : table === "appointments"
-                ? appointments
-                : paymentEvents;
-          const row = list.find((r) => r[col] === val);
-          if (row && updatePayload) Object.assign(row, updatePayload);
-          return { data: row || null, error: null };
-        },
+      filters = [];
+      const chain: Record<string, unknown> = {};
+      const apply = async () => {
+        const list =
+          table === "patients"
+            ? patients
+            : table === "appointments"
+              ? appointments
+              : paymentEvents;
+        let rows = [...list];
+        for (const f of filters) rows = rows.filter(f);
+        const row = rows[0];
+        if (row && updatePayload) Object.assign(row, updatePayload);
+        return { data: row || null, error: null };
       };
+      chain.eq = (col: string, val: unknown) => {
+        filters.push((r) => r[col] === val);
+        return chain;
+      };
+      chain.in = (col: string, vals: unknown[]) => {
+        const set = new Set(vals);
+        filters.push((r) => set.has(r[col]));
+        return chain;
+      };
+      chain.then = (
+        resolve: (v: { data: Row | null; error: null }) => void,
+        reject?: (e: unknown) => void,
+      ) => {
+        apply().then(resolve, reject);
+      };
+      return chain;
     };
 
     return api;
@@ -185,6 +203,31 @@ describe("ensureCheckoutAppointment", () => {
       amount_cents: 7500,
       stripe_checkout_session_id: "cs_test",
     });
+  });
+
+  it("refuses to revive cancelled appointments into awaiting_payment", async () => {
+    const { client, appointments } = mockSupabase({
+      appointments: [
+        {
+          id: "a1",
+          patient_id: "p1",
+          status: "cancelled",
+          service_tier: "protocol_start",
+          amount_cents: 7500,
+        },
+      ],
+    });
+    const result = await ensureCheckoutAppointment({
+      supabase: client,
+      appointmentId: "a1",
+      patientEmail: "pat@example.com",
+      serviceTierId: "protocol_start",
+      amountCents: 7500,
+      stripeCheckoutSessionId: "cs_refunded",
+    });
+    expect(result.created).toBe(false);
+    expect(appointments[0].status).toBe("cancelled");
+    expect(appointments[0].stripe_checkout_session_id).toBeUndefined();
   });
 });
 

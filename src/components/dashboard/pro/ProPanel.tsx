@@ -29,8 +29,7 @@ export function ProPanel({
             <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">{eyebrow}</p>
           ) : null}
           <h2
-            className="truncate text-sm font-semibold text-white"
-            style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+            className="truncate text-sm font-semibold text-white font-display"
           >
             {title}
           </h2>

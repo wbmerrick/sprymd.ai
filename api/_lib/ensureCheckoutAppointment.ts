@@ -10,6 +10,8 @@ export type EnsureCheckoutAppointmentInput = {
   currency?: string;
   physicalState?: string;
   stripeCheckoutSessionId?: string;
+  conditionId?: string;
+  treatmentId?: string;
 };
 
 export type EnsureCheckoutAppointmentResult = {
@@ -39,13 +41,34 @@ export async function ensureCheckoutAppointment(
   if (input.appointmentId) {
     const { data: existing, error } = await supabase
       .from("appointments")
-      .select("id, patient_id")
+      .select("id, patient_id, status")
       .eq("id", input.appointmentId)
       .maybeSingle();
 
     if (error) throw new Error(error.message);
     if (!existing?.id || !existing.patient_id) {
       throw new Error("appointment_not_found");
+    }
+
+    // Never revive cancelled/paid/completed/in-visit rows back to awaiting_payment.
+    // Pre-payment statuses (scheduled, awaiting_payment, empty) may be moved into checkout.
+    const status = String(existing.status || "");
+    const terminal = new Set([
+      "cancelled",
+      "canceled",
+      "paid",
+      "completed",
+      "no_show",
+      "in_progress",
+      "claimed",
+      "refunded",
+    ]);
+    if (status && terminal.has(status)) {
+      return {
+        appointmentId: existing.id as string,
+        patientId: existing.patient_id as string,
+        created: false,
+      };
     }
 
     const patch: Record<string, unknown> = {
@@ -58,11 +81,14 @@ export async function ensureCheckoutAppointment(
     if (input.stripeCheckoutSessionId) {
       patch.stripe_checkout_session_id = input.stripeCheckoutSessionId;
     }
+    if (input.conditionId) patch.condition_id = input.conditionId;
+    if (input.treatmentId) patch.treatment_id = input.treatmentId;
 
     const { error: updateError } = await supabase
       .from("appointments")
       .update(patch)
-      .eq("id", existing.id);
+      .eq("id", existing.id)
+      .in("status", ["awaiting_payment", "scheduled"]);
 
     if (updateError) throw new Error(updateError.message);
 
@@ -122,6 +148,8 @@ export async function ensureCheckoutAppointment(
   if (input.stripeCheckoutSessionId) {
     appointmentRow.stripe_checkout_session_id = input.stripeCheckoutSessionId;
   }
+  if (input.conditionId) appointmentRow.condition_id = input.conditionId;
+  if (input.treatmentId) appointmentRow.treatment_id = input.treatmentId;
 
   const { data: appointment, error: apptError } = await supabase
     .from("appointments")

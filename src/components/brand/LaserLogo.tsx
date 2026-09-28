@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { SPRY_MD_COLOR } from "@/brand/tokens";
+import { FONT_DISPLAY_CSS, SPRY_MD_COLOR } from "@/brand/tokens";
 
 export type LaserLogoProps = {
   /** Increment to remount the SVG and restart CSS/SMIL animations from 0. */
@@ -74,7 +74,7 @@ function StaticDarkLogo() {
       <text
         x="96"
         y="62"
-        style={{ fontFamily: "Fraunces, Georgia, serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
+        style={{ fontFamily: FONT_DISPLAY_CSS, fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
         fill="#FFFFFF"
       >
         Spry
@@ -226,7 +226,7 @@ function LaserLogoSvg({ play }: { play: number }) {
           <text
             x="96"
             y="62"
-            style={{ fontFamily: "Fraunces, Georgia, serif", fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
+            style={{ fontFamily: FONT_DISPLAY_CSS, fontWeight: 600, fontSize: 42, letterSpacing: "-0.03em" }}
             fill="#FFFFFF"
           >
             Spry

@@ -6,5 +6,8 @@ Disallow: /dashboard
 Disallow: /provider
 Disallow: /visit
 Disallow: /oauth
+Disallow: /ops
+Disallow: /staff
+Disallow: /master
 
 Sitemap: https://www.sprymd.ai/sitemap.xml

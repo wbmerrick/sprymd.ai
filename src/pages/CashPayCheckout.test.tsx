@@ -23,7 +23,9 @@ describe("CashPayCheckout funnel handoff", () => {
     const plan = screen.getByTestId("selected-plan");
     expect(plan).toHaveTextContent("Tadalafil 5mg Daily");
     expect(plan).toHaveTextContent("$79/mo");
-    expect(plan).toHaveTextContent(/billed only if a Tennessee-licensed clinician approves/i);
+    expect(plan).toHaveTextContent(/one-time clinician visit fee/i);
+    expect(plan).toHaveTextContent(/do not charge medication automatically/i);
+    expect(plan).toHaveTextContent(/Tennessee-licensed clinician approves/i);
     expect(screen.getByRole("link", { name: /back to your options/i })).toHaveAttribute("href", "/?view=plan&condition=ed");
 
     expect(screen.getByRole("button", { name: /protocol start visit/i })).toHaveAttribute("aria-pressed", "true");

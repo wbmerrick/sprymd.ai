@@ -1,11 +1,11 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import AnimatedSection from "@/components/AnimatedSection";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { STATEMENT_DESCRIPTOR_DISPLAY } from "@shared/statementDescriptor";
+import { pharmacyFulfillmentCopy } from "@/config/pharmacy";
 import { applyHead, faqJsonLd } from "@/lib/seo";
-import { metaForPath } from "@/seo/routes";
 
 interface FAQItem {
   q: string;
@@ -21,156 +21,150 @@ const faqGroups: FAQGroup[] = [
   {
     label: "About the Service",
     items: [
-      { q: "Is this real medical care?", a: "Yes. Every consultation is reviewed and prescribed by a licensed physician — not a nurse practitioner, PA, or AI. You receive a real diagnosis and prescription from a doctor who is professionally and legally accountable for your care." },
-      { q: "How is this different from going to my regular doctor?", a: "Instead of scheduling, waiting, and having an uncomfortable conversation, you complete a thorough health intake online. Your physician reviews the same information they'd collect in-office and makes the same clinical decision — in a fraction of the time and with complete privacy." },
-      { q: "Is this a video visit?", a: "No. This is asynchronous telehealth — you complete your intake at your own pace, and your physician reviews it on their end. No scheduled appointment. No video call. Faster and more private." },
+      { q: "Is this real medical care?", a: "Yes. Every consultation is reviewed by a licensed physician — not AI. Clinical decisions and prescriptions are made by a doctor who is professionally and legally accountable for your care." },
+      { q: "How is this different from going to my regular doctor?", a: "Instead of scheduling, waiting, and having an uncomfortable conversation, you complete a thorough health intake online. Your physician reviews the same information they'd collect in-office and makes the same clinical decision — with complete privacy." },
+      { q: "Is this a video visit?", a: "Most SpryMD care is asynchronous chart review — you complete a thorough intake; a Tennessee-licensed physician reviews it and messages you with the plan. No scheduled video call for specialty protocols (ED, weight loss, hair, skin, peptides, NAD+). Primary-care (PCP) visits may include a live video visit when clinically appropriate." },
       { q: "What states do you serve?", a: "We currently serve patients located in Tennessee. We are working to expand to additional states." },
+      { q: "What can SpryMD help with?", a: "Care options on the platform include men's sexual health (including Wingman), low testosterone, women's health, weight loss, hair loss, skin care, anxiety & depression, sermorelin, NAD+ therapy, and primary-care style visits where offered. Availability of any protocol is always subject to clinician judgment." },
     ],
   },
   {
-    label: "The Consultation",
+    label: "Pricing, Billing & Cash-Pay Model",
     items: [
-      { q: "What happens after I pay?", a: "You'll be redirected to a secure medical intake form. Complete the health questionnaire (about 5 minutes). Once submitted, your physician reviews your case within 24 hours. You'll receive an email when your review is complete." },
-      { q: "Will I definitely get a prescription?", a: "Not necessarily. Prescriptions are issued at physician discretion based on your health history. If ED medication isn't clinically appropriate for you, your physician will explain why and issue a full refund. Your safety comes first." },
-      { q: "What if the doctor has follow-up questions?", a: "Your physician may send a secure message requesting clarification before making a clinical decision. No additional charge. You'll be notified by email to respond in your patient portal." },
+      { q: "What happens after I pay?", a: "Today you pay a one-time clinician visit fee securely with Stripe. Your intake is already complete (or you finish it right after). A Tennessee-licensed physician reviews your case — usually within one business day. You'll get a confirmation email for the payment, then a follow-up when the clinical review is done." },
+      { q: "Will I definitely get a prescription?", a: "Not necessarily. Prescriptions are issued only when clinically appropriate. If treatment isn't right for you, your physician will explain why. Visit-fee refunds follow our clinical and billing policy when you are not a candidate." },
+      { q: "What if the doctor has follow-up questions?", a: "Your physician may send a secure message requesting clarification before making a clinical decision. No additional charge for clarifying questions during that review." },
     ],
   },
   {
-    label: "Treatment and Medication",
+    label: "Prescriptions & Pharmacy Fulfillment",
     items: [
-      { q: "What medications do you prescribe?", a: "We prescribe FDA-approved PDE5 inhibitors including Tadalafil (daily or as-needed), Sildenafil (as-needed), and Vardenafil (as-needed). Your physician recommends the best option based on your health history and preferences." },
-      { q: "What's the difference between daily and as-needed?", a: "Daily tadalafil (5mg) is taken every day — you're ready at any time with no planning needed. As-needed medications are taken 30–60 minutes before activity. Daily is popular for spontaneity; as-needed is preferred by men who don't want a daily medication." },
-      { q: "Do you prescribe controlled substances?", a: "No. PDE5 inhibitors are not controlled substances. We do not prescribe controlled substances through this platform." },
-      { q: "Are these medications safe?", a: "PDE5 inhibitors are among the most studied medications in the world and are safe for the vast majority of healthy men. They are contraindicated in men taking nitrates and require caution with certain heart conditions — which is why a thorough health review is required before prescribing." },
-      { q: "What are the side effects?", a: "Common: mild headache, flushing, nasal congestion, mild indigestion — typically resolve within a few hours. Rare but serious: sudden vision/hearing changes, priapism (erection >4 hours — seek emergency care immediately). If you experience chest pain after taking ED medication, call 911." },
+      { q: "What medications do you prescribe?", a: "Depending on your care option and clinical fit, protocols can include PDE5 inhibitors for ED (including combination formulations when appropriate), GLP-1 / dual-agonist weight-loss therapies, hair and skin compounds, and clinician-supervised peptide or NAD+ protocols. Your physician recommends what is safest and most effective for you — or declines when it isn't." },
+      { q: "For ED, what's daily vs as-needed?", a: "Daily tadalafil is taken every day so you're ready without planning. As-needed options are taken before activity. Combination protocols (like Wingman) aim for both fast onset and a longer window when clinically appropriate." },
+      { q: "Do you prescribe controlled substances?", a: "We do not use this platform as a controlled-substance mill. Controlled substances are only considered when clinically and legally appropriate for a given protocol, and many launch care paths do not include them." },
+      { q: "Are these medications safe?", a: "Every protocol has contraindications. That is why a thorough health review is required before prescribing. If your history makes a medication unsafe, we will not prescribe it." },
+      { q: "What are the side effects?", a: "Side effects depend on the medication. Your clinician review covers risks specific to your plan. For ED meds, common effects can include headache or flushing; rare serious events need emergency care (call 911). Always read the pharmacy materials that ship with your medication." },
     ],
   },
   {
-    label: "Privacy and Security",
+    label: "Privacy, HIPAA & Security",
     items: [
-      { q: "Is my information private?", a: "Completely. Your health information is HIPAA-protected and stored on encrypted, HIPAA-compliant servers. We will never sell or share your health information." },
-      { q: "How does billing appear on my statement?", a: "Your charge appears discreetly as [BILLING DESCRIPTOR]. No mention of ED, men's health, or medications." },
+      { q: "Is my information private?", a: "Your health information is treated as protected health information under applicable law and stored with industry-standard security. We will never sell your health information." },
+      { q: "How does billing appear on my statement?", a: `Your charge appears discreetly as ${STATEMENT_DESCRIPTOR_DISPLAY} (some banks add a short merchant prefix). No mention of ED, men's health, or medications.` },
       { q: "How is my medication packaged?", a: "Plain, unmarked packaging with no indication of contents on the outside." },
-      { q: "Do you share my information with my insurance?", a: "No. This is cash-pay only. We do not bill insurance and do not share information with insurers." },
+      { q: "Do you share my information with my insurance?", a: "No. This is cash-pay only. We do not bill insurance and do not share information with insurers for claims." },
     ],
   },
   {
     label: "Pricing and Billing",
     items: [
-      { q: "What does it cost?", a: "$75/month — includes physician review, prescription (if appropriate), pharmacy fulfillment, and secure provider messaging. No hidden fees." },
-      { q: "What if I'm not approved?", a: "Full refund if the physician determines you are not a candidate for treatment. You never pay for care you can't receive." },
-      { q: "How do I cancel?", a: "Log into your patient portal or email us. No cancellation fee. Takes effect at end of current billing period." },
-      { q: "Do you accept insurance?", a: "No. Cash-pay only. Many patients find $75/month is less than their insurance copay for a specialist visit." },
+      { q: "What do I pay today?", a: "A one-time cash-pay clinician visit fee (for example $75 for a basic visit or $99 for a protocol-start visit, depending on what you select). Card details are entered only on Stripe's secure checkout page." },
+      { q: "When do I pay for medication?", a: "Medication plan prices shown as “from $X/mo” are what treatment would cost if a clinician approves a plan. Soft launch does not auto-charge medication at checkout. If approved, we coordinate fulfillment and billing for medication separately — clearly, before you are charged for meds." },
+      { q: "What if I'm not approved?", a: "If the physician determines you are not a candidate, we follow our refund policy for the visit fee when applicable. Refunds return to your original card; banks may take a few business days to post them." },
+      { q: "How do I cancel?", a: "Email support@sprymd.ai or use your patient account. There is no cancellation fee for ending future care. Any active medication billing arrangements (when offered) are cancelled according to the terms shown at that time." },
+      { q: "Do you accept insurance?", a: "No. Cash-pay only. Many patients find a single visit fee is less than a specialist copay." },
     ],
   },
   {
     label: "Shipping",
     items: [
-      { q: "Where does my medication come from?", a: "Licensed compounding pharmacy, shipped directly to you. All pharmacies are licensed and accredited." },
-      { q: "How long does shipping take?", a: "Most orders arrive within 3–5 business days of prescription processing." },
+      { q: "Where does my medication come from?", a: pharmacyFulfillmentCopy() },
+      { q: "How long does shipping take?", a: "After a prescription is approved and transmitted, most orders ship within 1–2 business days and arrive shortly after. Timing depends on the medication, pharmacy, weather, and carrier. Tennessee next-business-day delivery applies only when the order qualifies under our published delivery terms." },
     ],
   },
 ];
 
 const FAQAccordion = ({ items }: { items: FAQItem[] }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const baseId = useId();
 
   return (
     <div className="space-y-3">
-      {items.map((faq, i) => {
-        const isOpen = openIndex === i;
-        const buttonId = `${baseId}-q${i}`;
-        const panelId = `${baseId}-a${i}`;
-        return (
-          <div key={i} className="card-base p-0 overflow-hidden">
-            <h3 className="m-0">
-              <button
-                type="button"
-                id={buttonId}
-                aria-expanded={isOpen}
-                aria-controls={panelId}
-                onClick={() => setOpenIndex(isOpen ? null : i)}
-                className="w-full flex items-center justify-between p-5 text-left rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
-              >
-                <span className="font-display text-navy font-semibold pr-4">{faq.q}</span>
-                <ChevronDown
-                  aria-hidden="true"
-                  className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-            </h3>
-            {/* Answers stay in the DOM (crawlable) and expand with a CSS grid-row transition. */}
-            <div
-              id={panelId}
-              role="region"
-              aria-labelledby={buttonId}
-              aria-hidden={!isOpen}
-              className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ease-out motion-reduce:transition-none ${
-                isOpen ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"
+      {items.map((faq, i) => (
+        <div key={i} className="card-base p-0 overflow-hidden border border-gray-light">
+          <button
+            onClick={() => setOpenIndex(openIndex === i ? null : i)}
+            className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors"
+          >
+            <span className="font-display text-navy font-semibold text-base pr-4">{faq.q}</span>
+            <ChevronDown
+              className={`text-muted-foreground w-5 h-5 flex-shrink-0 transition-transform duration-300 ${
+                openIndex === i ? "rotate-180" : ""
               }`}
-            >
-              <div className="overflow-hidden">
-                <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5">{faq.a}</p>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+            />
+          </button>
+          <AnimatePresence>
+            {openIndex === i && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="font-body text-muted-foreground text-sm leading-relaxed px-5 pb-5 border-t border-gray-light/50 pt-3">
+                  {faq.a}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
     </div>
   );
 };
 
 const FAQ = () => {
-  // FAQPage structured data mirrors the questions rendered on this page.
   useEffect(() => {
-    const meta = metaForPath("/faq");
+    const items = faqGroups.flatMap((g) => g.items.map((i) => ({ question: i.q, answer: i.a })));
     applyHead({
-      pageTitle: meta.pageTitle,
-      description: meta.description,
+      pageTitle: "Frequently Asked Questions",
+      description:
+        "How SpryMD telehealth works: physician review, visit fees, prescriptions, privacy, shipping, and what to expect after your visit.",
       path: "/faq",
-      jsonLd: faqJsonLd(faqGroups.flatMap((group) => group.items.map((item) => ({ question: item.q, answer: item.a })))),
+      jsonLd: faqJsonLd(items),
     });
   }, []);
 
   return (
-    <>
-      <Navbar />
-      <main id="main-content" className="pt-16">
-        {/* Hero renders immediately (no reveal animation): it holds the LCP element. */}
-        <section className="bg-navy py-24 px-4 text-center">
-          <div className="section-container">
-            <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-            <p className="font-body text-primary-foreground/70 text-xl">Everything you want to know — answered honestly.</p>
-          </div>
-        </section>
+  <main id="main-content">
+    <section className="bg-navy py-24 px-4 text-center">
+      <div className="section-container">
+        <AnimatedSection>
+          <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-3">
+            Frequently Asked Questions
+          </h1>
+          <p className="font-body text-primary-foreground/75 text-base md:text-lg max-w-2xl mx-auto">
+            Everything you need to know about SpryMD direct cash-pay telehealth, Tennessee fulfillment, and clinical oversight.
+          </p>
+        </AnimatedSection>
+      </div>
+    </section>
 
-        <section className="section-padding bg-card">
-          <div className="section-container max-w-3xl space-y-10">
-            {faqGroups.map((group, i) => (
-              <AnimatedSection key={i} delay={i * 0.05}>
-                <h2 className="inline-block font-body font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4 text-2xl">{group.label}</h2>
-                <FAQAccordion items={group.items} />
-              </AnimatedSection>
-            ))}
-          </div>
-        </section>
+    <section className="section-padding bg-card py-12 md:py-16">
+      <div className="section-container max-w-3xl space-y-10">
+        {faqGroups.map((group, i) => (
+          <AnimatedSection key={i} delay={i * 0.05}>
+            <span className="inline-block font-body font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full mb-3 text-xs uppercase tracking-wider">
+              {group.label}
+            </span>
+            <FAQAccordion items={group.items} />
+          </AnimatedSection>
+        ))}
+      </div>
+    </section>
 
-        <section className="section-padding bg-off-white text-center">
-          <div className="section-container max-w-xl">
-            <AnimatedSection>
-              <h2 className="section-headline">Still have questions?</h2>
-              <p className="font-body text-muted-foreground mb-6">We respond to all inquiries within 24 hours.</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/contact" className="btn-secondary">Contact Us →</Link>
-                <Link to="/#landing-conditions" className="btn-primary">Start My Consultation — $75 →</Link>
-              </div>
-            </AnimatedSection>
+    <section className="section-padding bg-off-white text-center py-12">
+      <div className="section-container max-w-xl">
+        <AnimatedSection>
+          <h2 className="section-headline">Still have questions?</h2>
+          <p className="font-body text-muted-foreground mb-6">We aim to reply within one business day.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/contact" className="btn-secondary">Contact Us →</Link>
+            <Link to="/#landing-conditions" className="btn-primary">See care options →</Link>
           </div>
-        </section>
-      </main>
-      <Footer />
-    </>
+        </AnimatedSection>
+      </div>
+    </section>
+  </main>
   );
 };
 

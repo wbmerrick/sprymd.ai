@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { applyHead } from "@/lib/seo";
+import { applyHead, organizationJsonLd } from "@/lib/seo";
 import { metaForPath } from "@/seo/routes";
 
 /**
@@ -20,6 +20,7 @@ const RouteSeo = () => {
       description: meta.description,
       path: pathname,
       noindex: !meta.indexable,
+      jsonLd: pathname === "/" ? organizationJsonLd() : null,
     });
   }, [pathname]);
 

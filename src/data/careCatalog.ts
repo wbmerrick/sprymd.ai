@@ -3,6 +3,7 @@ import {
   Dna,
   Droplets,
   Flame,
+  Flower2,
   Leaf,
   Scale,
   Sparkles,
@@ -27,6 +28,7 @@ export type ConditionId =
   | "nad"
   | "lowt"
   | "mentalhealth"
+  | "womenshealth"
   | "pcp";
 
 export type Treatment = {
@@ -197,7 +199,7 @@ export const conditions: Record<ConditionId, Condition> = {
     ],
   },
   lowt: {
-    id: "lowt", name: "Low energy & hormones",
+    id: "lowt", name: "Low Testosterone",
     tagline: "Get your energy and drive back.",
     description: "Care for low testosterone and low energy. Labs when needed. A doctor guides every step.",
     icon: Droplets, accent: "#C89E67", fromPrice: "99",
@@ -215,7 +217,7 @@ export const conditions: Record<ConditionId, Condition> = {
     ],
   },
   mentalhealth: {
-    id: "mentalhealth", name: "Mood & focus",
+    id: "mentalhealth", name: "Anxiety & Depression",
     tagline: "Feel calmer. Think clearer.",
     description: "Private help for anxiety, depression, and stress. A doctor checks in and stays with you.",
     icon: Brain, accent: "#C89E67", fromPrice: "35",
@@ -232,14 +234,25 @@ export const conditions: Record<ConditionId, Condition> = {
         note: "Long half-life SSRI. Helpful for depression with obsessive features or missed-dose forgiveness." },
     ],
   },
+  womenshealth: {
+    id: "womenshealth", name: "Women's Health",
+    // TODO: Replace placeholder treatments, pricing, and clinical copy with counsel-approved women's health protocols before hard open.
+    tagline: "Private, clinician-guided care for women's health goals.",
+    description: "Placeholder women's health pathway. A licensed clinician reviews your intake before any treatment is offered.",
+    icon: Flower2, accent: "#C89E67", fromPrice: "75",
+    treatments: [
+      { id: "wh-consult", name: "Women's Health Visit", sub: "Clinician review · personalized plan", price: 75, chilled: false,
+        note: "TODO: Expand with specific women's health protocols (e.g. hormone support, contraception counseling, dermatology) after clinical + counsel review.", badge: "Coming soon" },
+    ],
+  },
   pcp: {
     id: "pcp", name: "Your doctor",
     tagline: "A doctor you can message any day.",
     description: "Make SpryMD your main doctor for checkups, labs, everyday illness, and follow-up — all online.",
-    icon: UserCheck, accent: "#C89E67", fromPrice: "120",
+    icon: UserCheck, accent: "#C89E67", fromPrice: "100",
     treatments: [
-      { id: "pcp-acute", name: "Spry Primary Care · Acute Insight", sub: "1 visit + anytime messaging for 1 month", price: 120, chilled: false,
-        note: "One clinician visit plus a month of anytime messaging. Two adults: $180.", badge: "Most popular", twoAdultPrice: 180 },
+      { id: "pcp-acute", name: "Acute Insight", sub: "Meant for acute issues/complaints · 1 visit + anytime messaging for 1 month", price: 100, chilled: false,
+        note: "One clinician visit plus a month of anytime messaging for acute issues and complaints. Two adults: $180.", badge: "Most popular", twoAdultPrice: 180 },
       { id: "pcp-yearly", name: "Yearly Checkup", sub: "1 visit + full blood work + anytime messaging", price: 250, chilled: false,
         note: "Annual visit with yearly labs and messaging. Two adults: $470.", badge: "Best value", twoAdultPrice: 470 },
       { id: "pcp-monthly", name: "Monthly Doctor-Initiated Visits", sub: "Your doctor calls you once a month", price: 500, chilled: false,
@@ -340,6 +353,15 @@ export const intakes: Record<ConditionId, IntakeQuestion[]> = {
       disqualify: ["Thoughts of harming yourself", "Plan or intent to act on those thoughts", "Recent psychiatric hospitalization"],
       crisis: ["Thoughts of harming yourself", "Plan or intent to act on those thoughts"] },
     { key: "preference", type: "single", title: "What matters most in a medication?", options: ["Proven for anxiety", "Proven for depression", "Less sexual side effects / more energy", "Something gentle to start", "Not sure — recommend for me"] },
+  ],
+  womenshealth: [
+    // TODO: Replace with condition-specific women's health screening questions before hard open.
+    { key: "goal", type: "single", title: "What brings you in today?", options: ["Hormone or cycle support", "Skin or hair concerns", "Energy, mood, or sleep", "Sexual health", "Something else — I want a clinician's advice"] },
+    { key: "duration", type: "single", title: "How long has this been going on?", options: ["Less than 3 months", "3–12 months", "More than a year", "Ongoing / intermittent"] },
+    { key: "tried", type: "multi", title: "What have you tried so far?",
+      options: ["Over-the-counter products", "Prior prescription treatment", "Talked with another clinician", "Nothing yet"],
+      exclusive: ["Nothing yet"] },
+    { key: "preference", type: "single", title: "What matters most right now?", options: ["A clear plan I can start soon", "Labs or testing first", "A second opinion", "Not sure — recommend for me"] },
   ],
   pcp: [
     { key: "reason", type: "single", title: "Why are you looking for a new primary care doctor?", options: ["I don't currently have a PCP", "My current doctor is hard to reach", "I want everything in one digital place", "I need help coordinating specialists", "Moving / changing insurance"] },

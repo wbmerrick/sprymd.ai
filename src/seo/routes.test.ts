@@ -8,6 +8,8 @@ describe("route metadata", () => {
     expect(metaForPath("/dashboard/goals/abc").path).toBe("/dashboard");
     expect(metaForPath("/visit/upcoming").indexable).toBe(false);
     expect(metaForPath("/definitely-not-a-page")).toBe(NOT_FOUND_META);
+    expect(metaForPath("/care/not-real")).toBe(NOT_FOUND_META);
+    expect(metaForPath("/care/ed").indexable).toBe(true);
   });
 
   it("gives every public page a unique title and description", () => {
@@ -23,8 +25,22 @@ describe("route metadata", () => {
 
   it("keeps account and checkout surfaces out of the sitemap and robots allowlist", () => {
     const sitemapPaths = SITEMAP_ROUTES.map((r) => r.path);
-    expect(sitemapPaths).toEqual(["/", "/about", "/faq", "/contact", "/terms", "/privacy", "/npp"]);
-    for (const path of ["/dashboard", "/checkout", "/intake", "/provider", "/visit", "/oauth"]) {
+    expect(sitemapPaths).toEqual([
+      "/",
+      "/about",
+      "/faq",
+      "/contact",
+      "/terms",
+      "/privacy",
+      "/npp",
+      "/care/ed",
+      "/care/weight-loss",
+      "/care/hair-loss",
+      "/care/skin",
+      "/care/sermorelin",
+      "/care/nad-therapy",
+    ]);
+    for (const path of ["/dashboard", "/checkout", "/intake", "/provider", "/visit", "/oauth", "/ops"]) {
       expect(DISALLOWED_PATHS).toContain(path);
       expect(sitemapPaths).not.toContain(path);
     }

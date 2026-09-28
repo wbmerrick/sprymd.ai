@@ -78,15 +78,74 @@ export const ROUTE_META: RouteMeta[] = [
     changefreq: "yearly",
     priority: 0.3,
   },
+  {
+    path: "/care/ed",
+    pageTitle: "Wingman — On-Demand ED Treatment",
+    description:
+      "Wingman by spryMD.ai: 80 mg sildenafil + 20 mg tadalafil. Online clinician review, discreet shipping in Tennessee.",
+    indexable: true,
+    changefreq: "weekly",
+    priority: 0.9,
+  },
+  {
+    path: "/care/weight-loss",
+    pageTitle: "Doctor-Guided Weight Loss",
+    description:
+      "Clinician-titrated GLP-1 and dual-agonist therapy from SpryMD. Tennessee telehealth with discreet shipping.",
+    indexable: true,
+    changefreq: "weekly",
+    priority: 0.9,
+  },
+  {
+    path: "/care/hair-loss",
+    pageTitle: "Hair Loss Treatment",
+    description:
+      "Clinician-guided oral and topical hair restore protocols. Finasteride, minoxidil, and compounded options.",
+    indexable: true,
+    changefreq: "monthly",
+    priority: 0.85,
+  },
+  {
+    path: "/care/skin",
+    pageTitle: "Prescription Skin Care",
+    description:
+      "Therapeutic tretinoin complexes and acne gels — clinician-guided and compounded for tolerability.",
+    indexable: true,
+    changefreq: "monthly",
+    priority: 0.85,
+  },
+  {
+    path: "/care/sermorelin",
+    pageTitle: "Sermorelin Peptide Therapy",
+    description:
+      "Clinician-supervised sermorelin for recovery, sleep, and lean muscle — compounded and cold-shipped.",
+    indexable: true,
+    changefreq: "monthly",
+    priority: 0.85,
+  },
+  {
+    path: "/care/nad-therapy",
+    pageTitle: "NAD+ Therapy",
+    description:
+      "Clinic-grade NAD+ by injection or nasal spray. Fight fatigue and brain fog with clinician oversight.",
+    indexable: true,
+    changefreq: "monthly",
+    priority: 0.85,
+  },
+  // Unknown /care/:slug values fall through to NOT_FOUND_META (no catch-all prefix —
+  // that previously titled bogus care URLs "Care options" while the SPA still matched).
   // Transactional / account surfaces: titled for the tab, kept out of the index.
   { path: "/quiz", pageTitle: "Start your visit", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/intake", pageTitle: "Medical intake", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/checkout", pageTitle: "Checkout", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/checkout/success", pageTitle: "Payment confirmed", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/dashboard", prefix: true, pageTitle: "Patient dashboard", description: DEFAULT_DESCRIPTION, indexable: false },
+  { path: "/staff", prefix: true, pageTitle: "Staff workspace", description: DEFAULT_DESCRIPTION, indexable: false },
+  { path: "/master", prefix: true, pageTitle: "Master workspace", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/provider", prefix: true, pageTitle: "Provider notes", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/visit", prefix: true, pageTitle: "Visit room", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/oauth", prefix: true, pageTitle: "Connect a device", description: DEFAULT_DESCRIPTION, indexable: false },
+  { path: "/ops", prefix: true, pageTitle: "Clinical ops", description: DEFAULT_DESCRIPTION, indexable: false },
 ];
 
 export const NOT_FOUND_META: RouteMeta = {

@@ -3,6 +3,7 @@ import { QuickLinksFooter } from "@/components/dashboard/QuickLinksFooter";
 import { CurrentManagement } from "@/components/dashboard/CurrentManagement";
 import { UpcomingShipments } from "@/components/dashboard/UpcomingShipments";
 import { ClinicalTerminal } from "@/components/dashboard/pro/ClinicalTerminal";
+import { ClinicalReviewQueue } from "@/components/dashboard/pro/ClinicalReviewQueue";
 import { FEATURES } from "@/config/features";
 import { useDashboard } from "@/pages/dashboard/DashboardLayout";
 
@@ -11,6 +12,9 @@ function CareHome() {
     notifications,
     activeTreatments,
     shipments,
+    clinicalCases,
+    email,
+    refresh,
     dismissNotification,
     clearAllNotifications,
   } = useDashboard();
@@ -19,13 +23,21 @@ function CareHome() {
     <div className="space-y-6">
       <header className="space-y-2">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#C89E67]">Care</p>
-        <h1 className="text-2xl font-semibold text-white md:text-3xl" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+        <h1 className="text-2xl font-semibold text-white md:text-3xl font-display">
           Your care at a glance
         </h1>
         <p className="text-sm text-zinc-500">
-          Treatments, shipments, and updates for your SpryMD account.
+          Treatments, prescriptions, shipments, and clinician review for your SpryMD account.
         </p>
       </header>
+
+      {/* Clinician Review & Intake Queue */}
+      <ClinicalReviewQueue
+        clinicalCases={clinicalCases || []}
+        userEmail={email || undefined}
+        onActionComplete={refresh}
+      />
+
       <CurrentManagement treatments={activeTreatments} />
       <UpcomingShipments shipments={shipments} />
       <NotificationsFeed
@@ -47,6 +59,9 @@ function DeviceDashboardHome() {
     wearableReadings,
     bodyProfile,
     bodyGoals,
+    clinicalCases,
+    email,
+    refresh,
     dismissNotification,
     clearAllNotifications,
     setWearableSyncMode,
@@ -63,6 +78,13 @@ function DeviceDashboardHome() {
 
   return (
     <div className="space-y-6">
+      {/* Clinician Review & Intake Queue */}
+      <ClinicalReviewQueue
+        clinicalCases={clinicalCases || []}
+        userEmail={email || undefined}
+        onActionComplete={refresh}
+      />
+
       <ClinicalTerminal
         wearableDevices={wearableDevices || []}
         wearableReadings={wearableReadings || []}

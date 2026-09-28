@@ -4,6 +4,7 @@ import { WearableToolbar } from "@/components/dashboard/WearableToolbar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import BrandAtmosphere from "@/components/brand/BrandAtmosphere";
 import { FEATURES } from "@/config/features";
+import { isMasterDashboardEmail, isStaffDashboardEmail } from "@/lib/dashboardRole";
 import { createContext, useContext } from "react";
 import type { UseDashboardDataReturn } from "@/hooks/useDashboardData";
 
@@ -32,6 +33,14 @@ export default function DashboardLayout() {
   if (!data.isAuthenticated) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/?auth=1&returnTo=${returnTo}`} replace />;
+  }
+
+  // Owners → command center; clinical staff → staff workspace.
+  if (isMasterDashboardEmail(data.email)) {
+    return <Navigate to="/master" replace />;
+  }
+  if (isStaffDashboardEmail(data.email)) {
+    return <Navigate to="/staff" replace />;
   }
 
   return (

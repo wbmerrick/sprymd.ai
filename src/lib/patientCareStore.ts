@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   BodyGoal,
   BodyGoalMetric,
   BodyProfile,
@@ -41,10 +41,11 @@ import {
 } from "@/types/dashboard";
 import { publishVitalsEvent } from "@/lib/vitalsBus";
 import { isMasterEmail } from "@/lib/masterAccount";
+import { dispatchPrescriptionToPharmacy } from "@/lib/pharmacyFulfillment";
+import { syncTreatmentApprovalToDatabase } from "@/lib/supabaseSync";
+import { logPhiAccess } from "@/lib/hipaaCompliance";
 
 const READINGS_CAP = 500;
-
-const CARE_KEY = "sprymd_patient_care_v1";
 
 export type ClinicalCaseStatus = "pending_review" | "needs_info" | "approved" | "denied";
 
@@ -87,6 +88,10 @@ export interface PatientCareRecord {
   updatedAt: string;
 }
 
+/** In-memory care cache â€” Supabase is source of truth (see patientCareRemote). */
+const careCache = new Map<string, PatientCareRecord>();
+let clinicalReviewCache: ClinicalCase[] = [];
+
 const SUPPORT_TOPICS: SupportTopic[] = [
   { id: "topic_1", title: "Refills & shipping", description: "When to renew, cold-chain, and tracking" },
   { id: "topic_2", title: "Side effects", description: "What is expected vs when to message care" },
@@ -99,15 +104,14 @@ function emailKey(email: string) {
 }
 
 function readAll(): Record<string, PatientCareRecord> {
-  try {
-    return JSON.parse(localStorage.getItem(CARE_KEY) || "{}");
-  } catch {
-    return {};
-  }
+  const out: Record<string, PatientCareRecord> = {};
+  for (const [k, v] of careCache.entries()) out[k] = v;
+  return out;
 }
 
 function writeAll(store: Record<string, PatientCareRecord>) {
-  localStorage.setItem(CARE_KEY, JSON.stringify(store));
+  careCache.clear();
+  for (const [k, v] of Object.entries(store)) careCache.set(k, v);
 }
 
 function emptyCare(email: string): PatientCareRecord {
@@ -243,11 +247,117 @@ export function getPatientCare(email: string): PatientCareRecord {
 
 function saveCare(care: PatientCareRecord): PatientCareRecord {
   const key = emailKey(care.email);
-  const store = readAll();
   const next = { ...care, email: key, updatedAt: new Date().toISOString() };
-  store[key] = next;
-  writeAll(store);
+  careCache.set(key, next);
+  // Persist to Supabase (poll/refresh model â€” fire and reconcile on next hydrate)
+  void import("@/lib/patientCareRemote")
+    .then(({ persistPatientCareToDb }) => persistPatientCareToDb(next))
+    .catch(() => {
+      /* offline / RLS â€” cache remains authoritative until next successful hydrate */
+    });
   return next;
+}
+
+/**
+ * Hydrate care from Supabase into memory. Call on dashboard mount and after staff actions.
+ * One-time migrates legacy localStorage `sprymd_patient_care_v1` when present.
+ */
+export async function hydratePatientCare(email: string): Promise<PatientCareRecord> {
+  const key = emailKey(email);
+  if (!key) return emptyCare("");
+  try {
+    const { migrateLegacyLocalCare, fetchPatientCareFromDb } = await import("@/lib/patientCareRemote");
+    await migrateLegacyLocalCare(key);
+    const remote = await fetchPatientCareFromDb(key);
+    careCache.set(key, remote);
+    return remote;
+  } catch {
+    return getPatientCare(key);
+  }
+}
+
+export async function refreshPatientCare(email: string): Promise<PatientCareRecord> {
+  return hydratePatientCare(email);
+}
+
+/** Staff review queue â€” sync snapshot; refresh via hydrateClinicalReviewQueue. */
+export function getClinicalCasesForReview(_userEmail?: string): ClinicalCase[] {
+  return [...clinicalReviewCache];
+}
+
+export async function hydrateClinicalReviewQueue(): Promise<ClinicalCase[]> {
+  try {
+    const { fetchClinicalCasesForReview } = await import("@/lib/patientCareRemote");
+    clinicalReviewCache = await fetchClinicalCasesForReview();
+  } catch {
+    clinicalReviewCache = [];
+  }
+  return [...clinicalReviewCache];
+}
+
+export async function approveClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "approved");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Case approved. Pharmacy handoff can proceed." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to approve case.",
+    };
+  }
+}
+
+export async function requestMoreInfoClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+  _note?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "needs_info");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Requested more information from the patient." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to update case.",
+    };
+  }
+}
+
+export async function denyClinicalCase(
+  caseId: string,
+  _reviewerEmail?: string,
+  _reason?: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
+    await updateClinicalCaseStatus(caseId, "denied");
+    await hydrateClinicalReviewQueue();
+    return { success: true, message: "Case denied." };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Failed to deny case.",
+    };
+  }
+}
+
+export async function sendPatientCareMessage(
+  email: string,
+  subject: string,
+  body: string,
+  urgency: import("@/types/dashboard").MessageUrgency = "routine",
+) {
+  const { createThread } = await import("@/lib/messaging");
+  const result = await createThread({ email, subject, body, urgency });
+  await hydratePatientCare(email);
+  return result;
 }
 
 function protocolToTreatment(p: Record<string, unknown>, idx: number): Treatment {
@@ -307,6 +417,7 @@ export function buildDashboardForEmail(email: string): DashboardData | null {
     wearableReadings: care.wearableReadings || [],
     bodyProfile: care.bodyProfile || emptyBodyProfile(),
     bodyGoals: care.bodyGoals || [],
+    clinicalCases: care.clinicalCases || [],
     dashboardLayout: care.dashboardLayout || defaultDashboardLayout(),
   };
 }
@@ -379,7 +490,7 @@ export function recordSubscriptionCheckout(input: {
     dosingInstructions:
       "Pending clinician review. Exact dose and titration schedule will be confirmed before the first shipment.",
     storage: input.plan.chilled
-      ? "Refrigerate after arrival (36–46°F). Do not freeze."
+      ? "Refrigerate after arrival (36â€“46Â°F). Do not freeze."
       : "Store at room temperature unless the label says otherwise.",
     howItWorks: "Your intake was submitted for chart review. Medication ships only after a clinician approves.",
     sideEffects: [],
@@ -399,7 +510,7 @@ export function recordSubscriptionCheckout(input: {
   care.transactions.unshift({
     id: `txn_${Date.now()}`,
     date: now.toISOString().slice(0, 10),
-    product: `${input.plan.name} · subscription`,
+    product: `${input.plan.name} Â· subscription`,
     quantity: 1,
     amount: input.plan.price,
     status: "Pending review",
@@ -416,7 +527,7 @@ export function recordSubscriptionCheckout(input: {
   });
   care.messages.unshift({
     id: `msg_${Date.now()}`,
-    subject: `Intake received · ${input.plan.name}`,
+    subject: `Intake received Â· ${input.plan.name}`,
     preview: "A SpryMD clinician will review your case before any prescription is issued.",
     updatedAt: now.toISOString(),
     status: "no_action",
@@ -424,7 +535,7 @@ export function recordSubscriptionCheckout(input: {
   pushNotification(care, {
     icon: "pill",
     title: "Case submitted for clinician review",
-    description: `${input.plan.name} is pending approval. You’ll be notified when it’s reviewed.`,
+    description: `${input.plan.name} is pending approval. Youâ€™ll be notified when itâ€™s reviewed.`,
   });
   care.shipments.unshift({
     id: `shp_${Date.now()}`,
@@ -476,7 +587,7 @@ export function recordConsultRequest(input: {
     id: `case_${Date.now()}`,
     email,
     conditionId: input.conditionId,
-    planName: `Clinician call · ${label}`,
+    planName: `Clinician call Â· ${label}`,
     intake: {
       ...(input.answers || {}),
       consult_requested: true,
@@ -490,7 +601,7 @@ export function recordConsultRequest(input: {
   });
   care.messages.unshift({
     id: `msg_${Date.now()}`,
-    subject: `Clinician call requested · ${label}`,
+    subject: `Clinician call requested Â· ${label}`,
     preview: `We'll call ${input.phone}${input.bestTime ? ` (${input.bestTime})` : ""} to talk through your answers before any treatment decision.`,
     updatedAt: now,
     status: "no_action",
@@ -510,7 +621,7 @@ export function recordCartCheckout(input: {
 }) {
   const email = emailKey(input.email);
   const care = getPatientCare(email);
-  const label = input.items.map((i) => `${i.name} ×${i.qty}`).join(", ") || "Marketplace order";
+  const label = input.items.map((i) => `${i.name} Ã—${i.qty}`).join(", ") || "Marketplace order";
   care.transactions.unshift({
     id: `txn_${Date.now()}`,
     date: new Date().toISOString().slice(0, 10),
@@ -539,8 +650,6 @@ export function recordRefillCheckout(input: {
   const email = emailKey(input.email);
   const care = getPatientCare(email);
   const now = new Date();
-  const shipDate = new Date(now);
-  shipDate.setDate(shipDate.getDate() + 2);
 
   for (const item of input.items) {
     const treatmentId =
@@ -551,8 +660,8 @@ export function recordRefillCheckout(input: {
       id: `shp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       treatmentId,
       medicationName: item.name,
-      nextShipmentDate: shipDate.toISOString().slice(0, 10),
-      status: "processing",
+      nextShipmentDate: null,
+      status: "scheduled",
       quantity: 1,
     });
   }
@@ -560,7 +669,7 @@ export function recordRefillCheckout(input: {
   care.transactions.unshift({
     id: `txn_${Date.now()}`,
     date: now.toISOString().slice(0, 10),
-    product: `Refill · ${input.items.map((i) => i.name).join(", ")}`,
+    product: `Refill request Â· ${input.items.map((i) => i.name).join(", ")}`,
     quantity: input.items.length,
     amount: input.total,
     status: "Pending review",
@@ -568,18 +677,18 @@ export function recordRefillCheckout(input: {
   care.messages.unshift({
     id: `msg_${Date.now()}`,
     subject: "Refill request received",
-    preview: "Your refill request is queued for clinician confirmation before pharmacy release.",
+    preview: "Your refill request is queued for clinician confirmation. We will confirm payment before pharmacy release.",
     updatedAt: now.toISOString(),
     status: "no_action",
   });
   pushNotification(care, {
     icon: "truck",
     title: "Refill requested",
-    description: "We’ll confirm with your clinician, then release to pharmacy fulfillment.",
+    description: "A clinician will confirm appropriateness, then we coordinate payment and pharmacy fulfillment.",
   });
   saveCare(care);
   addCustomerOrder(email, {
-    label: `Refill · ${input.items.map((i) => i.name).join(", ")}`,
+    label: `Refill request Â· ${input.items.map((i) => i.name).join(", ")}`,
     mode: "refill",
     total: input.total,
   });
@@ -590,7 +699,7 @@ export function getSignedInEmail(): string | null {
   return getSessionEmail();
 }
 
-export function ensureAccountShell(email: string, name?: string) {
+export async function ensureAccountShell(email: string, name?: string) {
   const key = emailKey(email);
   const existing = getStoredAccount(key);
   if (!existing) {
@@ -603,9 +712,10 @@ export function ensureAccountShell(email: string, name?: string) {
       }),
     );
   }
-  getPatientCare(key);
+  await hydratePatientCare(key);
   if (isMasterEmail(key)) {
     bootstrapMasterCare(key);
+    await hydratePatientCare(key);
   }
 }
 
@@ -639,10 +749,10 @@ export function setWearableSyncMode(email: string, deviceId: WearableKind, syncM
       icon: "activity",
       title:
         syncMode === "continuous"
-          ? `${device.name} · continuous monitoring on`
+          ? `${device.name} Â· continuous monitoring on`
           : syncMode === "sync"
-            ? `${device.name} · sync enabled`
-            : `${device.name} · manual upload`,
+            ? `${device.name} Â· sync enabled`
+            : `${device.name} Â· manual upload`,
       description:
         syncMode === "continuous"
           ? "Readings will stream into your dashboard when the device is in range."
@@ -770,7 +880,7 @@ export function importWearableUpload(
 function formatReadingValue(r: Pick<WearableReading, "value" | "unit" | "secondaryValue" | "secondaryUnit">) {
   const primary = `${r.value}${r.unit ? ` ${r.unit}` : ""}`;
   if (r.secondaryValue != null) {
-    return `${primary} · ${r.secondaryValue}${r.secondaryUnit ? ` ${r.secondaryUnit}` : ""}`;
+    return `${primary} Â· ${r.secondaryValue}${r.secondaryUnit ? ` ${r.secondaryUnit}` : ""}`;
   }
   return primary;
 }
@@ -865,7 +975,7 @@ function sampleReadingForDevice(deviceId: WearableKind): WearableReading {
     case "bp_monitor":
       return { ...base, metric: "Blood pressure", value: 118 + Math.round(Math.random() * 10), unit: "mmHg", secondaryValue: 74 + Math.round(Math.random() * 6), secondaryUnit: "mmHg", note: "Systolic / diastolic" };
     case "pulse_oximeter":
-      return { ...base, metric: "SpO₂", value: 96 + Math.round(Math.random() * 3), unit: "%", secondaryValue: 62 + Math.round(Math.random() * 12), secondaryUnit: "bpm" };
+      return { ...base, metric: "SpOâ‚‚", value: 96 + Math.round(Math.random() * 3), unit: "%", secondaryValue: 62 + Math.round(Math.random() * 12), secondaryUnit: "bpm" };
     case "smart_scale":
       return { ...base, metric: "Weight", value: Number((165 + Math.random() * 4).toFixed(1)), unit: "lb", secondaryValue: Number((22 + Math.random() * 2).toFixed(1)), secondaryUnit: "%" };
     case "cpap":
@@ -915,7 +1025,7 @@ function applyReadingToBodyProfile(care: PatientCareRecord, reading: Pick<Wearab
   });
 }
 
-/** Quiet continuous tick — no notification spam. */
+/** Quiet continuous tick â€” no notification spam. */
 export function appendContinuousTick(email: string, deviceId: WearableKind) {
   const care = getPatientCare(email);
   const device = (care.wearableDevices || []).find((d) => d.id === deviceId);
@@ -1262,11 +1372,12 @@ export async function syncWearableDeviceFromCloud(email: string, deviceId: Weara
     icon: "activity",
     title: `${providerName} cloud sync`,
     description: sample
-      ? `${sample.metric}: ${formatReadingValue(sample)} · ${liveApi ? "live OEM API" : "sandbox cloud"}`
+      ? `${sample.metric}: ${formatReadingValue(sample)} Â· ${liveApi ? "live OEM API" : "sandbox cloud"}`
       : "No new readings.",
   });
   const saved = saveCare(next);
   if (sample) publishVitalsEvent({ type: "reading", deviceId, readingId: sample.id, at: sample.recordedAt });
   return saved;
 }
+
 

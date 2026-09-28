@@ -18,6 +18,7 @@ import {
 import { handlePreflight } from "./_lib/cors";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 import { ensureCheckoutAppointment } from "./_lib/ensureCheckoutAppointment";
+import { STATEMENT_DESCRIPTOR } from "./_lib/statementDescriptor";
 
 type CheckoutBody = {
   appointmentId?: string;
@@ -29,6 +30,8 @@ type CheckoutBody = {
   physicalState?: string;
   cashPayTermsAccepted?: boolean | string;
   telehealthLimitationsAcknowledged?: boolean | string;
+  conditionId?: string;
+  treatmentId?: string;
 };
 
 function affirmed(value: boolean | string | undefined): boolean {
@@ -84,6 +87,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const patientName = body.patientName
     ? String(body.patientName).trim()
     : "";
+  const conditionId = body.conditionId
+    ? String(body.conditionId).trim().toLowerCase()
+    : "";
+  const treatmentId = body.treatmentId
+    ? String(body.treatmentId).trim()
+    : "";
 
   if (!serviceTierId) {
     res.status(400).json({ error: "missing_service_tier_id" });
@@ -129,6 +138,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       amountCents: tier.amountCents,
       currency: tier.currency,
       physicalState: compliance.physicalState,
+      conditionId: conditionId || undefined,
+      treatmentId: treatmentId || undefined,
     });
     appointmentId = ensured.appointmentId;
     patientId = ensured.patientId;
@@ -207,6 +218,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       customer_email: emailForStripe || undefined,
       success_url: successUrl,
       cancel_url: cancelUrl,
+      payment_intent_data: {
+        // Card charges require suffix (account prefix + this). Keep discreet.
+        statement_descriptor_suffix: STATEMENT_DESCRIPTOR,
+      },
       metadata: {
         appointment_id: appointmentId || "",
         patient_id: patientId || "",
@@ -216,6 +231,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         physical_state: compliance.physicalState.toUpperCase(),
         cash_pay_terms_accepted: "true",
         telehealth_limitations_acknowledged: "true",
+        condition_id: conditionId || "",
+        treatment_id: treatmentId || "",
       },
     });
 

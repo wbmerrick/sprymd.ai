@@ -4,10 +4,12 @@ import Stripe from "stripe";
 import { getServiceTier } from "../_lib/serviceTiers";
 import { sendConfirmationEmail } from "../_lib/sendConfirmationEmail";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
+import { recordPaymentEvent } from "../_lib/ensureCheckoutAppointment";
 import {
-  ensureCheckoutAppointment,
-  recordPaymentEvent,
-} from "../_lib/ensureCheckoutAppointment";
+  checkoutSessionEligibleToMarkPaid,
+  markAppointmentPaidFromSession,
+} from "../_lib/markCheckoutPaid";
+import { expandCheckoutSessionPaymentIntent } from "../_lib/expandCheckoutSession";
 
 export const config = {
   api: {
@@ -61,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (event.type === "checkout.session.completed") {
       await handleCheckoutCompleted(
+        stripe,
         event.data.object as Stripe.Checkout.Session,
         event.id,
       );
@@ -93,11 +96,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function handleCheckoutCompleted(
+  stripe: Stripe,
   session: Stripe.Checkout.Session,
   stripeEventId: string,
 ) {
-  let appointmentId = session.metadata?.appointment_id || "";
-  let patientId = session.metadata?.patient_id || "";
   const serviceTierId = session.metadata?.service_tier_id || "";
   const patientEmail =
     session.metadata?.patient_email ||
@@ -108,140 +110,96 @@ async function handleCheckoutCompleted(
     session.metadata?.patient_name ||
     session.customer_details?.name ||
     "";
-  const paymentIntentId =
-    typeof session.payment_intent === "string"
-      ? session.payment_intent
-      : session.payment_intent?.id || null;
-
   const tier = serviceTierId ? getServiceTier(serviceTierId) : undefined;
-  const paidAt = new Date().toISOString();
   const amountCents = session.amount_total ?? tier?.amountCents ?? null;
 
+  let appointmentId = session.metadata?.appointment_id || "";
+
+  // Webhook payloads usually have payment_intent as a string id. Expand so
+  // checkoutSessionEligibleToMarkPaid can reject fully refunded intents
+  // (race: charge.refunded before checkout.session.completed).
+  let sessionForMark: Stripe.Checkout.Session = session;
   try {
+    sessionForMark = (await expandCheckoutSessionPaymentIntent(
+      stripe,
+      session,
+    )) as Stripe.Checkout.Session;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      JSON.stringify({
+        event: "checkout_completed_expand_pi_failed",
+        sessionId: session.id,
+        message,
+      }),
+    );
+  }
+
+  if (!checkoutSessionEligibleToMarkPaid(sessionForMark)) {
     const supabase = getSupabaseAdmin();
-    let updated = false;
-
-    // If checkout ran before migrations (or without an appointment), create one now.
-    if ((!appointmentId || !patientId) && patientEmail && serviceTierId && tier) {
-      try {
-        const ensured = await ensureCheckoutAppointment({
-          supabase,
-          appointmentId: appointmentId || undefined,
-          patientEmail,
-          patientName,
-          serviceTierId,
-          amountCents: tier.amountCents,
-          currency: tier.currency,
-          physicalState: session.metadata?.physical_state,
-          stripeCheckoutSessionId: session.id,
-        });
-        appointmentId = ensured.appointmentId;
-        patientId = ensured.patientId;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error(
-          JSON.stringify({
-            event: "webhook_ensure_appointment_failed",
-            sessionId: session.id,
-            message,
-          }),
-        );
-      }
-    }
-
+    const now = new Date().toISOString();
     if (appointmentId) {
-      const { data, error } = await supabase
+      await supabase
         .from("appointments")
-        .update({
-          status: "paid",
-          paid_at: paidAt,
-          stripe_checkout_session_id: session.id,
-          stripe_payment_intent_id: paymentIntentId,
-          ...(serviceTierId ? { service_tier: serviceTierId } : {}),
-          ...(tier ? { amount_cents: tier.amountCents } : {}),
-          updated_at: paidAt,
-        })
+        .update({ status: "cancelled", updated_at: now })
         .eq("id", appointmentId)
-        .select("id, patient_id")
-        .maybeSingle();
-
-      if (error) {
-        console.error(
-          JSON.stringify({
-            event: "appointment_paid_update_failed",
-            appointmentId,
-            message: error.message,
-          }),
-        );
-      } else if (data) {
-        updated = true;
-        if (!patientId && data.patient_id) patientId = String(data.patient_id);
-      }
-    }
-
-    if (!updated) {
-      const { data, error } = await supabase
+        .eq("status", "awaiting_payment");
+    } else {
+      await supabase
         .from("appointments")
-        .update({
-          status: "paid",
-          paid_at: paidAt,
-          stripe_payment_intent_id: paymentIntentId,
-          ...(serviceTierId ? { service_tier: serviceTierId } : {}),
-          ...(tier ? { amount_cents: tier.amountCents } : {}),
-          updated_at: paidAt,
-        })
+        .update({ status: "cancelled", updated_at: now })
         .eq("stripe_checkout_session_id", session.id)
-        .select("id, patient_id")
-        .maybeSingle();
-
-      if (error) {
-        console.error(
-          JSON.stringify({
-            event: "appointment_paid_update_by_session_failed",
-            sessionId: session.id,
-            message: error.message,
-          }),
-        );
-      } else if (data) {
-        updated = true;
-        appointmentId = String(data.id);
-        if (!patientId && data.patient_id) patientId = String(data.patient_id);
-      }
+        .eq("status", "awaiting_payment");
     }
-
-    const ledger = await recordPaymentEvent({
+    console.log(
+      JSON.stringify({
+        event: "checkout_completed_skipped_refunded",
+        sessionId: session.id,
+        appointmentId: appointmentId || null,
+      }),
+    );
+    await recordPaymentEvent({
       supabase,
       stripeEventId,
       stripeCheckoutSessionId: session.id,
-      stripePaymentIntentId: paymentIntentId,
+      stripePaymentIntentId:
+        typeof sessionForMark.payment_intent === "string"
+          ? sessionForMark.payment_intent
+          : sessionForMark.payment_intent?.id || null,
       appointmentId: appointmentId || null,
-      patientId: patientId || null,
-      eventType: "checkout.session.completed",
+      patientId: session.metadata?.patient_id || null,
+      eventType: "checkout.session.completed_refunded",
       amountCents,
       currency: session.currency || tier?.currency || "usd",
-      status: "paid",
+      status: "refunded",
       payload: {
-        metadata: session.metadata || {},
-        customer_email: patientEmail || null,
+        id: session.id,
+        payment_status: session.payment_status,
+        status: session.status,
       },
     });
-    if (!ledger.ok) {
-      console.error(
-        JSON.stringify({
-          event: "payment_event_write_failed",
-          sessionId: session.id,
-          message: ledger.message,
-        }),
-      );
-    }
+    return;
+  }
 
-    if (!updated) {
+  try {
+    const supabase = getSupabaseAdmin();
+    const result = await markAppointmentPaidFromSession({
+      supabase,
+      session: sessionForMark,
+      stripeEventId,
+      eventType: "checkout.session.completed",
+    });
+    appointmentId = result.appointmentId || appointmentId;
+
+    if (!result.updated && !result.alreadyPaid) {
       console.log(
         JSON.stringify({
           event: "appointment_paid_row_missing",
           appointmentId: appointmentId || null,
           sessionId: session.id,
           note: "No appointment row matched; payment recorded in Stripe (+ ledger if available)",
+          skippedRefunded: result.skippedRefunded || false,
+          skippedNonAwaiting: result.skippedNonAwaiting || false,
         }),
       );
     }
@@ -300,7 +258,8 @@ async function handleChargeRefunded(charge: Stripe.Charge, stripeEventId: string
           status: "cancelled",
           updated_at: new Date().toISOString(),
         })
-        .eq("id", appointmentId);
+        .eq("id", appointmentId)
+        .in("status", ["awaiting_payment", "paid", "in_progress", "claimed"]);
     }
   }
 

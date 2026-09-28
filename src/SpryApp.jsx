@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import NotFound from "./pages/NotFound";
 import {
   ArrowRight, ArrowLeft, Check, ShoppingBag, Scale, Flame, Sparkles, Leaf,
   ShieldCheck, Truck, Stethoscope, Lock, X, Plus, Minus, AlertCircle,
@@ -10,9 +11,9 @@ import {
 import { footerPages, footerNavToSlug } from "./footerPages";
 import LaserLogo from "./components/brand/LaserLogo";
 import BrandAtmosphere from "./components/brand/BrandAtmosphere";
+import SlideToConfirm from "./components/auth/SlideToConfirm";
 import { brandPlates } from "./assets/brand/catalog";
-import imgFounder from "./assets/brand/founder-dr-merrick.webp";
-import { applyHead } from "./lib/seo";
+import imgFounder from "./assets/brand/founder-dr-merrick.jpg";
 
 // Marketplace product photography
 import imgMultivitamin from "./assets/products/p1_multivitamin.webp";
@@ -36,10 +37,18 @@ import {
   updateCustomerProfile,
 } from "./lib/customerAccounts";
 import { FEATURES } from "./config/features";
+import { COMPANY, companyTelHref } from "./config/company";
+import { pharmacyFulfillmentCopy, pharmacyShortCopy } from "./config/pharmacy";
+import { audienceBadgeLabel, getFooterCarePlanLabels, getGridServices } from "./config/services";
 import { recordRefillCheckout } from "./lib/patientCareStore";
+import { postAuthDashboardPath } from "./lib/dashboardRole";
 import { SignalField, ScanFrame, GridHorizon, ISpryChat } from "./components/graphics";
-import { SPRY_MD_COLOR } from "./brand/tokens";
+import TrustBadges from "./components/TrustBadges";
+import PaymentTrust from "./components/PaymentTrust";
+import { FONT_BODY, FONT_DISPLAY, SPRY_MD_COLOR } from "./brand/tokens";
 import { conditions } from "./data/careCatalog";
+import { careEduPages, conditionToEduSlug } from "./data/careEduPages";
+import { applyHead } from "./lib/seo";
 import {
   ADULT_NO,
   ADULT_YES,
@@ -99,15 +108,17 @@ const C = {
 };
 
 const fonts = {
-  display: "'Fraunces', 'Georgia', 'Times New Roman', serif",
-  body: "'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-  mono: "'DM Sans', 'Helvetica Neue', sans-serif",
+  display: FONT_DISPLAY,
+  body: FONT_BODY,
+  /** Label/eyebrow style — same face as body, tighter tracking via .mono */
+  mono: FONT_BODY,
 };
 
-// Fonts are self-hosted (see index.css @font-face + preload in index.html).
 const FontInjector = () => (
   <style>{`
     :root {
+      --font-display: ${fonts.display};
+      --font-body: ${fonts.body};
       --font-mono: ${fonts.body};
       --spry-accent: ${C.accent};
       --spry-bg: ${C.bg};
@@ -129,20 +140,11 @@ const FontInjector = () => (
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
         radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
         linear-gradient(180deg, rgba(12,18,15,0.48), rgba(12,18,15,0.62)),
-        url("${brandPlates.tn.src}");
+        url("/brand/sprymd-tn-ridge.webp");
       background-size: auto, auto, auto, cover;
       background-position: center, center, center, center 40%;
       background-attachment: fixed;
       background-repeat: no-repeat;
-    }
-    @media (max-width: 767px) {
-      body {
-        background-image:
-          radial-gradient(ellipse 80% 50% at 50% -20%, rgba(200, 158, 103, 0.10), transparent 55%),
-          radial-gradient(ellipse 90% 60% at 50% 115%, rgba(92, 126, 158, 0.12), transparent 60%),
-          linear-gradient(180deg, rgba(12,18,15,0.48), rgba(12,18,15,0.62)),
-          url("${brandPlates.tn.srcSmall}");
-      }
     }
     .display { font-family: ${fonts.display}; font-weight: 600; letter-spacing: -0.01em; }
     .mono { font-family: ${fonts.body}; font-weight: 600; letter-spacing: 0.04em; }
@@ -290,14 +292,8 @@ const FontInjector = () => (
       .spry-btn:hover:not(:disabled) .spry-btn-icon, .spry-btn:focus-visible .spry-btn-icon,
       .spry-tile:hover .spry-tile-arrow, .spry-tile:focus-visible .spry-tile-arrow { transform: none !important; }
     }
-    /* Keep focus rings for keyboard users only; mouse/touch focus stays clean. */
-    input:focus:not(:focus-visible), button:focus:not(:focus-visible),
-    select:focus:not(:focus-visible), textarea:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
-    input:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible,
-    a:focus-visible, [role="button"]:focus-visible, [tabindex]:focus-visible {
-      outline: 2px solid ${C.accent}; outline-offset: 2px;
-    }
-    .focus-ring:focus-visible { outline: none; box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
+    input:focus, button:focus, select:focus, textarea:focus { outline: none; }
+    .focus-ring:focus-visible { box-shadow: 0 0 0 2px ${C.bg}, 0 0 0 4px ${C.accent}; }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
   `}</style>
@@ -318,38 +314,6 @@ const FontInjector = () => (
 // Hims tirzepatide $299 → $499/mo, Ro Body $499/mo. SpryMD beats both.
 // ─────────────────────────────────────────────────────────────────────────────
 // Catalog (conditions + plans) lives in ./data/careCatalog.ts.
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock Empower Rx History — what a logged-in patient sees in Quick Refills
-// In production: GET https://api.empowerpharmacy.com/v1/patients/{id}/prescriptions
-// Wholesale costs are NEVER exposed client-side; only marginated retail.
-// ─────────────────────────────────────────────────────────────────────────────
-const mockRxHistory = [
-  { rxId: "EMP-294817", name: "Tirzepatide Injection", strength: "8 mg/2 mL · grapeseed oil",
-    sig: "Inject 0.25 mL (10 units) subQ once weekly", lastFilled: "Mar 14, 2026", refills: 5, refillsUsed: 1,
-    price: 279, chilled: true, category: "Weight Loss", icon: Scale, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 28 },
-  { rxId: "EMP-294112", name: "Tadalafil ODT", strength: "6 mg · oral dissolve",
-    sig: "Dissolve one tablet under tongue daily", lastFilled: "Apr 02, 2026", refills: 11, refillsUsed: 0,
-    price: 99, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-291003", name: "Hair Restore MFK Topical", strength: "Minoxidil 5% / Fin 0.3% / Ketoconazole 2% · 60 mL",
-    sig: "Apply 1 mL to scalp twice daily", lastFilled: "Feb 28, 2026", refills: 5, refillsUsed: 2,
-    price: 89, chilled: false, category: "Hair Loss", icon: Sparkles, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 60 },
-  { rxId: "EMP-289445", name: "Tretinoin TAAN Mild Cream", strength: "Tret 0.03% / Azelaic 4% / Niac 4% · 30 g",
-    sig: "Apply pea-sized amount nightly", lastFilled: "Mar 22, 2026", refills: 11, refillsUsed: 1,
-    price: 59, chilled: false, category: "Dermatology", icon: Leaf, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-285332", name: "Sildenafil 50mg", strength: "50 mg · 10 tablets",
-    sig: "Take one tablet 30–60 min before activity", lastFilled: "Apr 18, 2026", refills: 5, refillsUsed: 0,
-    price: 69, chilled: false, category: "Sexual Health", icon: Flame, color: "hsl(220, 60%, 20%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-  { rxId: "EMP-281109", name: "Methylene Blue Capsule", strength: "10 mg · cognition / mitochondrial support",
-    sig: "Take one capsule each morning", lastFilled: "Mar 30, 2026", refills: 2, refillsUsed: 1,
-    price: 79, chilled: false, category: "Longevity", icon: Zap, color: "hsl(150, 55%, 40%)",
-    prescriber: "SpryMD Clinician", daysSupply: 30 },
-];
 
 const rxIconFor = (rx) => {
   const cat = (rx?.category || "").toLowerCase();
@@ -461,6 +425,7 @@ const conditionGraphics = {
   nad: imgMarketplaceHero,
   lowt: imgMarketplaceHero,
   mentalhealth: imgMarketplaceHero,
+  womenshealth: imgMarketplaceHero,
   pcp: imgMarketplaceHero,
 };
 
@@ -493,36 +458,49 @@ const Tag = ({ children, color, fg }) => (
   }}>{children}</span>
 );
 
-const Logo = ({ color = C.ink, size = 22 }) => (
-  <div className="flex items-center gap-2.5">
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <path d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z" fill={C.accent} stroke="#000" strokeWidth="1.2" strokeLinejoin="round" paintOrder="stroke" />
-      <path d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15" fill="none" stroke="#000" strokeWidth="0.4" strokeLinecap="round" />
-      <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
-    </svg>
-    <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-      Spry<span className="spry-md">MD</span>
-    </span>
-  </div>
+const LogoMark = ({ color = C.ink, size = 22, style = {}, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className} style={style} aria-hidden="true">
+    <path d="M18.81 2.79A13.5 13.5 0 1 0 27.19 8.45" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M18.26 15.15C22.43 11.12 24.77 6.38 24.84 2.92C22.79 4.4 19.75 8.43 16.85 13.74ZM14.35 16.62C11.31 19.56 9.6 23.02 9.55 25.55C11.04 24.47 13.26 21.53 15.38 17.65Z" fill={C.accent} stroke="#000" strokeWidth="1.2" strokeLinejoin="round" paintOrder="stroke" />
+    <path d="M18.4 13.45Q21.09 9.78 23.92 4.83M14.25 17.86Q12.28 20.54 10.22 24.15" fill="none" stroke="#000" strokeWidth="0.4" strokeLinecap="round" />
+    <path d="M18.4 15 17 13.6 15 13.6 13.6 15 13.6 17 15 18.4 17 18.4 18.4 17Z" fill={C.accent} stroke="#000" strokeWidth="1.2" paintOrder="stroke" />
+  </svg>
 );
+
+const Logo = ({ color = C.ink, size = 22, onClick, className = "" }) => {
+  const mark = (
+    <>
+      <LogoMark color={color} size={size} />
+      <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
+        Spry<span className="spry-md">MD</span>
+      </span>
+    </>
+  );
+  // Always prefer a real control when a home handler is provided so the
+  // top-left mark is clickable on intake, plan, checkout, and related views.
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`focus-ring flex items-center gap-2.5 rounded transition-opacity hover:opacity-80 ${className}`.trim()}
+        aria-label="SpryMD home"
+      >
+        {mark}
+      </button>
+    );
+  }
+  return <div className={`flex items-center gap-2.5 ${className}`.trim()}>{mark}</div>;
+};
 
 const inputStyle = { background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 12, fontSize: 15, color: C.ink, fontFamily: fonts.body };
 
-// Associates the label with its single form control (explicit `htmlFor`, the
-// control's own `id`, or a generated one) so screen readers announce the label.
-const Field = ({ label, htmlFor, children }) => {
-  const autoId = React.useId();
-  const control = React.isValidElement(children) ? children : null;
-  const id = htmlFor || control?.props?.id || `field-${autoId}`;
-  const content = control && !control.props.id ? React.cloneElement(control, { id }) : children;
-  return (
-    <div>
-      <label htmlFor={id} className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>{label}</label>
-      {content}
-    </div>
-  );
-};
+const Field = ({ label, children }) => (
+  <div>
+    <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>{label}</label>
+    {children}
+  </div>
+);
 
 const Row = ({ label, value }) => (
   <div className="flex justify-between">
@@ -624,7 +602,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
           >
             {menuOpen ? <X size={18} strokeWidth={1.75} /> : <Menu size={18} strokeWidth={1.75} />}
           </button>
-          <button onClick={() => goNav("landing")} className="focus-ring rounded"><Logo color={fg} /></button>
+          <Logo color={fg} onClick={() => goNav("landing")} />
         </div>
         <nav className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
@@ -760,7 +738,7 @@ const StickyVisitBar = ({ go }) => {
       }}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between gap-3" style={{ paddingTop: 10, paddingBottom: 10 }}>
-        <Logo size={18} />
+        <Logo size={18} onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <span className="spry-desktop-only" style={{ fontSize: 13, color: C.inkSoft }}>
             Private visits, reviewed by licensed doctors.
@@ -775,54 +753,25 @@ const StickyVisitBar = ({ go }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Landing — elite performance health OS
 // ─────────────────────────────────────────────────────────────────────────────
+const openCareEdu = (go, conditionId) => {
+  const slug = conditionToEduSlug[conditionId];
+  if (slug) go("page", { slug });
+  else go("intake", { condition: conditionId });
+};
+
+const carePageUrl = (slug) => `/care/${encodeURIComponent(slug)}`;
+const isKnownCarePageSlug = (slug) => Boolean(slug && (careEduPages[slug] || footerPages[slug]));
+const SHOP_STACK_SLUGS = new Set(["supplements", "devices", "sleep"]);
+
 const Landing = ({ go }) => {
-  // Hover-preview of the next page (intake) — fades in the longer you hover.
-  const [preview, setPreview] = useState(null); // { id, rect }
-  const [previewLive, setPreviewLive] = useState(false);
-  const [intakeOverlay, setIntakeOverlay] = useState(null); // condition id shown in front of landing
-  const previewHideTimer = useRef(null);
-
-  const canHoverPreview = () =>
-    typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover)").matches;
-
-  const clearPreviewTimer = () => {
-    if (previewHideTimer.current) { clearTimeout(previewHideTimer.current); previewHideTimer.current = null; }
-  };
-  const showPreview = (id, e) => {
-    if (!canHoverPreview()) return;
-    clearPreviewTimer();
-    setPreview({ id, rect: e.currentTarget.getBoundingClientRect() });
-    setPreviewLive(true);
-  };
-  const keepPreview = clearPreviewTimer;
-  const releasePreview = () => {
-    clearPreviewTimer();
-    previewHideTimer.current = setTimeout(() => {
-      setPreviewLive(false);
-      previewHideTimer.current = setTimeout(() => setPreview(null), 300);
-    }, 200);
-  };
-  useEffect(() => () => clearPreviewTimer(), []);
-
-  const openIntakeOverlay = () => {
-    if (!preview) return;
-    setIntakeOverlay(preview.id);
-    clearPreviewTimer();
-    setPreviewLive(false);
-    setPreview(null);
-  };
-  const overlayGo = (target, p = {}) => {
-    setIntakeOverlay(null);
-    if (target === "landing") return; // closing the overlay keeps you on this page
-    go(target, p);
-  };
+  const [audienceFilter, setAudienceFilter] = useState("all");
+  const gridServices = getGridServices(audienceFilter);
 
   return (
   <div className="anim-fadeIn relative">
     <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
     <StickyVisitBar go={go} />
 
-    <main id="main-content">
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
       <div
         className="absolute inset-0 pointer-events-none"
@@ -862,8 +811,9 @@ const Landing = ({ go }) => {
                 zIndex: 0,
               }}
             />
-            <span className="relative" style={{ opacity: 1 }}>
-              Spry<span className="spry-md">MD</span>
+            <span className="relative inline-flex items-center justify-center gap-3 md:gap-4" style={{ opacity: 1 }}>
+              <LogoMark size="0.84em" color={C.ink} style={{ verticalAlign: "middle" }} />
+              <span>Spry<span className="spry-md">MD</span></span>
             </span>
           </span>
           <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink, opacity: 1 }}>
@@ -918,6 +868,12 @@ const Landing = ({ go }) => {
             <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
               <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
             </div>
+            <div className="spry-rise mt-4" style={{ animationDelay: "0.24s" }}>
+              <PaymentTrust variant="dark" />
+            </div>
+            <div className="spry-rise mt-3" style={{ animationDelay: "0.26s" }}>
+              <TrustBadges variant="dark" />
+            </div>
             <div className="spry-rise flex flex-wrap gap-y-2 mt-6" style={{ animationDelay: "0.28s", columnGap: 28 }}>
               {["Zero judgment", "100% confidential", "Discreet, unmarked packaging"].map((item) => (
                 <div key={item} className="inline-flex items-center gap-2">
@@ -932,35 +888,70 @@ const Landing = ({ go }) => {
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
               Start your visit
             </span>
-            <h2 className="display" style={{ fontSize: 22, fontWeight: 650, color: C.ink, marginTop: 8, marginBottom: 16 }}>
+            <h2 className="display" style={{ fontSize: 22, fontWeight: 650, color: C.ink, marginTop: 8, marginBottom: 12 }}>
               What can we help you with?
             </h2>
+            <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filter care options by audience">
+              {[
+                { id: "all", label: "All" },
+                { id: "men", label: "Men" },
+                { id: "women", label: "Women" },
+              ].map((chip) => {
+                const active = audienceFilter === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setAudienceFilter(chip.id)}
+                    className="focus-ring mono"
+                    aria-pressed={active}
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      fontWeight: 600,
+                      padding: "6px 12px",
+                      borderRadius: 999,
+                      border: `1px solid ${active ? C.accent : C.line}`,
+                      background: active ? C.signalDim : C.bg,
+                      color: active ? C.accent : C.inkSoft,
+                    }}
+                  >
+                    {chip.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.values(conditions).filter((cond) => !["lowt", "mentalhealth", "pcp"].includes(cond.id)).map((cond) => {
+              {gridServices.map(({ condition: cond, audience }) => {
                 const Icon = cond.icon;
                 return (
                   <button
                     key={cond.id}
-                    onClick={() => go("intake", { condition: cond.id })}
-                    onMouseEnter={(e) => showPreview(cond.id, e)}
-                    onMouseLeave={releasePreview}
+                    onClick={() => openCareEdu(go, cond.id)}
                     className="spry-tile focus-ring text-left rounded-2xl p-4"
                     style={{ background: C.bg }}
+                    aria-label={`${cond.name} — ${audienceBadgeLabel(audience)}. Learn more`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 38, height: 38, background: C.signalDim, border: `1px solid ${C.line}` }}>
-                        <Icon size={18} color={C.accent} />
+                        <Icon size={18} color={C.accent} aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
                         <div style={{ fontSize: 15, fontWeight: 650, color: C.ink }}>{cond.name}</div>
-                        {cond.fromPrice && (
-                          <div style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo</div>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: C.accent, fontWeight: 600 }}>
+                            {audienceBadgeLabel(audience)}
+                          </span>
+                          {cond.fromPrice && (
+                            <span style={{ fontSize: 12, color: C.muted }}>From ${cond.fromPrice}/mo if approved</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.45, marginTop: 10 }}>{cond.tagline}</p>
                     <span className="inline-flex items-center gap-1.5 mt-3" style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>
-                      Start intake <span className="spry-tile-arrow"><ArrowRight size={14} /></span>
+                      Learn more <span className="spry-tile-arrow"><ArrowRight size={14} /></span>
                     </span>
                   </button>
                 );
@@ -988,7 +979,7 @@ const Landing = ({ go }) => {
           {[
             { n: "01", t: "Choose the type of care you want to receive.", d: "Then answer a short, private intake questionnaire that focuses on any contraindications to that particular treatment." },
             { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case to make sure the treatment is safe." },
-            { n: "03", t: "Treatment shipped", d: "Once treatment is approved, your prescription will be filled by our pharmacy, discreetly packaged and shipped within 24 hours for next-day delivery." },
+            { n: "03", t: "Treatment shipped", d: `${pharmacyFulfillmentCopy()} Timing depends on medication and carrier — qualifying Tennessee orders may be eligible for next-business-day delivery.` },
           ].map((s) => (
             <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
@@ -1006,7 +997,7 @@ const Landing = ({ go }) => {
     {/* Protocols */}
     <section id="landing-conditions" className="px-6 md:px-12 py-20 md:py-28" style={{ background: C.bgAlt }}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
+        <div className="flex items-end justify-between mb-8 flex-wrap gap-4">
           <div>
             <span style={{ fontSize: 12, letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700 }}>Care options</span>
             <h2 className="display" style={{ fontSize: "clamp(34px, 5vw, 52px)", lineHeight: 1.08, marginTop: 14, color: C.ink, fontWeight: 650 }}>
@@ -1017,15 +1008,49 @@ const Landing = ({ go }) => {
             Every plan is checked by a licensed doctor before anything is sent to you.
           </p>
         </div>
+        <div className="mb-6 space-y-3">
+          <PaymentTrust variant="dark" />
+          <TrustBadges variant="dark" />
+        </div>
+        <div className="flex flex-wrap gap-2 mb-6" role="group" aria-label="Filter care options by audience">
+          {[
+            { id: "all", label: "All" },
+            { id: "men", label: "Men" },
+            { id: "women", label: "Women" },
+          ].map((chip) => {
+            const active = audienceFilter === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setAudienceFilter(chip.id)}
+                className="focus-ring mono"
+                aria-pressed={active}
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                  borderRadius: 999,
+                  border: `1px solid ${active ? C.accent : C.line}`,
+                  background: active ? C.signalDim : C.bg,
+                  color: active ? C.accent : C.inkSoft,
+                }}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
         <div data-conditions-grid className="grid md:grid-cols-2 gap-3 md:gap-4">
-          {Object.values(conditions).filter((cond) => !["pcp", "lowt", "mentalhealth"].includes(cond.id)).map((cond, i) => (
+          {gridServices.map(({ condition: cond, audience }, i) => (
             <ConditionCard
               key={cond.id}
               condition={cond}
-              onClick={() => go("intake", { condition: cond.id })}
+              audience={audience}
+              onClick={() => openCareEdu(go, cond.id)}
               delay={i * 0.06}
-              onHoverStart={(e) => showPreview(cond.id, e)}
-              onHoverEnd={releasePreview}
             />
           ))}
         </div>
@@ -1059,6 +1084,10 @@ const Landing = ({ go }) => {
             <Btn onClick={() => go("intake", { condition: "pcp" })} size="lg" icon={ArrowRight}>Get my doctor</Btn>
             <Btn onClick={() => go("landing-conditions")} size="lg" variant="ghost">See care options</Btn>
           </div>
+          <div className="mt-5 space-y-3">
+            <PaymentTrust variant="dark" />
+            <TrustBadges variant="dark" />
+          </div>
         </div>
         <div className="md:col-span-6">
           <div className="instrument-panel rounded-2xl overflow-hidden">
@@ -1068,20 +1097,23 @@ const Landing = ({ go }) => {
                 <div className="rounded-lg flex items-center justify-center" style={{ width: 56, height: 56, background: C.signalDim, border: `1px solid ${C.line}` }}>
                   <Stethoscope size={24} color={C.accent} strokeWidth={1.75} />
                 </div>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Doctor care online</span>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Spry Primary Care</span>
               </div>
             </div>
             <div className="p-7 md:p-8 relative z-10">
               <div className="mono" style={{ fontSize: 10, letterSpacing: "0.16em", color: C.muted, textTransform: "uppercase" }}>Choose a plan</div>
-              <div className="display" style={{ fontSize: 44, fontWeight: 600, color: C.ink, lineHeight: 1, marginTop: 6 }}>
-                $120<span style={{ fontSize: 14, color: C.muted, fontWeight: 500, marginLeft: 6 }}>/mo</span>
+              <div className="display" style={{ fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: 600, color: C.ink, lineHeight: 1.2, marginTop: 8 }}>
+                Online Provider Visits start at $100
+              </div>
+              <div className="mt-3">
+                <PaymentTrust variant="dark" />
               </div>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {[
                   {
                     id: "pcp-acute",
-                    t: "Spry Primary Care · Acute Insight",
-                    d: "$120 · 1 visit + anytime messaging for 1 month",
+                    t: "Acute Insight — meant for acute issues/complaints",
+                    d: "$100 · 1 visit + anytime messaging for 1 month",
                     two: "$180 · Acute Insight for two adults",
                     tag: "Most popular",
                     span: false,
@@ -1107,7 +1139,7 @@ const Landing = ({ go }) => {
                     key={tier.id}
                     type="button"
                     onClick={() => go("intake", { condition: "pcp", treatmentId: tier.id })}
-                    className={`focus-ring text-left rounded-2xl p-4 transition-all ${tier.span ? "col-span-2" : ""}`}
+                    className={`text-left rounded-2xl p-4 transition-all focus:outline-none ${tier.span ? "col-span-2" : ""}`}
                     style={{
                       background: C.bgAlt,
                       border: `1px solid ${tier.tag ? C.accent : C.line}`,
@@ -1180,10 +1212,6 @@ const Landing = ({ go }) => {
               <img
                 src={imgFounder}
                 alt="Dr. William Merrick, DO — founder of SpryMD"
-                width={767}
-                height={1024}
-                loading="lazy"
-                decoding="async"
                 className="w-full"
                 style={{ display: "block", width: "100%", height: "auto", objectFit: "contain" }}
               />
@@ -1238,11 +1266,7 @@ const Landing = ({ go }) => {
           <div className="p-6 rounded-2xl relative overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
             <img
               src={brandPlates.tn.src}
-              srcSet={`${brandPlates.tn.srcSmall} 960w, ${brandPlates.tn.src} 1920w`}
-              sizes="(min-width: 1280px) 1216px, 100vw"
               alt=""
-              loading="lazy"
-              decoding="async"
               className="absolute inset-0 w-full h-full"
               style={{ objectFit: "cover", opacity: 0.45, objectPosition: "center 35%" }}
             />
@@ -1318,124 +1342,43 @@ const Landing = ({ go }) => {
         </div>
       </div>
     </section>
-    </main>
 
     <Footer go={go} />
-
-    {preview && (
-      <IntakePreview
-        key={preview.id}
-        conditionId={preview.id}
-        anchorRect={preview.rect}
-        live={previewLive}
-        onKeep={keepPreview}
-        onRelease={releasePreview}
-        onOpen={openIntakeOverlay}
-      />
-    )}
-
-    {intakeOverlay && (
-      <div
-        className="fixed inset-0 anim-fadeIn"
-        style={{ zIndex: 98, background: "rgba(16,11,6,0.55)", backdropFilter: "blur(3px)" }}
-        onClick={() => setIntakeOverlay(null)}
-      >
-        <div
-          className="absolute overflow-y-auto overscroll-contain"
-          style={{ inset: "min(4vw, 36px)", borderRadius: 18, background: C.bg, boxShadow: "0 40px 100px rgba(9,14,11,0.45)", border: `1px solid ${C.line}` }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Intake key={intakeOverlay} conditionId={intakeOverlay} go={overlayGo} />
-        </div>
-      </div>
-    )}
   </div>
   );
 };
 
-const ConditionCard = ({ condition, onClick, delay, onHoverStart, onHoverEnd }) => {
+const ConditionCard = ({ condition, audience, onClick, delay }) => {
   const [hover, setHover] = useState(false);
-  
+  const audienceLabel = audience ? audienceBadgeLabel(audience) : null;
+
   return (
     <button onClick={onClick}
-      onMouseEnter={(e) => { setHover(true); onHoverStart?.(e); }}
-      onMouseLeave={() => { setHover(false); onHoverEnd?.(); }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       className="anim-fadeUp focus-ring text-left p-7 md:p-8 transition-all duration-300 group relative overflow-hidden"
-      style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}>
+      style={{ background: C.bg, border: `1px solid ${hover ? C.accent : C.line}`, borderRadius: 16, animationDelay: `${delay}s`, transform: hover ? "translateY(-2px)" : "none" }}
+      aria-label={`${condition.name}${audienceLabel ? ` — ${audienceLabel}` : ""}`}>
       <div className="absolute inset-y-0 left-0 w-px transition-all" style={{ background: C.accent, opacity: hover ? 1 : 0, boxShadow: hover ? `0 0 24px ${C.accent}` : "none" }} />
-      <div className="flex items-start justify-end mb-8 relative">
+      <div className="flex items-start justify-between mb-8 relative gap-3">
+        {audienceLabel ? (
+          <span className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: C.accent, fontWeight: 600 }}>
+            {audienceLabel}
+          </span>
+        ) : <span />}
         <div style={{ transform: hover ? "translateX(4px)" : "none", transition: "transform 0.3s" }}>
-          <ArrowRight size={18} color={hover ? C.accent : C.muted} strokeWidth={1.5} />
+          <ArrowRight size={18} color={hover ? C.accent : C.muted} strokeWidth={1.5} aria-hidden="true" />
         </div>
       </div>
       <h3 className="display relative" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 8 }}>{condition.name}</h3>
       <p className="relative" style={{ fontSize: 14, color: C.inkSoft, marginBottom: 20, lineHeight: 1.5 }}>{condition.tagline}</p>
       <div className="flex items-center justify-between relative" style={{ borderTop: `1px solid ${C.lineSoft}`, paddingTop: 14 }}>
-        <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>From</span>
+        <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>From · if approved</span>
         <span className="display" style={{ fontSize: 22, fontWeight: 600, color: C.ink }}>
           ${condition.fromPrice}<span style={{ fontSize: 12, color: C.muted, fontWeight: 500, marginLeft: 4 }}>/mo</span>
         </span>
       </div>
     </button>
-  );
-};
-
-// Floating preview of the next page (the treatment's intake questionnaire).
-// Opacity ramps up the longer you hover; mouse-out fades it away; clicking it
-// opens the real intake in front of the page you were hovering on.
-const IntakePreview = ({ conditionId, anchorRect, live, onKeep, onRelease, onOpen }) => {
-  const [ramp, setRamp] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setRamp(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
-  const condition = conditions[conditionId];
-  const W = 380, H = 500, M = 16, BAR = 36;
-  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-  let left = anchorRect.right + M;
-  if (left + W > vw - M) left = anchorRect.left - M - W;
-  if (left < M) left = Math.min(Math.max(M, anchorRect.left + anchorRect.width / 2 - W / 2), Math.max(M, vw - M - W));
-  const top = Math.min(Math.max(M, anchorRect.top + anchorRect.height / 2 - H / 2), Math.max(M, vh - M - H));
-  const scale = W / 1280;
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={`Open ${condition.name} intake`}
-      onMouseEnter={onKeep}
-      onMouseLeave={onRelease}
-      onClick={onOpen}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
-      className="fixed cursor-pointer focus-ring"
-      style={{
-        left, top, width: W, height: H, zIndex: 95,
-        opacity: live && ramp ? 1 : 0,
-        transition: live ? "opacity 2.8s linear" : "opacity 0.25s ease",
-        borderRadius: 14, overflow: "hidden",
-        background: C.bg, border: `1px solid ${C.line}`,
-        boxShadow: "0 24px 64px rgba(24,16,8,0.3)",
-      }}
-    >
-      <div className="flex items-center justify-between px-3" style={{ height: BAR, background: C.bgAlt, borderBottom: `1px solid ${C.lineSoft}` }}>
-        <div className="flex items-center gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="rounded-full" style={{ width: 8, height: 8, background: C.line }} />
-          ))}
-        </div>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, fontWeight: 600 }}>
-          {condition.name} intake
-        </span>
-        <span style={{ fontSize: 11, fontWeight: 700, color: C.accent }}>Click to open</span>
-      </div>
-      <div style={{ width: W, height: H - BAR, overflow: "hidden" }}>
-        <div aria-hidden="true" style={{ width: 1280, height: (H - BAR) / scale, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
-          <Intake key={conditionId} conditionId={conditionId} go={() => {}} persist={false} />
-        </div>
-      </div>
-    </div>
   );
 };
 
@@ -1469,7 +1412,7 @@ const MiniProduct = ({ p, onClick }) => {
 };
 
 const footerColumns = [
-  { h: "Care plans", l: ["Weight Loss", "ED", "Low Testosterone", "Sermorelin", "NAD+ Therapy", "Anxiety & Depression", "Hair Loss", "Skin", "Primary Care"] },
+  { h: "Care plans", l: getFooterCarePlanLabels() },
   {
     h: FEATURES.enableShop ? "Shop" : "Pharmacy",
     l: FEATURES.enableShop
@@ -1479,13 +1422,15 @@ const footerColumns = [
   { h: "Company", l: ["About", "Doctors", "Press", "Contact"] },
 ];
 
-const Footer = ({ go }) => (
+const Footer = ({ go }) => {
+  const telHref = companyTelHref();
+  return (
   <footer className="px-6 md:px-12 py-12" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
-    <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
+    <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
       <div>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <p style={{ fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.5, maxWidth: 240 }}>
-          Modern medicine, made for men and women. Licensed telehealth for patients in Tennessee. Support: support@sprymd.ai. Not for emergencies.
+          Modern medicine, made for men and women. Licensed telehealth for patients in {COMPANY.AREA_SERVED}. Not for emergencies.
         </p>
       </div>
       {footerColumns.map((col) => (
@@ -1509,18 +1454,36 @@ const Footer = ({ go }) => (
           </div>
         </div>
       ))}
+      <div>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase", marginBottom: 16 }}>Contact</div>
+        <address style={{ fontStyle: "normal", fontSize: 13, color: C.inkSoft, lineHeight: 1.55 }}>
+          <div style={{ marginBottom: 10 }}>{COMPANY.ADDRESS}</div>
+          {telHref ? (
+            <a href={telHref} className="focus-ring block" style={{ color: C.accent, textDecoration: "none", marginBottom: 8 }} aria-label={`Call ${COMPANY.PHONE}`}>
+              {COMPANY.PHONE}
+            </a>
+          ) : (
+            <div style={{ marginBottom: 8 }}>{COMPANY.PHONE}</div>
+          )}
+          <a href={`mailto:${COMPANY.SUPPORT_EMAIL}`} className="focus-ring block" style={{ color: C.accent, textDecoration: "none", marginBottom: 8 }}>
+            {COMPANY.SUPPORT_EMAIL}
+          </a>
+          <div style={{ fontSize: 12, color: C.muted }}>{COMPANY.SUPPORT_HOURS}</div>
+        </address>
+      </div>
     </div>
     <div className="max-w-7xl mx-auto mt-12 pt-8 flex justify-between items-center flex-wrap gap-3" style={{ borderTop: `1px solid ${C.line}` }}>
-      <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 SPRYMD INC.</span>
+      <span className="mono" style={{ fontSize: 11, color: C.muted }}>© 2026 {COMPANY.LEGAL_NAME.toUpperCase()}</span>
       <div className="flex flex-wrap gap-4">
         {[{ label: "Terms", href: "/terms" }, { label: "Privacy", href: "/privacy" }, { label: "NPP", href: "/npp" }, { label: "FAQ", href: "/faq" }].map((l) => (
-          <Link key={l.href} to={l.href} className="mono focus-ring rounded" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</Link>
+          <a key={l.href} href={l.href} className="mono" style={{ fontSize: 11, color: C.muted, textDecoration: "none" }}>{l.label}</a>
         ))}
         <span className="mono" style={{ fontSize: 11, color: C.muted }}>SPRYMD.AI</span>
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 const RichText = ({ text }) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -1536,17 +1499,129 @@ const RichText = ({ text }) => {
   );
 };
 
+const FaqBlock = ({ items }) => {
+  const [open, setOpen] = useState(0);
+  return (
+    <div className="space-y-2" style={{ marginTop: 4 }}>
+      {items.map((item, ii) => {
+        const isOpen = open === ii;
+        return (
+          <div key={ii} style={{ border: `1px solid ${C.lineSoft}`, borderRadius: 12, background: C.bgAlt, overflow: "hidden" }}>
+            <button
+              type="button"
+              className="focus-ring w-full text-left flex items-start justify-between gap-4 px-4 py-3.5"
+              onClick={() => setOpen(isOpen ? -1 : ii)}
+              aria-expanded={isOpen}
+              style={{ background: "transparent", border: "none", color: C.ink }}
+            >
+              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>{item.q}</span>
+              <span className="mono flex-shrink-0" style={{ fontSize: 18, color: C.accent, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
+            </button>
+            {isOpen && (
+              <div className="px-4 pb-4" style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft }}>
+                <RichText text={item.a} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const ContactFormInline = () => {
+  const [status, setStatus] = useState("idle"); // idle | loading | sent | error
+  const [error, setError] = useState("");
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setStatus("loading");
+    const fd = new FormData(e.currentTarget);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: String(fd.get("name") || ""),
+          email: String(fd.get("email") || ""),
+          topic: String(fd.get("topic") || "General"),
+          message: String(fd.get("message") || ""),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        setError(data.message || "We couldn't send that. Email support@sprymd.ai.");
+        setStatus("error");
+        return;
+      }
+      setStatus("sent");
+      e.currentTarget.reset();
+    } catch {
+      setError("Network error. Please email support@sprymd.ai.");
+      setStatus("error");
+    }
+  };
+
+  if (status === "sent") {
+    return (
+      <div className="pt-4 space-y-3" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+        <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink }}>Message sent</h2>
+        <p style={{ fontSize: 15, color: C.inkSoft, lineHeight: 1.55 }}>
+          Thanks — we got it. For emergencies call 911. You can also reach us at support@sprymd.ai.
+        </p>
+        <Btn type="button" variant="secondary" onClick={() => setStatus("idle")}>Send another</Btn>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
+      <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
+      <form className="space-y-4" onSubmit={onSubmit}>
+        {[
+          { id: "name", label: "Name", type: "text" },
+          { id: "email", label: "Email", type: "email" },
+          { id: "topic", label: "Topic", type: "text" },
+        ].map((f) => (
+          <Field key={f.id} label={f.label}>
+            <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
+          </Field>
+        ))}
+        <Field label="Message">
+          <textarea required name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
+        </Field>
+        {error && <p role="alert" style={{ fontSize: 14, color: C.danger || "#CE6B5D" }}>{error}</p>}
+        <Btn type="submit" icon={Send} disabled={status === "loading"}>
+          {status === "loading" ? "Sending…" : "Send message"}
+        </Btn>
+      </form>
+    </div>
+  );
+};
+
 const FooterPage = ({ slug, go, cartCount, user }) => {
-  const page = footerPages[slug];
+  const page = careEduPages[slug] || footerPages[slug];
   const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
+
+  useEffect(() => {
+    if (!page) return;
+    applyHead({
+      pageTitle: page.title,
+      description: page.tagline || page.title,
+      path: careEduPages[slug] ? `/care/${slug}` : `/`,
+      noindex: !careEduPages[slug],
+    });
+  }, [page, slug]);
+
   if (!page || (!FEATURES.enableShop && shopStackSlugs.has(slug))) {
     return (
       <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
         <Header go={go} cartCount={cartCount} user={user} />
-        <main id="main-content" className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
+        <div className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
           <h1 className="display" style={{ fontSize: 40, color: C.ink, marginBottom: 12 }}>Page not found</h1>
           <Btn onClick={() => go("landing")} icon={ArrowRight}>Back home</Btn>
-        </main>
+        </div>
         <Footer go={go} />
       </div>
     );
@@ -1587,27 +1662,36 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <Header go={go} cartCount={cartCount} user={user} />
-      <main id="main-content">
       <section className="px-6 md:px-12 pt-14 md:pt-20 pb-10" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
         <div className="max-w-3xl mx-auto">
           <button type="button" onClick={() => go("landing")} className="focus-ring mono mb-8 transition-opacity hover:opacity-60"
             style={{ fontSize: 11, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", background: "transparent", border: "none", padding: 0 }}>
             ← SpryMD
           </button>
-          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase", marginBottom: 14 }}>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: C.accent, textTransform: careEduPages[slug] ? "none" : "uppercase", marginBottom: 14, fontWeight: 700 }}>
             {page.eyebrow}
           </div>
           <h1 className="display" style={{ fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.02, fontWeight: 600, color: C.ink, marginBottom: 16 }}>
             {page.title}
           </h1>
-          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: 28 }}>
+          <p style={{ fontSize: 18, lineHeight: 1.5, color: C.inkSoft, maxWidth: 560, marginBottom: page.highlights?.length ? 22 : 28 }}>
             {page.tagline}
           </p>
+          {page.highlights?.length > 0 && (
+            <ul className="space-y-3 mb-8" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {page.highlights.map((item, ii) => (
+                <li key={ii} className="flex gap-3" style={{ fontSize: 15, lineHeight: 1.55, color: C.inkSoft }}>
+                  <Check size={16} color={C.accent} strokeWidth={2.25} style={{ marginTop: 3, flexShrink: 0 }} />
+                  <span><RichText text={item} /></span>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="flex flex-wrap items-center gap-3">
             <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
             {page.fromPrice && (
-              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.12em", color: C.muted, textTransform: "uppercase" }}>
-                From ${page.fromPrice}/mo
+              <span className="mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: C.muted, textTransform: "uppercase" }}>
+                From ${page.fromPrice}/mo if approved · visit fee at checkout
               </span>
             )}
           </div>
@@ -1654,41 +1738,52 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
                       </ol>
                     );
                   }
+                  if (block.type === "table") {
+                    return (
+                      <div key={bi} className="overflow-x-auto" style={{ border: `1px solid ${C.line}`, borderRadius: 14 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                          <thead>
+                            <tr style={{ background: C.bgAlt }}>
+                              {block.headers.map((h, hi) => (
+                                <th key={hi} className="text-left px-4 py-3" style={{ color: C.ink, fontWeight: 650, borderBottom: `1px solid ${C.line}` }}>
+                                  {h}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {block.rows.map((row, ri) => (
+                              <tr key={ri}>
+                                {row.map((cell, ci) => (
+                                  <td key={ci} className="px-4 py-3 align-top" style={{ color: ci === 0 ? C.ink : C.inkSoft, fontWeight: ci === 0 ? 600 : 400, borderBottom: ri < block.rows.length - 1 ? `1px solid ${C.lineSoft}` : "none" }}>
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  }
+                  if (block.type === "faq") {
+                    return <FaqBlock key={bi} items={block.items} />;
+                  }
                   return null;
                 })}
               </div>
             </div>
           ))}
 
-          {slug === "contact" && (
-            <div className="pt-4" style={{ borderTop: `1px solid ${C.lineSoft}` }}>
-              <h2 className="display" style={{ fontSize: 28, fontWeight: 600, color: C.ink, marginBottom: 16 }}>Send a message</h2>
-              <form
-                className="space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  alert("Thanks — this demo form does not send yet. Email support@sprymd.ai.");
-                }}
-              >
-                {[
-                  { id: "name", label: "Name", type: "text" },
-                  { id: "email", label: "Email", type: "email" },
-                  { id: "topic", label: "Topic", type: "text" },
-                ].map((f) => (
-                  <Field key={f.id} label={f.label}>
-                    <input required id={f.id} name={f.id} type={f.type} className="w-full px-4 py-3 focus-ring" style={inputStyle} />
-                  </Field>
-                ))}
-                <Field label="Message">
-                  <textarea required id="message" name="message" rows={5} className="w-full px-4 py-3 focus-ring" style={{ ...inputStyle, resize: "vertical" }} />
-                </Field>
-                <Btn type="submit" icon={Send}>Send message</Btn>
-              </form>
+          {page.conditionId && (
+            <div className="pt-2">
+              <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
             </div>
           )}
+
+          {slug === "contact" && <ContactFormInline />}
         </div>
       </section>
-      </main>
       <Footer go={go} />
     </div>
   );
@@ -1729,8 +1824,23 @@ const authThemes = {
 };
 
 const SignIn = ({ go, returnTo, onAuthSuccess }) => {
-  const [mode, setMode] = useState("signin");
-  const [email, setEmail] = useState("");
+  const opsReturn =
+    typeof returnTo === "string" &&
+    (returnTo === "/ops" || returnTo.startsWith("/ops/") || returnTo.startsWith("/ops?"));
+  const staffOrMasterReturn =
+    typeof returnTo === "string" &&
+    (returnTo === "/staff" ||
+      returnTo.startsWith("/staff/") ||
+      returnTo === "/master" ||
+      returnTo.startsWith("/master/"));
+  const [mode, setMode] = useState(opsReturn ? "signup" : "signin");
+  const [email, setEmail] = useState(() => {
+    try {
+      return localStorage.getItem("sprymd_guest_checkout_email") || "";
+    } catch {
+      return "";
+    }
+  });
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
@@ -1769,8 +1879,12 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  // Login launches only after the slide-to-confirm completes (not via Enter/submit click).
+  const handleFormSubmit = (e) => {
     e.preventDefault();
+  };
+
+  const launchAuth = async () => {
     if (!canSubmit || loading) return;
     setLoading(true);
     setError("");
@@ -1794,12 +1908,37 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
       if (mode === "signup") {
         onAuthSuccess(hydrateUser(result.profile));
         if (result.needsEmailConfirm) {
-          setNotice("Account created. Check your email to confirm — you can keep using your account now.");
+          setNotice(
+            opsReturn
+              ? "Account created — confirm the email link, then sign in to open Ops. Clinician APIs need a live Supabase session."
+              : "Account created. Check your email to confirm — you can keep using your account now.",
+          );
+          if (opsReturn) {
+            setMode("signin");
+            setLoading(false);
+            return;
+          }
         }
       } else {
         onAuthSuccess(hydrateUser(result.profile));
       }
-      go(returnTo || "dashboard", { justLoggedIn: true });
+
+      // Ops / staff / master need a live Supabase session.
+      if ((opsReturn || staffOrMasterReturn) && result.provider === "local") {
+        setError(
+          "Clinical workspaces need a Supabase login. Create the account again (or confirm email), then sign in with the same password.",
+        );
+        setLoading(false);
+        return;
+      }
+
+      const authedEmail = result.profile?.email || email;
+      const defaultDest = postAuthDashboardPath(authedEmail);
+      const rt = returnTo || defaultDest;
+      go(rt === "dashboard" || rt === "account" || !rt ? defaultDest : rt, {
+        justLoggedIn: true,
+        email: authedEmail,
+      });
     } catch (err) {
       resolveAnim();
       setError(err?.message || "Unable to authenticate. Try again.");
@@ -1831,9 +1970,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: T.bg, color: T.ink, transition: "background 0.25s ease, color 0.25s ease" }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${T.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded" aria-label="Back to home">
-          <Logo color={T.ink} />
-        </button>
+        <Logo color={T.ink} onClick={() => go("landing")} />
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -1857,16 +1994,22 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 
           <div className="mb-8">
             <p className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {opsReturn
+                ? (mode === "signin" ? "Staff sign in" : "Staff account")
+                : (mode === "signin" ? "Sign in" : "Create account")}
             </p>
             <p style={{ fontSize: 15, color: T.inkSoft, marginTop: 10, lineHeight: 1.5 }}>
-              {mode === "signin"
-                ? "Open your care plan, prescriptions, and orders."
-                : "One email. Your care plan stays private to you."}
+              {opsReturn
+                ? (mode === "signin"
+                  ? "Use your allowlisted clinician email to open the ops queue."
+                  : "First login after cutover: create your account with the allowlisted staff email, then open Ops.")
+                : (mode === "signin"
+                  ? "Open your care plan, prescriptions, and orders."
+                  : "One email. Your care plan stays private to you.")}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-4">
             {mode === "signup" && (
               <>
                 <div>
@@ -1904,10 +2047,20 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
               </div>
             )}
 
-            <Btn type="submit" disabled={!canSubmit || loading} size="lg" className="w-full">
-              {loading ? <span className="anim-pulse">{mode === "signin" ? "Signing in..." : "Creating account..."}</span>
-                       : <>{mode === "signin" ? "Sign in" : "Create account & continue"}</>}
-            </Btn>
+            <SlideToConfirm
+              key={mode}
+              label={mode === "signin" ? "Slide to sign in" : "Slide to create account"}
+              loadingLabel={mode === "signin" ? "Signing in…" : "Creating account…"}
+              disabled={!canSubmit}
+              loading={loading}
+              onConfirm={launchAuth}
+              accent={C.accent}
+              accentDeep={C.accentDeep}
+              trackBg={T.inputBg}
+              trackBorder={T.line}
+              ink={T.ink}
+              muted={T.muted}
+            />
 
             <div className="flex items-center gap-2 justify-center pt-1">
               <Lock size={11} color={T.muted} />
@@ -1930,17 +2083,11 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Quick Refills — Empower medication database query for this patient
+// Soft-launch refill UI — request clinician review; no fake Empower API or card capture.
 // ─────────────────────────────────────────────────────────────────────────────
 const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   const [filter, setFilter] = useState("All");
-  const [loaded, setLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 700);
-    return () => clearTimeout(t);
-  }, []);
 
   const rxs = user?.rxHistory || [];
   const categories = ["All", ...Array.from(new Set(rxs.map((r) => r.category)))];
@@ -1957,7 +2104,7 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <button onClick={() => go("landing")} className="focus-ring rounded"><Logo /></button>
+        <Logo onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <span style={{ fontSize: 13, color: C.inkSoft }}>
             <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.08em" }}>HI,</span>{" "}
@@ -1980,71 +2127,67 @@ const Refills = ({ user, go, refillCart, addRefill, removeRefill }) => {
           </h1>
           <div className="flex items-center gap-4 flex-wrap">
             <p style={{ fontSize: 15, color: C.inkSoft, maxWidth: 580, lineHeight: 1.55 }}>
-              Pulled live from the Empower medication database. Select what you need refilled — we'll e-prescribe and ship the same day. Your health record updates automatically.
+              Request a refill for medicine already on your SpryMD chart. A clinician confirms appropriateness first — then we coordinate payment and pharmacy shipping. Soft launch does not auto-charge cards here.
             </p>
           </div>
           <div className="mt-6 flex items-center gap-3 flex-wrap">
-            <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} active Rx</Tag>
-            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Prescriber: SpryMD Clinician</Tag>
-            <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />gethealthy.com synced</Tag>
+            <Tag color={C.bgAlt}><Activity size={10} style={{ display: "inline", marginRight: 4 }} />{rxs.length} on file</Tag>
+            <Tag color={C.bgAlt}><Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Clinician review before ship</Tag>
+            <Tag color={C.bgAlt}><ShieldCheck size={10} style={{ display: "inline", marginRight: 4 }} />No auto-charge at request</Tag>
           </div>
         </div>
       </section>
 
-      <section className="px-6 md:px-12 py-4 sticky top-0 z-10" style={{ background: C.bg, borderTop: `1px solid ${C.lineSoft}`, borderBottom: `1px solid ${C.lineSoft}` }}>
-        <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
-            {categories.map((cat) => (
-              <button key={cat} onClick={() => setFilter(cat)}
-                className="focus-ring px-4 py-2 rounded-full transition-all whitespace-nowrap"
-                style={{ background: filter === cat ? C.ink : "transparent", color: filter === cat ? C.paper : C.ink,
-                  border: `1px solid ${filter === cat ? C.ink : C.line}`, fontSize: 13, fontWeight: 500 }}>
-                {cat}
-              </button>
-            ))}
-          </div>
-          <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search prescriptions..."
-            className="focus-ring px-4 py-2 rounded-full text-sm"
-            style={{ background: C.bgAlt, border: `1px solid ${C.line}`, color: C.ink, minWidth: 200, fontFamily: fonts.body }} />
-        </div>
-      </section>
-
-      {!loaded && (
-        <section className="px-6 md:px-12 py-20">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center mb-6">
-              <RefreshCw size={32} color={C.accent} strokeWidth={1.5} className="anim-spin" />
+      {rxs.length > 0 && (
+        <section className="px-6 md:px-12 py-4 sticky top-0 z-10" style={{ background: C.bg, borderTop: `1px solid ${C.lineSoft}`, borderBottom: `1px solid ${C.lineSoft}` }}>
+          <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
+              {categories.map((cat) => (
+                <button key={cat} onClick={() => setFilter(cat)}
+                  className="focus-ring px-4 py-2 rounded-full transition-all whitespace-nowrap"
+                  style={{ background: filter === cat ? C.ink : "transparent", color: filter === cat ? C.paper : C.ink,
+                    border: `1px solid ${filter === cat ? C.ink : C.line}`, fontSize: 13, fontWeight: 500 }}>
+                  {cat}
+                </button>
+              ))}
             </div>
-            <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 8 }}>
-              Querying Empower medication database…
-            </h3>
-            <p style={{ fontSize: 13, color: C.muted, fontFamily: fonts.mono, letterSpacing: "0.05em" }}>
-              GET /api/v1/patients/{user.email.split("@")[0]}/prescriptions
-            </p>
+            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search prescriptions..."
+              className="focus-ring px-4 py-2 rounded-full text-sm"
+              style={{ background: C.bgAlt, border: `1px solid ${C.line}`, color: C.ink, minWidth: 200, fontFamily: fonts.body }} />
           </div>
         </section>
       )}
 
-      {loaded && (
-        <section className="px-6 md:px-12 py-8 pb-32">
-          <div className="max-w-7xl mx-auto space-y-3">
-            {filtered.map((rx, i) => (
-              <RxRow key={rx.rxId} rx={rx} inCart={isInCart(rx.rxId)}
-                onAdd={() => addRefill(rx)} onRemove={() => removeRefill(rx.rxId)} delay={i * 0.04} />
-            ))}
-            {filtered.length === 0 && (
-              <div className="text-center py-20"><p style={{ color: C.muted, fontSize: 15 }}>No prescriptions match those filters.</p></div>
-            )}
-          </div>
-        </section>
-      )}
+      <section className="px-6 md:px-12 py-8 pb-32">
+        <div className="max-w-7xl mx-auto space-y-3">
+          {rxs.length === 0 ? (
+            <div className="text-center py-16 px-4 rounded-3xl" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
+              <p style={{ color: C.ink, fontSize: 18, fontWeight: 500, marginBottom: 8 }}>No prescriptions on file yet</p>
+              <p style={{ color: C.inkSoft, fontSize: 14, lineHeight: 1.55, maxWidth: 420, margin: "0 auto 24px" }}>
+                Start a clinician visit to get a plan reviewed. After a prescription is approved and filled, you can request refills here.
+              </p>
+              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your visit</Btn>
+            </div>
+          ) : (
+            <>
+              {filtered.map((rx, i) => (
+                <RxRow key={rx.rxId} rx={rx} inCart={isInCart(rx.rxId)}
+                  onAdd={() => addRefill(rx)} onRemove={() => removeRefill(rx.rxId)} delay={i * 0.04} />
+              ))}
+              {filtered.length === 0 && (
+                <div className="text-center py-20"><p style={{ color: C.muted, fontSize: 15 }}>No prescriptions match those filters.</p></div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
       {cartCount > 0 && (
         <button onClick={() => go("refill-checkout")}
           className="anim-fadeUp focus-ring fixed bottom-6 right-6 px-6 py-4 rounded-full flex items-center gap-3 shadow-lg transition-transform hover:-translate-y-0.5"
           style={{ background: C.accent, color: "#fff", zIndex: 30 }}>
           <Send size={16} strokeWidth={2} />
-          <span style={{ fontSize: 14, fontWeight: 500 }}>E-Prescribe {cartCount} · ${cartTotal.toFixed(2)}</span>
+          <span style={{ fontSize: 14, fontWeight: 500 }}>Request review · {cartCount} · ~${cartTotal.toFixed(2)}</span>
           <ArrowRight size={16} />
         </button>
       )}
@@ -2107,42 +2250,25 @@ const RxRow = ({ rx, inCart, onAdd, onRemove, delay }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Refill checkout — separate flow (Stripe → gethealthy.com → Empower e-Rx)
+// Soft-launch refill request — no fake card capture; clinician confirms before pay/ship.
 // ─────────────────────────────────────────────────────────────────────────────
 const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
-  const [card, setCard] = useState("");
-  const [exp, setExp] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [zip, setZip] = useState("");
-  const [shipping, setShipping] = useState("standard");
   const [processing, setProcessing] = useState(false);
+  const [note, setNote] = useState("");
 
-  const formatCard = (v) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-  const formatExp = (v) => {
-    const digits = v.replace(/\D/g, "").slice(0, 4);
-    if (digits.length <= 2) return digits;
-    return digits.slice(0, 2) + " / " + digits.slice(2);
-  };
-
-  const hasChilled = refillCart.some((i) => i.chilled);
   const subtotal = refillCart.reduce((s, i) => s + i.price, 0);
-  const shippingCost = shipping === "overnight" ? (hasChilled ? 41 : 33) : (hasChilled ? 20 : 15);
-  const tax = subtotal * 0.0875;
-  const total = subtotal + shippingCost + tax;
-
-  const canSubmit = card.replace(/\s/g, "").length === 16 && exp.length >= 7 && cvc.length >= 3 && zip.length >= 5;
 
   const submit = () => {
-    if (!canSubmit) return;
+    if (!refillCart.length || processing) return;
     setProcessing(true);
-    setTimeout(() => onComplete(), 1500);
+    setTimeout(() => onComplete(), 600);
   };
 
   return (
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <button onClick={() => go("refills")} className="focus-ring rounded-full p-1 hover:opacity-60">
           <X size={20} color={C.ink} strokeWidth={1.5} />
         </button>
@@ -2151,72 +2277,43 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
       <div className="px-6 md:px-12 py-12">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
           <div>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Refill Checkout</span>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.accent, textTransform: "uppercase" }}>Refill request</span>
             <h1 className="display" style={{ fontSize: "clamp(32px, 4vw, 48px)", lineHeight: 1.05, fontWeight: 400, marginTop: 12, marginBottom: 8, color: C.ink }}>
-              E-prescribe & <Mark>ship</Mark>.
+              Ask for a <Mark>clinician review</Mark>.
             </h1>
-            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55, maxWidth: 460 }}>
-              Once paid, we transmit your prescriptions to Empower Pharmacy and update your record at gethealthy.com automatically.
+            <p style={{ fontSize: 14, color: C.inkSoft, marginBottom: 32, lineHeight: 1.55, maxWidth: 480 }}>
+              Soft launch does not charge a card on this screen. Submit the request, a Tennessee-licensed clinician confirms it is appropriate, then we coordinate payment and pharmacy shipping with you — clearly, before anything ships.
             </p>
 
-            <div className="mb-8">
-              <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 12, fontWeight: 500 }}>Shipping</label>
-              <div className="grid grid-cols-2 gap-3">
-                {[{ id: "standard", label: "2nd Day Express", days: hasChilled ? "1–2 days · refrigerated" : "1–2 days", price: hasChilled ? 20 : 15 },
-                  { id: "overnight", label: "Eligible TN next-business-day", days: hasChilled ? "After fill · refrigerated" : "After approval and fill", price: hasChilled ? 41 : 33 }].map((s) => (
-                  <button key={s.id} onClick={() => setShipping(s.id)}
-                    className="focus-ring text-left p-4 rounded-xl transition-all"
-                    style={{ background: shipping === s.id ? C.primary : C.paper, color: shipping === s.id ? C.paper : C.ink,
-                      border: `1px solid ${shipping === s.id ? C.primary : C.line}` }}>
-                    <div style={{ fontSize: 14, fontWeight: 500 }}>{s.label}</div>
-                    <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>{s.days}</div>
-                    <div className="display" style={{ fontSize: 18, fontWeight: 500, marginTop: 8 }}>${s.price}</div>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-4">
-                <DeliveryDetailsCard />
-              </div>
-            </div>
-
             <div className="space-y-5">
-              <Field label="Cardholder name">
-                <input value={user.name} readOnly className="focus-ring w-full p-4" style={{ ...inputStyle, opacity: 0.7 }} />
+              <Field label="Account email">
+                <input value={user.email} readOnly className="focus-ring w-full p-4" style={{ ...inputStyle, opacity: 0.7 }} />
               </Field>
-              <div>
-                <label className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 }}>Card information</label>
-                <div className="rounded-xl overflow-hidden" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-                  <input value={card} onChange={(e) => setCard(formatCard(e.target.value))} placeholder="1234 1234 1234 1234"
-                    className="focus-ring w-full p-4"
-                    style={{ ...inputStyle, border: "none", borderBottom: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                  <div className="flex">
-                    <input value={exp} onChange={(e) => setExp(formatExp(e.target.value))} placeholder="MM / YY"
-                      className="focus-ring flex-1 p-4"
-                      style={{ ...inputStyle, border: "none", borderRight: `1px solid ${C.line}`, borderRadius: 0, background: "transparent" }} />
-                    <input value={cvc} onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="CVC"
-                      className="focus-ring flex-1 p-4"
-                      style={{ ...inputStyle, border: "none", borderRadius: 0, background: "transparent" }} />
-                  </div>
-                </div>
-              </div>
-              <Field label="ZIP / Postal code">
-                <input value={zip} onChange={(e) => setZip(e.target.value.slice(0, 10))} placeholder="38201" className="focus-ring w-full p-4" style={inputStyle} />
+              <Field label="Optional note for your clinician">
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value.slice(0, 500))}
+                  placeholder="Dose change, side effects, timing preferences…"
+                  rows={4}
+                  className="focus-ring w-full p-4"
+                  style={{ ...inputStyle, resize: "vertical", minHeight: 110 }}
+                />
               </Field>
 
-              <Btn onClick={submit} disabled={!canSubmit || processing} size="lg" className="w-full" icon={!processing ? Send : null}>
-                {processing ? <span className="anim-pulse">Processing...</span> : `Pay $${total.toFixed(2)} & e-prescribe`}
+              <Btn onClick={submit} disabled={!refillCart.length || processing} size="lg" className="w-full" icon={!processing ? Send : null}>
+                {processing ? <span className="anim-pulse">Submitting…</span> : "Submit refill request"}
               </Btn>
 
               <div className="flex items-center justify-center gap-2">
                 <Lock size={11} color={C.muted} />
-                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>STRIPE · NCPDP-COMPLIANT E-RX</span>
+                <span className="mono" style={{ fontSize: 10, color: C.muted, letterSpacing: "0.12em" }}>NO CARD CHARGE ON THIS STEP</span>
               </div>
             </div>
           </div>
 
           <div>
             <div className="p-8 rounded-3xl sticky top-8" style={{ background: C.paper, border: `1px solid ${C.line}` }}>
-              <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 24 }}>Refill summary</h3>
+              <h3 className="display" style={{ fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 24 }}>Request summary</h3>
 
               <div className="space-y-4 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
                 {refillCart.map((rx) => {
@@ -2237,14 +2334,13 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
               </div>
 
               <div className="space-y-2 pb-6 mb-6" style={{ borderBottom: `1px solid ${C.line}` }}>
-                <Row label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
-                <Row label={`Shipping (${shipping === "overnight" ? "Overnight" : "2-Day"}${hasChilled ? " · refrigerated" : ""})`} value={`$${shippingCost.toFixed(2)}`} />
-                <Row label="Tax (est.)" value={`$${tax.toFixed(2)}`} />
+                <Row label="Estimated med total (if approved)" value={`$${subtotal.toFixed(2)}`} />
+                <Row label="Charged today" value="$0.00" />
               </div>
 
               <div className="flex items-baseline justify-between">
-                <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>Total</span>
-                <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>${total.toFixed(2)}</span>
+                <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>Due now</span>
+                <span className="display" style={{ fontSize: 32, fontWeight: 500, color: C.ink }}>$0</span>
               </div>
 
               <div className="mt-6 p-4 rounded-xl" style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
@@ -2253,7 +2349,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
                   <div>
                     <div style={{ fontSize: 12, color: C.ink, fontWeight: 500, marginBottom: 4 }}>What happens next</div>
                     <div style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.5 }}>
-                      Health record updated at gethealthy.com → e-Rx transmitted to Empower → discreet shipment within {shipping === "overnight" ? "24 hours" : "48 hours"}.
+                      Clinician reviews your chart → we confirm payment with you → pharmacy fulfills and ships discreetly. Eligible Tennessee orders may qualify for next-business-day delivery after approval and fill.
                     </div>
                   </div>
                 </div>
@@ -2266,8 +2362,7 @@ const RefillCheckout = ({ user, refillCart, go, onComplete }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Refill Success — animated webhook + e-prescribe pipeline
+// Soft-launch refill success — request queued, not “meds on the way”
 // ─────────────────────────────────────────────────────────────────────────────
 const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const [stage, setStage] = useState(0);
@@ -2275,9 +2370,9 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   useEffect(() => {
     const stages = [
       { delay: 0, stage: 0 },
-      { delay: 1200, stage: 1 },
-      { delay: 2600, stage: 2 },
-      { delay: 4000, stage: 3 },
+      { delay: 900, stage: 1 },
+      { delay: 1800, stage: 2 },
+      { delay: 2700, stage: 3 },
     ];
     const timers = stages.map((s) => setTimeout(() => setStage(s.stage), s.delay));
     return () => timers.forEach(clearTimeout);
@@ -2288,13 +2383,13 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
   const steps = [
     { title: "Refill request recorded", sub: "Saved to your SpryMD account · pending clinician confirmation", icon: Lock },
     { title: "Chart flagged for review", sub: "A clinician will confirm appropriateness before pharmacy release", icon: FileText },
-    { title: "Queued for fulfillment", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} will release after approval`, icon: Send },
+    { title: "Payment & fulfillment next", sub: `${refillCart.length} medication${refillCart.length > 1 ? "s" : ""} — we confirm payment with you only after approval`, icon: Send },
   ];
 
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
@@ -2305,10 +2400,10 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
               {stage >= 3 ? <Check size={32} color={C.paper} strokeWidth={2} /> : <RefreshCw size={28} color={C.primary} strokeWidth={1.75} className="anim-spin" />}
             </div>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: C.muted, textTransform: "uppercase" }}>
-              {stage >= 3 ? "Refill complete" : "Processing your refill..."}
+              {stage >= 3 ? "Request submitted" : "Queuing your request…"}
             </span>
             <h1 className="display" style={{ fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1.05, fontWeight: 400, color: C.ink, marginTop: 12, marginBottom: 16 }}>
-              {stage >= 3 ? <>Your meds are <Mark>on the way</Mark>.</> : <>Hang tight, <Mark>working...</Mark></>}
+              {stage >= 3 ? <>We&rsquo;ll <Mark>confirm next</Mark>.</> : <>Hang tight, <Mark>saving…</Mark></>}
             </h1>
           </div>
 
@@ -2343,17 +2438,17 @@ const RefillSuccess = ({ refillCart, go, onClearCart }) => {
               <div className="rounded-2xl p-6 mb-6" style={{ background: C.primary, color: C.paper }}>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div>
-                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Order #SR-29481</span>
+                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: C.accentSoft, textTransform: "uppercase" }}>Refill request</span>
                     <div className="display" style={{ fontSize: 24, fontWeight: 500, marginTop: 4 }}>
-                      ${total.toFixed(2)} · {refillCart.length} prescription{refillCart.length > 1 ? "s" : ""}
+                      ~${total.toFixed(2)} · {refillCart.length} item{refillCart.length > 1 ? "s" : ""} · $0 charged today
                     </div>
                   </div>
                   <Tag color="rgba(255,255,255,0.1)" fg={C.paper}>
-                    <Truck size={10} style={{ display: "inline", marginRight: 4 }} />Tracking sent to email
+                    <Stethoscope size={10} style={{ display: "inline", marginRight: 4 }} />Pending clinician review
                   </Tag>
                 </div>
                 <p style={{ fontSize: 13, color: "rgba(248,244,234,0.75)", lineHeight: 1.55 }}>
-                  Empower will dispense and ship within 24–48 hours. You'll get tracking once the package leaves the facility. Refrigerated items ship in insulated cold-chain packaging.
+                  Nothing ships until a clinician approves and you confirm payment. Questions? Email support@sprymd.ai — we aim to reply within one business day.
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 flex-wrap">
@@ -2717,7 +2812,7 @@ const Intake = ({ conditionId, treatmentId, go, persist = true }) => {
   return (
     <div className="anim-fadeIn min-h-screen flex flex-col" style={{ background: C.bg }}>
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         <div className="flex items-center gap-4">
           <div className="text-right">
             <span className="mono" style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em", display: "block" }}>
@@ -2933,7 +3028,7 @@ const ConsultRequest = ({ conditionId, answers, disqualified, safety, go, user }
   return (
     <div className="anim-fadeIn min-h-screen px-6 md:px-12 py-12" style={{ background: C.bg }}>
       <div className="max-w-2xl mx-auto pt-6 md:pt-12">
-        <Logo />
+        <Logo onClick={() => go("landing")} />
         {crisis && <div className="mt-8"><CrisisPanel /></div>}
         {!crisis && urgent && (
           <div className="mt-8">
@@ -3025,7 +3120,7 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
     <div className="anim-fadeIn min-h-screen" style={{ background: C.bg }}>
       <DeliveryBar />
       <div className="px-6 md:px-12 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.lineSoft}` }}>
-        <Logo /><Tag>Options ready</Tag>
+        <Logo onClick={() => go("landing")} /><Tag>Options ready</Tag>
       </div>
 
       <div className="px-6 md:px-12 py-12 md:py-16">
@@ -3060,13 +3155,13 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
               <p style={{ fontSize: 15, marginTop: 24, opacity: 0.85, lineHeight: 1.55 }}>
                 {recommended.note}{" "}
                 {conditionId === "pcp"
-                  ? "Includes ongoing clinician support, secure messaging, and care coordination."
-                  : "Compounded at Empower Pharmacy. Free shipping. Includes ongoing clinician support and dose adjustments."}
+                  ? "Includes ongoing clinician support, secure messaging, and care coordination once your visit is completed."
+                  : `${pharmacyShortCopy()} Medication is billed separately after clinician approval — not at this visit checkout.`}
               </p>
               <div className="mt-8 space-y-2">
                 {(conditionId === "pcp"
-                  ? ["Unlimited secure messaging", "Annual wellness visit", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
-                  : ["Free shipping, every refill", "Message your clinician anytime", "Cancel or pause whenever", "Synced with your gethealthy.com record"]
+                  ? ["Secure messaging after your visit", "Clinician-led care plan", "Cancel future care anytime", "Tennessee-licensed physician review"]
+                  : ["Discreet shipping when prescribed", "Message your care team after your visit", "Cancel future care anytime", "Tennessee-licensed physician review"]
                 ).map((b) => (
                   <div key={b} className="flex items-center gap-2">
                     <Check size={14} strokeWidth={2} color={C.accentSoft} />
@@ -3089,10 +3184,12 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
                       <Tag color={C.accent} fg={C.paper}>SAVE ${recommended.compareAt - recommended.price} VS {recommended.comparePeer.toUpperCase()}</Tag>
                     </div>
                   )}
-                  <p style={{ fontSize: 12, opacity: 0.6, marginTop: 12 }}>Billed monthly only after a clinician approves. Cancel anytime.</p>
+                  <p style={{ fontSize: 12, opacity: 0.6, marginTop: 12 }}>Plan price if a clinician approves treatment. Soft launch bills medication separately — not at this checkout. Cancel future care anytime.</p>
                 </div>
-                <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to checkout</Btn>
-                <p style={{ fontSize: 12, opacity: 0.75, marginTop: 12, lineHeight: 1.45, textAlign: "center" }}>Next: pay the visit fee securely with Stripe. Medication is billed only if a clinician approves it.</p>
+                <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to visit checkout</Btn>
+                <p style={{ fontSize: 12, opacity: 0.75, marginTop: 12, lineHeight: 1.45, textAlign: "center" }}>
+                  Next: pay the one-time visit fee securely with Stripe. The ${recommended.price}/mo plan price is charged only after a clinician approves treatment — not at this checkout.
+                </p>
                 <div className="flex items-center justify-center gap-2 mt-3">
                   <Lock size={12} color={C.accentSoft} />
                   <span className="mono" style={{ fontSize: 10, opacity: 0.7, letterSpacing: "0.1em" }}>SECURE · STRIPE CHECKOUT</span>
@@ -3388,24 +3485,11 @@ const readFunnelFromUrl = () => {
   return { view: "intake", condition, treatmentId, params: { condition, treatmentId } };
 };
 
-// Tab titles for SpryApp's internal views (all served from "/").
-const VIEW_TITLES = {
-  intake: "Start your visit",
-  plan: "Your treatment plan",
-  checkout: "Checkout",
-  success: "Order confirmed",
-  signin: "Sign in",
-  refills: "Quick refills",
-  "refill-checkout": "Refill checkout",
-  "refill-success": "Refills ordered",
-  marketplace: "Shop",
-  account: "Your account",
-  dashboard: "Your account",
-};
-
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const routeParams = useParams();
+  const careSlugFromRoute = routeParams.slug;
   // Start on the funnel step named in the URL so a refresh doesn't flash the landing page.
   const [initialFunnel] = useState(readFunnelFromUrl);
   const [view, setView] = useState(initialFunnel?.view ?? "landing");
@@ -3441,14 +3525,37 @@ export default function App() {
     return "intake";
   };
 
-  // Deep-links: /?auth=1&returnTo=…, /?view=marketplace&filter=Devices,
+  // Deep-links: /care/:slug, /?auth=1&returnTo=…, /?view=marketplace&filter=Devices,
   // /?view=start (care options), /?view=intake|plan&condition=<id> (also /quiz).
   useEffect(() => {
     if (!authReady) return;
+    if (careSlugFromRoute) {
+      if (!FEATURES.enableShop && SHOP_STACK_SLUGS.has(careSlugFromRoute)) {
+        setView("landing");
+        setParams({});
+        navigate("/", { replace: true });
+        return;
+      }
+      if (isKnownCarePageSlug(careSlugFromRoute)) {
+        setParams({ slug: careSlugFromRoute });
+        setView("page");
+        return;
+      }
+      // /care/:slug matches any string; unknown slugs must 404 — do not leave the homepage mounted.
+      setParams({ slug: careSlugFromRoute });
+      setView("notfound");
+      return;
+    }
     const qs = new URLSearchParams(window.location.search);
     if (qs.get("auth") === "1") {
       const returnTo = qs.get("returnTo") || "dashboard";
-      const target = returnTo.startsWith("/dashboard") || returnTo === "account" ? "dashboard" : returnTo;
+      // Absolute paths (/ops, /dashboard/…) stay intact for router navigate after sign-in.
+      const target =
+        returnTo.startsWith("/")
+          ? returnTo
+          : returnTo === "account"
+            ? "dashboard"
+            : returnTo;
       setParams({ returnTo: target });
       setView("signin");
       window.history.replaceState({}, "", "/");
@@ -3477,7 +3584,7 @@ export default function App() {
       window.history.replaceState({ spryView: shown, condition, treatmentId }, "", funnelUrl(shown, condition));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authReady]);
+  }, [authReady, careSlugFromRoute, location.pathname]);
 
   // Browser Back / Forward between landing ⇄ intake ⇄ plan.
   useEffect(() => {
@@ -3504,31 +3611,12 @@ export default function App() {
   };
 
   const clearFunnelUrl = () => {
+    if (window.location.pathname.startsWith("/care/")) {
+      navigate("/", { replace: true });
+      return;
+    }
     if (window.location.search) window.history.replaceState({}, "", "/");
   };
-
-  // Landing anchors (/#how, /#landing-conditions) linked from other routes:
-  // the sections only exist after the account check, so scroll once ready.
-  useEffect(() => {
-    if (!authReady) return;
-    const anchor = location.hash.replace(/^#/, "");
-    if (anchor === "how" || anchor === "landing-conditions") go(anchor);
-  }, [authReady, location.hash]);
-
-  // Keep the document title in step with the current in-app view.
-  useEffect(() => {
-    if (!authReady) return;
-    if (view === "landing") {
-      applyHead({ path: "/" });
-      return;
-    }
-    if (view === "page") {
-      const page = footerPages[params.slug];
-      applyHead({ pageTitle: page?.title || "Page not found", description: page?.tagline || undefined, path: "/" });
-      return;
-    }
-    applyHead({ pageTitle: VIEW_TITLES[view] || undefined, path: "/" });
-  }, [authReady, view, params.slug]);
 
   const requireAuth = (target, extra = {}) => {
     setParams({ returnTo: target, ...extra });
@@ -3537,8 +3625,8 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const openPatientDashboard = () => {
-    navigate("/dashboard");
+  const openPatientDashboard = (emailHint) => {
+    navigate(postAuthDashboardPath(emailHint || user?.email));
     window.scrollTo(0, 0);
   };
 
@@ -3570,15 +3658,22 @@ export default function App() {
       setTimeout(() => { const el = document.getElementById("how"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
       return;
     }
+    // Router paths from auth returnTo (e.g. /ops, /dashboard/profile)
+    if (typeof target === "string" && target.startsWith("/")) {
+      navigate(target);
+      clearFunnelUrl();
+      window.scrollTo(0, 0);
+      return;
+    }
     // Auth gates — account + refills require a signed-in customer
     // justLoggedIn covers the render before setUser flushes
     if ((target === "refills" || target === "account" || target === "dashboard") && !user && !p.justLoggedIn) {
       requireAuth(target === "dashboard" || target === "account" ? "account" : target, p);
       return;
     }
-    // Patient account dashboard (React Router)
-    if (target === "account" || target === "dashboard") {
-      openPatientDashboard();
+    // Role-based workspace: /master, /staff, or /dashboard
+    if (target === "account" || target === "dashboard" || target === "staff" || target === "master") {
+      openPatientDashboard(p.email || user?.email);
       return;
     }
     if (target === "intake") {
@@ -3605,16 +3700,20 @@ export default function App() {
       return;
     }
     if (target === "page") {
-      const shopStackSlugs = new Set(["supplements", "devices", "sleep"]);
-      if (!FEATURES.enableShop && shopStackSlugs.has(p.slug)) {
+      if (!FEATURES.enableShop && SHOP_STACK_SLUGS.has(p.slug)) {
         setView("landing");
         clearFunnelUrl();
         window.scrollTo(0, 0);
         return;
       }
       setParams({ slug: p.slug });
-      setView("page");
-      clearFunnelUrl();
+      if (isKnownCarePageSlug(p.slug)) {
+        setView("page");
+        navigate(carePageUrl(p.slug));
+      } else {
+        setView("notfound");
+        navigate(carePageUrl(p.slug), { replace: true });
+      }
       window.scrollTo(0, 0);
       return;
     }
@@ -3717,6 +3816,7 @@ export default function App() {
     setView("landing");
     setParams({});
     clearFunnelUrl();
+    navigate("/");
     window.scrollTo(0, 0);
   };
 
@@ -3745,16 +3845,17 @@ export default function App() {
   return (
     <div className="relative" style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
       <FontInjector />
-      {view === "landing" ? <BrandAtmosphere plate="tn" variant="site" locked objectPosition="center 40%" priority /> : null}
+      {view === "landing" ? <BrandAtmosphere plate="tn" variant="site" locked objectPosition="center 40%" /> : null}
 
       {view === "landing" && (
-        <div className="relative z-10">
+        <div id="main-content" className="relative z-10">
           <DeliveryBar onClick={() => go("how")} glass />
           <Header go={go} cartCount={cartCount} user={user} glass />
           <Landing go={go} />
         </div>
       )}
       {view === "page" && <FooterPage slug={params.slug} go={go} cartCount={cartCount} user={user} />}
+      {view === "notfound" && <NotFound />}
       {view === "intake" && isKnownCondition(params.condition) && (
         <Intake key={params.condition} conditionId={params.condition} treatmentId={params.treatmentId} go={go} />
       )}
