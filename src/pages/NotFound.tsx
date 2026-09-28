@@ -7,12 +7,7 @@ const NotFound = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    applyHead({
-      pageTitle: NOT_FOUND_META.pageTitle,
-      description: NOT_FOUND_META.description,
-      path: pathname,
-      noindex: true,
-    });
+    applyHead({ pageTitle: NOT_FOUND_META.pageTitle, description: NOT_FOUND_META.description, path: pathname, noindex: true });
   }, [pathname]);
 
   return (
@@ -21,9 +16,8 @@ const NotFound = () => {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">404</p>
         <h1 className="mt-4 font-display text-4xl font-semibold leading-tight md:text-5xl">Page not found</h1>
         <p className="mt-4 text-base leading-relaxed text-foreground/75">
-          We couldn&rsquo;t find{" "}
-          <code className="rounded bg-foreground/10 px-1.5 py-0.5 text-sm">{pathname}</code>. The link may be
-          out of date, or the page may have moved.
+          We couldn&rsquo;t find <code className="rounded bg-foreground/10 px-1.5 py-0.5 text-sm">{pathname}</code>. The link may be out of date, or
+          the page may have moved.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link

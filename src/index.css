@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Brand faces, self-hosted (SIL Open Font License) from @fontsource-variable 5.3.0.
+ * Latin subset with the optical-size (opsz) + weight axes; preloaded in index.html.
+ */
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url("/fonts/dm-sans-latin-opsz-normal.woff2") format("woff2-variations"),
+    url("/fonts/dm-sans-latin-opsz-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+    U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/fraunces-latin-opsz-normal.woff2") format("woff2-variations"),
+    url("/fonts/fraunces-latin-opsz-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+    U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @layer base {
   :root {
     --background: 150 20% 6%;
@@ -11,7 +36,8 @@
     --card-foreground: 152 18% 12%;
     --popover: 45 30% 97%;
     --popover-foreground: 152 18% 12%;
-    --primary: 209 26% 49%;
+    /* Darkened from 49% so white-on-primary buttons and primary text on light cards meet WCAG AA (≥4.5:1). */
+    --primary: 209 26% 42%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 30% 30%;
     --secondary-foreground: 0 0% 100%;
@@ -82,6 +108,49 @@
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+  }
+  /* Visible keyboard focus everywhere; mouse focus stays unobtrusive. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+  /* Scroll-reveal used by AnimatedSection on the marketing pages. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+  /* Skip link: visually hidden until focused. */
+  .skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transform: translateY(-150%);
+    padding: 0.75rem 1rem;
+    border-radius: 0 0 0.75rem 0;
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    transform: translateY(0);
+    outline: 2px solid hsl(var(--foreground));
+    outline-offset: 2px;
   }
 }
 

@@ -1,4 +1,6 @@
 import AnimatedSection from "@/components/AnimatedSection";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 /**
  * HIPAA Notice of Privacy Practices for SpryMD telehealth.
@@ -6,7 +8,9 @@ import AnimatedSection from "@/components/AnimatedSection";
  * Have counsel review before relying on this as the operative NPP.
  */
 const NPP = () => (
-  <main>
+  <>
+    <Navbar />
+    <main id="main-content" className="pt-16">
     <section className="bg-navy py-24 px-4 text-center">
       <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold">
         Notice of Privacy Practices
@@ -156,7 +160,9 @@ const NPP = () => (
         </AnimatedSection>
       </div>
     </section>
-  </main>
+    </main>
+    <Footer />
+  </>
 );
 
 export default NPP;

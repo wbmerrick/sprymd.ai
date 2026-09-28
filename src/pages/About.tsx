@@ -1,21 +1,26 @@
 import { Link } from "react-router-dom";
 import { GraduationCap, ClipboardCheck, Building, Stethoscope, Lock, Pill } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { brandPlates } from "@/assets/brand/catalog";
 
 const AboutHero = () => (
   <section className="relative overflow-hidden py-32 px-4 text-center">
     <img
-      src="/brand/sprymd-care-dawn.webp"
+      src={brandPlates.care.src}
+      srcSet={`${brandPlates.care.srcSmall} 960w, ${brandPlates.care.src} 1920w`}
+      sizes="100vw"
       alt=""
+      decoding="async"
       className="absolute inset-0 h-full w-full object-cover"
       style={{ objectPosition: "center 58%" }}
     />
     <div className="absolute inset-0 bg-black/40" />
+    {/* Hero copy renders immediately (no reveal animation): it is the LCP candidate. */}
     <div className="section-container relative z-10">
-      <AnimatedSection>
-        <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
-        <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men and women.</p>
-      </AnimatedSection>
+      <h1 className="font-display text-primary-foreground text-4xl md:text-5xl font-bold mb-4">About SpryMD</h1>
+      <p className="font-body text-primary-foreground/70 text-xl">Modern medicine, made for men and women.</p>
     </div>
   </section>
 );
@@ -114,20 +119,24 @@ const NotAPillMill = () => (
           <p>If you're not a good candidate for ED medication based on your health history, we'll tell you honestly, explain why, and issue a full refund. Your safety matters more than a transaction.</p>
         </div>
         <p className="font-body text-navy font-medium mb-6">Ready to work with a doctor who takes your health seriously?</p>
-        <Link to="/quiz" className="btn-primary">Start My Consultation →</Link>
+        <Link to="/#landing-conditions" className="btn-primary">Start My Consultation →</Link>
       </AnimatedSection>
     </div>
   </section>
 );
 
 const About = () => (
-  <main>
-    <AboutHero />
-    <DoctorBio />
-    <CredentialsGrid />
-    <Philosophy />
-    <NotAPillMill />
-  </main>
+  <>
+    <Navbar />
+    <main id="main-content" className="pt-16">
+      <AboutHero />
+      <DoctorBio />
+      <CredentialsGrid />
+      <Philosophy />
+      <NotAPillMill />
+    </main>
+    <Footer />
+  </>
 );
 
 export default About;

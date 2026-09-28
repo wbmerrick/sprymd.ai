@@ -140,6 +140,8 @@ export const ROUTE_META: RouteMeta[] = [
   { path: "/checkout", pageTitle: "Checkout", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/checkout/success", pageTitle: "Payment confirmed", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/dashboard", prefix: true, pageTitle: "Patient dashboard", description: DEFAULT_DESCRIPTION, indexable: false },
+  { path: "/staff", prefix: true, pageTitle: "Staff workspace", description: DEFAULT_DESCRIPTION, indexable: false },
+  { path: "/master", prefix: true, pageTitle: "Master workspace", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/provider", prefix: true, pageTitle: "Provider notes", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/visit", prefix: true, pageTitle: "Visit room", description: DEFAULT_DESCRIPTION, indexable: false },
   { path: "/oauth", prefix: true, pageTitle: "Connect a device", description: DEFAULT_DESCRIPTION, indexable: false },

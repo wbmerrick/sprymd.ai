@@ -171,10 +171,11 @@ export default function ServiceTierCheckout({
       {!appointmentId && (
         <div className="card-base max-w-xl mx-auto space-y-4">
           <div>
-            <label className="font-body text-navy text-sm font-medium mb-1 block">
+            <label htmlFor="checkout-patient-email" className="font-body text-navy text-sm font-medium mb-1 block">
               Email
             </label>
             <input
+              id="checkout-patient-email"
               type="email"
               value={patientEmail}
               onChange={(e) => setPatientEmail(e.target.value)}
@@ -184,10 +185,11 @@ export default function ServiceTierCheckout({
             />
           </div>
           <div>
-            <label className="font-body text-navy text-sm font-medium mb-1 block">
+            <label htmlFor="checkout-patient-name" className="font-body text-navy text-sm font-medium mb-1 block">
               Name <span className="text-muted-foreground">(optional)</span>
             </label>
             <input
+              id="checkout-patient-name"
               type="text"
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
