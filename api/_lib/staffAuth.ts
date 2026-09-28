@@ -1,7 +1,12 @@
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseAdmin } from "./supabaseAdmin";
 
-const DEFAULT_STAFF_EMAILS = ["wbmerrick@gmail.com"];
+/** Built-in ops allowlist — keep in sync with owner emails in masterAccount.ts */
+const DEFAULT_STAFF_EMAILS = [
+  "wbmerrick@gmail.com",
+  "wbmerrick@sprymd.ai",
+  "wbm22@sprymd.ai",
+];
 
 function staffEmailAllowlist(): Set<string> {
   const fromEnv = String(process.env.OPS_STAFF_EMAILS || process.env.MASTER_EMAILS || "")

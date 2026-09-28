@@ -9,6 +9,8 @@ describe("dashboardRole", () => {
   it("routes owner to /master", () => {
     expect(postAuthDashboardPath("wbmerrick@sprymd.ai")).toBe("/master");
     expect(isMasterDashboardEmail("wbmerrick@sprymd.ai")).toBe(true);
+    expect(postAuthDashboardPath("wbm22@sprymd.ai")).toBe("/master");
+    expect(isMasterDashboardEmail("wbm22@sprymd.ai")).toBe(true);
   });
 
   it("routes staff to /staff", () => {

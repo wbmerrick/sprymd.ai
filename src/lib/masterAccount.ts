@@ -8,6 +8,7 @@
 const DEFAULT_OWNER_EMAILS = [
   "wbmerrick@gmail.com",
   "wbmerrick@sprymd.ai",
+  "wbm22@sprymd.ai",
 ] as const;
 
 const DEFAULT_STAFF_EMAILS = ["staff@sprymd.ai"] as const;
