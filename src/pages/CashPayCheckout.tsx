@@ -5,39 +5,74 @@ import ServiceTierCheckout from "@/components/checkout/ServiceTierCheckout";
 import AnimatedSection from "@/components/AnimatedSection";
 import { getCondition, getTreatment } from "@/data/careCatalog";
 import { defaultServiceTierFor, loadCheckoutSelection } from "@/lib/intakeFlow";
+import type { ServiceTierId } from "../../shared/serviceTiers";
 
 /**
  * Cash-pay Stripe Checkout entry. Optional query params:
  * ?appointmentId=&email=&name=
  * ?plan=<treatmentId>&condition=<conditionId> — set by the homepage funnel so
- * the visit fee is paid with the chosen plan in view. Card details are only
- * ever entered on Stripe's hosted page.
+ * the visit fee is paid with the chosen plan in view.
+ * ?source=ispry&plan=ispry_membership — iSpry $100/mo membership handoff.
+ * Card details are only ever entered on Stripe's hosted page.
  */
 const CashPayCheckout = () => {
   const [params] = useSearchParams();
   const appointmentId = params.get("appointmentId") || undefined;
   const canceled = params.get("canceled") === "1";
+  const source = (params.get("source") || "").toLowerCase();
+  const planParam = params.get("plan") || "";
+
+  const isIspry =
+    source === "ispry" || planParam === "ispry_membership";
 
   const selection = loadCheckoutSelection();
-  const conditionId = params.get("condition") || selection?.conditionId || undefined;
-  const treatmentId = params.get("plan") || selection?.treatmentId || undefined;
+  const conditionId = isIspry
+    ? undefined
+    : params.get("condition") || selection?.conditionId || undefined;
+  const treatmentId = isIspry
+    ? undefined
+    : planParam || selection?.treatmentId || undefined;
   const condition = getCondition(conditionId);
   const treatment = getTreatment(conditionId, treatmentId);
   const patientEmail = params.get("email") || selection?.email || undefined;
   const patientName = params.get("name") || undefined;
+  const defaultTierId: ServiceTierId | undefined = isIspry
+    ? "ispry_membership"
+    : conditionId
+      ? defaultServiceTierFor(conditionId)
+      : undefined;
 
   return (
     <div className="min-h-screen flex flex-col bg-off-white">
-      <Navbar />
+      {isIspry ? (
+        <header className="border-b border-gray-light bg-off-white">
+          <div className="section-container flex items-center justify-between h-16 px-4">
+            <a
+              href="https://ispry.ai/"
+              className="font-display text-navy text-xl font-bold tracking-tight"
+            >
+              iSpry<span className="text-primary">.ai</span>
+            </a>
+            <a
+              href="https://ispry.ai/#pricing"
+              className="font-body text-sm text-muted-foreground underline underline-offset-4"
+            >
+              Back to membership
+            </a>
+          </div>
+        </header>
+      ) : (
+        <Navbar />
+      )}
       <main className="flex-1 pt-24 pb-16 px-4">
         <div className="section-container max-w-5xl">
           <AnimatedSection>
             {canceled && (
               <p role="status" className="font-body text-sm text-center text-muted-foreground mb-6">
-                Checkout was canceled. Nothing was charged — you can select a visit and try again.
+                Checkout was canceled. Nothing was charged — you can try again.
               </p>
             )}
-            {treatment && condition && (
+            {treatment && condition && !isIspry && (
               <section
                 data-testid="selected-plan"
                 aria-labelledby="selected-plan-heading"
@@ -70,14 +105,23 @@ const CashPayCheckout = () => {
               appointmentId={appointmentId}
               patientEmail={patientEmail}
               patientName={patientName}
-              defaultTierId={conditionId ? defaultServiceTierFor(conditionId) : undefined}
+              defaultTierId={defaultTierId}
               conditionId={conditionId}
               treatmentId={treatmentId || undefined}
+              source={isIspry ? "ispry" : undefined}
             />
           </AnimatedSection>
         </div>
       </main>
-      <Footer />
+      {isIspry ? (
+        <footer className="border-t border-gray-light py-8 text-center">
+          <p className="font-body text-xs text-muted-foreground">
+            iSpry membership checkout · HIPAA-oriented practice ops · Tennessee
+          </p>
+        </footer>
+      ) : (
+        <Footer />
+      )}
     </div>
   );
 };
