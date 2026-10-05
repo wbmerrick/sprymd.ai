@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   SERVICE_TIERS,
+  SPRYMD_VISIT_TIERS,
   formatTierPrice,
   type ServiceTier,
   type ServiceTierId,
@@ -23,6 +24,8 @@ export type ServiceTierCheckoutProps = {
   /** Care catalog condition (e.g. `pcp`, `ed`) — persisted on the appointment. */
   conditionId?: string;
   treatmentId?: string;
+  /** When `ispry`, lock to membership + iSpry copy. */
+  source?: string;
   onError?: (message: string) => void;
 };
 
@@ -33,12 +36,18 @@ export default function ServiceTierCheckout({
   defaultTierId,
   conditionId,
   treatmentId,
+  source,
   onError,
 }: ServiceTierCheckoutProps) {
+  const isIspry = source === "ispry" || defaultTierId === "ispry_membership";
+  const visibleTiers: ServiceTier[] = isIspry
+    ? SERVICE_TIERS.filter((t) => t.id === "ispry_membership")
+    : SPRYMD_VISIT_TIERS;
+
   const [selectedId, setSelectedId] = useState<ServiceTierId>(
-    SERVICE_TIERS.some((t) => t.id === defaultTierId) && defaultTierId
+    visibleTiers.some((t) => t.id === defaultTierId) && defaultTierId
       ? defaultTierId
-      : SERVICE_TIERS[0].id,
+      : visibleTiers[0].id,
   );
   const [patientEmail, setPatientEmail] = useState(initialEmail);
   const [patientName, setPatientName] = useState(initialName);
@@ -47,9 +56,10 @@ export default function ServiceTierCheckout({
   const [consent, setConsent] = useState<ComplianceAnswers>(EMPTY_COMPLIANCE);
   const consentReady = canProceedToPayment(consent);
 
-  const selectedTier: ServiceTier | undefined = SERVICE_TIERS.find(
+  const selectedTier: ServiceTier | undefined = visibleTiers.find(
     (t) => t.id === selectedId,
   );
+  const brandName = isIspry ? "iSpry" : "SpryMD";
 
   async function startCheckout() {
     setError(null);
@@ -88,6 +98,7 @@ export default function ServiceTierCheckout({
       if (patientName.trim()) payload.patientName = patientName.trim();
       if (conditionId?.trim()) payload.conditionId = conditionId.trim();
       if (treatmentId?.trim()) payload.treatmentId = treatmentId.trim();
+      if (isIspry) payload.source = "ispry";
 
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -127,20 +138,33 @@ export default function ServiceTierCheckout({
     <div className="space-y-8">
       <div className="text-center max-w-2xl mx-auto">
         <h1 className="font-display text-navy text-3xl md:text-4xl font-bold mb-3">
-          Choose your visit
+          {isIspry ? "Join iSpry" : "Choose your visit"}
         </h1>
         <p className="font-body text-muted-foreground text-lg">
-          One-time cash-pay telehealth fees. Pay securely with Stripe.
+          {isIspry
+            ? "$100/month membership. Physician-led telehealth for Tennessee. Pay securely with Stripe."
+            : "One-time cash-pay telehealth fees. Pay securely with Stripe."}
         </p>
-        <p className="font-body text-sm mt-3">
-          <Link to="/intake" className="underline underline-offset-4 text-navy">
-            Complete intake first
-          </Link>
-        </p>
+        {!isIspry && (
+          <p className="font-body text-sm mt-3">
+            <Link to="/intake" className="underline underline-offset-4 text-navy">
+              Complete intake first
+            </Link>
+          </p>
+        )}
+        {isIspry && (
+          <p className="font-body text-sm mt-3 text-muted-foreground">
+            After payment you return to ispry.ai. Care ops run on this secure practice system.
+          </p>
+        )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {SERVICE_TIERS.map((tier) => {
+      <div
+        className={`grid gap-4 ${
+          visibleTiers.length === 1 ? "md:grid-cols-1 max-w-md mx-auto" : "md:grid-cols-3"
+        }`}
+      >
+        {visibleTiers.map((tier) => {
           const selected = tier.id === selectedId;
           return (
             <button
@@ -201,7 +225,7 @@ export default function ServiceTierCheckout({
         </div>
       )}
 
-      <ComplianceConsent value={consent} onChange={setConsent} />
+      <ComplianceConsent value={consent} onChange={setConsent} brandName={brandName} />
 
       {error && (
         <p
@@ -222,12 +246,14 @@ export default function ServiceTierCheckout({
         >
           {loading
             ? "Starting checkout…"
-            : `Pay ${selectedTier ? formatTierPrice(selectedTier) : ""} →`}
+            : isIspry
+              ? `Join for ${selectedTier ? formatTierPrice(selectedTier) : ""} →`
+              : `Pay ${selectedTier ? formatTierPrice(selectedTier) : ""} →`}
         </button>
         <p className="font-body text-xs text-muted-foreground text-center max-w-md">
-          You will be redirected to Stripe Checkout for the visit fee only.
-          Medication plans are not charged at this step — a clinician must approve
-          before any prescription is issued or billed.
+          {isIspry
+            ? "You will be redirected to Stripe Checkout for the monthly membership. Card details are only entered on Stripe."
+            : "You will be redirected to Stripe Checkout for the visit fee only. Medication plans are not charged at this step — a clinician must approve before any prescription is issued or billed."}
         </p>
       </div>
     </div>
