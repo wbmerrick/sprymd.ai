@@ -95,6 +95,11 @@ const App = () => (
               <Route path="finance" element={<MasterFinancePage />} />
               <Route path="members" element={<MasterMembersPage />} />
               <Route path="ai" element={<MasterAiPage />} />
+              {/* Clinical tools reuse staff pages inside the Master shell (same top bar). */}
+              <Route path="staff" element={<StaffHomePage />} />
+              <Route path="staff/contacts" element={<StaffContactsPage />} />
+              <Route path="staff/team" element={<StaffTeamPage />} />
+              <Route path="staff/review" element={<StaffReviewPage />} />
             </Route>
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />

@@ -295,7 +295,7 @@ export async function createThread(input: {
   });
   const user = await getSessionUser();
 
-  if (!patient || !user) {
+  if (!user) {
     return {
       thread: {
         id: `local_${Date.now()}`,
@@ -306,7 +306,24 @@ export async function createThread(input: {
         urgency,
       },
       delivered: false,
-      error: "Sign in with your account to deliver this message to your care team.",
+      error:
+        "Care-team messages need a live SpryMD Auth session. Sign out, then Sign in (not a local-only browser account) so your clinician can see the thread.",
+    };
+  }
+
+  if (!patient) {
+    return {
+      thread: {
+        id: `local_${Date.now()}`,
+        subject,
+        preview: previewOf(body),
+        updatedAt: new Date().toISOString(),
+        status: "action_required",
+        urgency,
+      },
+      delivered: false,
+      error:
+        "Could not link your patient chart for messaging. Confirm your email if prompted, then try again.",
     };
   }
 
@@ -485,13 +502,13 @@ export async function listStaffInbox(): Promise<StaffInboxThread[]> {
     .neq("status", "closed")
     .order("updated_at", { ascending: false });
 
-  if (error || !data) {
-    console.warn("listStaffInbox:", error?.message);
-    return [];
+  if (error) {
+    console.warn("listStaffInbox:", error.message);
+    throw new Error(error.message || "Failed to load patient inbox.");
   }
 
   return sortThreadsByUrgency(
-    data.map((row) => {
+    (data || []).map((row) => {
       const patient = Array.isArray(row.patients) ? row.patients[0] : row.patients;
       return {
         id: row.id,
@@ -537,7 +554,7 @@ export async function listPatientContacts(): Promise<PatientContact[]> {
       .from("patients")
       .select("id, email, full_name, phone, state_of_residence, created_at")
       .order("full_name", { ascending: true }),
-    listStaffInbox(),
+    listStaffInbox().catch(() => [] as StaffInboxThread[]),
   ]);
 
   if (error || !patients) {

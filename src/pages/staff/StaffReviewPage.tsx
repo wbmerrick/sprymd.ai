@@ -47,7 +47,8 @@ export default function StaffReviewPage() {
     <div className="space-y-6">
       <header className="space-y-3">
         <Link
-          to="/staff"
+          to=".."
+          relative="path"
           className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-[#C89E67]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

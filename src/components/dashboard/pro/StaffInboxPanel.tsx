@@ -45,6 +45,7 @@ export function StaffInboxPanel({
   initialView = "inbox",
 }: StaffInboxPanelProps) {
   const [visible, setVisible] = useState(false);
+  const [authBlocked, setAuthBlocked] = useState(false);
   const [view, setView] = useState<PanelView>(initialView);
   const [threads, setThreads] = useState<StaffInboxThread[]>([]);
   const [contacts, setContacts] = useState<PatientContact[]>([]);
@@ -67,8 +68,18 @@ export function StaffInboxPanel({
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Require a live provider-backed session — allowlist alone shows an empty
+      // shell that looks like "messages never arrive".
       const staff = await isStaffSession(userEmail);
-      if (!cancelled) setVisible(staff || isClinicianEmail(userEmail));
+      if (!cancelled) {
+        setVisible(staff);
+        setAuthBlocked(!staff && isClinicianEmail(userEmail));
+        if (!staff && isClinicianEmail(userEmail)) {
+          setError(
+            "Staff inbox needs a live SpryMD Auth clinical session. Sign out and sign in again with your clinical password.",
+          );
+        }
+      }
     })();
     return () => {
       cancelled = true;
@@ -140,7 +151,15 @@ export function StaffInboxPanel({
     );
   }, [contacts, contactQuery]);
 
-  if (!visible) return null;
+  if (!visible) {
+    if (!authBlocked) return null;
+    return (
+      <section className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 text-sm text-amber-100">
+        {error ||
+          "Staff inbox needs a live SpryMD Auth clinical session. Sign out and sign in again with your clinical password."}
+      </section>
+    );
+  }
 
   const selected = threads.find((t) => t.id === selectedId) || null;
   const unread = threads.filter((t) => t.staffUnread).length;

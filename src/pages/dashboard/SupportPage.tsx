@@ -4,6 +4,7 @@ import { MessagesList } from "@/components/dashboard/MessagesList";
 import { UrgencyBadge } from "@/components/dashboard/UrgencyBadge";
 import { useDashboard } from "@/pages/dashboard/DashboardLayout";
 import { sendPatientCareMessage } from "@/lib/patientCareStore";
+import { resolveClinicalAuthSession } from "@/lib/clinicalSession";
 import {
   getThreadMessages,
   listMyThreads,
@@ -17,7 +18,7 @@ import { formatRelative } from "@/lib/dashboardFormat";
 import { cn } from "@/lib/utils";
 
 export default function SupportPage() {
-  const { messages: localMessages, supportTopics, email, refresh } = useDashboard();
+  const { supportTopics, email, refresh } = useDashboard();
   const [query, setQuery] = useState("");
   const [composing, setComposing] = useState(false);
   const [subject, setSubject] = useState("");
@@ -31,19 +32,27 @@ export default function SupportPage() {
   const [threadMessages, setThreadMessages] = useState<CareMessage[]>([]);
   const [replyBody, setReplyBody] = useState("");
   const [replying, setReplying] = useState(false);
+  const [hasLiveAuth, setHasLiveAuth] = useState<boolean | null>(null);
 
   const loadThreads = async () => {
     const threads = await listMyThreads();
-    if (threads.length) {
-      setRemoteThreads(threads);
-    }
+    setRemoteThreads(threads);
   };
 
   useEffect(() => {
-    void loadThreads();
+    let cancelled = false;
+    (async () => {
+      const session = await resolveClinicalAuthSession();
+      if (!cancelled) setHasLiveAuth(Boolean(session));
+      await loadThreads();
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [email]);
 
-  const messages = remoteThreads.length ? remoteThreads : localMessages;
+  // Only show threads delivered to the clinical inbox — never local-only placeholders.
+  const messages = remoteThreads;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -80,20 +89,30 @@ export default function SupportPage() {
     setSending(true);
     setSendError(null);
     try {
+      const session = await resolveClinicalAuthSession();
+      if (!session) {
+        setHasLiveAuth(false);
+        setSendError(
+          "Care-team messages need a live SpryMD Auth session. Sign out, then Sign in again so your clinician can see the thread.",
+        );
+        return;
+      }
+      setHasLiveAuth(true);
       const result = await sendPatientCareMessage(email, subject, body, urgency);
-      setSubject("");
-      setBody("");
-      setUrgency("routine");
-      setComposing(false);
       if (result.delivered) {
+        setSubject("");
+        setBody("");
+        setUrgency("routine");
+        setComposing(false);
         setSentSuccess(true);
         setTimeout(() => setSentSuccess(false), 5000);
+        await loadThreads();
+        refresh();
+        if (result.thread.id) setSelectedId(result.thread.id);
       } else {
+        // Keep the composer open with the draft when delivery fails.
         setSendError(result.error || "Could not deliver to care team.");
       }
-      await loadThreads();
-      refresh();
-      if (result.thread.id) setSelectedId(result.thread.id);
     } finally {
       setSending(false);
     }
@@ -134,13 +153,32 @@ export default function SupportPage() {
 
         <button
           type="button"
-          onClick={() => setComposing(!composing)}
+          onClick={() => {
+            if (hasLiveAuth === false) {
+              setSendError(
+                "Care-team messages need a live SpryMD Auth session. Sign out, then Sign in again so your clinician can see the thread.",
+              );
+              return;
+            }
+            setComposing(!composing);
+          }}
           className="flex items-center gap-2 rounded-xl bg-[#C89E67] px-4 py-2.5 text-xs font-semibold text-[#0C120F] shadow-sm hover:bg-[#B0854F] transition-all"
         >
           <MessageSquarePlus className="h-4 w-4" />
           {composing ? "Close Composer" : "New Message"}
         </button>
       </header>
+
+      {hasLiveAuth === false && (
+        <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-950/40 p-3.5 text-xs text-amber-200">
+          <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+          <span>
+            You are on a local-only browser session. Messages will not reach your clinician until you{" "}
+            <strong className="text-amber-100">Sign in with SpryMD Auth</strong> (email + password on
+            the clinical account). Local/demo conversations never appear in the staff inbox.
+          </span>
+        </div>
+      )}
 
       {sentSuccess && (
         <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-3.5 text-xs text-emerald-300">
