@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Landmark,
   Users,
+  BookUser,
   Sparkles,
   Home,
   Inbox,
@@ -24,6 +25,7 @@ const PRIMARY = [
 const CLINICAL = [
   { to: "/staff", label: "SpryMD STAFF home", end: true, icon: Home },
   { to: "/staff", label: "Patient inbox", icon: Inbox },
+  { to: "/staff/contacts", label: "All contacts", icon: BookUser },
   { to: "/staff/team", label: "Team chat", icon: MessageSquare },
   { to: "/staff/review", label: "Chart review", icon: Stethoscope },
 ] as const;

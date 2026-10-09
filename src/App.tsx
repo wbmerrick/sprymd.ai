@@ -32,6 +32,7 @@ const SubscriptionsPage = lazy(() => import("@/pages/dashboard/SubscriptionsPage
 const ProfilePage = lazy(() => import("@/pages/dashboard/ProfilePage"));
 const StaffDashboardLayout = lazy(() => import("@/pages/staff/StaffDashboardLayout"));
 const StaffHomePage = lazy(() => import("@/pages/staff/StaffHomePage"));
+const StaffContactsPage = lazy(() => import("@/pages/staff/StaffContactsPage"));
 const StaffReviewPage = lazy(() => import("@/pages/staff/StaffReviewPage"));
 const StaffTeamPage = lazy(() => import("@/pages/staff/StaffTeamPage"));
 const MasterDashboardLayout = lazy(() => import("@/pages/master/MasterDashboardLayout"));
@@ -85,6 +86,7 @@ const App = () => (
             </Route>
             <Route path="/staff" element={<StaffDashboardLayout />}>
               <Route index element={<StaffHomePage />} />
+              <Route path="contacts" element={<StaffContactsPage />} />
               <Route path="team" element={<StaffTeamPage />} />
               <Route path="review" element={<StaffReviewPage />} />
             </Route>

@@ -510,3 +510,150 @@ export async function listStaffInbox(): Promise<StaffInboxThread[]> {
     }),
   );
 }
+
+/** Directory row for staff All Contacts (any customer / patient). */
+export interface PatientContact {
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string;
+  state: string;
+  createdAt: string;
+  openThreadCount: number;
+}
+
+/**
+ * List all patients for staff messaging outreach (All Contacts).
+ * Requires an active providers row (RLS).
+ */
+export async function listPatientContacts(): Promise<PatientContact[]> {
+  const user = await getSessionUser();
+  if (!user) return [];
+
+  await ensureProviderRow({ email: user.email || undefined });
+
+  const [{ data: patients, error }, inbox] = await Promise.all([
+    supabase
+      .from("patients")
+      .select("id, email, full_name, phone, state_of_residence, created_at")
+      .order("full_name", { ascending: true }),
+    listStaffInbox(),
+  ]);
+
+  if (error || !patients) {
+    console.warn("listPatientContacts:", error?.message);
+    return [];
+  }
+
+  const openByPatient = new Map<string, number>();
+  for (const t of inbox) {
+    openByPatient.set(t.patientId, (openByPatient.get(t.patientId) || 0) + 1);
+  }
+
+  return patients.map((p) => ({
+    id: p.id,
+    email: p.email || "",
+    fullName: p.full_name || p.email || "Patient",
+    phone: p.phone || "",
+    state: p.state_of_residence || "",
+    createdAt: p.created_at,
+    openThreadCount: openByPatient.get(p.id) || 0,
+  }));
+}
+
+/**
+ * Start (or continue) a staff → patient thread so clinicians can relay info
+ * to any customer. Uses RPC when available; falls back to direct inserts.
+ */
+export async function createStaffOutboundThread(input: {
+  patientId: string;
+  subject: string;
+  body: string;
+  urgency?: MessageUrgency;
+}): Promise<{ ok: boolean; threadId?: string; error?: string }> {
+  const subject = input.subject.trim() || "Message from SpryMD care team";
+  const body = input.body.trim();
+  const urgency = normalizeUrgency(input.urgency);
+  if (!input.patientId) return { ok: false, error: "Select a patient contact." };
+  if (!body) return { ok: false, error: "Message body is required." };
+
+  const user = await getSessionUser();
+  if (!user) return { ok: false, error: "Sign in required." };
+
+  const provider = await ensureProviderRow({ email: user.email || undefined });
+  if (!provider) {
+    return {
+      ok: false,
+      error:
+        "Staff access required — sign in with a live SpryMD Auth clinical account.",
+    };
+  }
+
+  const { data: rpcId, error: rpcErr } = await supabase.rpc("create_staff_outbound_thread", {
+    p_patient_id: input.patientId,
+    p_subject: subject,
+    p_body: body,
+    p_urgency: urgency,
+  });
+
+  if (!rpcErr && rpcId) {
+    logPhiAccess({
+      actorId: user.email || user.id,
+      actorRole: "clinician",
+      actorEmail: user.email || undefined,
+      action: "message_physician",
+      patientId: input.patientId,
+      resourceType: "message",
+      resourceId: String(rpcId),
+      metadata: { subject, urgency, outbound: true },
+    });
+    return { ok: true, threadId: String(rpcId) };
+  }
+
+  // Fallback when RPC is not applied yet.
+  const now = new Date().toISOString();
+  const { data: thread, error: threadErr } = await supabase
+    .from("message_threads")
+    .insert({
+      patient_id: input.patientId,
+      provider_id: provider.providerId,
+      subject,
+      preview: previewOf(body),
+      status: "awaiting_patient",
+      urgency,
+      patient_unread: true,
+      staff_unread: false,
+      updated_at: now,
+    })
+    .select("id")
+    .single();
+
+  if (threadErr || !thread?.id) {
+    return {
+      ok: false,
+      error: rpcErr?.message || threadErr?.message || "Could not create thread.",
+    };
+  }
+
+  const { error: msgErr } = await supabase.from("messages").insert({
+    thread_id: thread.id,
+    sender_role: "staff",
+    sender_user_id: user.id,
+    body,
+  });
+
+  if (msgErr) return { ok: false, error: msgErr.message };
+
+  logPhiAccess({
+    actorId: user.email || user.id,
+    actorRole: "clinician",
+    actorEmail: user.email || undefined,
+    action: "message_physician",
+    patientId: input.patientId,
+    resourceType: "message",
+    resourceId: thread.id,
+    metadata: { subject, urgency, outbound: true, fallback: true },
+  });
+
+  return { ok: true, threadId: thread.id };
+}
