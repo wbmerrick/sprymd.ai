@@ -6,6 +6,7 @@
  */
 
 import { conditions, type Condition, type ConditionId } from "@/data/careCatalog";
+import { brandAllowsCondition } from "@/config/brand";
 
 export type Audience = "men" | "women" | "all";
 
@@ -42,6 +43,7 @@ export type GridService = CareService & { condition: Condition };
 export function getGridServices(audienceFilter: Audience | "all" = "all"): GridService[] {
   return CARE_SERVICES.filter((s) => {
     if (!s.showInGrid) return false;
+    if (!brandAllowsCondition(s.conditionId)) return false;
     if (audienceFilter === "all") return true;
     return s.audience === "all" || s.audience === audienceFilter;
   })
@@ -53,7 +55,9 @@ export function getGridServices(audienceFilter: Audience | "all" = "all"): GridS
 }
 
 export function getFooterCarePlanLabels(): string[] {
-  return CARE_SERVICES.filter((s) => s.showInFooter).map((s) => s.footerLabel);
+  return CARE_SERVICES.filter((s) => s.showInFooter && brandAllowsCondition(s.conditionId)).map(
+    (s) => s.footerLabel,
+  );
 }
 
 export function audienceBadgeLabel(audience: Audience): string {

@@ -37,6 +37,7 @@ import {
   updateCustomerProfile,
 } from "./lib/customerAccounts";
 import { FEATURES } from "./config/features";
+import { SITE_BRAND } from "./config/brand";
 import { COMPANY, companyTelHref } from "./config/company";
 import { pharmacyFulfillmentCopy, pharmacyShortCopy } from "./config/pharmacy";
 import { audienceBadgeLabel, getFooterCarePlanLabels, getGridServices } from "./config/services";
@@ -467,13 +468,26 @@ const LogoMark = ({ color = C.ink, size = 22, style = {}, className = "" }) => (
   </svg>
 );
 
+const BrandWordmark = ({ color = C.ink, size = 22 }) => {
+  if (SITE_BRAND.id === "glptn") {
+    return (
+      <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
+        {SITE_BRAND.name}
+      </span>
+    );
+  }
+  return (
+    <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
+      Spry<span className="spry-md">MD</span>
+    </span>
+  );
+};
+
 const Logo = ({ color = C.ink, size = 22, onClick, className = "" }) => {
   const mark = (
     <>
       <LogoMark color={color} size={size} />
-      <span className="display" style={{ fontSize: size * 0.95, fontWeight: 600, color, letterSpacing: "-0.03em" }}>
-        Spry<span className="spry-md">MD</span>
-      </span>
+      <BrandWordmark color={color} size={size} />
     </>
   );
   // Always prefer a real control when a home handler is provided so the
@@ -484,13 +498,21 @@ const Logo = ({ color = C.ink, size = 22, onClick, className = "" }) => {
         type="button"
         onClick={onClick}
         className={`focus-ring flex items-center gap-2.5 rounded transition-opacity hover:opacity-80 ${className}`.trim()}
-        aria-label="SpryMD home"
+        aria-label={`${SITE_BRAND.name} home`}
       >
         {mark}
       </button>
     );
   }
   return <div className={`flex items-center gap-2.5 ${className}`.trim()}>{mark}</div>;
+};
+
+const startPrimaryVisit = (go) => {
+  if (SITE_BRAND.id === "glptn") {
+    openCareEdu(go, SITE_BRAND.primaryConditionId);
+    return;
+  }
+  go("landing-conditions");
 };
 
 const inputStyle = { background: C.bgAlt, border: `1px solid ${C.line}`, borderRadius: 12, fontSize: 15, color: C.ink, fontFamily: fonts.body };
@@ -616,7 +638,7 @@ const Header = ({ go, cartCount, dark, user, glass = false }) => {
         </nav>
         <div className="flex items-center gap-3">
           <span className="spry-desktop-only">
-            <Btn size="sm" onClick={() => goNav("landing-conditions")}>Start your visit</Btn>
+            <Btn size="sm" onClick={() => startPrimaryVisit(go)}>{SITE_BRAND.heroCtaLabel}</Btn>
           </span>
           <button
             onClick={() => goNav(user ? "dashboard" : "signin")}
@@ -743,7 +765,7 @@ const StickyVisitBar = ({ go }) => {
           <span className="spry-desktop-only" style={{ fontSize: 13, color: C.inkSoft }}>
             Private visits, reviewed by licensed doctors.
           </span>
-          <Btn size="sm" icon={ArrowRight} onClick={() => go("landing-conditions")}>Start your visit</Btn>
+          <Btn size="sm" icon={ArrowRight} onClick={() => startPrimaryVisit(go)}>{SITE_BRAND.heroCtaLabel}</Btn>
         </div>
       </div>
     </div>
@@ -766,10 +788,14 @@ const SHOP_STACK_SLUGS = new Set(["supplements", "devices", "sleep"]);
 const Landing = ({ go }) => {
   const [audienceFilter, setAudienceFilter] = useState("all");
   const gridServices = getGridServices(audienceFilter);
+  const trustLine =
+    SITE_BRAND.id === "glptn"
+      ? ["Physician review", "Full refund if not appropriate", "You pay your pharmacy"]
+      : ["Zero judgment", "100% confidential", "Discreet, unmarked packaging"];
 
   return (
   <div className="anim-fadeIn relative">
-    <ISpryChat onAction={() => go("landing-conditions")} forceDocked />
+    <ISpryChat onAction={() => startPrimaryVisit(go)} forceDocked />
     <StickyVisitBar go={go} />
 
     <section className="grain relative z-10 overflow-hidden flex items-center" style={{ background: "transparent", minHeight: "88vh" }}>
@@ -777,7 +803,7 @@ const Landing = ({ go }) => {
         className="absolute inset-0 pointer-events-none"
         style={{ background: "linear-gradient(90deg, rgba(9,14,11,0.55) 0%, rgba(9,14,11,0.38) 50%, rgba(9,14,11,0.30) 100%)" }}
       />
-      {/* Darken the bright sky behind the centered SpryMD wordmark */}
+      {/* Darken the bright sky behind the centered brand wordmark */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 75% 42% at 50% 12%, rgba(9,14,11,0.72) 0%, rgba(9,14,11,0.38) 45%, transparent 72%)" }}
@@ -813,11 +839,15 @@ const Landing = ({ go }) => {
             />
             <span className="relative inline-flex items-center justify-center gap-3 md:gap-4" style={{ opacity: 1 }}>
               <LogoMark size="0.84em" color={C.ink} style={{ verticalAlign: "middle" }} />
-              <span>Spry<span className="spry-md">MD</span></span>
+              {SITE_BRAND.id === "glptn" ? (
+                <span>{SITE_BRAND.name}</span>
+              ) : (
+                <span>Spry<span className="spry-md">MD</span></span>
+              )}
             </span>
           </span>
           <div style={{ fontSize: "0.42em", lineHeight: 1.3, marginTop: 8, color: C.ink, opacity: 1 }}>
-            Feel better. Stay stronger. Live longer.
+            {SITE_BRAND.id === "glptn" ? "Physician-guided GLP-1 care for Tennessee." : "Feel better. Stay stronger. Live longer."}
           </div>
         </div>
         <div className="grid gap-10 lg:gap-14 items-center md:grid-cols-2">
@@ -833,7 +863,7 @@ const Landing = ({ go }) => {
                 marginBottom: 16,
               }}
             >
-              Modern medicine, made for men and women
+              {SITE_BRAND.id === "glptn" ? "Weight loss, clinician-guided" : "Modern medicine, made for men and women"}
             </p>
             <h1
               className="spry-rise display"
@@ -847,7 +877,11 @@ const Landing = ({ go }) => {
                 marginBottom: 20,
               }}
             >
-              Telehealth, built for <span className="signal-underline">Tennessee</span>.
+              {SITE_BRAND.id === "glptn" ? (
+                <>Doctor-guided <span className="signal-underline">weight loss</span>.</>
+              ) : (
+                <>Telehealth, built for <span className="signal-underline">Tennessee</span>.</>
+              )}
             </h1>
             <p
               className="spry-rise"
@@ -860,13 +894,15 @@ const Landing = ({ go }) => {
                 marginBottom: 28,
               }}
             >
-              Licensed doctors. Hassle-free private visits. Treatment that ships fast &amp; discreetly to your door when it’s clinically appropriate.
+              {SITE_BRAND.heroSupport}
             </p>
-            <div className="spry-rise" style={{ animationDelay: "0.16s", marginBottom: 16 }}>
-              <DeliveryHeroNote />
-            </div>
+            {SITE_BRAND.id !== "glptn" && (
+              <div className="spry-rise" style={{ animationDelay: "0.16s", marginBottom: 16 }}>
+                <DeliveryHeroNote />
+              </div>
+            )}
             <div className="spry-rise flex flex-wrap items-center gap-4" style={{ animationDelay: "0.2s" }}>
-              <Btn onClick={() => go("landing-conditions")} size="lg" icon={ArrowRight}>Start your confidential visit</Btn>
+              <Btn onClick={() => startPrimaryVisit(go)} size="lg" icon={ArrowRight}>{SITE_BRAND.heroCtaLabel}</Btn>
             </div>
             <div className="spry-rise mt-4" style={{ animationDelay: "0.24s" }}>
               <PaymentTrust variant="dark" />
@@ -875,7 +911,7 @@ const Landing = ({ go }) => {
               <TrustBadges variant="dark" />
             </div>
             <div className="spry-rise flex flex-wrap gap-y-2 mt-6" style={{ animationDelay: "0.28s", columnGap: 28 }}>
-              {["Zero judgment", "100% confidential", "Discreet, unmarked packaging"].map((item) => (
+              {trustLine.map((item) => (
                 <div key={item} className="inline-flex items-center gap-2">
                   <Check size={14} color={C.accent} strokeWidth={2.25} />
                   <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{item}</span>
@@ -886,11 +922,12 @@ const Landing = ({ go }) => {
 
           <div className="rounded-3xl p-5 md:p-6" style={{ border: `1px solid ${C.line}`, background: C.paper }}>
             <span className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.accent, fontWeight: 700 }}>
-              Start your visit
+              {SITE_BRAND.id === "glptn" ? "Weight-loss evaluation" : "Start your visit"}
             </span>
             <h2 className="display" style={{ fontSize: 22, fontWeight: 650, color: C.ink, marginTop: 8, marginBottom: 12 }}>
-              What can we help you with?
+              {SITE_BRAND.id === "glptn" ? "Start with a $100 physician evaluation" : "What can we help you with?"}
             </h2>
+            {SITE_BRAND.showAudienceFilter && (
             <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filter care options by audience">
               {[
                 { id: "all", label: "All" },
@@ -922,6 +959,7 @@ const Landing = ({ go }) => {
                 );
               })}
             </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {gridServices.map(({ condition: cond, audience }) => {
                 const Icon = cond.icon;
@@ -1057,7 +1095,8 @@ const Landing = ({ go }) => {
       </div>
     </section>
 
-    {/* PCP */}
+    {/* PCP — hidden on single-offer brands (e.g. GLPTN weight-loss only) */}
+    {SITE_BRAND.showPcpSection && (
     <section id="pcp" className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden" style={{ background: C.bg }}>
       <BrandAtmosphere plate="care" variant="wash" />
       <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none" aria-hidden="true" style={{ opacity: 0.45 }}>
@@ -1165,6 +1204,7 @@ const Landing = ({ go }) => {
         </div>
       </div>
     </section>
+    )}
 
     {/* Physician authority — people buy into the who as much as the what */}
     <section id="physician" className="px-6 md:px-12 py-16 md:py-24" style={{ background: C.bgAlt, borderTop: `1px solid ${C.lineSoft}` }}>
@@ -1175,7 +1215,7 @@ const Landing = ({ go }) => {
             Founded by a physician who has spent years at the hospital bedside.
           </h2>
           <p style={{ fontSize: 16, color: C.inkSoft, marginTop: 18, lineHeight: 1.6, maxWidth: 520 }}>
-            SpryMD isn&rsquo;t a faceless internet pharmacy. It was founded by Dr. William Merrick, DO —
+            {SITE_BRAND.name} isn&rsquo;t a faceless internet pharmacy. It was founded by Dr. William Merrick, DO —
             a practicing Tennessee hospitalist whose day job is caring for hospitalized patients — and
             that bedside judgment shapes every treatment we offer.
           </p>
