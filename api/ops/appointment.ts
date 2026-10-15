@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { handlePreflight, applyCors } from "../_lib/cors";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 import { requireStaff } from "../_lib/staffAuth";
+import { refundEvaluationForAppointment } from "../_lib/akute/refundEvaluation";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -20,6 +21,8 @@ type PatchBody = {
   assignSelf?: boolean | string;
   pharmacyStatus?: string;
   pharmacyNotes?: string;
+  /** Clinician decision: triggers full evaluation refund when not appropriate */
+  clinicalDecision?: "not_clinically_appropriate" | "appropriate" | string;
 };
 
 const PHARMACY_STATUSES = new Set(["queued", "sent", "held", "declined", ""]);
@@ -75,7 +78,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse) {
     const { data: appointment, error } = await admin
       .from("appointments")
       .select(
-        "id, status, service_tier, amount_cents, currency, paid_at, scheduled_at, created_at, updated_at, stripe_checkout_session_id, stripe_payment_intent_id, patient_id, provider_id, condition_id, treatment_id, pharmacy_status, pharmacy_notes, pharmacy_sent_at, patients(id, email, full_name, phone, state_of_residence, date_of_birth)",
+        "id, status, service_tier, amount_cents, currency, paid_at, scheduled_at, created_at, updated_at, stripe_checkout_session_id, stripe_payment_intent_id, patient_id, provider_id, condition_id, treatment_id, pharmacy_status, pharmacy_notes, pharmacy_sent_at, patients(id, email, full_name, phone, state_of_residence, date_of_birth, akute_patient_id, preferred_pharmacy)",
       )
       .eq("id", id)
       .maybeSingle();
@@ -152,6 +155,8 @@ async function handleGet(req: VercelRequest, res: VercelResponse) {
               phone: patient.phone,
               state: patient.state_of_residence,
               dateOfBirth: patient.date_of_birth,
+              akutePatientId: patient.akute_patient_id || null,
+              preferredPharmacy: patient.preferred_pharmacy || null,
             }
           : null,
       },
@@ -224,18 +229,47 @@ async function handlePatch(
     patch.pharmacy_notes = String(body.pharmacyNotes).slice(0, 4000);
   }
 
-  if (Object.keys(patch).length <= 1) {
+  const clinicalDecision = body.clinicalDecision
+    ? String(body.clinicalDecision).trim().toLowerCase()
+    : "";
+
+  if (
+    Object.keys(patch).length <= 1 &&
+    clinicalDecision !== "not_clinically_appropriate"
+  ) {
     res.status(400).json({ error: "empty_patch" });
     return;
   }
 
   try {
     const admin = getSupabaseAdmin();
+
+    let refundResult: Awaited<
+      ReturnType<typeof refundEvaluationForAppointment>
+    > | null = null;
+
+    if (clinicalDecision === "not_clinically_appropriate") {
+      refundResult = await refundEvaluationForAppointment({
+        supabase: admin,
+        appointmentId: id,
+        reason: "not_clinically_appropriate",
+      });
+      patch.status = "cancelled";
+      patch.pharmacy_status = "declined";
+      patch.pharmacy_notes = [
+        String(body.pharmacyNotes || "").trim(),
+        "Clinical decision: not clinically appropriate — evaluation fee refunded.",
+      ]
+        .filter(Boolean)
+        .join("\n")
+        .slice(0, 4000);
+    }
+
     const { data, error } = await admin
       .from("appointments")
       .update(patch)
       .eq("id", id)
-      .select("id, status, provider_id, updated_at")
+      .select("id, status, provider_id, updated_at, pharmacy_status")
       .maybeSingle();
 
     if (error) {
@@ -247,7 +281,7 @@ async function handlePatch(
       return;
     }
 
-    res.status(200).json({ appointment: data });
+    res.status(200).json({ appointment: data, refund: refundResult });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: "update_failed", message });

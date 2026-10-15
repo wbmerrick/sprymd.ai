@@ -1,4 +1,4 @@
-export type AnswerValue = string | string[];
+export type AnswerValue = string | string[] | Record<string, unknown> | boolean;
 export type IntakeAnswers = Record<string, AnswerValue>;
 
 export type IntakeSection = "Chief complaint" | "Past medical history" | "Allergies";

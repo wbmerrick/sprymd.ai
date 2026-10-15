@@ -41,7 +41,6 @@ import {
 } from "@/types/dashboard";
 import { publishVitalsEvent } from "@/lib/vitalsBus";
 import { isMasterEmail } from "@/lib/masterAccount";
-import { dispatchPrescriptionToPharmacy } from "@/lib/pharmacyFulfillment";
 import { syncTreatmentApprovalToDatabase } from "@/lib/supabaseSync";
 import { logPhiAccess } from "@/lib/hipaaCompliance";
 
@@ -303,7 +302,10 @@ export async function approveClinicalCase(
     const { updateClinicalCaseStatus } = await import("@/lib/patientCareRemote");
     await updateClinicalCaseStatus(caseId, "approved");
     await hydrateClinicalReviewQueue();
-    return { success: true, message: "Case approved. Pharmacy handoff can proceed." };
+    return {
+      success: true,
+      message: "Case approved. Prescribe in Akute to the patient’s pharmacy.",
+    };
   } catch (e) {
     return {
       success: false,

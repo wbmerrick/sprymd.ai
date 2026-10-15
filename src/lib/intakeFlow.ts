@@ -345,8 +345,10 @@ export function checkoutPath(conditionId: string, treatmentId: string, email?: s
 }
 
 /** Visit tier that matches what the visitor picked in the funnel. */
-export function defaultServiceTierFor(conditionId: string | null | undefined): "visit_basic" | "protocol_start" {
-  return conditionId === "pcp" ? "visit_basic" : "protocol_start";
+export function defaultServiceTierFor(
+  _conditionId?: string | null,
+): "evaluation" {
+  return "evaluation";
 }
 
 // ---------------------------------------------------------------------------

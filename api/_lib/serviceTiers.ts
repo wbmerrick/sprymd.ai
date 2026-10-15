@@ -1,10 +1,8 @@
-/** Mirrored from /shared for Vercel API bundling ? keep in sync with shared/. */
-/**
- * Cash-pay telehealth service tier catalog.
- * Shared by Vercel API routes and the React SPA ? keep prices in cents.
- */
+/** Mirrored from /shared for Vercel API bundling — keep in sync with shared/. */
+import { EVALUATION_PRODUCT } from "../../shared/program";
 
 export type ServiceTierId =
+  | "evaluation"
   | "visit_basic"
   | "visit_comprehensive"
   | "protocol_start"
@@ -16,67 +14,52 @@ export type ServiceTier = {
   id: ServiceTierId;
   name: string;
   description: string;
-  /** Price in USD cents for Stripe Checkout line items */
   amountCents: number;
   currency: "usd";
   billing: ServiceTierBilling;
-  /** Shown next to price for subscriptions (e.g. "/month") */
   priceSuffix?: string;
-  /** Brand surface this tier belongs to (default SpryMD). */
   brand?: "sprymd" | "ispry";
 };
 
-export const SERVICE_TIERS: ServiceTier[] = [
-  {
-    id: "visit_basic",
-    name: "Clinician Visit",
-    description: "One-time clinician visit for focused telehealth care.",
-    amountCents: 7500,
-    currency: "usd",
-    billing: "one_time",
-  },
-  {
-    id: "visit_comprehensive",
-    name: "Comprehensive Visit",
-    description: "Extended clinician review with a fuller care plan.",
-    amountCents: 14900,
-    currency: "usd",
-    billing: "one_time",
-  },
-  {
-    id: "protocol_start",
-    name: "Protocol Start Visit",
-    description: "Kickoff visit to begin a treatment protocol.",
-    amountCents: 9900,
-    currency: "usd",
-    billing: "one_time",
-  },
-  {
-    id: "ispry_membership",
-    name: "iSpry Membership",
-    description:
-      "Physician-led telehealth membership for Tennessee. Up to 3 visits/month, up to 3 problems per visit, Spry AI intake included.",
-    amountCents: 10000,
-    currency: "usd",
-    billing: "subscription",
-    priceSuffix: "/month",
-    brand: "ispry",
-  },
-];
+const evaluation: ServiceTier = {
+  id: "evaluation",
+  name: EVALUATION_PRODUCT.name,
+  description: EVALUATION_PRODUCT.description,
+  amountCents: EVALUATION_PRODUCT.amountCents,
+  currency: "usd",
+  billing: "one_time",
+  brand: "sprymd",
+};
 
-/** Visit tiers shown on the default SpryMD cash-pay checkout. */
+const ispryMembership: ServiceTier = {
+  id: "ispry_membership",
+  name: "iSpry Membership",
+  description:
+    "Physician-led telehealth membership for Tennessee. Up to 3 visits/month, up to 3 problems per visit, Spry AI intake included.",
+  amountCents: 10000,
+  currency: "usd",
+  billing: "subscription",
+  priceSuffix: "/month",
+  brand: "ispry",
+};
+
+export const SERVICE_TIERS: ServiceTier[] = [evaluation, ispryMembership];
+
 export const SPRYMD_VISIT_TIERS: ServiceTier[] = SERVICE_TIERS.filter(
   (tier) => tier.brand !== "ispry",
 );
 
-export const SERVICE_TIERS_BY_ID: Record<ServiceTierId, ServiceTier> =
-  Object.fromEntries(SERVICE_TIERS.map((tier) => [tier.id, tier])) as Record<
-    ServiceTierId,
-    ServiceTier
-  >;
+export const SERVICE_TIERS_BY_ID: Record<ServiceTierId, ServiceTier> = {
+  evaluation,
+  visit_basic: { ...evaluation, id: "visit_basic" },
+  visit_comprehensive: { ...evaluation, id: "visit_comprehensive" },
+  protocol_start: { ...evaluation, id: "protocol_start" },
+  ispry_membership: ispryMembership,
+};
 
 export function getServiceTier(id: string): ServiceTier | undefined {
-  return SERVICE_TIERS_BY_ID[id as ServiceTierId];
+  if (!id) return evaluation;
+  return SERVICE_TIERS_BY_ID[id as ServiceTierId] ?? evaluation;
 }
 
 export function formatTierPrice(tier: ServiceTier): string {
@@ -86,3 +69,5 @@ export function formatTierPrice(tier: ServiceTier): string {
   }).format(tier.amountCents / 100);
   return tier.priceSuffix ? `${amount}${tier.priceSuffix}` : amount;
 }
+
+export const DEFAULT_SERVICE_TIER_ID: ServiceTierId = "evaluation";

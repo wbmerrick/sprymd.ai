@@ -138,12 +138,12 @@ export default function ServiceTierCheckout({
     <div className="space-y-8">
       <div className="text-center max-w-2xl mx-auto">
         <h1 className="font-display text-navy text-3xl md:text-4xl font-bold mb-3">
-          {isIspry ? "Join iSpry" : "Choose your visit"}
+          {isIspry ? "Join iSpry" : "Physician evaluation"}
         </h1>
         <p className="font-body text-muted-foreground text-lg">
           {isIspry
             ? "$100/month membership. Physician-led telehealth for Tennessee. Pay securely with Stripe."
-            : "One-time cash-pay telehealth fees. Pay securely with Stripe."}
+            : "$100 physician evaluation. Prescription only if medically appropriate. Full refund if not."}
         </p>
         {!isIspry && (
           <p className="font-body text-sm mt-3">
@@ -253,7 +253,7 @@ export default function ServiceTierCheckout({
         <p className="font-body text-xs text-muted-foreground text-center max-w-md">
           {isIspry
             ? "You will be redirected to Stripe Checkout for the monthly membership. Card details are only entered on Stripe."
-            : "You will be redirected to Stripe Checkout for the visit fee only. Medication plans are not charged at this step — a clinician must approve before any prescription is issued or billed."}
+            : "You will be redirected to Stripe Checkout for the $100 physician evaluation only. You pay your pharmacy directly for medication if prescribed — SpryMD does not sell or set medication prices."}
         </p>
       </div>
     </div>

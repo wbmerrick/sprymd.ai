@@ -41,6 +41,21 @@ export type OpsDetailResponse = {
       phone?: string;
       state?: string;
       dateOfBirth?: string;
+      akutePatientId?: string | null;
+      preferredPharmacy?: {
+        name?: string;
+        phone?: string;
+        address?: {
+          line1?: string;
+          line2?: string;
+          city?: string;
+          state?: string;
+          zip?: string;
+        };
+        ncpdp?: string | null;
+        npi?: string | null;
+        medicationType?: "compounded" | "brand_name";
+      } | null;
     } | null;
   };
   payments: Array<{

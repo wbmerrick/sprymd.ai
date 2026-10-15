@@ -16,6 +16,12 @@ import {
   stripeRefundDeepLink,
 } from "@/lib/stripeDashboardLinks";
 import { requiresLiveVideoVisit } from "@/lib/visitModality";
+import type { PreferredPharmacy } from "@/lib/pharmacyFulfillment";
+import {
+  akuteChartUrl,
+  canPrescribeInAkute,
+  formatPrescribeClipboard,
+} from "@/integrations/akute/prescribe";
 
 const PRIMARY_BY_STATUS: Record<string, string[]> = {
   paid: ["completed", "cancelled"],
@@ -54,6 +60,12 @@ export default function OpsAppointmentPage() {
   const [loading, setLoading] = useState(true);
   const [pharmacyNotes, setPharmacyNotes] = useState("");
   const [pharmacyStatus, setPharmacyStatus] = useState("");
+  const [rxDrug, setRxDrug] = useState("");
+  const [rxDose, setRxDose] = useState("");
+  const [rxQty, setRxQty] = useState("");
+  const [rxSupplies, setRxSupplies] = useState("");
+  const [rxSig, setRxSig] = useState("");
+  const [compoundingRationale, setCompoundingRationale] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -273,29 +285,87 @@ export default function OpsAppointmentPage() {
   async function declineAndRefund() {
     if (!data?.appointment) return;
     if (demo) {
-      if (refundLink) {
-        openStripeRefundDeepLink(refundIds);
-      }
-      toast.message("Demo — opened Stripe link; status not saved");
+      toast.message("Demo — not clinically appropriate (refund simulated)");
       return;
     }
     const ok = window.confirm(
-      "Decline this patient?\n\n1) Stripe Dashboard opens so you can issue a full refund.\n2) This case will be marked cancelled.\n\nContinue?",
+      "Mark Not clinically appropriate?\n\nThis issues a full $100 evaluation refund via Stripe and cancels the case.",
     );
     if (!ok) return;
-    const opened = openStripeRefundDeepLink(refundIds);
-    if (!opened) {
-      toast.error(
-        "No Stripe payment id on this case — refund manually in Dashboard, then mark cancelled.",
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/ops/appointment?id=${encodeURIComponent(appointmentId)}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            clinicalDecision: "not_clinically_appropriate",
+            pharmacyNotes,
+          }),
+        },
       );
-    } else {
-      toast.message(
-        refundLink?.kind === "payment_intent"
-          ? "Stripe payment opened — click Refund, then return here"
-          : "Stripe search opened — open the payment, Refund, then return here",
-      );
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        message?: string;
+        refund?: { ok?: boolean; refunded?: boolean; already?: boolean; error?: string };
+      };
+      if (!res.ok) {
+        const msg = json.message || json.error || "Update failed.";
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+      if (json.refund?.already) {
+        toast.message("Already refunded — case cancelled");
+      } else if (json.refund?.refunded) {
+        toast.success("Full evaluation refund issued");
+      } else if (json.refund && !json.refund.ok) {
+        toast.error(json.refund.error || "Refund failed — check Stripe");
+        if (refundLink) openStripeRefundDeepLink(refundIds);
+      } else {
+        toast.success("Marked not clinically appropriate");
+      }
+      await load();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setBusy(false);
     }
-    await patch({ status: "cancelled" }, "Marked cancelled — finish refund in Stripe");
+  }
+
+  async function prescribeInAkute() {
+    const pharmacy = data?.appointment.patient?.preferredPharmacy as
+      | PreferredPharmacy
+      | null
+      | undefined;
+    const akutePatientId = data?.appointment.patient?.akutePatientId;
+    const gate = canPrescribeInAkute({
+      pharmacy,
+      compoundingRationale,
+      akutePatientId,
+    });
+    if (!gate.ok) {
+      toast.error(gate.reason || "Cannot prescribe yet");
+      return;
+    }
+    const text = formatPrescribeClipboard({
+      drug: rxDrug,
+      dose: rxDose,
+      quantity: rxQty,
+      supplies: rxSupplies,
+      sig: rxSig,
+      compoundingRationale,
+      pharmacy,
+    });
+    await copyText("Rx summary", text);
+    window.open(akuteChartUrl(String(akutePatientId)), "_blank", "noopener,noreferrer");
   }
 
   if (loading) {
@@ -516,12 +586,108 @@ export default function OpsAppointmentPage() {
 
       {isPaid && (
         <section className="mt-6 rounded-2xl border border-white/10 p-5">
-          <h2 className="text-sm font-medium mb-2">Pharmacy handoff</h2>
+          <h2 className="text-sm font-medium mb-2">Prescribe in Akute</h2>
           <p className="text-sm text-white/55 mb-4">
-            After you approve an Rx, record how it left the chart (portal / fax /
-            phone). Manual fulfillment is fine for launch.
+            E-prescribe inside Akute to the patient&apos;s chosen pharmacy. SpryMD
+            does not sell or transmit medication. Patient pays the pharmacy
+            directly.
           </p>
-          <div className="flex flex-wrap gap-2 mb-3">
+          {a.patient?.preferredPharmacy ? (
+            <dl className="mb-4 grid gap-1 text-xs text-white/65">
+              <div>
+                <dt className="inline text-white/40">Pharmacy: </dt>
+                <dd className="inline text-white/90">
+                  {a.patient.preferredPharmacy.name}
+                </dd>
+              </div>
+              <div>
+                <dt className="inline text-white/40">Type: </dt>
+                <dd className="inline capitalize">
+                  {a.patient.preferredPharmacy.medicationType || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="inline text-white/40">Phone: </dt>
+                <dd className="inline">{a.patient.preferredPharmacy.phone || "—"}</dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="mb-4 text-sm text-amber-200/90">
+              No preferred pharmacy on file — patient must complete pharmacy
+              selection at intake before you can prescribe.
+            </p>
+          )}
+          <div className="grid gap-2 sm:grid-cols-2 mb-3">
+            <label className="block text-xs text-white/45">
+              Drug
+              <input
+                value={rxDrug}
+                onChange={(e) => setRxDrug(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white"
+              />
+            </label>
+            <label className="block text-xs text-white/45">
+              Dose
+              <input
+                value={rxDose}
+                onChange={(e) => setRxDose(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white"
+              />
+            </label>
+            <label className="block text-xs text-white/45">
+              Quantity
+              <input
+                value={rxQty}
+                onChange={(e) => setRxQty(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white"
+              />
+            </label>
+            <label className="block text-xs text-white/45">
+              Supplies
+              <input
+                value={rxSupplies}
+                onChange={(e) => setRxSupplies(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white"
+              />
+            </label>
+          </div>
+          <label className="block text-xs text-white/45 mb-3">
+            Sig
+            <textarea
+              value={rxSig}
+              onChange={(e) => setRxSig(e.target.value)}
+              rows={2}
+              className="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white"
+            />
+          </label>
+          {a.patient?.preferredPharmacy?.medicationType === "compounded" && (
+            <label className="block text-xs text-white/45 mb-3">
+              Compounding rationale (required)
+              <textarea
+                value={compoundingRationale}
+                onChange={(e) => setCompoundingRationale(e.target.value)}
+                rows={3}
+                placeholder="Patient-specific clinical rationale for compounding"
+                className="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white"
+              />
+            </label>
+          )}
+          <button
+            type="button"
+            disabled={
+              busy ||
+              !canPrescribeInAkute({
+                pharmacy: a.patient?.preferredPharmacy as PreferredPharmacy,
+                compoundingRationale,
+                akutePatientId: a.patient?.akutePatientId,
+              }).ok
+            }
+            onClick={() => void prescribeInAkute()}
+            className="rounded-full bg-[#9dba8c] px-4 py-2 text-sm font-medium text-[#0b100e] hover:brightness-105 disabled:opacity-40"
+          >
+            Prescribe in Akute
+          </button>
+          <div className="mt-4 flex flex-wrap gap-2">
             {(["queued", "sent", "held", "declined"] as const).map((status) => (
               <button
                 key={status}
@@ -534,7 +700,7 @@ export default function OpsAppointmentPage() {
                       pharmacyStatus: status,
                       pharmacyNotes: pharmacyNotes,
                     },
-                    `Pharmacy marked ${status}`,
+                    `Rx status marked ${status}`,
                   );
                 }}
                 className={`rounded-full px-3 py-1.5 text-xs capitalize border disabled:opacity-40 ${
@@ -547,40 +713,17 @@ export default function OpsAppointmentPage() {
               </button>
             ))}
           </div>
-          <label className="block text-xs text-white/45 mb-1" htmlFor="pharmacy-notes">
-            Pharmacy notes
+          <label className="mt-3 block text-xs text-white/45 mb-1" htmlFor="pharmacy-notes">
+            Chart notes (optional)
           </label>
           <textarea
             id="pharmacy-notes"
             value={pharmacyNotes}
             onChange={(e) => setPharmacyNotes(e.target.value)}
-            rows={3}
-            placeholder="Drug, strength, directions, pharmacy name, confirmation #"
+            rows={2}
+            placeholder="Optional internal note after e-prescribe"
             className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#9dba8c]/60"
           />
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() =>
-                void patch(
-                  {
-                    pharmacyStatus: pharmacyStatus || "queued",
-                    pharmacyNotes,
-                  },
-                  "Pharmacy notes saved",
-                )
-              }
-              className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5 disabled:opacity-50"
-            >
-              Save pharmacy notes
-            </button>
-            {a.pharmacySentAt && (
-              <span className="text-xs text-white/40 self-center">
-                Sent {new Date(a.pharmacySentAt).toLocaleString()}
-              </span>
-            )}
-          </div>
         </section>
       )}
 
@@ -589,19 +732,16 @@ export default function OpsAppointmentPage() {
           <h2 className="text-sm font-medium mb-2">Launch playbook</h2>
           <ul className="text-sm text-white/65 space-y-2 list-disc pl-5">
             <li>
-              <span className="text-white/85">Not a candidate:</span> use{" "}
-              <span className="text-white/85">Decline + refund</span> below —
-              opens Stripe, then marks this case cancelled. Webhook records{" "}
-              <code className="text-xs text-white/50">charge.refunded</code>.
+              <span className="text-white/85">Not clinically appropriate:</span>{" "}
+              use the button below — auto-refunds the $100 evaluation fee.
             </li>
             <li>
-              <span className="text-white/85">Approve Rx:</span> use{" "}
-              <span className="text-white/85">Pharmacy handoff</span> above
-              (portal / fax / phone — manual is fine). Then mark completed.
+              <span className="text-white/85">Approve Rx:</span> Prescribe in
+              Akute (clipboard + chart). Patient pays their pharmacy.
             </li>
             <li>
-              <span className="text-white/85">Statement text:</span> charges
-              show as SPRYMD on the card — no ED wording.
+              <span className="text-white/85">Statement text:</span> charges show
+              as SPRYMD — evaluation fee only, never medication.
             </li>
           </ul>
         </section>
@@ -610,30 +750,13 @@ export default function OpsAppointmentPage() {
       {(isPaid || a.status === "cancelled") && (
         <section className="mt-6 rounded-2xl border border-rose-400/25 bg-rose-500/5 p-5">
           <h2 className="text-sm font-medium text-rose-50/95 mb-2">
-            Decline / refund
+            Not clinically appropriate
           </h2>
           <p className="text-sm text-white/60 mb-4">
-            Full refunds are issued in Stripe Dashboard (we do not move card
-            money from this console). Deep link opens the payment when we have a
-            PaymentIntent, otherwise Dashboard search on the Checkout Session.
+            Issues a full automatic refund of the $100 physician evaluation via
+            Stripe and cancels this case.
           </p>
           <div className="flex flex-wrap gap-2">
-            {refundLink ? (
-              <a
-                href={refundLink.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
-              >
-                {refundLink.kind === "payment_intent"
-                  ? "Open Stripe payment (Refund)"
-                  : "Find payment in Stripe"}
-              </a>
-            ) : (
-              <span className="text-xs text-white/45 self-center">
-                No Stripe id on file yet — search Dashboard by patient email.
-              </span>
-            )}
             {isPaid && (
               <button
                 type="button"
@@ -641,19 +764,18 @@ export default function OpsAppointmentPage() {
                 onClick={() => void declineAndRefund()}
                 className="rounded-full border border-rose-400/50 bg-rose-500/15 px-4 py-2 text-sm text-rose-50 hover:bg-rose-500/25 disabled:opacity-50"
               >
-                Decline + refund
+                Not clinically appropriate (auto-refund)
               </button>
             )}
             {refundLink && (
-              <button
-                type="button"
-                onClick={() => {
-                  void copyText("Stripe refund link", refundLink.href);
-                }}
-                className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/70 hover:border-white/35"
+              <a
+                href={refundLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
               >
-                Copy link
-              </button>
+                Open Stripe (manual)
+              </a>
             )}
           </div>
           {(refundIds.paymentIntentId || refundIds.checkoutSessionId) && (

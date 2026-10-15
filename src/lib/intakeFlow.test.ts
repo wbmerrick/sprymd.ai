@@ -216,8 +216,8 @@ describe("checkout handoff", () => {
   it("builds the /checkout URL with the plan and condition", () => {
     expect(checkoutPath("ed", "tada-daily")).toBe("/checkout?plan=tada-daily&condition=ed");
     expect(checkoutPath("ed", "tada-daily", "qa@example.com")).toBe("/checkout?plan=tada-daily&condition=ed&email=qa%40example.com");
-    expect(defaultServiceTierFor("pcp")).toBe("visit_basic");
-    expect(defaultServiceTierFor("ed")).toBe("protocol_start");
+    expect(defaultServiceTierFor("pcp")).toBe("evaluation");
+    expect(defaultServiceTierFor("ed")).toBe("evaluation");
   });
 
   it("maps conditions onto the chart's chief-complaint values and summarizes answers", () => {

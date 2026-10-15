@@ -219,7 +219,7 @@ export function ClinicalReviewQueue({
                       className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50"
                     >
                       <CheckCircle2 className="h-4 w-4" />
-                      Approve & Transmit Rx to Empower Pharmacy
+                      Approve — Prescribe in Akute
                     </button>
                     <button
                       type="button"

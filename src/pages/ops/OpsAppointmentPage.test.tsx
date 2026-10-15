@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe("OpsAppointmentPage", () => {
-  it("shows async checklist and claim CTAs for an unassigned paid demo case", async () => {
+  it("shows async checklist and Prescribe in Akute for an unassigned paid demo case", async () => {
     renderDetail();
 
     await waitFor(() => {
@@ -52,19 +52,13 @@ describe("OpsAppointmentPage", () => {
       screen.queryByRole("button", { name: /join pcp video visit/i }),
     ).not.toBeInTheDocument();
     expect(screen.getByText(/launch playbook/i)).toBeInTheDocument();
-    expect(screen.getByText(/decline \/ refund/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /open stripe payment \(refund\)/i }),
-    ).toHaveAttribute(
-      "href",
-      "https://dashboard.stripe.com/payments/pi_live_demo_jordan",
-    );
-    expect(
-      screen.getByRole("button", { name: /decline \+ refund/i }),
+      screen.getByRole("button", { name: /not clinically appropriate \(auto-refund\)/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /^pharmacy handoff$/i }),
+      screen.getByRole("heading", { name: /^prescribe in akute$/i }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^prescribe in akute$/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /^sent$/i })).toBeInTheDocument();
     expect(screen.getByText(/erectile dysfunction for ~8 months/i)).toBeInTheDocument();
     expect(screen.getByText(/age 38|age \d+/i)).toBeInTheDocument();
