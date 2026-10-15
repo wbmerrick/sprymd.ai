@@ -1,9 +1,13 @@
 /**
- * Cash-pay telehealth service tier catalog.
- * Shared by Vercel API routes and the React SPA — keep prices in cents.
+ * Cash-pay catalog — single Physician GLP-1 Evaluation product.
+ * Legacy tier ids alias to evaluation so older clients still charge $100.
+ * Multi-tier history: archive/billing-membership/serviceTiers.ts
  */
 
+import { EVALUATION_PRODUCT } from "./program";
+
 export type ServiceTierId =
+  | "evaluation"
   | "visit_basic"
   | "visit_comprehensive"
   | "protocol_start";
@@ -12,43 +16,31 @@ export type ServiceTier = {
   id: ServiceTierId;
   name: string;
   description: string;
-  /** Price in USD cents for Stripe Checkout line items */
   amountCents: number;
   currency: "usd";
 };
 
-export const SERVICE_TIERS: ServiceTier[] = [
-  {
-    id: "visit_basic",
-    name: "Clinician Visit",
-    description: "One-time clinician visit for focused telehealth care.",
-    amountCents: 7500,
-    currency: "usd",
-  },
-  {
-    id: "visit_comprehensive",
-    name: "Comprehensive Visit",
-    description: "Extended clinician review with a fuller care plan.",
-    amountCents: 14900,
-    currency: "usd",
-  },
-  {
-    id: "protocol_start",
-    name: "Protocol Start Visit",
-    description: "Kickoff visit to begin a treatment protocol.",
-    amountCents: 9900,
-    currency: "usd",
-  },
-];
+const evaluation: ServiceTier = {
+  id: "evaluation",
+  name: EVALUATION_PRODUCT.name,
+  description: EVALUATION_PRODUCT.description,
+  amountCents: EVALUATION_PRODUCT.amountCents,
+  currency: "usd",
+};
 
-export const SERVICE_TIERS_BY_ID: Record<ServiceTierId, ServiceTier> =
-  Object.fromEntries(SERVICE_TIERS.map((tier) => [tier.id, tier])) as Record<
-    ServiceTierId,
-    ServiceTier
-  >;
+/** All public SKUs resolve to the same $100 evaluation. */
+export const SERVICE_TIERS: ServiceTier[] = [evaluation];
+
+export const SERVICE_TIERS_BY_ID: Record<ServiceTierId, ServiceTier> = {
+  evaluation,
+  visit_basic: { ...evaluation, id: "visit_basic" },
+  visit_comprehensive: { ...evaluation, id: "visit_comprehensive" },
+  protocol_start: { ...evaluation, id: "protocol_start" },
+};
 
 export function getServiceTier(id: string): ServiceTier | undefined {
-  return SERVICE_TIERS_BY_ID[id as ServiceTierId];
+  if (!id) return evaluation;
+  return SERVICE_TIERS_BY_ID[id as ServiceTierId] ?? evaluation;
 }
 
 export function formatTierPrice(tier: ServiceTier): string {
@@ -57,3 +49,5 @@ export function formatTierPrice(tier: ServiceTier): string {
     currency: tier.currency.toUpperCase(),
   }).format(tier.amountCents / 100);
 }
+
+export const DEFAULT_SERVICE_TIER_ID: ServiceTierId = "evaluation";

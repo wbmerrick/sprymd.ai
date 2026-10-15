@@ -12,6 +12,11 @@ import {
   type IntakeDraft,
   type SaveResult,
 } from "@/lib/clinicalDrafts";
+import PreferredPharmacyFields, {
+  emptyPreferredPharmacy,
+} from "@/components/intake/PreferredPharmacyFields";
+import type { PreferredPharmacy } from "@/lib/pharmacyFulfillment";
+import { hasUsablePreferredPharmacy } from "@/lib/pharmacyFulfillment";
 
 const SECTIONS: IntakeSection[] = [
   "Chief complaint",
@@ -43,11 +48,21 @@ export default function IntakeQuestionnaire({
 }: IntakeQuestionnaireProps) {
   const [id] = useState(draftId || newId);
   const [answers, setAnswers] = useState<IntakeAnswers>({});
+  const [pharmacy, setPharmacy] = useState<PreferredPharmacy>(emptyPreferredPharmacy);
   const [status, setStatus] = useState<"draft" | "submitted">("draft");
   const [dirty, setDirty] = useState(false);
   const [saveMessage, setSaveMessage] = useState("Drafts save as you type.");
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const answersWithPharmacy = useMemo(
+    () =>
+      ({
+        ...answers,
+        preferred_pharmacy: pharmacy,
+      }) as IntakeAnswers,
+    [answers, pharmacy],
+  );
 
   const visible = useMemo(
     () => INTAKE_QUESTIONS.filter((question) => question.visible(answers)),
@@ -61,7 +76,7 @@ export default function IntakeQuestionnaire({
         id,
         patientId,
         appointmentId,
-        answers,
+        answers: answersWithPharmacy,
         status: "draft",
         updatedAt: new Date().toISOString(),
       };
@@ -72,7 +87,16 @@ export default function IntakeQuestionnaire({
         .finally(() => setSaving(false));
     }, saveDelayMs);
     return () => window.clearTimeout(handle);
-  }, [answers, appointmentId, dirty, id, patientId, saveDelayMs, saveDraft, status]);
+  }, [
+    answersWithPharmacy,
+    appointmentId,
+    dirty,
+    id,
+    patientId,
+    saveDelayMs,
+    saveDraft,
+    status,
+  ]);
 
   function update(questionId: string, value: string | string[]) {
     setDirty(true);
@@ -96,11 +120,17 @@ export default function IntakeQuestionnaire({
       setSubmitError(block);
       return;
     }
+    if (!hasUsablePreferredPharmacy(pharmacy)) {
+      setSubmitError(
+        "Add your pharmacy name, full address, and phone before submitting.",
+      );
+      return;
+    }
     const draft: IntakeDraft = {
       id,
       patientId,
       appointmentId,
-      answers,
+      answers: answersWithPharmacy,
       status: "submitted",
       updatedAt: new Date().toISOString(),
     };
@@ -196,6 +226,14 @@ export default function IntakeQuestionnaire({
           </section>
         );
       })}
+
+      <PreferredPharmacyFields
+        value={pharmacy}
+        onChange={(next) => {
+          setDirty(true);
+          setPharmacy(next);
+        }}
+      />
 
       {submitError && (
         <p role="alert" className="font-body text-sm text-center text-red-600">

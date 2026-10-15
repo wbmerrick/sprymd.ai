@@ -8,6 +8,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { handlePreflight, applyCors } from "../_lib/cors";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
+import { syncIntakeToAkute } from "../_lib/akute/syncIntake";
+import { refundEvaluationForAppointment } from "../_lib/akute/refundEvaluation";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -24,6 +26,8 @@ type GuestIntakeBody = {
   pastMedicalHistoryNotes?: string;
   allergyStatus?: string;
   allergyDisclosure?: string;
+  preferredPharmacy?: Record<string, unknown>;
+  hardStop?: boolean | string;
 };
 
 function parseBody(req: VercelRequest): GuestIntakeBody {
@@ -175,11 +179,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    if (body.preferredPharmacy && typeof body.preferredPharmacy === "object") {
+      await admin
+        .from("patients")
+        .update({
+          preferred_pharmacy: body.preferredPharmacy,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", appointment.patient_id);
+    }
+
+    const funnel = (answers.funnel || {}) as Record<string, unknown>;
+    const hardStop =
+      body.hardStop === true ||
+      body.hardStop === "true" ||
+      funnel.crisis === true ||
+      Boolean(funnel.disqualifier);
+
+    let refund: Awaited<ReturnType<typeof refundEvaluationForAppointment>> | null =
+      null;
+    if (hardStop && intakeStatus === "submitted") {
+      refund = await refundEvaluationForAppointment({
+        supabase: admin,
+        appointmentId,
+        reason: "hard_stop",
+      });
+    } else if (intakeStatus === "submitted") {
+      const urgent =
+        funnel.crisis === true ||
+        String(funnel.kind || "") === "consult";
+      await syncIntakeToAkute({
+        supabase: admin,
+        patientId: String(appointment.patient_id),
+        answers,
+        chiefComplaint: chiefComplaintDetail || undefined,
+        flags: [
+          funnel.disqualifier ? `Disqualifier: ${funnel.disqualifier}` : "",
+          funnel.crisis ? "CRISIS FLAG" : "",
+        ].filter(Boolean),
+        consents: ["Telehealth and cash-pay consents recorded at checkout"],
+        urgent,
+      });
+    }
+
     res.status(200).json({
       ok: true,
       intake: saved,
       location: "database",
-      message: "Intake saved to the chart for your clinician.",
+      message: hardStop
+        ? "Hard-stop recorded. Evaluation fee refund initiated when payment is on file."
+        : "Intake saved to the chart for your clinician.",
+      refund,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

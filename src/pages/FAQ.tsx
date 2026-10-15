@@ -58,18 +58,18 @@ const faqGroups: FAQGroup[] = [
   {
     label: "Pricing and Billing",
     items: [
-      { q: "What do I pay today?", a: "A one-time cash-pay clinician visit fee (for example $75 for a basic visit or $99 for a protocol-start visit, depending on what you select). Card details are entered only on Stripe's secure checkout page." },
-      { q: "When do I pay for medication?", a: "Medication plan prices shown as “from $X/mo” are what treatment would cost if a clinician approves a plan. Soft launch does not auto-charge medication at checkout. If approved, we coordinate fulfillment and billing for medication separately — clearly, before you are charged for meds." },
-      { q: "What if I'm not approved?", a: "If the physician determines you are not a candidate, we follow our refund policy for the visit fee when applicable. Refunds return to your original card; banks may take a few business days to post them." },
-      { q: "How do I cancel?", a: "Email support@sprymd.ai or use your patient account. There is no cancellation fee for ending future care. Any active medication billing arrangements (when offered) are cancelled according to the terms shown at that time." },
-      { q: "Do you accept insurance?", a: "No. Cash-pay only. Many patients find a single visit fee is less than a specialist copay." },
+      { q: "What do I pay today?", a: "$100 physician evaluation. Prescription only if medically appropriate. Full refund if not. Card details are entered only on Stripe's secure checkout page." },
+      { q: "When do I pay for medication?", a: "You pay your pharmacy directly for your medication. Prices vary by pharmacy. SpryMD does not sell or set the price of medication." },
+      { q: "What if I'm not approved?", a: "If the physician determines treatment is not clinically appropriate, we automatically refund the full $100 evaluation fee to your original card. Banks may take a few business days to post the credit." },
+      { q: "How do I cancel?", a: "Email support@sprymd.ai or use your patient account. The evaluation fee is for physician review already performed unless you are declined (full refund)." },
+      { q: "Do you accept insurance?", a: "No. Cash-pay only. Many patients find a single evaluation fee is less than a specialist copay." },
     ],
   },
   {
-    label: "Shipping",
+    label: "Pharmacy",
     items: [
       { q: "Where does my medication come from?", a: pharmacyFulfillmentCopy() },
-      { q: "How long does shipping take?", a: "After a prescription is approved and transmitted, most orders ship within 1–2 business days and arrive shortly after. Timing depends on the medication, pharmacy, weather, and carrier. Tennessee next-business-day delivery applies only when the order qualifies under our published delivery terms." },
+      { q: "Do you recommend a pharmacy?", a: "No. SpryMD never recommends, steers to, or receives anything from any pharmacy. You choose your pharmacy at intake." },
     ],
   },
 ];

@@ -77,7 +77,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const body = parseBody(req);
-  const serviceTierId = String(body.serviceTierId || "").trim();
+  // Single product: Physician GLP-1 Evaluation ($100). Legacy tier ids alias to it.
+  const serviceTierId =
+    String(body.serviceTierId || "").trim() || "evaluation";
   let appointmentId = body.appointmentId
     ? String(body.appointmentId).trim()
     : "";
@@ -94,16 +96,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? String(body.treatmentId).trim()
     : "";
 
-  if (!serviceTierId) {
-    res.status(400).json({ error: "missing_service_tier_id" });
-    return;
-  }
-
   if (!appointmentId && !patientEmail) {
     res.status(400).json({
       error: "missing_appointment_or_patient",
       message:
-        "Provide appointmentId, or patientEmail (+ optional patientName) with serviceTierId",
+        "Provide appointmentId, or patientEmail (+ optional patientName)",
     });
     return;
   }
@@ -222,17 +219,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Card charges require suffix (account prefix + this). Keep discreet.
         statement_descriptor_suffix: STATEMENT_DESCRIPTOR,
       },
+      // No PHI in Stripe metadata — patients.id (+ appointment id) only.
       metadata: {
         appointment_id: appointmentId || "",
         patient_id: patientId || "",
-        service_tier_id: tier.id,
-        patient_email: emailForStripe || "",
-        patient_name: patientName || "",
-        physical_state: compliance.physicalState.toUpperCase(),
-        cash_pay_terms_accepted: "true",
-        telehealth_limitations_acknowledged: "true",
-        condition_id: conditionId || "",
-        treatment_id: treatmentId || "",
+        service_tier_id: "evaluation",
       },
     });
 

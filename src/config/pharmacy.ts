@@ -1,31 +1,18 @@
 ﻿/**
- * Named pharmacy partner used in fulfillment copy.
- * Leave empty or as a `[PLACEHOLDER]` to fall back to generic "our pharmacy partner" wording.
+ * Patient-facing pharmacy copy — pharmacy-neutral (no partner steering).
+ * Partner pharmacy config archived at archive/pharmacy-partner/.
  */
 
-import { isConfigured } from "./company";
+import { PHARMACY_PAY_DISCLOSURE } from "@/data/program";
 
-export const PHARMACY_NAME = "[PARTNER PHARMACY NAME]";
-/** e.g. "licensed U.S. compounding pharmacy" or "licensed U.S. retail pharmacy" */
-export const PHARMACY_TYPE = "[licensed U.S. compounding / retail pharmacy]";
+export { PHARMACY_PAY_DISCLOSURE };
 
-/**
- * Patient-facing fulfillment sentence for how-it-works, plan, and FAQ surfaces.
- * Uses the named partner when configured; otherwise keeps the current generic wording.
- */
+/** How medication reaches the patient after clinical approval. */
 export function pharmacyFulfillmentCopy(): string {
-  if (!isConfigured(PHARMACY_NAME)) {
-    return "Once treatment is approved, your prescription is filled by our pharmacy partner, discreetly packaged, and shipped to your door.";
-  }
-  const type = isConfigured(PHARMACY_TYPE) ? PHARMACY_TYPE : "licensed U.S. pharmacy";
-  return `Prescriptions are filled by ${PHARMACY_NAME}, a ${type}, and shipped discreetly to your door.`;
+  return `If a prescription is medically appropriate, your clinician sends it to the pharmacy you chose. ${PHARMACY_PAY_DISCLOSURE}`;
 }
 
 /** Shorter variant for plan/checkout callouts. */
 export function pharmacyShortCopy(): string {
-  if (!isConfigured(PHARMACY_NAME)) {
-    return "If approved, compounded at our pharmacy partner and shipped discreetly.";
-  }
-  const type = isConfigured(PHARMACY_TYPE) ? PHARMACY_TYPE : "licensed U.S. pharmacy";
-  return `If approved, filled by ${PHARMACY_NAME} (${type}) and shipped discreetly.`;
+  return "If approved, your clinician e-prescribes to your chosen pharmacy. You pay that pharmacy directly — SpryMD does not sell medication.";
 }

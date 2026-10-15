@@ -979,7 +979,7 @@ const Landing = ({ go }) => {
           {[
             { n: "01", t: "Choose the type of care you want to receive.", d: "Then answer a short, private intake questionnaire that focuses on any contraindications to that particular treatment." },
             { n: "02", t: "Clinician review", d: "A licensed doctor reviews your case to make sure the treatment is safe." },
-            { n: "03", t: "Treatment shipped", d: `${pharmacyFulfillmentCopy()} Timing depends on medication and carrier — qualifying Tennessee orders may be eligible for next-business-day delivery.` },
+            { n: "03", t: "Pharmacy fulfillment", d: `${pharmacyFulfillmentCopy()}` },
           ].map((s) => (
             <div key={s.n} className="p-5 md:p-6 rounded-2xl" style={{ background: C.bg, border: `1px solid ${C.line}` }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.accent, fontWeight: 700 }}>{s.n}</div>
@@ -1691,7 +1691,7 @@ const FooterPage = ({ slug, go, cartCount, user }) => {
             <Btn onClick={runCta} size="lg" icon={ArrowRight}>{page.ctaLabel || "Continue"}</Btn>
             {page.fromPrice && (
               <span className="mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: C.muted, textTransform: "uppercase" }}>
-                From ${page.fromPrice}/mo if approved · visit fee at checkout
+                From ${page.fromPrice}/mo at your pharmacy if approved · $100 physician evaluation
               </span>
             )}
           </div>
@@ -3156,7 +3156,7 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
                 {recommended.note}{" "}
                 {conditionId === "pcp"
                   ? "Includes ongoing clinician support, secure messaging, and care coordination once your visit is completed."
-                  : `${pharmacyShortCopy()} Medication is billed separately after clinician approval — not at this visit checkout.`}
+                  : `${pharmacyShortCopy()} $100 physician evaluation. Prescription only if medically appropriate. Full refund if not.`}
               </p>
               <div className="mt-8 space-y-2">
                 {(conditionId === "pcp"
@@ -3188,7 +3188,7 @@ const Plan = ({ conditionId, answers, disqualified, safety, go, onSelectPlan, us
                 </div>
                 <Btn onClick={() => onSelectPlan(recommended)} size="lg" variant="accent" icon={ArrowRight} className="w-full mt-6">Continue to visit checkout</Btn>
                 <p style={{ fontSize: 12, opacity: 0.75, marginTop: 12, lineHeight: 1.45, textAlign: "center" }}>
-                  Next: pay the one-time visit fee securely with Stripe. The ${recommended.price}/mo plan price is charged only after a clinician approves treatment — not at this checkout.
+                  Next: pay the $100 physician evaluation securely with Stripe. If approved, you pay your pharmacy directly for medication — SpryMD does not sell or set medication prices.
                 </p>
                 <div className="flex items-center justify-center gap-2 mt-3">
                   <Lock size={12} color={C.accentSoft} />

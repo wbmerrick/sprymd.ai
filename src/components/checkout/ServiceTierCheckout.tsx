@@ -127,10 +127,11 @@ export default function ServiceTierCheckout({
     <div className="space-y-8">
       <div className="text-center max-w-2xl mx-auto">
         <h1 className="font-display text-navy text-3xl md:text-4xl font-bold mb-3">
-          Choose your visit
+          Physician evaluation
         </h1>
         <p className="font-body text-muted-foreground text-lg">
-          One-time cash-pay telehealth fees. Pay securely with Stripe.
+          $100 physician evaluation. Prescription only if medically appropriate.
+          Full refund if not.
         </p>
         <p className="font-body text-sm mt-3">
           <Link to="/intake" className="underline underline-offset-4 text-navy">
@@ -139,7 +140,7 @@ export default function ServiceTierCheckout({
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 max-w-xl mx-auto">
         {SERVICE_TIERS.map((tier) => {
           const selected = tier.id === selectedId;
           return (
@@ -223,9 +224,9 @@ export default function ServiceTierCheckout({
             : `Pay ${selectedTier ? formatTierPrice(selectedTier) : ""} →`}
         </button>
         <p className="font-body text-xs text-muted-foreground text-center max-w-md">
-          You will be redirected to Stripe Checkout for the visit fee only.
-          Medication plans are not charged at this step — a clinician must approve
-          before any prescription is issued or billed.
+          You will be redirected to Stripe Checkout for the $100 physician
+          evaluation only. You pay your pharmacy directly for medication if
+          prescribed — SpryMD does not sell or set medication prices.
         </p>
       </div>
     </div>

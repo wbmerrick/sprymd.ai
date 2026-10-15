@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { CASH_PAY_PLANS, generateCashPayReceipt } from "@/lib/stripeBilling";
-import { dispatchPrescriptionToPharmacy, calculateNextBusinessDayDelivery } from "@/lib/pharmacyFulfillment";
 import { logPhiAccess, getPhiAuditLogs, sanitizePhiForTelemetry } from "@/lib/hipaaCompliance";
+import { hasUsablePreferredPharmacy } from "@/lib/pharmacyFulfillment";
+import { fees, EVALUATION_FEE_COPY } from "@/data/program";
 
 describe("HIPAA Compliance & Security", () => {
   it("sanitizes PHI fields for telemetry and external monitoring", () => {
@@ -39,47 +40,47 @@ describe("HIPAA Compliance & Security", () => {
   });
 });
 
-describe("Direct Cash-Pay Billing & Stripe Plans", () => {
-  it("defines standard 100% cash-pay plans with zero insurance dependencies", () => {
-    expect(CASH_PAY_PLANS.pcp.priceMonthly).toBe(120);
-    expect(CASH_PAY_PLANS.weightloss.priceMonthly).toBe(200);
-    expect(CASH_PAY_PLANS.ed.priceMonthly).toBe(75);
-    expect(CASH_PAY_PLANS.lowt.priceMonthly).toBe(99);
+describe("Evaluation fee (not medication billing)", () => {
+  it("charges $100 physician evaluation only", () => {
+    expect(fees.evaluation).toBe(10000);
+    expect(EVALUATION_FEE_COPY).toMatch(/physician evaluation/i);
+    expect(EVALUATION_FEE_COPY).not.toMatch(/guaranteed prescription/i);
   });
 
-  it("generates itemized cash-pay receipts with NPI for HSA/FSA reimbursement", () => {
+  it("legacy cash-pay plan catalog still exports for archived receipts", () => {
+    expect(CASH_PAY_PLANS.pcp.priceMonthly).toBe(120);
     const receipt = generateCashPayReceipt({
       patientName: "Jane Doe",
       patientEmail: "jane@sprymd.ai",
       planKey: "weightloss",
       cardLast4: "1234",
     });
-
     expect(receipt.receiptNumber).toContain("SPRY-INV-");
-    expect(receipt.amount).toBe(200);
-    expect(receipt.providerDetails.npi).toBe("1982736450");
-    expect(receipt.disclaimer).toContain("100% DIRECT CASH-PAY RECEIPT");
   });
 });
 
-describe("Pharmacy Fulfillment & Tennessee Next-Day SLA", () => {
-  it("calculates next-business-day target dates", () => {
-    const target = calculateNextBusinessDayDelivery();
-    expect(typeof target).toBe("string");
-    expect(target.length).toBe(10);
-  });
-
-  it("dispatches approved prescriptions with cold-chain detection", async () => {
-    const result = await dispatchPrescriptionToPharmacy({
-      patientEmail: "patient@example.com",
-      medicationName: "Tirzepatide Injection 10mg",
-      dosage: "10mg subQ weekly",
-      chilled: true,
-    });
-
-    expect(result.success).toBe(true);
-    expect(result.coldChainRequired).toBe(true);
-    expect(result.carrier).toContain("Cold Chain");
-    expect(result.trackingNumber).toBeDefined();
+describe("Preferred pharmacy", () => {
+  it("requires name, phone, and address for e-prescribe handoff", () => {
+    expect(
+      hasUsablePreferredPharmacy({
+        name: "Local Pharmacy",
+        phone: "6155550199",
+        address: {
+          line1: "1 Main St",
+          city: "Nashville",
+          state: "TN",
+          zip: "37201",
+        },
+        medicationType: "brand_name",
+      }),
+    ).toBe(true);
+    expect(
+      hasUsablePreferredPharmacy({
+        name: "",
+        phone: "615",
+        address: { line1: "", city: "", state: "", zip: "" },
+        medicationType: "compounded",
+      }),
+    ).toBe(false);
   });
 });

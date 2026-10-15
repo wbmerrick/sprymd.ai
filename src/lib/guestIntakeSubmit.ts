@@ -34,6 +34,22 @@ export async function saveGuestIntakeDraft(
   }
 
   const answers = draft.answers as IntakeAnswers;
+  const preferredPharmacy =
+    answers.preferred_pharmacy &&
+    typeof answers.preferred_pharmacy === "object" &&
+    !Array.isArray(answers.preferred_pharmacy)
+      ? (answers.preferred_pharmacy as Record<string, unknown>)
+      : undefined;
+  const hardStop =
+    answers.hard_stop === true ||
+    answers.hard_stop === "true" ||
+    Boolean(
+      answers.funnel &&
+        typeof answers.funnel === "object" &&
+        (answers.funnel as { crisis?: boolean; disqualifier?: string })
+          .crisis,
+    );
+
   const res = await fetch("/api/intake/guest", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -43,6 +59,8 @@ export async function saveGuestIntakeDraft(
       draftId: draft.id,
       status: draft.status,
       answers,
+      preferredPharmacy,
+      hardStop,
       chiefComplaints: listAnswer(answers, "chief_complaints"),
       chiefComplaintDetail: textAnswer(answers, "chief_complaint_detail"),
       pastMedicalHistory: listAnswer(answers, "past_medical_history"),
