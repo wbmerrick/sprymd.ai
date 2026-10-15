@@ -32,6 +32,8 @@ type CheckoutBody = {
   telehealthLimitationsAcknowledged?: boolean | string;
   conditionId?: string;
   treatmentId?: string;
+  /** e.g. `ispry` — used for branding + success redirect defaults */
+  source?: string;
 };
 
 function affirmed(value: boolean | string | undefined): boolean {
@@ -95,6 +97,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const treatmentId = body.treatmentId
     ? String(body.treatmentId).trim()
     : "";
+  const source = body.source ? String(body.source).trim().toLowerCase() : "";
 
   if (!appointmentId && !patientEmail) {
     res.status(400).json({
@@ -186,18 +189,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const baseUrl = getAppBaseUrl(req);
   // Stripe substitutes the literal `{CHECKOUT_SESSION_ID}` token — do not encode braces.
+  const isprySuccessDefault = "https://ispry.ai/?welcome=1";
   const successUrl =
     body.successUrl ||
-    (appointmentId
-      ? `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${encodeURIComponent(appointmentId)}`
-      : `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`);
-  const cancelUrl = body.cancelUrl || `${baseUrl}/checkout?canceled=1`;
+    (source === "ispry" || tier.brand === "ispry"
+      ? isprySuccessDefault
+      : appointmentId
+        ? `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${encodeURIComponent(appointmentId)}`
+        : `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`);
+  const cancelUrl =
+    body.cancelUrl ||
+    (source === "ispry" || tier.brand === "ispry"
+      ? `${baseUrl}/checkout?source=ispry&plan=ispry_membership&canceled=1`
+      : `${baseUrl}/checkout?canceled=1`);
 
   try {
     const stripe = new Stripe(stripeKey);
+    const isSubscription = tier.billing === "subscription";
+    // No PHI in Stripe metadata — ids and product flags only.
+    const metadata = {
+      appointment_id: appointmentId || "",
+      patient_id: patientId || "",
+      service_tier_id: tier.id,
+      source: source || tier.brand || "sprymd",
+    };
 
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
+      mode: isSubscription ? "subscription" : "payment",
       payment_method_types: ["card"],
       line_items: [
         {
@@ -209,22 +227,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               name: tier.name,
               description: tier.description,
             },
+            ...(isSubscription ? { recurring: { interval: "month" as const } } : {}),
           },
         },
       ],
       customer_email: emailForStripe || undefined,
       success_url: successUrl,
       cancel_url: cancelUrl,
-      payment_intent_data: {
-        // Card charges require suffix (account prefix + this). Keep discreet.
-        statement_descriptor_suffix: STATEMENT_DESCRIPTOR,
-      },
-      // No PHI in Stripe metadata — patients.id (+ appointment id) only.
-      metadata: {
-        appointment_id: appointmentId || "",
-        patient_id: patientId || "",
-        service_tier_id: "evaluation",
-      },
+      ...(isSubscription
+        ? {
+            subscription_data: {
+              metadata,
+            },
+          }
+        : {
+            payment_intent_data: {
+              // Card charges require suffix (account prefix + this). Keep discreet.
+              statement_descriptor_suffix: STATEMENT_DESCRIPTOR,
+            },
+          }),
+      metadata,
     });
 
     if (appointmentId) {

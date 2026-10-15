@@ -40,7 +40,17 @@ describe("route metadata", () => {
       "/care/sermorelin",
       "/care/nad-therapy",
     ]);
-    for (const path of ["/dashboard", "/checkout", "/intake", "/provider", "/visit", "/oauth", "/ops"]) {
+    for (const path of [
+      "/dashboard",
+      "/checkout",
+      "/intake",
+      "/provider",
+      "/visit",
+      "/oauth",
+      "/ops",
+      "/staff",
+      "/master",
+    ]) {
       expect(DISALLOWED_PATHS).toContain(path);
       expect(sitemapPaths).not.toContain(path);
     }

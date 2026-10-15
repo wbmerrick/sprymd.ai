@@ -117,6 +117,7 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
     <div
       className={docked ? "ospry-chat" : "ospry-chat spry-rise w-full max-w-md md:max-w-none"}
       style={shellStyle}
+      role="region"
       aria-label="Chat with iSpry, SpryMD care helper"
     >
       <div
@@ -395,7 +396,8 @@ export default function ISpryChat({ onAction, onDockChange, forceDocked = false 
       type="button"
       className="focus-ring"
       onClick={() => setExpanded(true)}
-      aria-label="Open iSpry chat"
+      aria-label="iSpry Ask anything — open chat"
+      aria-expanded={false}
       style={{
         display: "inline-flex",
         alignItems: "center",

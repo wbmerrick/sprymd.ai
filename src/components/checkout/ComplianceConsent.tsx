@@ -9,11 +9,14 @@ import { US_STATES } from "../../../shared/usStates";
 type ComplianceConsentProps = {
   value: ComplianceAnswers;
   onChange: (next: ComplianceAnswers) => void;
+  /** Practice name shown in consent copy. */
+  brandName?: string;
 };
 
 export default function ComplianceConsent({
   value,
   onChange,
+  brandName = "SpryMD",
 }: ComplianceConsentProps) {
   const stateSelected = value.physicalState.trim().length > 0;
   const licensed = stateSelected && isLicensedState(value.physicalState);
@@ -26,7 +29,7 @@ export default function ComplianceConsent({
         Before payment
       </legend>
       <p className="font-body text-sm text-muted-foreground">
-        Cash-pay visits are not billed to insurance. You must be physically
+        Cash-pay care is not billed to insurance. You must be physically
         located in a state where the provider is licensed.
       </p>
 
@@ -44,7 +47,7 @@ export default function ComplianceConsent({
           <Link to="/terms" className="underline underline-offset-2">
             Terms of Service
           </Link>
-          . SpryMD does not bill my insurance for this visit.
+          . {brandName} does not bill my insurance for this care.
         </span>
       </label>
 

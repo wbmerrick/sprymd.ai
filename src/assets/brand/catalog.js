@@ -2,9 +2,12 @@ import imgAlpine from "../sprymd-alpine-atmosphere.webp";
 import imgOgShare from "./sprymd-og-share.webp";
 import imgPortrait from "./sprymd-alpine-portrait.webp";
 import imgCareDawn from "./sprymd-care-dawn.webp";
+import imgCareDawnSmall from "./sprymd-care-dawn-960.webp";
 import imgShopDusk from "./sprymd-shop-dusk.webp";
+import imgShopDuskSmall from "./sprymd-shop-dusk-960.webp";
 import imgMarkField from "./sprymd-mark-field.webp";
 import imgTnRidge from "./sprymd-tn-ridge.webp";
+import imgTnRidgeSmall from "./sprymd-tn-ridge-960.webp";
 import imgHawaiiMark from "./sprymd-hawaii-mark.webp";
 import imgHawaiiLagoon from "./sprymd-hawaii-lagoon.webp";
 import imgHawaiiPortrait from "./sprymd-hawaii-portrait.webp";
@@ -14,7 +17,8 @@ import imgHawaiiDawnPortrait from "./sprymd-hawaii-dawn-portrait.webp";
 /**
  * SpryMD brand photography kit — Grok-graded plates for future surfaces.
  * `src` is the Vite-bundled URL. `publicPath` is the static /brand copy
- * for OG tags, email, and CSS that cannot import modules.
+ * for OG tags, email, and CSS that cannot import modules. `srcSmall` is an
+ * optional 960px rendition for narrow viewports (srcset / mobile CSS).
  */
 export const brandPlates = {
   alpine: {
@@ -41,6 +45,7 @@ export const brandPlates = {
   care: {
     id: "care",
     src: imgCareDawn,
+    srcSmall: imgCareDawnSmall,
     publicPath: "/brand/sprymd-care-dawn.webp",
     ratio: "16:9",
     use: "Doctor / PCP, sign-in, about — calmer dawn mist",
@@ -48,6 +53,7 @@ export const brandPlates = {
   shop: {
     id: "shop",
     src: imgShopDusk,
+    srcSmall: imgShopDuskSmall,
     publicPath: "/brand/sprymd-shop-dusk.webp",
     ratio: "16:9",
     use: "Marketplace and shop banners — warmer dusk",
@@ -62,6 +68,7 @@ export const brandPlates = {
   tn: {
     id: "tn",
     src: imgTnRidge,
+    srcSmall: imgTnRidgeSmall,
     publicPath: "/brand/sprymd-tn-ridge.webp",
     ratio: "16:9",
     use: "Tennessee service-area and delivery storytelling",

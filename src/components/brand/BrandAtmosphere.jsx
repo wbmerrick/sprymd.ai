@@ -41,6 +41,10 @@ const VARIANTS = {
 /**
  * Reusable SpryMD atmosphere layer. Pick a catalog `plate` and a `variant`
  * overlay so future screens can reuse the kit without one-off CSS.
+ *
+ * `priority` marks the above-the-fold plate (eager, high fetch priority);
+ * every other plate lazy-loads. Plates with a `srcSmall` variant serve the
+ * 960px rendition on narrow viewports via srcset.
  */
 export default function BrandAtmosphere({
   plate = "alpine",
@@ -48,12 +52,14 @@ export default function BrandAtmosphere({
   className = "",
   locked,
   objectPosition,
+  priority = false,
 }) {
   const asset = brandPlates[plate] || brandPlates.alpine;
   const spec = VARIANTS[variant] || VARIANTS.site;
   const isFixed = locked ?? spec.fixed;
   const positionClass = isFixed ? "fixed" : "absolute";
   const crop = objectPosition || spec.objectPosition;
+  const srcSet = asset.srcSmall ? `${asset.srcSmall} 960w, ${asset.src} 1920w` : undefined;
 
   return (
     <div
@@ -63,7 +69,13 @@ export default function BrandAtmosphere({
     >
       <img
         src={asset.src}
+        srcSet={srcSet}
+        sizes={srcSet ? "100vw" : undefined}
         alt=""
+        loading={priority ? "eager" : "lazy"}
+        // React 18 forwards the lowercase attribute; the camelCase prop only lands in React 19.
+        fetchpriority={priority ? "high" : undefined}
+        decoding="async"
         className="earth-distant absolute inset-0 h-full w-full"
         style={{ opacity: spec.imgOpacity, objectPosition: crop }}
       />

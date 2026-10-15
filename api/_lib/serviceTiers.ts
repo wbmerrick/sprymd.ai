@@ -5,7 +5,10 @@ export type ServiceTierId =
   | "evaluation"
   | "visit_basic"
   | "visit_comprehensive"
-  | "protocol_start";
+  | "protocol_start"
+  | "ispry_membership";
+
+export type ServiceTierBilling = "one_time" | "subscription";
 
 export type ServiceTier = {
   id: ServiceTierId;
@@ -13,6 +16,9 @@ export type ServiceTier = {
   description: string;
   amountCents: number;
   currency: "usd";
+  billing: ServiceTierBilling;
+  priceSuffix?: string;
+  brand?: "sprymd" | "ispry";
 };
 
 const evaluation: ServiceTier = {
@@ -21,15 +27,34 @@ const evaluation: ServiceTier = {
   description: EVALUATION_PRODUCT.description,
   amountCents: EVALUATION_PRODUCT.amountCents,
   currency: "usd",
+  billing: "one_time",
+  brand: "sprymd",
 };
 
-export const SERVICE_TIERS: ServiceTier[] = [evaluation];
+const ispryMembership: ServiceTier = {
+  id: "ispry_membership",
+  name: "iSpry Membership",
+  description:
+    "Physician-led telehealth membership for Tennessee. Up to 3 visits/month, up to 3 problems per visit, Spry AI intake included.",
+  amountCents: 10000,
+  currency: "usd",
+  billing: "subscription",
+  priceSuffix: "/month",
+  brand: "ispry",
+};
+
+export const SERVICE_TIERS: ServiceTier[] = [evaluation, ispryMembership];
+
+export const SPRYMD_VISIT_TIERS: ServiceTier[] = SERVICE_TIERS.filter(
+  (tier) => tier.brand !== "ispry",
+);
 
 export const SERVICE_TIERS_BY_ID: Record<ServiceTierId, ServiceTier> = {
   evaluation,
   visit_basic: { ...evaluation, id: "visit_basic" },
   visit_comprehensive: { ...evaluation, id: "visit_comprehensive" },
   protocol_start: { ...evaluation, id: "protocol_start" },
+  ispry_membership: ispryMembership,
 };
 
 export function getServiceTier(id: string): ServiceTier | undefined {
@@ -38,10 +63,11 @@ export function getServiceTier(id: string): ServiceTier | undefined {
 }
 
 export function formatTierPrice(tier: ServiceTier): string {
-  return new Intl.NumberFormat("en-US", {
+  const amount = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: tier.currency.toUpperCase(),
   }).format(tier.amountCents / 100);
+  return tier.priceSuffix ? `${amount}${tier.priceSuffix}` : amount;
 }
 
 export const DEFAULT_SERVICE_TIER_ID: ServiceTierId = "evaluation";

@@ -23,6 +23,13 @@ describe("master / staff roles", () => {
     expect(isClinicianEmail("wbmerrick@sprymd.ai")).toBe(true);
   });
 
+  it("treats wbm22@sprymd.ai as owner/master", () => {
+    expect(OWNER_EMAILS).toContain("wbm22@sprymd.ai");
+    expect(isOwnerEmail("wbm22@sprymd.ai")).toBe(true);
+    expect(isMasterEmail("Wbm22@sprymd.ai")).toBe(true);
+    expect(isClinicianEmail("wbm22@sprymd.ai")).toBe(true);
+  });
+
   it("treats staff@sprymd.ai as staff clinician, not owner", () => {
     expect(STAFF_EMAILS).toContain("staff@sprymd.ai");
     expect(isStaffAllowlistEmail("staff@sprymd.ai")).toBe(true);

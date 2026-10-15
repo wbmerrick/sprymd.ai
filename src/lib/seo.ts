@@ -6,7 +6,9 @@
  * tags in sync as the router (or SpryApp's internal views) change.
  */
 
-import { COMPANY, companyTelHref, isConfigured } from "@/config/company";
+// Relative import so vite.config.ts can load SITE_URL / titles at build time
+// (Node does not resolve the `@/` alias when evaluating the Vite config).
+import { COMPANY, companyTelHref, isConfigured } from "../config/company";
 
 export const SITE_URL = "https://www.sprymd.ai";
 export const SITE_NAME = "SpryMD";
