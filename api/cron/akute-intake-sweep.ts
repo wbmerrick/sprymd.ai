@@ -1,7 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { timingSafeEqual } from "node:crypto";
 import { akute, akuteConfigured, idOf, list } from "../_lib/akute/client";
-import { syncPatientIntake, type SyncResult } from "../_lib/akute/intakeSync";
+import { cronAuthorized } from "../_lib/cronAuth";
+import {
+  parseIntakeResponse,
+  syncPatientIntake,
+  type QuestionnaireResponse,
+  type SyncResult,
+} from "../_lib/akute/intakeSync";
 
 /**
  * Backup sweep for intake part 2 (home address + preferred pharmacy → chart).
@@ -12,7 +17,10 @@ import { syncPatientIntake, type SyncResult } from "../_lib/akute/intakeSync";
  *
  * Auth: `Authorization: Bearer <CRON_SECRET>` (Vercel Cron sends this automatically
  * when CRON_SECRET is set) or `x-cron-secret: <CRON_SECRET>` (GitHub Actions).
- * Query: ?patient_id=<akute id> syncs one patient; ?limit=<n> caps patients scanned.
+ * Query: ?patient_id=<akute id> syncs one patient; ?limit=<n> caps patients scanned;
+ * ?patient_id=<id>&debug=1 also returns the shape of that patient's questionnaire
+ * responses (question ids, labels, group paths, answer types, truncated answers)
+ * plus what the parser made of them — for checking a form against the sync.
  */
 
 export const config = { maxDuration: 60 };
@@ -21,20 +29,45 @@ const TIME_BUDGET_MS = 50_000;
 const PAGE = 100;
 const RECENT_DAYS = 30;
 
-function authorized(req: VercelRequest): boolean {
-  const secret = String(process.env.CRON_SECRET || "").trim();
-  if (!secret) return false;
-  const auth = String(req.headers.authorization || "");
-  const bearer = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  const header = String(req.headers["x-cron-secret"] || "").trim();
-  const presented = bearer || header;
-  if (!presented) return false;
-  const a = Buffer.from(presented);
-  const b = Buffer.from(secret);
-  return a.length === b.length && timingSafeEqual(a, b);
+type PatientRow = Record<string, unknown>;
+
+function preview(v: unknown): unknown {
+  if (v == null) return v;
+  if (typeof v === "string") return v.length > 16 ? `${v.slice(0, 16)}…` : v;
+  if (typeof v === "object") return Array.isArray(v) ? `[array ${v.length}]` : `{${Object.keys(v).slice(0, 12).join(",")}}`;
+  return v;
 }
 
-type PatientRow = Record<string, unknown>;
+async function responseShape(patientId: string) {
+  const responses = list(
+    await akute(`/questionnaireresponses?${new URLSearchParams({ patient_id: patientId })}`),
+  ) as QuestionnaireResponse[];
+  return responses.map((r) => {
+    const parsed = parseIntakeResponse(r);
+    return {
+      id: r.id ?? null,
+      questionnaire_id: r.questionnaire_id ?? null,
+      authored_at: r.authored_at ?? null,
+      status: r.status ?? null,
+      parsed: {
+        address: parsed.address
+          ? { line1: preview(parsed.address.line1), city: parsed.address.city, state: parsed.address.state, zipcode: parsed.address.zipcode }
+          : null,
+        pharmacy: parsed.pharmacy
+          ? { ...parsed.pharmacy, name: preview(parsed.pharmacy.name), address: preview(parsed.pharmacy.address) }
+          : null,
+      },
+      entries: (Array.isArray(r.responses) ? r.responses : []).map((a) => ({
+        question_id: a.question_id ?? null,
+        question: a.question ?? null,
+        path: a.path ?? null,
+        answer_type: a.answer_type ?? null,
+        answer_group_index: a.answer_group_index ?? null,
+        answer: preview(a.answer),
+      })),
+    };
+  });
+}
 
 function hasAddress(p: PatientRow): boolean {
   return Boolean(String(p.address_line_1 || "").trim() && String(p.address_zipcode || "").trim());
@@ -77,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(405).json({ error: "method_not_allowed" });
     return;
   }
-  if (!authorized(req)) {
+  if (!cronAuthorized(req)) {
     res.status(401).json({ error: "unauthorized" });
     return;
   }
@@ -88,6 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const started = Date.now();
   const single = String(req.query.patient_id || "").trim();
+  const debug = String(req.query.debug || "") === "1";
   const limit = Math.min(Math.max(Number(req.query.limit) || 500, 1), 2000);
 
   const results: SyncResult[] = [];
@@ -95,12 +129,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let scanned = 0;
   let candidates = 0;
   let truncated = false;
+  let shape: Awaited<ReturnType<typeof responseShape>> | undefined;
 
   if (single) {
     try {
       results.push(await syncPatientIntake(single));
     } catch (e) {
       errors.push({ patientId: single, message: (e as Error).message });
+    }
+    if (debug) {
+      try {
+        shape = await responseShape(single);
+      } catch (e) {
+        errors.push({ patientId: single, message: `debug_shape_failed: ${(e as Error).message}` });
+      }
     }
   } else {
     const patients = shuffle(await listActivePatients(limit));
@@ -138,5 +180,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ms: Date.now() - started,
   };
   console.log(JSON.stringify({ event: "akute_intake_sweep", ...summary }));
-  res.status(200).json({ ...summary, results });
+  res.status(200).json(shape ? { ...summary, results, responseShape: shape } : { ...summary, results });
 }
