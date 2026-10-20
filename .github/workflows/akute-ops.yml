@@ -1,0 +1,77 @@
+name: Akute ops
+
+# Manual operator actions against production, authenticated with the same
+# CRON_SECRET the hourly sweep uses. Run from the Actions tab; the JSON answer
+# is printed in the job log, so only actions whose output carries no answer
+# values are offered here (sweep-one-shape is structure only; the answer-preview
+# mode, debug=1, is deliberately not wired up).
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to run"
+        type: choice
+        required: true
+        default: webhook-log
+        options:
+          - webhook-log
+          - sweep-one
+          - sweep-one-shape
+      patient_id:
+        description: "Akute patient id (sweep-one / sweep-one-shape)"
+        required: false
+        default: ""
+      hours:
+        description: "Look-back window in hours (webhook-log)"
+        required: false
+        default: "24"
+      recipient:
+        description: "Only deliveries whose recipient contains this (webhook-log)"
+        required: false
+        default: ""
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call the endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ACTION: ${{ inputs.action }}
+          PATIENT_ID: ${{ inputs.patient_id }}
+          HOURS: ${{ inputs.hours }}
+          RECIPIENT: ${{ inputs.recipient }}
+        run: |
+          set -euo pipefail
+          # Inputs are validated and URL-encoded so a crafted value cannot smuggle
+          # extra query parameters (e.g. "&debug=1") into the production URL.
+          if [ -n "$PATIENT_ID" ] && ! [[ "$PATIENT_ID" =~ ^[A-Za-z0-9_-]{1,64}$ ]]; then
+            echo "patient_id must be an Akute id (letters, digits, - and _ only)"; exit 1
+          fi
+          if ! [[ "$HOURS" =~ ^[0-9]{1,3}$ ]]; then
+            echo "hours must be a whole number"; exit 1
+          fi
+          recipient_enc=$(jq -rn --arg v "$RECIPIENT" '$v|@uri')
+          case "$ACTION" in
+            webhook-log)
+              url="https://www.sprymd.ai/api/cron/akute-webhook-log?hours=${HOURS}&recipient=${recipient_enc}"
+              ;;
+            sweep-one)
+              [ -n "$PATIENT_ID" ] || { echo "patient_id is required"; exit 1; }
+              url="https://www.sprymd.ai/api/cron/akute-intake-sweep?patient_id=${PATIENT_ID}"
+              ;;
+            sweep-one-shape)
+              [ -n "$PATIENT_ID" ] || { echo "patient_id is required"; exit 1; }
+              url="https://www.sprymd.ai/api/cron/akute-intake-sweep?patient_id=${PATIENT_ID}&debug=shape"
+              ;;
+            *)
+              echo "unknown action: $ACTION"; exit 1
+              ;;
+          esac
+          code=$(curl -sS -o body.json -w '%{http_code}' --max-time 90 \
+            -H "x-cron-secret: ${CRON_SECRET}" "$url")
+          echo "HTTP $code"
+          if command -v jq >/dev/null; then jq . body.json; else cat body.json; fi
+          [ "$code" = "200" ]

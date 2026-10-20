@@ -3,6 +3,14 @@ import type { Readable } from "node:stream";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 import { verifyAkuteWebhookSignature } from "../_lib/akute/verifyWebhook";
 import { patientIdFromWebhook, syncPatientIntake } from "../_lib/akute/intakeSync";
+import {
+  canonicalJson,
+  eventIdOf,
+  eventOf,
+  resourceOf,
+  signatureAgeSec,
+  type AkuteWebhookBody,
+} from "../_lib/akute/webhookPayload";
 
 export const config = {
   api: {
@@ -12,34 +20,15 @@ export const config = {
   maxDuration: 30,
 };
 
+/** Akute may retry a delivery minutes later; event_id idempotency covers replays. */
+const SIGNATURE_TOLERANCE_SEC = 15 * 60;
+
 async function buffer(readable: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];
   for await (const chunk of readable) {
     chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
   }
   return Buffer.concat(chunks);
-}
-
-type AkuteWebhookBody = {
-  event_id?: string;
-  id?: string;
-  resource?: string;
-  event?: string;
-  type?: string;
-  data?: Record<string, unknown>;
-  patient_id?: string;
-  external_patient_id?: string;
-  status?: string;
-  [key: string]: unknown;
-};
-
-function eventIdOf(body: AkuteWebhookBody): string | null {
-  const id = body.event_id || body.id;
-  return id != null ? String(id) : null;
-}
-
-function resourceOf(body: AkuteWebhookBody): string {
-  return String(body.resource || body.type || "unknown").toLowerCase();
 }
 
 /**
@@ -51,6 +40,32 @@ function webhookSecrets(): string[] {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+/** One line per delivery outcome, so a rejected webhook is visible in the logs. */
+function logDelivery(level: "log" | "warn" | "error", fields: Record<string, unknown>) {
+  console[level](JSON.stringify({ event: "akute_webhook", ...fields }));
+}
+
+function verifyAny(rawBody: string, sig: string | undefined): { ok: true } | { ok: false; reason: string } {
+  const secrets = webhookSecrets();
+  if (!secrets.length) return { ok: false, reason: "missing_secret" };
+  const bodies = [rawBody];
+  const canonical = canonicalJson(rawBody);
+  if (canonical) bodies.push(canonical);
+  let last: { ok: true } | { ok: false; reason: string } = { ok: false, reason: "signature_mismatch" };
+  for (const body of bodies) {
+    for (const secret of secrets) {
+      last = verifyAkuteWebhookSignature({
+        rawBody: body,
+        signatureHeader: sig,
+        secret,
+        toleranceSec: SIGNATURE_TOLERANCE_SEC,
+      });
+      if (last.ok) return last;
+    }
+  }
+  return last;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -65,16 +80,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     (req.headers["x-akute-signature"] as string | undefined) ||
     (req.headers["X-Akute-Signature"] as string | undefined);
 
-  const secrets = webhookSecrets();
-  let verified: { ok: true } | { ok: false; reason: string } = {
-    ok: false,
-    reason: "missing_secret",
-  };
-  for (const secret of secrets) {
-    verified = verifyAkuteWebhookSignature({ rawBody, signatureHeader: sig, secret });
-    if (verified.ok) break;
-  }
+  const verified = verifyAny(rawBody, sig);
   if (!verified.ok) {
+    logDelivery("warn", {
+      outcome: "rejected",
+      status: 401,
+      reason: verified.reason,
+      hasSignature: Boolean(sig),
+      signatureAgeSec: signatureAgeSec(sig),
+      bodyBytes: rawBuf.length,
+    });
     res.status(401).json({ error: "invalid_signature", reason: verified.reason });
     return;
   }
@@ -83,12 +98,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     body = JSON.parse(rawBody || "{}") as AkuteWebhookBody;
   } catch {
+    logDelivery("warn", { outcome: "rejected", status: 400, reason: "invalid_json", bodyBytes: rawBuf.length });
     res.status(400).json({ error: "invalid_json" });
     return;
   }
 
+  const resource = resourceOf(body);
+  const eventType = eventOf(body);
   const eventId = eventIdOf(body);
   if (!eventId) {
+    logDelivery("warn", {
+      outcome: "rejected",
+      status: 400,
+      reason: "missing_event_id",
+      resource,
+      eventType,
+      keys: Object.keys(body).slice(0, 30),
+    });
     res.status(400).json({ error: "missing_event_id" });
     return;
   }
@@ -96,8 +122,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const admin = getSupabaseAdmin();
   const { error: insertErr } = await admin.from("akute_webhook_events").insert({
     event_id: eventId,
-    resource: resourceOf(body),
-    event: String(body.event || ""),
+    resource,
+    event: eventType,
     payload: body,
   });
 
@@ -106,18 +132,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       insertErr.code === "23505" ||
       /duplicate|unique/i.test(insertErr.message || "")
     ) {
+      logDelivery("log", { outcome: "duplicate", eventId, resource, eventType });
       res.status(200).json({ ok: true, duplicate: true });
       return;
     }
+    logDelivery("error", {
+      outcome: "rejected",
+      status: 500,
+      reason: "idempotency_failed",
+      eventId,
+      resource,
+      eventType,
+      message: insertErr.message,
+    });
     res.status(500).json({ error: "idempotency_failed", message: insertErr.message });
     return;
   }
 
+  logDelivery("log", { outcome: "accepted", eventId, resource, eventType, resourceId: body.id ?? null });
+
   try {
-    await processEvent(admin, body);
+    await processEvent(admin, body, resource);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(JSON.stringify({ event: "akute_webhook_process_failed", message }));
+    console.error(JSON.stringify({ event: "akute_webhook_process_failed", eventId, resource, message }));
   }
 
   res.status(200).json({ ok: true });
@@ -126,8 +164,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function processEvent(
   admin: ReturnType<typeof getSupabaseAdmin>,
   body: AkuteWebhookBody,
+  resource: string,
 ) {
-  const resource = resourceOf(body);
   const data = (body.data || body) as Record<string, unknown>;
 
   if (resource.includes("medication")) {
@@ -156,18 +194,23 @@ async function processEvent(
     // Fast path for intake part 2: the patient just did something in Akute, so
     // check whether their address / preferred pharmacy answers are on the chart yet.
     const akutePatientId = patientIdFromWebhook(resource, data);
-    if (akutePatientId) {
-      try {
-        const sync = await syncPatientIntake(akutePatientId);
-        console.log(JSON.stringify({ event: "akute_intake_sync", trigger: resource, ...sync }));
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error(
-          JSON.stringify({ event: "akute_intake_sync_failed", trigger: resource, akutePatientId, message }),
-        );
-      }
+    if (!akutePatientId) {
+      console.log(JSON.stringify({ event: "akute_intake_sync_skipped", trigger: resource, reason: "no_patient_id" }));
+      return;
     }
+    try {
+      const sync = await syncPatientIntake(akutePatientId);
+      console.log(JSON.stringify({ event: "akute_intake_sync", trigger: resource, ...sync }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        JSON.stringify({ event: "akute_intake_sync_failed", trigger: resource, akutePatientId, message }),
+      );
+    }
+    return;
   }
+
+  console.log(JSON.stringify({ event: "akute_webhook_unhandled", resource, eventType: eventOf(body) }));
 }
 
 async function upsertMedication(

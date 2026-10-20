@@ -55,7 +55,9 @@ export function verifyAkuteWebhookSignature(opts: {
   const tolerance = opts.toleranceSec ?? 300;
   const ts = Number(parsed.timestamp);
   if (!Number.isFinite(ts)) return { ok: false, reason: "bad_timestamp" };
-  const age = Math.abs(Date.now() / 1000 - ts);
+  // The documented example is unix seconds; be lenient if a sender uses milliseconds.
+  const tsSec = ts > 1e11 ? ts / 1000 : ts;
+  const age = Math.abs(Date.now() / 1000 - tsSec);
   if (age > tolerance) return { ok: false, reason: "timestamp_stale" };
 
   return { ok: true };
