@@ -134,29 +134,76 @@ function answerIds(a: QuestionnaireAnswer): { pharmacyId?: string; ncpdpId?: str
 
 const norm = (s: unknown) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-function groupOf(a: QuestionnaireAnswer): "address" | "pharmacy" | null {
-  const p = norm(a.path);
+/**
+ * What Akute actually sends for the built-in Address and Pharmacy question types
+ * (seen on the live "Home Address & Preferred Pharmacy" form): every sub-field is
+ * its own entry, `path` is the group's opaque id (a UUID, the same for all fields
+ * of one group) and `question_id` is a stable key:
+ *
+ *   Address:  address1, address2, city, state, zipcode
+ *   Pharmacy: pharmacy-name, pharmacy-phone, pharmacy-address, pharmacy-city,
+ *             pharmacy-state, pharmacy-zipcode, pharmacy-id
+ *
+ * The parser therefore decides a group per `path` from its question ids (and
+ * labels, as a fallback for forms that were not built from those types), and only
+ * then reads each field. A bare "City" or "Zip" label is never enough on its own
+ * once it sits inside a group, which is what keeps the pharmacy's city/zip from
+ * overwriting the home address.
+ */
+type Group = "address" | "pharmacy";
+
+function groupHint(a: QuestionnaireAnswer): Group | null {
+  const id = norm(a.question_id);
   const q = norm(a.question);
-  if (/pharmac/.test(p) || /^(pharmacy name|pharmacy|pharmacy search|search)$/.test(q)) return "pharmacy";
-  if (/home address|your address|mailing address/.test(p) || /address/.test(p)) return "address";
-  if (/^(address 1|address line 1|street|street address|address 2|address line 2|zip code|zipcode|zip|city|state)$/.test(q)) {
+  if (/^pharmacy/.test(id) || /pharmac/.test(norm(a.path)) || /^(pharmacy name|pharmacy|pharmacy search|pharmacy id)$/.test(q)) {
+    return "pharmacy";
+  }
+  if (/^(address1|address 1|address line 1|addressline1|street)$/.test(id) || /^(address 1|address line 1|street address)$/.test(q)) {
     return "address";
   }
+  if (/home address|your address|mailing address/.test(norm(a.path))) return "address";
+  return null;
+}
+
+function groupByPath(entries: QuestionnaireAnswer[]): Map<string, Group> {
+  const groups = new Map<string, Group>();
+  for (const a of entries) {
+    const path = String(a.path ?? "");
+    if (!path) continue;
+    const hint = groupHint(a);
+    // A pharmacy hint wins over an address hint for the same path: the pharmacy
+    // group also carries an "Address" field.
+    if (hint === "pharmacy" || (hint === "address" && !groups.has(path))) groups.set(path, hint);
+  }
+  return groups;
+}
+
+function groupOf(a: QuestionnaireAnswer, byPath: Map<string, Group>): Group | null {
+  const path = String(a.path ?? "");
+  if (path && byPath.has(path)) return byPath.get(path)!;
+  if (path) return null; // some other group (medications, allergies, ...)
+  const hint = groupHint(a);
+  if (hint) return hint;
+  // Ungrouped fields on a hand-built form: go by label.
+  const q = norm(a.question);
+  if (/^(address 2|address line 2|zip code|zipcode|zip|city|state)$/.test(q)) return "address";
   return null;
 }
 
 /**
  * Map one questionnaire response (one entry per answer) to address + pharmacy.
- * Matches by group path first, then by question text, so renaming the form's
- * labels within reason does not break the sync.
+ * Matches by group path + question id first, then by question text, so renaming
+ * the form's labels within reason does not break the sync.
  */
 export function parseIntakeResponse(resp: QuestionnaireResponse): ParsedIntake {
   const entries = Array.isArray(resp.responses) ? resp.responses : [];
   const addr: Partial<ParsedAddress> = {};
   const ph: ParsedPharmacy = {};
+  const byPath = groupByPath(entries);
 
   for (const a of entries) {
-    const group = groupOf(a);
+    const group = groupOf(a, byPath);
+    const id = norm(a.question_id);
     const q = norm(a.question);
     const text = answerText(a);
 
@@ -165,12 +212,14 @@ export function parseIntakeResponse(resp: QuestionnaireResponse): ParsedIntake {
       if (ids.pharmacyId) ph.pharmacyId = ids.pharmacyId;
       if (ids.ncpdpId) ph.ncpdpId = ids.ncpdpId;
       if (!text) continue;
-      if (/^(pharmacy name|name|pharmacy)$/.test(q)) ph.name = text;
-      else if (/phone|fax/.test(q)) ph.phone = normalizePhone(text);
-      else if (/^(address|street|address 1|address line 1)$/.test(q)) ph.address = text;
-      else if (/^city$/.test(q)) ph.city = text;
-      else if (/^state$/.test(q)) ph.state = normalizeState(text);
-      else if (/zip/.test(q)) ph.zip = normalizeZip(text);
+      if (id === "pharmacy id" || /^(pharmacy id|pharmacy identifier)$/.test(q)) ph.pharmacyId = text;
+      else if (/ncpdp/.test(id) || /ncpdp/.test(q)) ph.ncpdpId = text;
+      else if (id === "pharmacy name" || /^(pharmacy name|name|pharmacy)$/.test(q)) ph.name = text;
+      else if (/phone|fax/.test(id) || /phone|fax/.test(q)) ph.phone = normalizePhone(text);
+      else if (id === "pharmacy address" || /^(address|street|address 1|address line 1)$/.test(q)) ph.address = text;
+      else if (id === "pharmacy city" || /^city$/.test(q)) ph.city = text;
+      else if (id === "pharmacy state" || /^state$/.test(q)) ph.state = normalizeState(text);
+      else if (/zip/.test(id) || /zip/.test(q)) ph.zip = normalizeZip(text);
       else if (/search/.test(q)) {
         // The built-in Pharmacy "Search" answer is usually the chosen pharmacy's display string.
         if (!ph.name) ph.name = text;
@@ -180,11 +229,11 @@ export function parseIntakeResponse(resp: QuestionnaireResponse): ParsedIntake {
 
     if (group === "address") {
       if (!text) continue;
-      if (/^(address 1|address line 1|street|street address|address)$/.test(q)) addr.line1 = text;
-      else if (/^(address 2|address line 2|apt|unit|suite)$/.test(q)) addr.line2 = text;
-      else if (/^city$/.test(q)) addr.city = text;
-      else if (/^state$/.test(q)) addr.state = normalizeState(text);
-      else if (/zip/.test(q)) addr.zipcode = normalizeZip(text);
+      if (id === "address1" || /^(address 1|address line 1|street|street address|address)$/.test(q)) addr.line1 = text;
+      else if (id === "address2" || /^(address 2|address line 2|apt|unit|suite)$/.test(q)) addr.line2 = text;
+      else if (id === "city" || /^city$/.test(q)) addr.city = text;
+      else if (id === "state" || /^state$/.test(q)) addr.state = normalizeState(text);
+      else if (/zip/.test(id) || /zip/.test(q)) addr.zipcode = normalizeZip(text);
     }
   }
 
@@ -445,8 +494,11 @@ export async function syncPatientIntake(
       return result;
     }
 
-    let pharmacyId: string | null = wanted.pharmacyId || null;
-    if (!pharmacyId && (wanted.name || wanted.phone)) {
+    // The built-in Pharmacy question stores the chosen store's id ("Pharmacy ID"),
+    // which is the exact answer; a name/phone search is the fallback for forms
+    // (or retakes) that only carry the text fields.
+    const searchForId = async (): Promise<string | null> => {
+      if (!wanted.name && !wanted.phone) return null;
       let candidates: PharmacyCandidate[] = [];
       try {
         candidates = await api.searchPharmacies(wanted);
@@ -454,11 +506,14 @@ export async function syncPatientIntake(
         result.notes.push(`pharmacy_search_failed: ${(e as Error).message}`);
       }
       const pick = pickPharmacy(candidates, wanted);
-      if (pick) {
-        pharmacyId = pick.id;
-        result.notes.push(`pharmacy_match_${pick.confidence}`);
-      }
-    }
+      if (!pick) return null;
+      result.notes.push(`pharmacy_match_${pick.confidence}`);
+      return pick.id;
+    };
+
+    let pharmacyId: string | null = wanted.pharmacyId || null;
+    if (pharmacyId) result.notes.push("pharmacy_id_from_form");
+    else pharmacyId = await searchForId();
 
     if (pharmacyId) {
       // Webhooks for one patient often land together; re-read right before writing
@@ -474,26 +529,46 @@ export async function syncPatientIntake(
         result.notes.push(`pharmacy_recheck_failed: ${(e as Error).message}`);
         return result;
       }
+      let failure: string | null = null;
       try {
         await api.addPharmacy(patientId, pharmacyId);
+      } catch (e) {
+        failure = (e as Error).message;
+      }
+      // A form-supplied id Akute does not recognise (404 / "not found") is worth one
+      // retry through search; a chart-side refusal (missing e-prescribing fields) is not.
+      if (failure && wanted.pharmacyId && /not found|404|invalid pharmacy/i.test(failure)) {
+        result.notes.push(`pharmacy_form_id_rejected: ${failure}`);
+        const viaSearch = await searchForId();
+        if (viaSearch && viaSearch !== pharmacyId) {
+          failure = null;
+          try {
+            await api.addPharmacy(patientId, viaSearch);
+          } catch (e) {
+            failure = (e as Error).message;
+          }
+        }
+      }
+      if (!failure) {
         result.pharmacyApplied = true;
         // A task opened by an earlier failed attempt is now moot.
         await closePharmacyTask(api, patientId, result);
         return result;
-      } catch (e) {
-        // Akute refuses the add when the chart is still missing e-prescribing
-        // fields (phone, sex, DOB...). Surface it as a task instead of a silent log line.
-        const message = (e as Error).message;
-        result.notes.push(`pharmacy_add_failed: ${message}`);
-        await ensurePharmacyTask(
-          api,
-          patientId,
-          wanted,
-          `Akute rejected the pharmacy add (${message.slice(0, 200)}). Check the chart's demographics, then add the pharmacy from the form response.`,
-          result,
-        );
-        return result;
       }
+      // Akute refuses the add when the chart is still missing e-prescribing
+      // fields (phone, sex, DOB...). Surface it as a task instead of a silent log line.
+      result.notes.push(`pharmacy_add_failed: ${failure}`);
+      const hint = /credentials|required fields/i.test(failure)
+        ? " Akute's e-prescribing needs a valid primary phone, sex and date of birth on the chart (the chart banner usually says which one)."
+        : "";
+      await ensurePharmacyTask(
+        api,
+        patientId,
+        wanted,
+        `Akute rejected the pharmacy add (${failure.slice(0, 200)}).${hint} Fix the chart's demographics, then add the pharmacy from the form response — the next sync closes this task once a pharmacy is on the chart.`,
+        result,
+      );
+      return result;
     }
 
     await ensurePharmacyTask(

@@ -42,6 +42,81 @@ function intakeResponse(overrides: Partial<QuestionnaireResponse> = {}): Questio
   };
 }
 
+/**
+ * The shape Akute really sends for the built-in Address + Pharmacy question types
+ * (captured from the live "Home Address & Preferred Pharmacy" form): opaque UUID
+ * paths, stable question ids, one entry per sub-field.
+ */
+const ADDR_GROUP = "41afb796-4d4f-4818-9086-814aeb5c7d85";
+const PHARM_GROUP = "d4c9b4e0-58b1-48c1-8906-3b98af1c67ca";
+
+function liveIntakeResponse(overrides: Partial<QuestionnaireResponse> = {}): QuestionnaireResponse {
+  const g = (path: string, question_id: string, question: string, answer: unknown, answer_type = "string") => ({
+    path,
+    question_id,
+    question,
+    answer,
+    answer_type,
+    answer_group_index: 0,
+  });
+  return {
+    id: "qr_live",
+    questionnaire_id: DEFAULT_INTAKE_FORM_ID,
+    patient_id: "pt_1",
+    authored_at: "2026-10-19T23:03:00Z",
+    status: "completed",
+    responses: [
+      g(ADDR_GROUP, "address1", "Address 1", "270 Example Fairway"),
+      g(ADDR_GROUP, "address2", "Address 2", "", "unknown"),
+      g(ADDR_GROUP, "city", "City", "McKenzie"),
+      g(ADDR_GROUP, "state", "State", "Tennessee", "coding"),
+      g(ADDR_GROUP, "zipcode", "Zip Code", "38201-7701"),
+      g(PHARM_GROUP, "pharmacy-name", "Pharmacy Name", "WALGREENS DRUG STORE #17598"),
+      g(PHARM_GROUP, "pharmacy-phone", "Phone", "7313527744"),
+      g(PHARM_GROUP, "pharmacy-address", "Address", "14735 HIGHLAND DR"),
+      g(PHARM_GROUP, "pharmacy-city", "City", "Paris"),
+      g(PHARM_GROUP, "pharmacy-state", "State", "TN", "coding"),
+      g(PHARM_GROUP, "pharmacy-zipcode", "Zipcode", "38242-2649"),
+      g(PHARM_GROUP, "pharmacy-id", "Pharmacy ID", "ph_walgreens_17598"),
+    ],
+    ...overrides,
+  };
+}
+
+describe("parseIntakeResponse (live Akute shape)", () => {
+  it("reads both groups by path + question id and keeps the pharmacy's city/zip out of the home address", () => {
+    const parsed = parseIntakeResponse(liveIntakeResponse());
+    expect(parsed.address).toEqual({
+      line1: "270 Example Fairway",
+      line2: undefined,
+      city: "McKenzie",
+      state: "TN",
+      zipcode: "38201",
+    });
+    expect(parsed.pharmacy).toEqual({
+      name: "WALGREENS DRUG STORE #17598",
+      phone: "7313527744",
+      address: "14735 HIGHLAND DR",
+      city: "Paris",
+      state: "TN",
+      zip: "38242",
+      pharmacyId: "ph_walgreens_17598",
+    });
+  });
+
+  it("ignores other groups (medications, allergies) and ungrouped questions", () => {
+    const r = liveIntakeResponse();
+    r.responses = [
+      ...r.responses!,
+      { path: "f0baead3-798f-4f50-bffa-e100dbba47ed", question_id: "drugName", question: "Drug", answer: "Metformin", answer_type: "coding" },
+      { path: "", question_id: "7c6a5ecc", question: "Height (example: 5 ft 10 in)", answer: "5 ft 10 in", answer_type: "string" },
+    ];
+    const parsed = parseIntakeResponse(r);
+    expect(parsed.address?.city).toBe("McKenzie");
+    expect(parsed.pharmacy?.name).toBe("WALGREENS DRUG STORE #17598");
+  });
+});
+
 describe("normalizers", () => {
   it("maps state names and codes to 2-letter codes", () => {
     expect(normalizeState("Tennessee")).toBe("TN");
@@ -272,6 +347,53 @@ describe("syncPatientIntake", () => {
     const r = await syncPatientIntake("pt_1", api);
     expect(r.skipped).toBe("no_intake_response");
     expect(calls).toEqual([]);
+  });
+
+  it("adds the pharmacy straight from the form's Pharmacy ID, without searching", async () => {
+    const { api, calls } = fakeApi({
+      responses: [liveIntakeResponse()],
+      patient: { id: "pt_1", first_name: "Jane" },
+    });
+    api.searchPharmacies = async () => {
+      throw new Error("search should not run when the form carries the id");
+    };
+    const r = await syncPatientIntake("pt_1", api);
+    expect(r.addressApplied).toBe(true);
+    expect(r.pharmacyApplied).toBe(true);
+    expect(r.notes).toContain("pharmacy_id_from_form");
+    expect(calls).toEqual(["updateAddress:pt_1:38201:Jane", "addPharmacy:pt_1:ph_walgreens_17598"]);
+  });
+
+  it("falls back to a phone search when Akute does not recognise the form's Pharmacy ID", async () => {
+    const { api, calls } = fakeApi({
+      responses: [liveIntakeResponse()],
+      patient: { id: "pt_1", address_line_1: "x", address_zipcode: "38201" },
+      search: [{ id: "ph_real", name: "WALGREENS DRUG STORE #17598", phone: "7313527744", zip: "38242" }],
+    });
+    const original = api.addPharmacy;
+    api.addPharmacy = async (pid, phid) => {
+      if (phid === "ph_walgreens_17598") throw new Error("Akute POST /pharmacy -> 404 Pharmacy not found");
+      await original(pid, phid);
+    };
+    const r = await syncPatientIntake("pt_1", api);
+    expect(r.pharmacyApplied).toBe(true);
+    expect(r.notes).toContain("pharmacy_match_high");
+    expect(calls).toEqual(["addPharmacy:pt_1:ph_real"]);
+  });
+
+  it("does not retry through search when the chart itself is what Akute rejects", async () => {
+    const { api, calls } = fakeApi({
+      responses: [liveIntakeResponse()],
+      patient: { id: "pt_1", address_line_1: "x", address_zipcode: "38201" },
+      search: [{ id: "ph_real", name: "WALGREENS DRUG STORE #17598", phone: "7313527744", zip: "38242" }],
+    });
+    api.addPharmacy = async () => {
+      throw new Error("Akute POST /pharmacy -> 400 Unable to add medication credentials for patient. Patient likely missing required fields.");
+    };
+    const r = await syncPatientIntake("pt_1", api);
+    expect(r.pharmacyApplied).toBe(false);
+    expect(r.taskCreated).toBe(true);
+    expect(calls).toEqual([`createTask:pt_1:${PHARMACY_TASK_TITLE}`]);
   });
 
   it("uses a pharmacy id carried by the answer without searching", async () => {
