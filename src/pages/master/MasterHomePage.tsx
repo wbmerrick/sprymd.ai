@@ -154,10 +154,10 @@ export default function MasterHomePage() {
                   <Users className="h-3.5 w-3.5" /> Member log
                 </Link>
                 <Link
-                  to="/staff"
+                  to="/master/staff"
                   className="inline-flex items-center gap-2 text-xs text-zinc-300 hover:text-emerald-300"
                 >
-                  Jump to clinical staff tools
+                  Open Staff inbox
                 </Link>
               </div>
             </section>

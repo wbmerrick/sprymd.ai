@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Inbox, LogOut, Stethoscope, Users } from "lucide-react";
+import { BookUser, Inbox, LogOut, Stethoscope, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutCustomer } from "@/lib/customerAccounts";
 
 /** Staff nav — patient queues + internal team coordination. */
 const NAV_ITEMS = [
   { to: "/staff", label: "Patient inbox", end: true, icon: Inbox },
+  { to: "/staff/contacts", label: "All contacts", end: false, icon: BookUser },
   { to: "/staff/team", label: "Team chat", end: false, icon: Users },
   { to: "/staff/review", label: "Chart review", end: false, icon: Stethoscope },
 ] as const;

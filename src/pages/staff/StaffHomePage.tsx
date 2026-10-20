@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
+import { Link, useLocation, useOutletContext } from "react-router-dom";
 import { Inbox, Stethoscope, ArrowRight, Users } from "lucide-react";
 import { StaffInboxPanel } from "@/components/dashboard/pro/StaffInboxPanel";
 import { listStaffInbox } from "@/lib/messaging";
@@ -11,6 +11,8 @@ import { listStaffTeamThreads } from "@/lib/staffMessaging";
 
 export default function StaffHomePage() {
   const { email, name } = useOutletContext<{ email: string; name: string }>();
+  const { pathname } = useLocation();
+  const staffBase = pathname.startsWith("/master/staff") ? "/master/staff" : "/staff";
   const [inboxCount, setInboxCount] = useState(0);
   const [urgentCount, setUrgentCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -27,17 +29,25 @@ export default function StaffHomePage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [threads, team] = await Promise.all([
-        listStaffInbox(),
-        listStaffTeamThreads(email),
-        hydrateClinicalReviewQueue(),
-      ]);
-      if (cancelled) return;
-      setInboxCount(threads.length);
-      setUrgentCount(threads.filter((t) => t.urgency === "urgent").length);
-      setUnreadCount(threads.filter((t) => t.staffUnread).length);
-      setTeamCount(team.length);
-      setChartTick((t) => t + 1);
+      try {
+        const [threads, team] = await Promise.all([
+          listStaffInbox(),
+          listStaffTeamThreads(email),
+          hydrateClinicalReviewQueue(),
+        ]);
+        if (cancelled) return;
+        setInboxCount(threads.length);
+        setUrgentCount(threads.filter((t) => t.urgency === "urgent").length);
+        setUnreadCount(threads.filter((t) => t.staffUnread).length);
+        setTeamCount(team.length);
+        setChartTick((t) => t + 1);
+      } catch {
+        if (!cancelled) {
+          setInboxCount(0);
+          setUrgentCount(0);
+          setUnreadCount(0);
+        }
+      }
     })();
     return () => {
       cancelled = true;
@@ -83,7 +93,7 @@ export default function StaffHomePage() {
           <p className="text-[10px] uppercase tracking-[0.16em] text-sky-300/80">Team chat</p>
           <p className="mt-1 text-2xl font-semibold text-white">{teamCount}</p>
           <Link
-            to="/staff/team"
+            to={`${staffBase}/team`}
             className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 hover:underline"
           >
             <Users className="h-3.5 w-3.5" />
@@ -95,7 +105,7 @@ export default function StaffHomePage() {
           <p className="text-[10px] uppercase tracking-[0.16em] text-[#C89E67]">Chart review</p>
           <p className="mt-1 text-2xl font-semibold text-white">{pendingCharts}</p>
           <Link
-            to="/staff/review"
+            to={`${staffBase}/review`}
             className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#C89E67] hover:underline"
           >
             <Stethoscope className="h-3.5 w-3.5" />
