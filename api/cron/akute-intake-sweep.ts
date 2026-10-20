@@ -48,6 +48,16 @@ function createdRecently(p: PatientRow, days: number): boolean {
   return Date.now() - t < days * 86_400_000;
 }
 
+/** Visit patients in a fresh random order each run, so a time-budget cutoff never starves the same tail. */
+function shuffle<T>(items: T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 async function listActivePatients(max: number): Promise<PatientRow[]> {
   const out: PatientRow[] = [];
   for (let offset = 0; out.length < max; offset += PAGE) {
@@ -93,7 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       errors.push({ patientId: single, message: (e as Error).message });
     }
   } else {
-    const patients = await listActivePatients(limit);
+    const patients = shuffle(await listActivePatients(limit));
     scanned = patients.length;
     for (const p of patients) {
       if (Date.now() - started > TIME_BUDGET_MS) {
