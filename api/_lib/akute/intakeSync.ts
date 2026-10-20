@@ -311,6 +311,7 @@ export type AkuteApi = {
   updateAddress: (patientId: string, a: ParsedAddress, patient: Record<string, unknown>) => Promise<void>;
   listOpenTasks: (patientId: string) => Promise<Array<Record<string, unknown>>>;
   createTask: (patientId: string, title: string, description: string) => Promise<void>;
+  completeTask: (taskId: string) => Promise<void>;
 };
 
 export function realAkuteApi(): AkuteApi {
@@ -363,6 +364,12 @@ export function realAkuteApi(): AkuteApi {
       ) as Array<Record<string, unknown>>,
     createTask: async (patientId, title, description) => {
       await createTask({ title, description, patientId, ownerId: process.env.AKUTE_PROVIDER_ID, priority: "p2" });
+    },
+    completeTask: async (taskId) => {
+      await akute(`/tasks/${encodeURIComponent(taskId)}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "completed" }),
+      });
     },
   };
 }
@@ -460,6 +467,7 @@ export async function syncPatientIntake(
         const again = await api.listPatientPharmacies(patientId);
         if (again.length > 0) {
           result.notes.push("pharmacy_added_concurrently");
+          await closePharmacyTask(api, patientId, result);
           return result;
         }
       } catch (e) {
@@ -469,6 +477,8 @@ export async function syncPatientIntake(
       try {
         await api.addPharmacy(patientId, pharmacyId);
         result.pharmacyApplied = true;
+        // A task opened by an earlier failed attempt is now moot.
+        await closePharmacyTask(api, patientId, result);
         return result;
       } catch (e) {
         // Akute refuses the add when the chart is still missing e-prescribing
@@ -520,6 +530,23 @@ async function ensurePharmacyTask(
   ];
   await api.createTask(patientId, PHARMACY_TASK_TITLE, lines.join("\n"));
   result.taskCreated = true;
+}
+
+/** Complete any open pick task once the chart has its pharmacy; never fatal. */
+async function closePharmacyTask(api: AkuteApi, patientId: string, result: SyncResult): Promise<void> {
+  try {
+    const open = await api.listOpenTasks(patientId);
+    for (const t of open) {
+      const title = String(t.task || t.title || "");
+      const id = t.id != null ? String(t.id) : "";
+      if (id && title.startsWith(PHARMACY_TASK_TITLE)) {
+        await api.completeTask(id);
+        result.notes.push("pharmacy_task_closed");
+      }
+    }
+  } catch (e) {
+    result.notes.push(`pharmacy_task_close_failed: ${(e as Error).message}`);
+  }
 }
 
 /** Patient id carried by a webhook payload, if any. */
