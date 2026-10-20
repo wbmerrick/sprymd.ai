@@ -466,29 +466,60 @@ export async function syncPatientIntake(
         result.notes.push(`pharmacy_recheck_failed: ${(e as Error).message}`);
         return result;
       }
-      await api.addPharmacy(patientId, pharmacyId);
-      result.pharmacyApplied = true;
-      return result;
+      try {
+        await api.addPharmacy(patientId, pharmacyId);
+        result.pharmacyApplied = true;
+        return result;
+      } catch (e) {
+        // Akute refuses the add when the chart is still missing e-prescribing
+        // fields (phone, sex, DOB...). Surface it as a task instead of a silent log line.
+        const message = (e as Error).message;
+        result.notes.push(`pharmacy_add_failed: ${message}`);
+        await ensurePharmacyTask(
+          api,
+          patientId,
+          wanted,
+          `Akute rejected the pharmacy add (${message.slice(0, 200)}). Check the chart's demographics, then add the pharmacy from the form response.`,
+          result,
+        );
+        return result;
+      }
     }
 
-    // No confident match → one open task for the physician, never more.
-    const open = await api.listOpenTasks(patientId);
-    const already = open.some((t) => String(t.task || t.title || "").startsWith(PHARMACY_TASK_TITLE));
-    if (!already) {
-      const lines = [
-        "The patient's intake pharmacy could not be matched automatically. Add it from the form response in the chart.",
-        `Name: ${wanted.name || "-"}`,
-        `Phone: ${wanted.phone || "-"}`,
-        `Address: ${[wanted.address, wanted.city, wanted.state, wanted.zip].filter(Boolean).join(", ") || "-"}`,
-      ];
-      await api.createTask(patientId, PHARMACY_TASK_TITLE, lines.join("\n"));
-      result.taskCreated = true;
-    } else {
-      result.notes.push("pharmacy_task_exists");
-    }
+    await ensurePharmacyTask(
+      api,
+      patientId,
+      wanted,
+      "The patient's intake pharmacy could not be matched automatically. Add it from the form response in the chart.",
+      result,
+    );
   }
 
   return result;
+}
+
+/** One open physician task per patient, never more. */
+async function ensurePharmacyTask(
+  api: AkuteApi,
+  patientId: string,
+  wanted: ParsedPharmacy,
+  reason: string,
+  result: SyncResult,
+): Promise<void> {
+  const open = await api.listOpenTasks(patientId);
+  const already = open.some((t) => String(t.task || t.title || "").startsWith(PHARMACY_TASK_TITLE));
+  if (already) {
+    result.notes.push("pharmacy_task_exists");
+    return;
+  }
+  const lines = [
+    reason,
+    `Name: ${wanted.name || "-"}`,
+    `Phone: ${wanted.phone || "-"}`,
+    `Address: ${[wanted.address, wanted.city, wanted.state, wanted.zip].filter(Boolean).join(", ") || "-"}`,
+  ];
+  await api.createTask(patientId, PHARMACY_TASK_TITLE, lines.join("\n"));
+  result.taskCreated = true;
 }
 
 /** Patient id carried by a webhook payload, if any. */
