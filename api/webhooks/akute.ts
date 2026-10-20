@@ -2,11 +2,14 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { Readable } from "node:stream";
 import { getSupabaseAdmin } from "../_lib/supabaseAdmin";
 import { verifyAkuteWebhookSignature } from "../_lib/akute/verifyWebhook";
+import { patientIdFromWebhook, syncPatientIntake } from "../_lib/akute/intakeSync";
 
 export const config = {
   api: {
     bodyParser: false,
   },
+  // Intake sync adds a few Akute round-trips on top of event storage.
+  maxDuration: 30,
 };
 
 async function buffer(readable: Readable): Promise<Buffer> {
@@ -39,24 +42,38 @@ function resourceOf(body: AkuteWebhookBody): string {
   return String(body.resource || body.type || "unknown").toLowerCase();
 }
 
+/**
+ * Akute issues one secret per notification. AKUTE_WEBHOOK_SECRET may therefore
+ * hold several, comma-separated; a delivery is accepted if any of them signs it.
+ */
+function webhookSecrets(): string[] {
+  return String(process.env.AKUTE_WEBHOOK_SECRET || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "method_not_allowed" });
     return;
   }
 
-  const secret = process.env.AKUTE_WEBHOOK_SECRET || "";
   const rawBuf = await buffer(req);
   const rawBody = rawBuf.toString("utf8");
   const sig =
     (req.headers["x-akute-signature"] as string | undefined) ||
     (req.headers["X-Akute-Signature"] as string | undefined);
 
-  const verified = verifyAkuteWebhookSignature({
-    rawBody,
-    signatureHeader: sig,
-    secret,
-  });
+  const secrets = webhookSecrets();
+  let verified: { ok: true } | { ok: false; reason: string } = {
+    ok: false,
+    reason: "missing_secret",
+  };
+  for (const secret of secrets) {
+    verified = verifyAkuteWebhookSignature({ rawBody, signatureHeader: sig, secret });
+    if (verified.ok) break;
+  }
   if (!verified.ok) {
     res.status(401).json({ error: "invalid_signature", reason: verified.reason });
     return;
@@ -121,7 +138,8 @@ async function processEvent(
   if (
     resource.includes("patient") ||
     resource.includes("task") ||
-    resource.includes("note")
+    resource.includes("note") ||
+    resource.includes("appointment")
   ) {
     // Soft sync: store last-known resource snapshot on patient when external_id known
     const externalId =
@@ -133,6 +151,21 @@ async function processEvent(
         .from("patients")
         .update({ updated_at: new Date().toISOString() })
         .eq("id", String(externalId));
+    }
+
+    // Fast path for intake part 2: the patient just did something in Akute, so
+    // check whether their address / preferred pharmacy answers are on the chart yet.
+    const akutePatientId = patientIdFromWebhook(resource, data);
+    if (akutePatientId) {
+      try {
+        const sync = await syncPatientIntake(akutePatientId);
+        console.log(JSON.stringify({ event: "akute_intake_sync", trigger: resource, ...sync }));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(
+          JSON.stringify({ event: "akute_intake_sync_failed", trigger: resource, akutePatientId, message }),
+        );
+      }
     }
   }
 }
