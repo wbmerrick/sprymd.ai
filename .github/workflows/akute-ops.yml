@@ -2,7 +2,9 @@ name: Akute ops
 
 # Manual operator actions against production, authenticated with the same
 # CRON_SECRET the hourly sweep uses. Run from the Actions tab; the JSON answer
-# is printed in the job log.
+# is printed in the job log, so only actions whose output carries no answer
+# values are offered here (sweep-one-shape is structure only; the answer-preview
+# mode, debug=1, is deliberately not wired up).
 
 on:
   workflow_dispatch:
@@ -15,9 +17,9 @@ on:
         options:
           - webhook-log
           - sweep-one
-          - sweep-one-debug
+          - sweep-one-shape
       patient_id:
-        description: "Akute patient id (sweep-one / sweep-one-debug)"
+        description: "Akute patient id (sweep-one / sweep-one-shape)"
         required: false
         default: ""
       hours:
@@ -51,9 +53,9 @@ jobs:
               [ -n "$PATIENT_ID" ] || { echo "patient_id is required"; exit 1; }
               url="https://www.sprymd.ai/api/cron/akute-intake-sweep?patient_id=${PATIENT_ID}"
               ;;
-            sweep-one-debug)
+            sweep-one-shape)
               [ -n "$PATIENT_ID" ] || { echo "patient_id is required"; exit 1; }
-              url="https://www.sprymd.ai/api/cron/akute-intake-sweep?patient_id=${PATIENT_ID}&debug=1"
+              url="https://www.sprymd.ai/api/cron/akute-intake-sweep?patient_id=${PATIENT_ID}&debug=shape"
               ;;
             *)
               echo "unknown action: $ACTION"; exit 1
