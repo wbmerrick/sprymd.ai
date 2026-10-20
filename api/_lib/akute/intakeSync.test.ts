@@ -237,6 +237,21 @@ describe("syncPatientIntake", () => {
     expect(r2.notes).toContain("pharmacy_task_exists");
   });
 
+  it("raises the physician task when Akute rejects the pharmacy add", async () => {
+    const { api, calls } = fakeApi({
+      patient: { id: "pt_1", address_line_1: "x", address_zipcode: "38201" },
+      search: [{ id: "ph_a", name: "Walgreens #100", phone: "7315550101", zip: "38201" }],
+    });
+    api.addPharmacy = async () => {
+      throw new Error("Akute POST /pharmacy -> 400 Patient likely missing required fields.");
+    };
+    const r = await syncPatientIntake("pt_1", api);
+    expect(r.pharmacyApplied).toBe(false);
+    expect(r.taskCreated).toBe(true);
+    expect(r.notes.join(" ")).toContain("pharmacy_add_failed");
+    expect(calls).toEqual([`createTask:pt_1:${PHARMACY_TASK_TITLE}`]);
+  });
+
   it("skips when the patient has no intake response yet", async () => {
     const { api, calls } = fakeApi({ responses: [] });
     const r = await syncPatientIntake("pt_1", api);
