@@ -118,6 +118,11 @@ describe("pickIntakeResponse", () => {
     expect(pickIntakeResponse([other])?.id).toBe("other");
     expect(pickIntakeResponse([{ id: "empty", questionnaire_id: "x", responses: [] }])).toBeNull();
   });
+  it("does not let an empty newer retake shadow a completed submission", () => {
+    const completed = intakeResponse({ id: "done", authored_at: "2026-10-19T00:00:00Z" });
+    const emptyRetake = intakeResponse({ id: "blank", authored_at: "2026-10-20T00:00:00Z", responses: [] });
+    expect(pickIntakeResponse([emptyRetake, completed])?.id).toBe("done");
+  });
 });
 
 describe("pickPharmacy", () => {
@@ -141,21 +146,30 @@ describe("pickPharmacy", () => {
 function fakeApi(opts: {
   patient?: Record<string, unknown>;
   pharmacies?: PharmacyCandidate[];
+  /** Returned by the second (pre-write) pharmacy list call; defaults to `pharmacies`. */
+  pharmaciesOnRecheck?: PharmacyCandidate[];
+  pharmacyListThrows?: boolean;
   responses?: QuestionnaireResponse[];
   search?: PharmacyCandidate[];
   openTasks?: Array<Record<string, unknown>>;
 }) {
   const calls: string[] = [];
+  let pharmacyListCalls = 0;
   const api: AkuteApi = {
     getPatient: async () => opts.patient || { id: "pt_1" },
     listResponses: async () => opts.responses || [intakeResponse()],
-    listPatientPharmacies: async () => opts.pharmacies || [],
+    listPatientPharmacies: async () => {
+      pharmacyListCalls += 1;
+      if (opts.pharmacyListThrows) throw new Error("boom");
+      if (pharmacyListCalls > 1 && opts.pharmaciesOnRecheck) return opts.pharmaciesOnRecheck;
+      return opts.pharmacies || [];
+    },
     searchPharmacies: async () => opts.search || [],
     addPharmacy: async (pid, phid) => {
       calls.push(`addPharmacy:${pid}:${phid}`);
     },
-    updateAddress: async (pid, a) => {
-      calls.push(`updateAddress:${pid}:${a.zipcode}`);
+    updateAddress: async (pid, a, patient) => {
+      calls.push(`updateAddress:${pid}:${a.zipcode}:${String(patient.first_name || "")}`);
     },
     listOpenTasks: async () => opts.openTasks || [],
     createTask: async (pid, title) => {
@@ -176,14 +190,39 @@ describe("syncPatientIntake", () => {
     expect(calls).toEqual([]);
   });
 
-  it("writes the address and adds the matched pharmacy", async () => {
+  it("writes the address (carrying identity fields) and adds the matched pharmacy", async () => {
     const { api, calls } = fakeApi({
+      patient: { id: "pt_1", first_name: "Jane" },
       search: [{ id: "ph_a", name: "Walgreens #100", phone: "7315550101", zip: "38201" }],
     });
     const r = await syncPatientIntake("pt_1", api);
     expect(r.addressApplied).toBe(true);
     expect(r.pharmacyApplied).toBe(true);
-    expect(calls).toEqual(["updateAddress:pt_1:38201", "addPharmacy:pt_1:ph_a"]);
+    expect(calls).toEqual(["updateAddress:pt_1:38201:Jane", "addPharmacy:pt_1:ph_a"]);
+  });
+
+  it("leaves pharmacies alone when the pharmacy list cannot be read", async () => {
+    const { api, calls } = fakeApi({
+      pharmacyListThrows: true,
+      search: [{ id: "ph_a", name: "Walgreens #100", phone: "7315550101", zip: "38201" }],
+    });
+    const r = await syncPatientIntake("pt_1", api);
+    expect(r.addressApplied).toBe(true);
+    expect(r.pharmacyApplied).toBe(false);
+    expect(calls.some((c) => c.startsWith("addPharmacy"))).toBe(false);
+    expect(r.notes.join(" ")).toContain("pharmacy_list_failed");
+  });
+
+  it("skips the pharmacy write when a parallel run attached one first", async () => {
+    const { api, calls } = fakeApi({
+      patient: { id: "pt_1", address_line_1: "x", address_zipcode: "38201" },
+      pharmaciesOnRecheck: [{ id: "ph_other", name: "CVS" }],
+      search: [{ id: "ph_a", name: "Walgreens #100", phone: "7315550101", zip: "38201" }],
+    });
+    const r = await syncPatientIntake("pt_1", api);
+    expect(r.pharmacyApplied).toBe(false);
+    expect(r.notes).toContain("pharmacy_added_concurrently");
+    expect(calls).toEqual([]);
   });
 
   it("creates exactly one physician task when the pharmacy cannot be matched", async () => {
