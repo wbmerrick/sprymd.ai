@@ -45,6 +45,22 @@ describe("Akute webhook signature", () => {
     expect(r).toEqual({ ok: true });
   });
 
+  it("accepts a millisecond timestamp when judging staleness", () => {
+    const body = '{"event_id":"evt_2"}';
+    const { header } = sign(body, String(Date.now()));
+    expect(verifyAkuteWebhookSignature({ rawBody: body, signatureHeader: header, secret: SECRET })).toEqual({
+      ok: true,
+    });
+  });
+
+  it("rejects a stale timestamp", () => {
+    const body = '{"event_id":"evt_3"}';
+    const { header } = sign(body, String(Math.floor(Date.now() / 1000) - 3600));
+    const r = verifyAkuteWebhookSignature({ rawBody: body, signatureHeader: header, secret: SECRET });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("timestamp_stale");
+  });
+
   it("parses t= and v1=", () => {
     const p = parseAkuteSignatureHeader("t=1492774577,v1=abc");
     expect(p).toEqual({ timestamp: "1492774577", signature: "abc" });
