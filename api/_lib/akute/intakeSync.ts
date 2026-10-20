@@ -209,19 +209,24 @@ export function parseIntakeResponse(resp: QuestionnaireResponse): ParsedIntake {
   };
 }
 
-/** Prefer the intake form by id; fall back to the newest response that carries an address or pharmacy. */
+/**
+ * Prefer the newest intake-form response that actually carries an address or
+ * pharmacy (an empty or in-progress retake must not shadow a completed one);
+ * fall back to the newest response of any form that does.
+ */
 export function pickIntakeResponse(responses: QuestionnaireResponse[]): QuestionnaireResponse | null {
   const formId = intakeFormId();
   const byTime = [...responses].sort((a, b) =>
     String(b.authored_at || "").localeCompare(String(a.authored_at || "")),
   );
-  const exact = byTime.find((r) => String(r.questionnaire_id || "") === formId);
-  if (exact) return exact;
+  const answered = (r: QuestionnaireResponse) => {
+    const p = parseIntakeResponse(r);
+    return Boolean(p.address || p.pharmacy);
+  };
   return (
-    byTime.find((r) => {
-      const p = parseIntakeResponse(r);
-      return Boolean(p.address || p.pharmacy);
-    }) || null
+    byTime.find((r) => String(r.questionnaire_id || "") === formId && answered(r)) ||
+    byTime.find(answered) ||
+    null
   );
 }
 
@@ -282,13 +287,28 @@ export function pickPharmacy(
 
 /* ---------------- Akute API calls (thin, swappable for tests) ---------------- */
 
+/** Fields Akute expects on a patient PUT besides what is being changed. */
+export const IDENTITY_FIELDS = [
+  "first_name",
+  "middle_name",
+  "last_name",
+  "date_of_birth",
+  "sex",
+  "status",
+  "email",
+  "primary_phone_number",
+  "primary_phone_type",
+  "external_id",
+] as const;
+
 export type AkuteApi = {
   getPatient: (patientId: string) => Promise<Record<string, unknown>>;
   listResponses: (patientId: string) => Promise<QuestionnaireResponse[]>;
   listPatientPharmacies: (patientId: string) => Promise<PharmacyCandidate[]>;
   searchPharmacies: (q: ParsedPharmacy) => Promise<PharmacyCandidate[]>;
   addPharmacy: (patientId: string, pharmacyId: string) => Promise<void>;
-  updateAddress: (patientId: string, a: ParsedAddress) => Promise<void>;
+  /** `patient` is the record from getPatient; identity fields are merged into the PUT. */
+  updateAddress: (patientId: string, a: ParsedAddress, patient: Record<string, unknown>) => Promise<void>;
   listOpenTasks: (patientId: string) => Promise<Array<Record<string, unknown>>>;
   createTask: (patientId: string, title: string, description: string) => Promise<void>;
 };
@@ -319,14 +339,19 @@ export function realAkuteApi(): AkuteApi {
         body: JSON.stringify({ patient_id: patientId, pharmacy_id: pharmacyId, set_as_primary: true }),
       });
     },
-    updateAddress: async (patientId, a) => {
-      const body: Record<string, unknown> = {
-        address_line_1: a.line1,
-        address_city: a.city,
-        address_state: a.state,
-        address_zipcode: a.zipcode,
-      };
-      if (a.line2) body.address_line_2 = a.line2;
+    updateAddress: async (patientId, a, patient) => {
+      // Akute's patient PUT is validated as a whole record, so carry the identity
+      // fields across rather than sending address fields alone.
+      const body: Record<string, unknown> = {};
+      for (const key of IDENTITY_FIELDS) {
+        const v = patient?.[key];
+        if (v != null && String(v).trim() !== "") body[key] = v;
+      }
+      body.address_line_1 = a.line1;
+      body.address_line_2 = a.line2 || "";
+      body.address_city = a.city;
+      body.address_state = a.state;
+      body.address_zipcode = a.zipcode;
       await akute(`/patients/${encodeURIComponent(patientId)}`, {
         method: "PUT",
         body: JSON.stringify(body),
@@ -374,7 +399,9 @@ export async function syncPatientIntake(
   const patient = await api.getPatient(patientId);
   const needAddress = !patientHasAddress(patient);
 
-  let needPharmacy = true;
+  // If the pharmacy list cannot be read, leave pharmacies alone this round: a
+  // transient error must never turn into a second pharmacy on the chart.
+  let needPharmacy = false;
   try {
     const existing = await api.listPatientPharmacies(patientId);
     needPharmacy = existing.length === 0;
@@ -397,7 +424,7 @@ export async function syncPatientIntake(
 
   if (needAddress) {
     if (parsed.address) {
-      await api.updateAddress(patientId, parsed.address);
+      await api.updateAddress(patientId, parsed.address, patient);
       result.addressApplied = true;
     } else {
       result.notes.push("address_incomplete_in_response");
@@ -427,6 +454,18 @@ export async function syncPatientIntake(
     }
 
     if (pharmacyId) {
+      // Webhooks for one patient often land together; re-read right before writing
+      // so a parallel invocation that already attached a pharmacy is not doubled.
+      try {
+        const again = await api.listPatientPharmacies(patientId);
+        if (again.length > 0) {
+          result.notes.push("pharmacy_added_concurrently");
+          return result;
+        }
+      } catch (e) {
+        result.notes.push(`pharmacy_recheck_failed: ${(e as Error).message}`);
+        return result;
+      }
       await api.addPharmacy(patientId, pharmacyId);
       result.pharmacyApplied = true;
       return result;
