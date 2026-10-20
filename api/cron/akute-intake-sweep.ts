@@ -18,9 +18,11 @@ import {
  * Auth: `Authorization: Bearer <CRON_SECRET>` (Vercel Cron sends this automatically
  * when CRON_SECRET is set) or `x-cron-secret: <CRON_SECRET>` (GitHub Actions).
  * Query: ?patient_id=<akute id> syncs one patient; ?limit=<n> caps patients scanned;
- * ?patient_id=<id>&debug=1 also returns the shape of that patient's questionnaire
- * responses (question ids, labels, group paths, answer types, truncated answers)
- * plus what the parser made of them — for checking a form against the sync.
+ * ?patient_id=<id>&debug=shape also returns the structure of that patient's
+ * questionnaire responses (question ids, labels, group paths, answer types) and
+ * which address / pharmacy fields the parser extracted — no answer values, so the
+ * output can go into a CI log. ?debug=1 adds truncated answer previews; keep that
+ * one to a terminal.
  */
 
 export const config = { maxDuration: 60 };
@@ -38,7 +40,14 @@ function preview(v: unknown): unknown {
   return v;
 }
 
-async function responseShape(patientId: string) {
+const presentKeys = (o: Record<string, unknown> | null) =>
+  o ? Object.entries(o).filter(([, v]) => v != null && v !== "").map(([k]) => k) : [];
+
+/**
+ * `withAnswers=false` is structure only (safe for a CI log); `true` adds
+ * 16-character answer previews for a terminal session.
+ */
+async function responseShape(patientId: string, withAnswers: boolean) {
   const responses = list(
     await akute(`/questionnaireresponses?${new URLSearchParams({ patient_id: patientId })}`),
   ) as QuestionnaireResponse[];
@@ -49,21 +58,26 @@ async function responseShape(patientId: string) {
       questionnaire_id: r.questionnaire_id ?? null,
       authored_at: r.authored_at ?? null,
       status: r.status ?? null,
-      parsed: {
-        address: parsed.address
-          ? { line1: preview(parsed.address.line1), city: parsed.address.city, state: parsed.address.state, zipcode: parsed.address.zipcode }
-          : null,
-        pharmacy: parsed.pharmacy
-          ? { ...parsed.pharmacy, name: preview(parsed.pharmacy.name), address: preview(parsed.pharmacy.address) }
-          : null,
-      },
+      parsed: withAnswers
+        ? {
+            address: parsed.address
+              ? { line1: preview(parsed.address.line1), city: parsed.address.city, state: parsed.address.state, zipcode: parsed.address.zipcode }
+              : null,
+            pharmacy: parsed.pharmacy
+              ? { ...parsed.pharmacy, name: preview(parsed.pharmacy.name), address: preview(parsed.pharmacy.address) }
+              : null,
+          }
+        : {
+            addressFields: presentKeys(parsed.address as Record<string, unknown> | null),
+            pharmacyFields: presentKeys(parsed.pharmacy as Record<string, unknown> | null),
+          },
       entries: (Array.isArray(r.responses) ? r.responses : []).map((a) => ({
         question_id: a.question_id ?? null,
         question: a.question ?? null,
         path: a.path ?? null,
         answer_type: a.answer_type ?? null,
         answer_group_index: a.answer_group_index ?? null,
-        answer: preview(a.answer),
+        ...(withAnswers ? { answer: preview(a.answer) } : { answered: a.answer != null && a.answer !== "" }),
       })),
     };
   });
@@ -121,7 +135,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const started = Date.now();
   const single = String(req.query.patient_id || "").trim();
-  const debug = String(req.query.debug || "") === "1";
+  const debugMode = String(req.query.debug || "");
+  const debug = debugMode === "1" || debugMode === "shape";
   const limit = Math.min(Math.max(Number(req.query.limit) || 500, 1), 2000);
 
   const results: SyncResult[] = [];
@@ -139,7 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     if (debug) {
       try {
-        shape = await responseShape(single);
+        shape = await responseShape(single, debugMode === "1");
       } catch (e) {
         errors.push({ patientId: single, message: `debug_shape_failed: ${(e as Error).message}` });
       }
