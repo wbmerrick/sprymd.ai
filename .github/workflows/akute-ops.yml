@@ -1,0 +1,66 @@
+name: Akute ops
+
+# Manual operator actions against production, authenticated with the same
+# CRON_SECRET the hourly sweep uses. Run from the Actions tab; the JSON answer
+# is printed in the job log.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to run"
+        type: choice
+        required: true
+        default: webhook-log
+        options:
+          - webhook-log
+          - sweep-one
+          - sweep-one-debug
+      patient_id:
+        description: "Akute patient id (sweep-one / sweep-one-debug)"
+        required: false
+        default: ""
+      hours:
+        description: "Look-back window in hours (webhook-log)"
+        required: false
+        default: "24"
+      recipient:
+        description: "Only deliveries whose recipient contains this (webhook-log)"
+        required: false
+        default: ""
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call the endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ACTION: ${{ inputs.action }}
+          PATIENT_ID: ${{ inputs.patient_id }}
+          HOURS: ${{ inputs.hours }}
+          RECIPIENT: ${{ inputs.recipient }}
+        run: |
+          set -euo pipefail
+          case "$ACTION" in
+            webhook-log)
+              url="https://www.sprymd.ai/api/cron/akute-webhook-log?hours=${HOURS}&recipient=${RECIPIENT}"
+              ;;
+            sweep-one)
+              [ -n "$PATIENT_ID" ] || { echo "patient_id is required"; exit 1; }
+              url="https://www.sprymd.ai/api/cron/akute-intake-sweep?patient_id=${PATIENT_ID}"
+              ;;
+            sweep-one-debug)
+              [ -n "$PATIENT_ID" ] || { echo "patient_id is required"; exit 1; }
+              url="https://www.sprymd.ai/api/cron/akute-intake-sweep?patient_id=${PATIENT_ID}&debug=1"
+              ;;
+            *)
+              echo "unknown action: $ACTION"; exit 1
+              ;;
+          esac
+          code=$(curl -sS -o body.json -w '%{http_code}' --max-time 90 \
+            -H "x-cron-secret: ${CRON_SECRET}" "$url")
+          echo "HTTP $code"
+          if command -v jq >/dev/null; then jq . body.json; else cat body.json; fi
+          [ "$code" = "200" ]
