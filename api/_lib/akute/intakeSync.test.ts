@@ -175,6 +175,9 @@ function fakeApi(opts: {
     createTask: async (pid, title) => {
       calls.push(`createTask:${pid}:${title}`);
     },
+    completeTask: async (taskId) => {
+      calls.push(`completeTask:${taskId}`);
+    },
   };
   return { api, calls };
 }
@@ -250,6 +253,18 @@ describe("syncPatientIntake", () => {
     expect(r.taskCreated).toBe(true);
     expect(r.notes.join(" ")).toContain("pharmacy_add_failed");
     expect(calls).toEqual([`createTask:pt_1:${PHARMACY_TASK_TITLE}`]);
+  });
+
+  it("closes a stale pick task once the pharmacy add succeeds", async () => {
+    const { api, calls } = fakeApi({
+      patient: { id: "pt_1", address_line_1: "x", address_zipcode: "38201" },
+      search: [{ id: "ph_a", name: "Walgreens #100", phone: "7315550101", zip: "38201" }],
+      openTasks: [{ id: "t_1", task: PHARMACY_TASK_TITLE }],
+    });
+    const r = await syncPatientIntake("pt_1", api);
+    expect(r.pharmacyApplied).toBe(true);
+    expect(r.notes).toContain("pharmacy_task_closed");
+    expect(calls).toEqual(["addPharmacy:pt_1:ph_a", "completeTask:t_1"]);
   });
 
   it("skips when the patient has no intake response yet", async () => {
