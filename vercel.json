@@ -31,5 +31,8 @@
       ]
     }
   ],
+  "crons": [
+    { "path": "/api/cron/akute-intake-sweep", "schedule": "0 11 * * *" }
+  ],
   "installCommand": "bun install"
 }
