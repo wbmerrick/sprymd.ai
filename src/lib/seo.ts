@@ -9,14 +9,14 @@
 // Relative import so vite.config.ts can load SITE_URL / titles at build time
 // (Node does not resolve the `@/` alias when evaluating the Vite config).
 import { COMPANY, companyTelHref, isConfigured } from "../config/company";
+import { SITE_BRAND } from "../config/brand";
 
-export const SITE_URL = "https://www.sprymd.ai";
-export const SITE_NAME = "SpryMD";
-export const DEFAULT_TITLE = "SpryMD — Telehealth for Tennessee. Feel better. Stay strong.";
-export const DEFAULT_DESCRIPTION =
-  "Licensed Tennessee doctors online for weight loss, ED, low T, sleep, mood, and primary care. Private visits, clear plans, medicine shipped to your door.";
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/brand/sprymd-og-share.jpg`;
-export const DEFAULT_OG_IMAGE_ALT = "SpryMD — sunlit alpine peaks reflected in a dark teal lake";
+export const SITE_URL = SITE_BRAND.siteUrl;
+export const SITE_NAME = SITE_BRAND.name;
+export const DEFAULT_TITLE = SITE_BRAND.defaultTitle;
+export const DEFAULT_DESCRIPTION = SITE_BRAND.defaultDescription;
+export const DEFAULT_OG_IMAGE = `${SITE_URL}${SITE_BRAND.ogImagePath}`;
+export const DEFAULT_OG_IMAGE_ALT = SITE_BRAND.ogImageAlt;
 
 export type JsonLd = Record<string, unknown>;
 

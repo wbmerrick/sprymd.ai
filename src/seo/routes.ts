@@ -1,5 +1,9 @@
 // Relative import (not "@/") so vite.config.ts can load this table for sitemap generation.
+import { SITE_BRAND } from "../config/brand";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE } from "../lib/seo";
+
+const WL_ONLY = SITE_BRAND.id === "glptn";
+const brandName = SITE_BRAND.name;
 
 export interface RouteMeta {
   /** Exact path, or a prefix when `prefix` is true (e.g. "/dashboard"). */
@@ -30,9 +34,10 @@ export const ROUTE_META: RouteMeta[] = [
   },
   {
     path: "/about",
-    pageTitle: "About SpryMD — Physician-founded telehealth in Tennessee",
-    description:
-      "SpryMD is a telehealth practice founded by a Tennessee hospitalist. A licensed clinician reviews every case; treatment ships only when clinically appropriate.",
+    pageTitle: `About ${brandName} — Physician-founded telehealth in Tennessee`,
+    description: WL_ONLY
+      ? `${brandName} is a Tennessee weight-loss telehealth practice. A licensed clinician reviews every case; prescriptions only when clinically appropriate.`
+      : `${brandName} is a telehealth practice founded by a Tennessee hospitalist. A licensed clinician reviews every case; treatment ships only when clinically appropriate.`,
     indexable: true,
     changefreq: "monthly",
     priority: 0.8,
@@ -40,16 +45,17 @@ export const ROUTE_META: RouteMeta[] = [
   {
     path: "/faq",
     pageTitle: "Frequently Asked Questions",
-    description:
-      "How SpryMD telehealth works: physician review, prescriptions, pricing, privacy, shipping, and what to expect after your visit.",
+    description: WL_ONLY
+      ? `How ${brandName} weight-loss care works: $100 physician evaluation, prescriptions, pharmacy payment, privacy, and what to expect after your visit.`
+      : `How ${brandName} telehealth works: physician review, prescriptions, pricing, privacy, shipping, and what to expect after your visit.`,
     indexable: true,
     changefreq: "monthly",
     priority: 0.8,
   },
   {
     path: "/contact",
-    pageTitle: "Contact SpryMD",
-    description: "Questions about a visit, shipping, or your account? Contact the SpryMD care team. We respond within one business day.",
+    pageTitle: `Contact ${brandName}`,
+    description: `Questions about a visit or your account? Contact the ${brandName} care team. We respond within one business day.`,
     indexable: true,
     changefreq: "yearly",
     priority: 0.6,
@@ -57,7 +63,7 @@ export const ROUTE_META: RouteMeta[] = [
   {
     path: "/terms",
     pageTitle: "Terms and Conditions",
-    description: "The terms and conditions that govern use of SpryMD telehealth services.",
+    description: `The terms and conditions that govern use of ${brandName} telehealth services.`,
     indexable: true,
     changefreq: "yearly",
     priority: 0.3,
@@ -65,7 +71,7 @@ export const ROUTE_META: RouteMeta[] = [
   {
     path: "/privacy",
     pageTitle: "Privacy Policy",
-    description: "How SpryMD collects, uses, and protects your personal and health information.",
+    description: `How ${brandName} collects, uses, and protects your personal and health information.`,
     indexable: true,
     changefreq: "yearly",
     priority: 0.3,
@@ -73,7 +79,7 @@ export const ROUTE_META: RouteMeta[] = [
   {
     path: "/npp",
     pageTitle: "Notice of Privacy Practices",
-    description: "SpryMD's HIPAA Notice of Privacy Practices: how protected health information may be used and disclosed, and your rights.",
+    description: `${brandName}'s HIPAA Notice of Privacy Practices: how protected health information may be used and disclosed, and your rights.`,
     indexable: true,
     changefreq: "yearly",
     priority: 0.3,
@@ -83,15 +89,16 @@ export const ROUTE_META: RouteMeta[] = [
     pageTitle: "Wingman — On-Demand ED Treatment",
     description:
       "Wingman by spryMD.ai: 80 mg sildenafil + 20 mg tadalafil. Online clinician review, discreet shipping in Tennessee.",
-    indexable: true,
+    indexable: !WL_ONLY,
     changefreq: "weekly",
     priority: 0.9,
   },
   {
     path: "/care/weight-loss",
     pageTitle: "Doctor-Guided Weight Loss",
-    description:
-      "Clinician-titrated GLP-1 and dual-agonist therapy from SpryMD. Tennessee telehealth with discreet shipping.",
+    description: WL_ONLY
+      ? `Clinician-guided GLP-1 weight-loss evaluation from ${brandName}. $100 physician review; you pay your pharmacy directly for medication.`
+      : `Clinician-titrated GLP-1 and dual-agonist therapy from ${brandName}. Tennessee telehealth with discreet shipping.`,
     indexable: true,
     changefreq: "weekly",
     priority: 0.9,
@@ -101,7 +108,7 @@ export const ROUTE_META: RouteMeta[] = [
     pageTitle: "Hair Loss Treatment",
     description:
       "Clinician-guided oral and topical hair restore protocols. Finasteride, minoxidil, and compounded options.",
-    indexable: true,
+    indexable: !WL_ONLY,
     changefreq: "monthly",
     priority: 0.85,
   },
@@ -110,7 +117,7 @@ export const ROUTE_META: RouteMeta[] = [
     pageTitle: "Prescription Skin Care",
     description:
       "Therapeutic tretinoin complexes and acne gels — clinician-guided and compounded for tolerability.",
-    indexable: true,
+    indexable: !WL_ONLY,
     changefreq: "monthly",
     priority: 0.85,
   },
@@ -119,7 +126,7 @@ export const ROUTE_META: RouteMeta[] = [
     pageTitle: "Sermorelin Peptide Therapy",
     description:
       "Clinician-supervised sermorelin for recovery, sleep, and lean muscle — compounded and cold-shipped.",
-    indexable: true,
+    indexable: !WL_ONLY,
     changefreq: "monthly",
     priority: 0.85,
   },
@@ -128,7 +135,7 @@ export const ROUTE_META: RouteMeta[] = [
     pageTitle: "NAD+ Therapy",
     description:
       "Clinic-grade NAD+ by injection or nasal spray. Fight fatigue and brain fog with clinician oversight.",
-    indexable: true,
+    indexable: !WL_ONLY,
     changefreq: "monthly",
     priority: 0.85,
   },

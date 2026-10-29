@@ -3,8 +3,11 @@ import type { OutputBundle, OutputChunk } from "rollup";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { getSiteBrand, resolveSiteBrandId } from "./shared/siteBrand";
 import { SITE_URL } from "./src/lib/seo";
 import { SITEMAP_ROUTES } from "./src/seo/routes";
+
+const BUILD_BRAND = getSiteBrand(resolveSiteBrandId(process.env.VITE_SITE_BRAND));
 
 /**
  * Route prefix → lazily loaded page module (see React.lazy calls in src/App.tsx).
@@ -91,6 +94,33 @@ function sitemapPlugin(): Plugin {
   };
 }
 
+/** Rewrites static index.html meta for GLPTN (and future) brand builds. */
+function brandHtmlPlugin(): Plugin {
+  return {
+    name: "site-brand-html",
+    transformIndexHtml(html) {
+      if (BUILD_BRAND.id === "sprymd") return html;
+      const og = `${BUILD_BRAND.siteUrl}${BUILD_BRAND.ogImagePath}`;
+      return html
+        .replaceAll("https://www.sprymd.ai", BUILD_BRAND.siteUrl)
+        .replaceAll("SpryMD — Telehealth for Tennessee. Feel better. Stay strong.", BUILD_BRAND.defaultTitle)
+        .replaceAll(
+          "Licensed Tennessee doctors online for weight loss, ED, low T, sleep, mood, and primary care. Private visits, clear plans, medicine shipped to your door.",
+          BUILD_BRAND.defaultDescription,
+        )
+        .replaceAll('content="SpryMD"', `content="${BUILD_BRAND.name}"`)
+        .replaceAll('"name": "SpryMD"', `"name": "${BUILD_BRAND.name}"`)
+        .replaceAll('"alternateName": "SpryMD.ai"', `"alternateName": "${BUILD_BRAND.name}"`)
+        .replaceAll("support@sprymd.ai", BUILD_BRAND.supportEmail)
+        .replaceAll("https://www.sprymd.ai/brand/sprymd-og-share.jpg", og)
+        .replaceAll(
+          "SpryMD — sunlit alpine peaks reflected in a dark teal lake",
+          BUILD_BRAND.ogImageAlt,
+        );
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -101,7 +131,13 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react(), mode === "development" && componentTagger(), sitemapPlugin(), routePreloadPlugin()].filter(Boolean),
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    brandHtmlPlugin(),
+    sitemapPlugin(),
+    routePreloadPlugin(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

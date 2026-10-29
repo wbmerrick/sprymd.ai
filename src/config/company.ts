@@ -1,13 +1,16 @@
 ﻿/**
  * Public company contact details for footer, Contact page, and Organization JSON-LD.
+ * Brand-specific name / email come from `SITE_BRAND` (`VITE_SITE_BRAND`).
  * Replace bracketed placeholders before hard open. Leave a field as a `[PLACEHOLDER]`
  * (or empty) to omit it from structured data while still showing the Contact block.
  */
 
+import { SITE_BRAND } from "./brand";
+
 export const COMPANY = {
-  NAME: "SpryMD",
-  LEGAL_NAME: "SpryMD Inc.",
-  SUPPORT_EMAIL: "support@sprymd.ai",
+  NAME: SITE_BRAND.name,
+  LEGAL_NAME: SITE_BRAND.legalName,
+  SUPPORT_EMAIL: SITE_BRAND.supportEmail,
   /** Street address line — e.g. "123 Main St, Suite 100" */
   ADDRESS: "[STREET], [CITY], [STATE] [ZIP]",
   /** Clickable customer-service number — e.g. "(615) 555-0100" */
