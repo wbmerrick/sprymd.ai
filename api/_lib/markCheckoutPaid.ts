@@ -113,6 +113,12 @@ export async function markAppointmentPaidFromSession(input: {
         currency: tier.currency,
         physicalState: session.metadata?.physical_state,
         stripeCheckoutSessionId: session.id,
+        // Additive: prefer Stripe metadata when chart was provisioned without these.
+        conditionId: session.metadata?.condition_id || undefined,
+        treatmentId:
+          session.metadata?.treatment_id ||
+          session.metadata?.plan_id ||
+          undefined,
       });
       appointmentId = ensured.appointmentId;
       patientId = ensured.patientId;
