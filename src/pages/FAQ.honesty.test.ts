@@ -17,4 +17,14 @@ describe("FAQ evaluation-fee honesty", () => {
     expect(src).toMatch(/Primary-care \(PCP\) visits may include a live video/i);
     expect(src).not.toMatch(/Live video can be added later when clinically useful/i);
   });
+
+  it("privacy section avoids HIPAA-certification marketing claims", () => {
+    expect(src).toMatch(/Privacy & Security/);
+    expect(src).toMatch(/secure connection/i);
+    expect(src).toMatch(/Notice of Privacy Practices/);
+    expect(src).not.toMatch(/HIPAA-compliant servers/i);
+    expect(src).not.toMatch(/HIPAA-protected/i);
+  });
 });
+
+

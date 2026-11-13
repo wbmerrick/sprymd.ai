@@ -1,5 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isMasterEmail } from "@/lib/masterAccount";
+import {
+  isLocalAccountFallbackEnabled,
+  localAuthDisabledError,
+} from "@/lib/localAccountGate";
 
 const ACCOUNTS_KEY = "sprymd_accounts_v1";
 const SESSION_KEY = "sprymd_session_email_v1";
@@ -96,14 +100,19 @@ export function buildCustomerProfile(email, overrides = {}) {
 
   upsertStoredAccount({
     ...profile,
-    // never persist password hash via this path unless provided
-    passwordHash: stored.passwordHash,
+    // Password verifiers only when local fallback is allowed (dev / ?demo=1).
+    passwordHash: isLocalAccountFallbackEnabled()
+      ? stored.passwordHash
+      : undefined,
   });
 
   return profile;
 }
 
 export async function registerLocalAccount({ email, password, name, dob }) {
+  if (!isLocalAccountFallbackEnabled()) {
+    throw localAuthDisabledError("Local account registration");
+  }
   const key = emailKey(email);
   const existing = getStoredAccount(key);
   if (existing?.passwordHash && !isMasterEmail(key)) {
@@ -126,6 +135,9 @@ export async function registerLocalAccount({ email, password, name, dob }) {
 }
 
 export async function signInLocalAccount({ email, password }) {
+  if (!isLocalAccountFallbackEnabled()) {
+    throw localAuthDisabledError("Local account sign-in");
+  }
   const key = emailKey(email);
   const existing = getStoredAccount(key);
   if (!existing) {
@@ -150,16 +162,14 @@ export async function signInLocalAccount({ email, password }) {
 }
 
 /**
- * Prefer Supabase Auth; fall back to local per-email accounts so every
- * customer still gets an isolated account if Auth is unavailable.
- * Always store a local password hash so customers can re-enter their
- * account even when Supabase email confirmation blocks password login.
+ * Prefer Supabase Auth. Device-local password/profile fallback is limited to
+ * non-production builds and `?demo=1` (see localAccountGate).
  */
 export async function signUpCustomer({ email, password, name, dob }) {
   const key = emailKey(email);
-  const passwordHash = await hashPassword(password, key);
+  const allowLocal = isLocalAccountFallbackEnabled();
   const existing = getStoredAccount(key);
-  if (existing?.passwordHash && !isMasterEmail(key)) {
+  if (allowLocal && existing?.passwordHash && !isMasterEmail(key)) {
     const err = new Error("An account already exists for this email. Sign in instead.");
     err.code = "exists";
     throw err;
@@ -180,10 +190,12 @@ export async function signUpCustomer({ email, password, name, dob }) {
   } catch (e) {
     supabaseError = e;
     const msg = String(e?.message || "").toLowerCase();
-    // Hard-fail only on clear password policy rejections; otherwise local account still works.
+    // Always hard-fail weak passwords.
     if (msg.includes("password") && (msg.includes("weak") || msg.includes("least") || msg.includes("characters"))) {
       throw e;
     }
+    // Production: do not silently create a browser-local account.
+    if (!allowLocal) throw e;
   }
 
   const profile = buildCustomerProfile(key, {
@@ -196,7 +208,14 @@ export async function signUpCustomer({ email, password, name, dob }) {
     protocols: existing?.protocols || [],
     orders: existing?.orders || [],
   });
-  upsertStoredAccount({ ...profile, passwordHash });
+  if (allowLocal) {
+    const passwordHash = await hashPassword(password, key);
+    upsertStoredAccount({ ...profile, passwordHash });
+  } else {
+    // Production: cache non-secret profile shell only — never a password verifier.
+    const { passwordHash: _drop, ...safe } = profile;
+    upsertStoredAccount(safe);
+  }
   setSessionEmail(key);
 
   try {
@@ -228,21 +247,18 @@ export async function signUpCustomer({ email, password, name, dob }) {
     };
   }
 
-  // If Supabase rejected because the email is already registered, keep local
-  // account so this browser can still open a private customer hub.
-  if (supabaseError) {
-    const msg = String(supabaseError.message || "").toLowerCase();
-    if (msg.includes("already") || msg.includes("registered")) {
-      // local account created above — treat as success for this device
-    }
+  if (!allowLocal) {
+    throw supabaseError || localAuthDisabledError("Account creation");
   }
 
+  // Dev/demo: if Supabase rejected (e.g. already registered), keep a local
+  // account so this browser can still open a private customer hub.
   return { profile, provider: "local", needsEmailConfirm: false };
 }
 
 export async function signInCustomer({ email, password }) {
   const key = emailKey(email);
-  const passwordHash = await hashPassword(password, key);
+  const allowLocal = isLocalAccountFallbackEnabled();
   const { isClinicianEmail } = await import("@/lib/masterAccount");
   const clinician = isClinicianEmail(key);
 
@@ -259,8 +275,17 @@ export async function signInCustomer({ email, password }) {
         authProvider: "supabase",
         user_metadata: data.user.user_metadata,
       });
-      // Keep / refresh local verifier so future sessions work offline of Auth.
-      upsertStoredAccount({ ...profile, passwordHash: stored.passwordHash || passwordHash });
+      if (allowLocal) {
+        // Dev/demo only: keep a local verifier for offline-of-Auth re-entry.
+        const passwordHash = await hashPassword(password, key);
+        upsertStoredAccount({
+          ...profile,
+          passwordHash: stored.passwordHash || passwordHash,
+        });
+      } else {
+        const { passwordHash: _drop, ...safe } = profile;
+        upsertStoredAccount(safe);
+      }
       try {
         const { bootstrapClinicalPatient } = await import("@/lib/bootstrapClinicalPatient");
         await bootstrapClinicalPatient({
@@ -304,7 +329,9 @@ export async function signInCustomer({ email, password }) {
       err.cause = authErr;
       throw err;
     }
-    // Fall through to local per-email account for patients only
+    // Production patients: no device-local password fallback.
+    if (!allowLocal) throw authErr;
+    // Dev/demo: fall through to local per-email account for patients only
   }
 
   const profile = await signInLocalAccount({ email: key, password });
@@ -342,6 +369,8 @@ export async function restoreCustomerSession() {
   } catch {
     /* ignore */
   }
+  // Production: do not restore a local-only session as authenticated.
+  if (!isLocalAccountFallbackEnabled()) return null;
   const email = getSessionEmail();
   if (email && getStoredAccount(email)) {
     return buildCustomerProfile(email);

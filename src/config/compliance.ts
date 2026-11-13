@@ -1,17 +1,26 @@
 ﻿/**
  * Compliance / trust-badge flags. A badge renders ONLY when its flag is true.
  * Default every unverified claim to `false` — flip after legal/ops confirmation.
+ *
+ * Do not enable HIPAA_COMPLIANT until counsel confirms BAA posture and marketing
+ * wording. Prefer secure-transport / clinician-review language instead.
  */
 
 export const COMPLIANCE = {
-  /** Show "HIPAA-Compliant Platform" badge. */
-  HIPAA_COMPLIANT: true,
-  /** Show "Secure, Encrypted Checkout" badge. */
+  /**
+   * Show a "HIPAA-Compliant Platform" badge.
+   * Keep false — we do not claim HIPAA certification or platform-wide HIPAA
+   * compliance in marketing until counsel clears it.
+   */
+  HIPAA_COMPLIANT: false,
+  /** Show secure Stripe checkout badge (TLS to Stripe-hosted checkout). */
   SECURE_CHECKOUT: true,
-  /** Show "100% Confidential" badge. */
+  /** Show discreet / private-care badge (not a confidentiality guarantee). */
   CONFIDENTIAL: true,
-  /** Show "Licensed U.S. Providers" badge. */
+  /** Show licensed clinician review badge. */
   LICENSED_PROVIDERS: true,
+  /** Show clinician chart-review badge. */
+  CLINICIAN_REVIEW: true,
   /**
    * LegitScript certification. Keep false until the official seal is issued.
    * When true, TrustBadges renders the official embed slot (never a homemade image).

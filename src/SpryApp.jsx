@@ -2104,7 +2104,7 @@ const SignIn = ({ go, returnTo, onAuthSuccess }) => {
 
             <div className="flex items-center gap-2 justify-center pt-1">
               <Lock size={11} color={T.muted} />
-              <span className="mono" style={{ fontSize: 10, color: T.muted, letterSpacing: "0.1em" }}>HIPAA-COMPLIANT · ENCRYPTED · PER-CUSTOMER</span>
+              <span className="mono" style={{ fontSize: 10, color: T.muted, letterSpacing: "0.1em" }}>SECURE CONNECTION · CLINICIAN REVIEW · PRIVATE ACCOUNT</span>
             </div>
           </form>
 
