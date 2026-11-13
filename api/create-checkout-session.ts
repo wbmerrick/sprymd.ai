@@ -18,6 +18,7 @@ import {
 import { handlePreflight } from "./_lib/cors";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 import { ensureCheckoutAppointment } from "./_lib/ensureCheckoutAppointment";
+import { buildCheckoutSessionMetadata } from "./_lib/checkoutSessionMetadata";
 import { STATEMENT_DESCRIPTOR } from "./_lib/statementDescriptor";
 
 type CheckoutBody = {
@@ -207,12 +208,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const stripe = new Stripe(stripeKey);
     const isSubscription = tier.billing === "subscription";
     // No PHI in Stripe metadata — ids and product flags only.
-    const metadata = {
-      appointment_id: appointmentId || "",
-      patient_id: patientId || "",
-      service_tier_id: tier.id,
+    // See buildCheckoutSessionMetadata for the stable key set (includes
+    // condition_id / plan_id / treatment_id when the client sends them).
+    const metadata = buildCheckoutSessionMetadata({
+      appointmentId,
+      patientId,
+      serviceTierId: tier.id,
       source: source || tier.brand || "sprymd",
-    };
+      conditionId,
+      planId: treatmentId,
+      treatmentId,
+    });
 
     const session = await stripe.checkout.sessions.create({
       mode: isSubscription ? "subscription" : "payment",
@@ -244,6 +250,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             payment_intent_data: {
               // Card charges require suffix (account prefix + this). Keep discreet.
               statement_descriptor_suffix: STATEMENT_DESCRIPTOR,
+              // Mirror session metadata so charge/PI webhooks can resolve plan/condition.
+              metadata,
             },
           }),
       metadata,
