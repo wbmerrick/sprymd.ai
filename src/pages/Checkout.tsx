@@ -161,8 +161,8 @@ const Checkout = () => {
               </ul>
 
               <div className="flex items-center gap-4 text-xs font-body text-muted-foreground border-t border-gray-light pt-4">
-                <div className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> HIPAA Secure</div>
-                <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> SSL Encrypted</div>
+                <div className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> Secure connection</div>
+                <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> Stripe checkout</div>
                 <span>Licensed Physician</span>
               </div>
             </div>
@@ -185,7 +185,7 @@ const Checkout = () => {
                     Use the live cash-pay checkout for Stripe payments.
                   </p>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Right Col: Stripe Direct Payment Form */}
@@ -195,7 +195,7 @@ const Checkout = () => {
                   Direct Cash-Pay Billing
                 </h2>
                 <p className="font-body text-xs text-muted-foreground mb-6">
-                  Powered by Stripe. 256-bit HIPAA-compliant encryption. Card authorization is held until clinician authorizes your treatment.
+                  Powered by Stripe. Card details are entered on Stripe's secure checkout. Card authorization is held until clinician authorizes your treatment.
                 </p>
 
                 <form onSubmit={handleCheckoutSubmit} className="space-y-4">
@@ -299,7 +299,7 @@ const Checkout = () => {
 
                   <div className="flex items-center justify-center gap-4 text-xs font-body text-muted-foreground pt-4 border-t border-gray-light">
                     <div className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> 256-Bit SSL</div>
-                    <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> HIPAA Encrypted</div>
+                    <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> Clinician review</div>
                     <div className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /> Empower Pharmacy Dispensed</div>
                   </div>
                 </form>
