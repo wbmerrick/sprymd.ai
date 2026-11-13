@@ -41,6 +41,7 @@ describe("ConsultationRoom", () => {
     );
 
     expect(screen.getByTestId("session-timer")).toHaveTextContent("00:00");
+    expect(screen.queryByRole("link", { name: /soap note/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId("join-visit"));
     fireEvent.click(screen.getByTestId("leave-visit"));
     expect(onLogDuration).not.toHaveBeenCalled();
@@ -81,6 +82,10 @@ describe("ConsultationRoom", () => {
       </MemoryRouter>,
     );
 
+    expect(screen.getByRole("link", { name: /soap note/i })).toHaveAttribute(
+      "href",
+      "/provider/notes?appointmentId=appt-2",
+    );
     fireEvent.click(screen.getByTestId("join-visit"));
     await vi.advanceTimersByTimeAsync(0);
     vi.setSystemTime(new Date("2026-09-21T12:00:05.000Z"));
