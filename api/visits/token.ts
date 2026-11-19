@@ -7,7 +7,7 @@ import {
   isAppointmentId,
   selectLiveVendor,
   visitRoomName,
-} from "../../shared/videoRoom";
+} from "../_lib/videoRoom";
 
 type TokenBody = {
   appointmentId?: string;
