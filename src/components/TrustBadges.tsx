@@ -11,10 +11,11 @@ type Badge = {
 };
 
 const BADGES: Badge[] = [
-  { flag: COMPLIANCE.HIPAA_COMPLIANT, label: "HIPAA-Compliant Platform", icon: ShieldCheck },
-  { flag: COMPLIANCE.SECURE_CHECKOUT, label: "Secure, Encrypted Checkout", icon: Lock },
-  { flag: COMPLIANCE.CONFIDENTIAL, label: "100% Confidential", icon: EyeOff },
-  { flag: COMPLIANCE.LICENSED_PROVIDERS, label: "Licensed U.S. Providers", icon: UserCheck },
+  // COMPLIANCE.HIPAA_COMPLIANT stays false — do not add a HIPAA badge until counsel clears wording.
+  { flag: COMPLIANCE.SECURE_CHECKOUT, label: "Secure Stripe checkout", icon: Lock },
+  { flag: COMPLIANCE.CLINICIAN_REVIEW, label: "Licensed clinician review", icon: ShieldCheck },
+  { flag: COMPLIANCE.CONFIDENTIAL, label: "Discreet by design", icon: EyeOff },
+  { flag: COMPLIANCE.LICENSED_PROVIDERS, label: "Licensed U.S. clinicians", icon: UserCheck },
   {
     flag: COMPLIANCE.LEGITSCRIPT_CERTIFIED,
     label: "LegitScript Certified",

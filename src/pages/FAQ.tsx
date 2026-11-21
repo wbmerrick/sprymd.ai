@@ -47,9 +47,9 @@ const faqGroups: FAQGroup[] = [
     ],
   },
   {
-    label: "Privacy, HIPAA & Security",
+    label: "Privacy & Security",
     items: [
-      { q: "Is my information private?", a: "Your health information is treated as protected health information under applicable law and stored with industry-standard security. We will never sell your health information." },
+      { q: "Is my information private?", a: "Your health information is treated as protected under applicable law, transmitted over a secure connection, and reviewed by a licensed clinician. We will never sell your health information. See our Notice of Privacy Practices for how information may be used and disclosed." },
       { q: "How does billing appear on my statement?", a: `Your charge appears discreetly as ${STATEMENT_DESCRIPTOR_DISPLAY} (some banks add a short merchant prefix). No mention of ED, men's health, or medications.` },
       { q: "How is my medication packaged?", a: "Plain, unmarked packaging with no indication of contents on the outside." },
       { q: "Do you share my information with my insurance?", a: "No. This is cash-pay only. We do not bill insurance and do not share information with insurers for claims." },

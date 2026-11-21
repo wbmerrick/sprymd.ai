@@ -62,7 +62,7 @@ const Confirmed = () => (
         <div className="mt-6 pt-4 border-t border-gray-light text-[11px] text-muted-foreground space-y-1">
           <p className="flex items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            HIPAA-compliant encrypted record · Full refund if clinically contraindicated
+            Secure connection · clinician review · Full refund if clinically contraindicated
           </p>
           <p>
             Tennessee Medical Practice: SpryMD Telehealth Tennessee P.C. · Nashville, TN

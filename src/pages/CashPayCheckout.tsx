@@ -116,7 +116,7 @@ const CashPayCheckout = () => {
       {isIspry ? (
         <footer className="border-t border-gray-light py-8 text-center">
           <p className="font-body text-xs text-muted-foreground">
-            iSpry membership checkout · HIPAA-oriented practice ops · Tennessee
+            iSpry membership checkout · clinician review · Tennessee
           </p>
         </footer>
       ) : (

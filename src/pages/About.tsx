@@ -69,7 +69,7 @@ const CredentialsGrid = () => {
     { icon: Stethoscope, text: "Licensed clinician review on every case" },
     { icon: ClipboardCheck, text: "Treatment only when clinically appropriate" },
     { icon: Building, text: "Tennessee service area" },
-    { icon: Lock, text: "HIPAA-compliant practice" },
+    { icon: Lock, text: "Secure connection · clinician review" },
     { icon: Pill, text: "Pharmacy fulfillment after approval" },
     { icon: GraduationCap, text: "Private telehealth — no waiting rooms" },
   ];

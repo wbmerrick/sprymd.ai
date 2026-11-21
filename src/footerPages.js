@@ -1333,7 +1333,7 @@ export const footerPages = {
           },
           {
             "type": "p",
-            "text": "Our clinical team holds board certification, active state licensure, and years of experience across hospital, outpatient, and telehealth settings. Care is delivered under HIPAA-compliant infrastructure with the same standards you'd expect in a traditional practice — adapted for how men actually live."
+            "text": "Our clinical team holds board certification, active state licensure, and years of experience across hospital, outpatient, and telehealth settings. Care is delivered over a secure connection with licensed clinician review — the same medical judgment standards you'd expect in a traditional practice, adapted for how men actually live."
           },
           {
             "type": "p",
@@ -1368,7 +1368,7 @@ export const footerPages = {
               "**State licensure** — Licensed in the state where care is delivered",
               "**Independent medical judgment** — No protocol is authorized without physician review",
               "**Evidence-based protocols** — Recommendations grounded in clinical guidelines and individual patient data",
-              "**HIPAA compliance** — Protected health information handled under federal privacy and security requirements",
+              "**Privacy practices** — Health information handled under applicable privacy law; see our Notice of Privacy Practices",
               "**Decline when inappropriate** — Cases outside telehealth scope, contraindicated therapies, or emergency presentations are not accepted"
             ]
           }

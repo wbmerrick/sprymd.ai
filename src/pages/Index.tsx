@@ -30,7 +30,7 @@ const HeroSection = () =>
           Start My Free Consultation →
         </Link>
         <p className="font-body text-sm mt-6 text-white">
-          🔒 HIPAA-Secure  ·  Licensed Physician  ·  Discreet Shipping  ·  Cancel Anytime
+          Secure connection  ·  Licensed Physician  ·  Discreet Shipping  ·  Cancel Anytime
         </p>
       </AnimatedSection>
     </div>
@@ -208,7 +208,7 @@ const FAQTeaser = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const faqs = [
   { q: "Is this real medical care?", a: "Yes. Every consultation is reviewed by a licensed, board-certified physician — not a chatbot or algorithm. You receive a real prescription from a real doctor who is professionally and legally accountable for your care." },
-  { q: "Is it completely private?", a: "Completely. Your information is HIPAA-protected, stored on encrypted servers, billed discreetly, and shipped in unmarked packaging. We will never share your health information." },
+  { q: "Is it completely private?", a: "Your health information is treated as protected under applicable law, sent over a secure connection, billed discreetly, and shipped in unmarked packaging. We will never sell your health information. See our Notice of Privacy Practices for details." },
   { q: "What if I'm not a good candidate?", a: "If our physician determines that ED medication isn't clinically appropriate based on your health history, we'll explain why and issue a full refund. Your safety matters more than a transaction." }];
 
 
