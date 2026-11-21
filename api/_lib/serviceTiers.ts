@@ -1,5 +1,18 @@
-/** Mirrored from /shared for Vercel API bundling — keep in sync with shared/. */
-import { EVALUATION_PRODUCT } from "../../shared/program";
+/**
+ * Mirrored from /shared for Vercel API bundling — keep in sync with shared/.
+ *
+ * Do NOT import from ../../shared here. /api builds as CommonJS (api/package.json)
+ * while /shared builds as ESM (root package.json "type": "module"), so a
+ * cross-import crashes every function that loads this file with ERR_REQUIRE_ESM.
+ */
+
+/** Mirror of EVALUATION_PRODUCT in shared/program.ts — keep the two in sync. */
+const EVALUATION_PRODUCT = {
+  name: "Physician GLP-1 Evaluation",
+  description:
+    "$100 physician evaluation. Prescription only if medically appropriate. Full refund if not.",
+  amountCents: 10000,
+} as const;
 
 export type ServiceTierId =
   | "evaluation"
