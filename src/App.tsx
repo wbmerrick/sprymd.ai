@@ -44,6 +44,7 @@ const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
 const IntakePage = lazy(() => import("@/pages/Intake"));
 const ProviderNotePage = lazy(() => import("@/pages/ProviderNote"));
 const VisitRoomPage = lazy(() => import("@/pages/VisitRoom"));
+const RequireAuthSession = lazy(() => import("@/components/auth/RequireAuthSession"));
 const OpsLayout = lazy(() => import("@/pages/ops/OpsLayout"));
 const OpsQueuePage = lazy(() => import("@/pages/ops/OpsQueuePage"));
 const OpsAppointmentPage = lazy(() => import("@/pages/ops/OpsAppointmentPage"));
@@ -103,8 +104,11 @@ const App = () => (
             <Route path="/checkout" element={<CashPayCheckout />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/intake" element={<IntakePage />} />
-            <Route path="/provider/notes" element={<ProviderNotePage />} />
-            <Route path="/visit/:appointmentId" element={<VisitRoomPage />} />
+            {/* Clinical tooling — same session gate pattern as /ops (demo=1 allowed). */}
+            <Route element={<RequireAuthSession />}>
+              <Route path="/provider/notes" element={<ProviderNotePage />} />
+              <Route path="/visit/:appointmentId" element={<VisitRoomPage />} />
+            </Route>
             <Route path="/ops" element={<OpsLayout />}>
               <Route index element={<OpsQueuePage />} />
               <Route path=":appointmentId" element={<OpsAppointmentPage />} />
