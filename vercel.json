@@ -5,34 +5,153 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!api/|assets/).*)",
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/quiz",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/care/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/npp",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/intake",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/checkout/success",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/staff",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/staff/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/master",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/master/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/provider/notes",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/visit/:appointmentId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ops",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ops/:appointmentId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oauth/authorize",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oauth/callback",
       "destination": "/index.html"
     }
   ],
   "headers": [
     {
       "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/fonts/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/(brand|icons)/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=86400"
+        }
+      ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ],
   "crons": [
-    { "path": "/api/cron/akute-intake-sweep", "schedule": "0 11 * * *" }
+    {
+      "path": "/api/cron/akute-intake-sweep",
+      "schedule": "0 11 * * *"
+    }
   ],
   "installCommand": "bun install"
 }

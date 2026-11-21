@@ -1,1 +1,2 @@
-/*    /index.html   200
+# SPA hosting: unknown paths must HTTP 404 (see vercel.json allowlist + public/404.html).
+# Do not add a /* → /index.html 200 catch-all — that creates soft 404s for crawlers.

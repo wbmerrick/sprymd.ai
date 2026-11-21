@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page not found | SpryMD</title>
+    <meta name="description" content="That page does not exist on SpryMD." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://www.sprymd.ai/404" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: hsl(150 20% 6%);
+        --fg: hsl(40 20% 96%);
+        --muted: hsl(40 10% 70%);
+        --accent: hsl(28 45% 58%);
+        --accent-fg: hsl(150 20% 8%);
+        --code-bg: hsl(150 12% 14%);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6rem 1.5rem;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "DM Sans", "Segoe UI", system-ui, sans-serif;
+      }
+      main { max-width: 36rem; text-align: center; }
+      .eyebrow {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1 {
+        margin: 1rem 0 0;
+        font-family: Fraunces, Georgia, "Times New Roman", serif;
+        font-size: clamp(2.25rem, 5vw, 3rem);
+        font-weight: 600;
+        line-height: 1.15;
+      }
+      p {
+        margin: 1rem 0 0;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: color-mix(in srgb, var(--fg) 75%, transparent);
+      }
+      code {
+        display: inline-block;
+        margin: 0 0.15em;
+        padding: 0.15em 0.5em;
+        border-radius: 0.35rem;
+        background: var(--code-bg);
+        font-size: 0.875rem;
+      }
+      .actions {
+        margin-top: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        align-items: center;
+      }
+      a.btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      a.primary { background: var(--accent); color: var(--accent-fg); }
+      a.secondary {
+        border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+        color: var(--fg);
+      }
+      a.link {
+        padding: 0.75rem 1rem;
+        color: color-mix(in srgb, var(--fg) 80%, transparent);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="main-content">
+      <p class="eyebrow">404</p>
+      <h1>Page not found</h1>
+      <p>
+        We couldn&rsquo;t find
+        <code id="missing-path">this page</code>.
+        The link may be out of date, or the page may have moved.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="/">Back to home</a>
+        <a class="btn secondary" href="/#landing-conditions">Start your visit</a>
+        <a class="link" href="/contact">Contact support</a>
+      </div>
+    </main>
+    <script>
+      (function () {
+        var el = document.getElementById("missing-path");
+        if (el) el.textContent = location.pathname || "/";
+      })();
+    </script>
+  </body>
+</html>
